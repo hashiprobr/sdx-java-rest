@@ -17,8 +17,8 @@ class TextSerializerTest {
 	}
 
 	@Test
-	void sameIfBodyIsString() {
-		String body = "";
+	void returnsSameIfBodyIsString() {
+		String body = "body";
 		assertSame(body, s.serialize(body));
 	}
 

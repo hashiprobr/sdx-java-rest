@@ -27,17 +27,17 @@ class DeserializingExceptionTest {
 
 	@Test
 	void messageAndCauseConstructor() {
-		Throwable t = new Throwable();
-		e = new DeserializingException(MESSAGE, t);
+		Throwable cause = new Throwable();
+		e = new DeserializingException(MESSAGE, cause);
 		assertEquals(MESSAGE, e.getMessage());
-		assertSame(t, e.getCause());
+		assertSame(cause, e.getCause());
 	}
 
 	@Test
 	void causeConstructor() {
-		Throwable t = new Throwable();
-		e = new DeserializingException(t);
-		assertEquals(t.toString(), e.getMessage());
-		assertSame(t, e.getCause());
+		Throwable cause = new Throwable();
+		e = new DeserializingException(cause);
+		assertEquals(cause.toString(), e.getMessage());
+		assertSame(cause, e.getCause());
 	}
 }

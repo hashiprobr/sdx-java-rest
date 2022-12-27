@@ -9,6 +9,7 @@ import java.io.InputStream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import br.pro.hashi.sdx.rest.coding.Coding;
 import br.pro.hashi.sdx.rest.transformer.base.Assembler;
 
 class ByteAssemblerTest {
@@ -20,8 +21,8 @@ class ByteAssemblerTest {
 	}
 
 	@Test
-	void sameIfBodyIsInputStream() {
-		InputStream body = new ByteArrayInputStream("".getBytes());
+	void returnsSameIfBodyIsInputStream() {
+		InputStream body = new ByteArrayInputStream("body".getBytes(Coding.CHARSET));
 		assertSame(body, a.assemble(body));
 	}
 

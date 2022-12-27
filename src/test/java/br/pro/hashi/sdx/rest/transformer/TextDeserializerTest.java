@@ -16,11 +16,11 @@ class TextDeserializerTest {
 	@BeforeEach
 	void setUp() {
 		d = new TextDeserializer();
-		content = "";
+		content = "content";
 	}
 
 	@Test
-	void sameIfTypeEqualsString() {
+	void returnsSameIfTypeEqualsString() {
 		String body = assertDoesNotThrow(() -> {
 			return d.deserialize(content, String.class);
 		});

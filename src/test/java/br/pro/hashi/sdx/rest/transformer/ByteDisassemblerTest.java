@@ -10,6 +10,7 @@ import java.io.InputStream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import br.pro.hashi.sdx.rest.coding.Coding;
 import br.pro.hashi.sdx.rest.transformer.base.Disassembler;
 
 class ByteDisassemblerTest {
@@ -19,11 +20,11 @@ class ByteDisassemblerTest {
 	@BeforeEach
 	void setUp() {
 		d = new ByteDisassembler();
-		stream = new ByteArrayInputStream("".getBytes());
+		stream = new ByteArrayInputStream("stream".getBytes(Coding.CHARSET));
 	}
 
 	@Test
-	void sameIfTypeEqualsInputStream() {
+	void returnsSameIfTypeEqualsInputStream() {
 		InputStream body = assertDoesNotThrow(() -> {
 			return d.disassemble(stream, InputStream.class);
 		});

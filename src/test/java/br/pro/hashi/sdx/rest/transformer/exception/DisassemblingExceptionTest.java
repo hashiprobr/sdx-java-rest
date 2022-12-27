@@ -27,17 +27,17 @@ class DisassemblingExceptionTest {
 
 	@Test
 	void messageAndCauseConstructor() {
-		Throwable t = new Throwable();
-		e = new DisassemblingException(MESSAGE, t);
+		Throwable cause = new Throwable();
+		e = new DisassemblingException(MESSAGE, cause);
 		assertEquals(MESSAGE, e.getMessage());
-		assertSame(t, e.getCause());
+		assertSame(cause, e.getCause());
 	}
 
 	@Test
 	void causeConstructor() {
-		Throwable t = new Throwable();
-		e = new DisassemblingException(t);
-		assertEquals(t.toString(), e.getMessage());
-		assertSame(t, e.getCause());
+		Throwable cause = new Throwable();
+		e = new DisassemblingException(cause);
+		assertEquals(cause.toString(), e.getMessage());
+		assertSame(cause, e.getCause());
 	}
 }

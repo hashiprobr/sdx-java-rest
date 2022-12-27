@@ -23,9 +23,9 @@ class GsonSerializerTest {
 	}
 
 	@Test
-	void gsonReturns() {
+	void returnsWhatGsonReturns() {
 		Object body = new Object();
-		String expected = "";
+		String expected = "expected";
 		when(gson.toJson(body)).thenReturn(expected);
 		String actual = s.serialize(body);
 		verify(gson).toJson(body);

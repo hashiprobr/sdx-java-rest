@@ -7,7 +7,7 @@ import br.pro.hashi.sdx.rest.transformer.base.Serializer;
 class GsonSerializer implements Serializer {
 	private final Gson gson;
 
-	public GsonSerializer(Gson gson) {
+	GsonSerializer(Gson gson) {
 		this.gson = gson;
 	}
 

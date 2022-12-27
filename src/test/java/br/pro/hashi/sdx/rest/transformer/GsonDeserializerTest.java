@@ -26,12 +26,12 @@ class GsonDeserializerTest {
 	void setUp() {
 		gson = mock(Gson.class);
 		d = new GsonDeserializer(gson);
-		content = "";
+		content = "content";
 		type = Object.class;
 	}
 
 	@Test
-	void gsonDoesNotThrow() {
+	void returnsWhatGsonReturns() {
 		Object expected = new Object();
 		when(gson.fromJson(content, type)).thenReturn(expected);
 		Object actual = assertDoesNotThrow(() -> {
@@ -42,7 +42,7 @@ class GsonDeserializerTest {
 	}
 
 	@Test
-	void gsonThrows() {
+	void throwsIfGsonThrows() {
 		when(gson.fromJson(content, type)).thenThrow(JsonSyntaxException.class);
 		assertThrows(DeserializingException.class, () -> {
 			d.deserialize(content, type);

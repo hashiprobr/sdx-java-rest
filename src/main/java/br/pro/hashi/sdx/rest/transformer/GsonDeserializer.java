@@ -9,7 +9,7 @@ import br.pro.hashi.sdx.rest.transformer.exception.DeserializingException;
 class GsonDeserializer implements Deserializer {
 	private final Gson gson;
 
-	public GsonDeserializer(Gson gson) {
+	GsonDeserializer(Gson gson) {
 		this.gson = gson;
 	}
 
