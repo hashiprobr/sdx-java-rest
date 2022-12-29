@@ -18,7 +18,7 @@ import br.pro.hashi.sdx.rest.base.Reflection;
 import br.pro.hashi.sdx.rest.transformer.base.Deserializer;
 
 class SafeGsonDeserializerTest {
-	MockedStatic<Reflection> reflection;
+	private MockedStatic<Reflection> reflection;
 	private Deserializer d;
 	private String content;
 
@@ -46,7 +46,7 @@ class SafeGsonDeserializerTest {
 	@Test
 	void doesNotAddPrimitive() {
 		assertDoesNotThrow(() -> {
-			d.deserialize(content, boolean.class);
+			d.deserialize(content, int.class);
 		});
 		reflection.verify(() -> Reflection.getNoArgsConstructor(int.class), times(0));
 	}
@@ -54,7 +54,7 @@ class SafeGsonDeserializerTest {
 	@Test
 	void doesNotAddWrapper() {
 		assertDoesNotThrow(() -> {
-			d.deserialize(content, boolean.class);
+			d.deserialize(content, Integer.class);
 		});
 		reflection.verify(() -> Reflection.getNoArgsConstructor(Integer.class), times(0));
 	}
@@ -62,7 +62,7 @@ class SafeGsonDeserializerTest {
 	@Test
 	void doesNotAddBig() {
 		assertDoesNotThrow(() -> {
-			d.deserialize(content, boolean.class);
+			d.deserialize(content, BigInteger.class);
 		});
 		reflection.verify(() -> Reflection.getNoArgsConstructor(BigInteger.class), times(0));
 	}

@@ -28,6 +28,8 @@ import br.pro.hashi.sdx.rest.base.mock.WithPublicNoArgsConstructor;
 import br.pro.hashi.sdx.rest.base.mock.WithoutNoArgsConstructor;
 
 class ReflectionTest {
+	private static final String PACKAGE_NAME = "br.pro.hashi.sdx.base.mock";
+
 	private MockedConstruction<Reflections> mockReflections() {
 		return mockConstruction(Reflections.class, (mock, context) -> {
 			when(mock.getSubTypesOf(Parent.class)).thenReturn(Set.of(Child.class, AbstractChild.class));
@@ -89,7 +91,7 @@ class ReflectionTest {
 	void getsSubTypes() {
 		try (MockedConstruction<Reflections> reflections = mockReflections()) {
 			List<Class<? extends Parent>> subTypes = new ArrayList<>();
-			for (Class<? extends Parent> subType : Reflection.getSubTypes("br.pro.hashi.sdx.base.mock", Parent.class)) {
+			for (Class<? extends Parent> subType : Reflection.getSubTypes(PACKAGE_NAME, Parent.class)) {
 				subTypes.add(subType);
 			}
 			assertEquals(1, subTypes.size());
@@ -101,7 +103,7 @@ class ReflectionTest {
 	void getsSubInstances() {
 		try (MockedConstruction<Reflections> reflections = mockReflections()) {
 			List<Parent> subInstances = new ArrayList<>();
-			for (Parent subInstance : Reflection.getSubInstances("br.pro.hashi.sdx.base.mock", Parent.class)) {
+			for (Parent subInstance : Reflection.getSubInstances(PACKAGE_NAME, Parent.class)) {
 				subInstances.add(subInstance);
 			}
 			assertEquals(1, subInstances.size());
