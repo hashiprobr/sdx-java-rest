@@ -3,7 +3,11 @@ package br.pro.hashi.sdx.rest.base;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.lang.reflect.TypeVariable;
 import java.util.Iterator;
+import java.util.Stack;
 
 import org.reflections.Reflections;
 
@@ -71,6 +75,32 @@ public final class Reflection {
 				};
 			}
 		};
+	}
+
+	public static <T, S extends T> Type getSpecificType(Class<T> superType, S object, int i) {
+		Stack<Class<?>> stack = new Stack<>();
+		Class<?> subType = object.getClass();
+		for (subType = object.getClass(); !subType.equals(superType); subType = subType.getSuperclass()) {
+			stack.push(subType);
+		}
+		Type type;
+		TypeVariable<?>[] typeVariables = superType.getTypeParameters();
+		while (!stack.empty()) {
+			subType = stack.pop();
+			ParameterizedType parameterizedType = (ParameterizedType) subType.getGenericSuperclass();
+			Type[] types = parameterizedType.getActualTypeArguments();
+			type = types[i];
+			if (type instanceof TypeVariable) {
+				typeVariables = subType.getTypeParameters();
+				i = 0;
+				while (!typeVariables[i].equals(type)) {
+					i++;
+				}
+			} else {
+				return type;
+			}
+		}
+		throw new ReflectionException("Subclass of %s must specify type %s".formatted(superType.getName(), typeVariables[i].getTypeName()));
 	}
 
 	private Reflection() {

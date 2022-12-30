@@ -166,11 +166,15 @@ public class Transformer {
 		serializers.put(contentType, serializer);
 	}
 
+	public void putUncheckedSerializer(Gson gson) {
+		serializers.put(JSON_TYPE, new GsonSerializer(gson));
+	}
+
 	public void putSerializer(Gson gson) {
 		if (gson == null) {
 			throw new IllegalArgumentException("Serializer gson cannot be null");
 		}
-		serializers.put(JSON_TYPE, new GsonSerializer(gson));
+		putUncheckedSerializer(gson);
 	}
 
 	public void removeSerializer(String contentType) {

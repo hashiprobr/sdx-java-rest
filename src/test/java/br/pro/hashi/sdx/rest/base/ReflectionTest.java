@@ -18,7 +18,16 @@ import org.reflections.Reflections;
 
 import br.pro.hashi.sdx.rest.base.exception.ReflectionException;
 import br.pro.hashi.sdx.rest.base.mock.AbstractChild;
+import br.pro.hashi.sdx.rest.base.mock.Base;
 import br.pro.hashi.sdx.rest.base.mock.Child;
+import br.pro.hashi.sdx.rest.base.mock.ChildWithBoth;
+import br.pro.hashi.sdx.rest.base.mock.ChildWithLeft;
+import br.pro.hashi.sdx.rest.base.mock.ChildWithNeither;
+import br.pro.hashi.sdx.rest.base.mock.ChildWithRight;
+import br.pro.hashi.sdx.rest.base.mock.FinalChildWithBoth;
+import br.pro.hashi.sdx.rest.base.mock.FinalChildWithLeft;
+import br.pro.hashi.sdx.rest.base.mock.FinalChildWithNeither;
+import br.pro.hashi.sdx.rest.base.mock.FinalChildWithRight;
 import br.pro.hashi.sdx.rest.base.mock.Parent;
 import br.pro.hashi.sdx.rest.base.mock.WithIllegalNoArgsConstructor;
 import br.pro.hashi.sdx.rest.base.mock.WithPackageNoArgsConstructor;
@@ -33,6 +42,16 @@ class ReflectionTest {
 	private MockedConstruction<Reflections> mockReflections() {
 		return mockConstruction(Reflections.class, (mock, context) -> {
 			when(mock.getSubTypesOf(Parent.class)).thenReturn(Set.of(Child.class, AbstractChild.class));
+		});
+	}
+
+	private <T extends Base<?, ?>> void assertSpecificTypeEquals(Class<?> type, T child, int i) {
+		assertEquals(type, Reflection.getSpecificType(Base.class, child, i));
+	}
+
+	private <T extends Base<?, ?>> void assertSpecificTypeThrows(T child, int i) {
+		assertThrows(ReflectionException.class, () -> {
+			Reflection.getSpecificType(Base.class, child, i);
 		});
 	}
 
@@ -109,5 +128,61 @@ class ReflectionTest {
 			assertEquals(1, subInstances.size());
 			assertInstanceOf(Child.class, subInstances.get(0));
 		}
+	}
+
+	@Test
+	void getsBothSpecificTypesFromFinalChildWithBoth() {
+		FinalChildWithBoth child = new FinalChildWithBoth();
+		assertSpecificTypeEquals(Integer.class, child, 0);
+		assertSpecificTypeEquals(Double.class, child, 1);
+	}
+
+	@Test
+	void getsBothSpecificTypesFromFinalChildWithLeft() {
+		FinalChildWithLeft child = new FinalChildWithLeft();
+		assertSpecificTypeEquals(Integer.class, child, 0);
+		assertSpecificTypeEquals(Double.class, child, 1);
+	}
+
+	@Test
+	void getsBothSpecificTypesFromFinalChildWithRight() {
+		FinalChildWithRight child = new FinalChildWithRight();
+		assertSpecificTypeEquals(Integer.class, child, 0);
+		assertSpecificTypeEquals(Double.class, child, 1);
+	}
+
+	@Test
+	void getsBothSpecificTypesFromFinalChildWithNeither() {
+		FinalChildWithNeither child = new FinalChildWithNeither();
+		assertSpecificTypeEquals(Integer.class, child, 0);
+		assertSpecificTypeEquals(Double.class, child, 1);
+	}
+
+	@Test
+	void getsBothSpecificTypesFromChildWithBoth() {
+		ChildWithBoth child = new ChildWithBoth();
+		assertSpecificTypeEquals(Integer.class, child, 0);
+		assertSpecificTypeEquals(Double.class, child, 1);
+	}
+
+	@Test
+	void getsLeftSpecificTypeFromChildWithLeft() {
+		ChildWithLeft<Double> child = new ChildWithLeft<>();
+		assertSpecificTypeEquals(Integer.class, child, 0);
+		assertSpecificTypeThrows(child, 1);
+	}
+
+	@Test
+	void getsRightSpecificTypeFromChildWithRight() {
+		ChildWithRight<Integer> child = new ChildWithRight<>();
+		assertSpecificTypeThrows(child, 0);
+		assertSpecificTypeEquals(Double.class, child, 1);
+	}
+
+	@Test
+	void getsNeitherSpecificTypeFromChildWithNeither() {
+		ChildWithNeither<Integer, Double> child = new ChildWithNeither<>();
+		assertSpecificTypeThrows(child, 0);
+		assertSpecificTypeThrows(child, 1);
 	}
 }
