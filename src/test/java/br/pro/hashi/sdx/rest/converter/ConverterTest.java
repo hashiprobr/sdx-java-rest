@@ -1,4 +1,4 @@
-package br.pro.hashi.sdx.rest.base.converter;
+package br.pro.hashi.sdx.rest.converter;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -10,26 +10,25 @@ import org.junit.jupiter.api.Test;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
-import br.pro.hashi.sdx.rest.base.BaseConverter;
-import br.pro.hashi.sdx.rest.base.converter.mock.ConverterToBigDecimal;
-import br.pro.hashi.sdx.rest.base.converter.mock.ConverterToBigInteger;
-import br.pro.hashi.sdx.rest.base.converter.mock.ConverterToBoolean;
-import br.pro.hashi.sdx.rest.base.converter.mock.ConverterToByte;
-import br.pro.hashi.sdx.rest.base.converter.mock.ConverterToDouble;
-import br.pro.hashi.sdx.rest.base.converter.mock.ConverterToFloat;
-import br.pro.hashi.sdx.rest.base.converter.mock.ConverterToInteger;
-import br.pro.hashi.sdx.rest.base.converter.mock.ConverterToList;
-import br.pro.hashi.sdx.rest.base.converter.mock.ConverterToLong;
-import br.pro.hashi.sdx.rest.base.converter.mock.ConverterToMap;
-import br.pro.hashi.sdx.rest.base.converter.mock.ConverterToShort;
-import br.pro.hashi.sdx.rest.base.converter.mock.ConverterToString;
+import br.pro.hashi.sdx.rest.converter.mock.ConverterToBigDecimal;
+import br.pro.hashi.sdx.rest.converter.mock.ConverterToBigInteger;
+import br.pro.hashi.sdx.rest.converter.mock.ConverterToBoolean;
+import br.pro.hashi.sdx.rest.converter.mock.ConverterToByte;
+import br.pro.hashi.sdx.rest.converter.mock.ConverterToDouble;
+import br.pro.hashi.sdx.rest.converter.mock.ConverterToFloat;
+import br.pro.hashi.sdx.rest.converter.mock.ConverterToInteger;
+import br.pro.hashi.sdx.rest.converter.mock.ConverterToList;
+import br.pro.hashi.sdx.rest.converter.mock.ConverterToLong;
+import br.pro.hashi.sdx.rest.converter.mock.ConverterToMap;
+import br.pro.hashi.sdx.rest.converter.mock.ConverterToShort;
+import br.pro.hashi.sdx.rest.converter.mock.ConverterToString;
 
 class ConverterTest {
 	private Gson gson;
 
 	private void create(BaseConverter<?, ?> converter) {
 		GsonBuilder builder = new GsonBuilder();
-		converter.beRegisteredBy(builder);
+		converter.register(builder);
 		gson = builder.create();
 	}
 

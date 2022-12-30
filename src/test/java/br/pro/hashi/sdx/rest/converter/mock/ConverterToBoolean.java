@@ -1,8 +1,8 @@
-package br.pro.hashi.sdx.rest.base.converter.mock;
+package br.pro.hashi.sdx.rest.converter.mock;
 
 import java.io.ByteArrayInputStream;
 
-import br.pro.hashi.sdx.rest.base.converter.Converter;
+import br.pro.hashi.sdx.rest.converter.Converter;
 
 public class ConverterToBoolean extends Converter.ToBoolean<ByteArrayInputStream> {
 	@Override

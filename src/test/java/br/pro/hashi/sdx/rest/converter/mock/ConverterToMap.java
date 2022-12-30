@@ -1,10 +1,10 @@
-package br.pro.hashi.sdx.rest.base.converter.mock;
+package br.pro.hashi.sdx.rest.converter.mock;
 
 import java.io.ByteArrayInputStream;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import br.pro.hashi.sdx.rest.base.converter.Converter;
+import br.pro.hashi.sdx.rest.converter.Converter;
 
 public class ConverterToMap extends Converter.ToMapOf<Byte, ByteArrayInputStream> {
 	@Override
