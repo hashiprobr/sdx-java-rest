@@ -3,7 +3,7 @@ package br.pro.hashi.sdx.rest.client;
 import br.pro.hashi.sdx.rest.base.Builder;
 
 /**
- * Builds...
+ * Configures and creates objects of type {@link RESTClient}.
  */
 public class RESTClientBuilder extends Builder<RESTClientBuilder> {
 	/**

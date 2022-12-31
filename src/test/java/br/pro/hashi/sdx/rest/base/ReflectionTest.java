@@ -40,8 +40,8 @@ class ReflectionTest {
 	private static final String PACKAGE_NAME = "br.pro.hashi.sdx.base.mock";
 
 	private MockedConstruction<Reflections> mockReflections() {
-		return mockConstruction(Reflections.class, (mock, context) -> {
-			when(mock.getSubTypesOf(Parent.class)).thenReturn(Set.of(Child.class, AbstractChild.class));
+		return mockConstruction(Reflections.class, (reflections, context) -> {
+			when(reflections.getSubTypesOf(Parent.class)).thenReturn(Set.of(Child.class, AbstractChild.class));
 		});
 	}
 

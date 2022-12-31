@@ -3,7 +3,7 @@ package br.pro.hashi.sdx.rest.server;
 import br.pro.hashi.sdx.rest.base.Builder;
 
 /**
- * Builds...
+ * Configures and creates objects of type {@link RESTServer}.
  */
 public class RESTServerBuilder extends Builder<RESTServerBuilder> {
 	/**

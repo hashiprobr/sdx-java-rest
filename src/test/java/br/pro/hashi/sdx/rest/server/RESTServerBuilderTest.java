@@ -28,7 +28,32 @@ class RESTServerBuilderTest extends BuilderTest {
 	}
 
 	@Test
+	void putsSerializer() {
+		testPutsSerializer();
+	}
+
+	@Test
+	void putsGsonSerializer() {
+		testPutsGsonSerializer();
+	}
+
+	@Test
 	void putsUncheckedSerializer() {
 		testPutsUncheckedSerializer();
+	}
+
+	@Test
+	void doesNotPutUncheckedSerializerIfNull() {
+		testDoesNotPutUncheckedSerializerIfNull();
+	}
+
+	@Test
+	void doesNotPutUncheckedSerializerIfBlank() {
+		testDoesNotPutUncheckedSerializerIfBlank();
+	}
+
+	@Test
+	void removesSerializer() {
+		testRemovesSerializer();
 	}
 }
