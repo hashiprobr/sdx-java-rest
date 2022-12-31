@@ -2,9 +2,10 @@
  * Defines a simple REST framework based on Jetty.
  */
 module br.pro.hashi.sdx.rest {
-	requires org.reflections;
-
 	requires transitive com.google.gson;
+
+	requires org.slf4j;
+	requires org.reflections;
 
 	exports br.pro.hashi.sdx.rest.converter;
 	exports br.pro.hashi.sdx.rest.transformer.base;
