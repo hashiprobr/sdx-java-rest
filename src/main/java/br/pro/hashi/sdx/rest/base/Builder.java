@@ -87,6 +87,20 @@ public abstract class Builder<T extends Builder<T>> {
 	protected abstract T self();
 
 	/**
+	 * @hidden
+	 */
+	public Transformer getTransformer() {
+		return transformer;
+	}
+
+	/**
+	 * @hidden
+	 */
+	public Charset getURLCharset() {
+		return urlCharset;
+	}
+
+	/**
 	 * <p>
 	 * Adds types that should be considered binary.
 	 * </p>

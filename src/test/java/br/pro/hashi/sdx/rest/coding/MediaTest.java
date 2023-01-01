@@ -18,7 +18,6 @@ import org.junit.jupiter.api.Test;
 import br.pro.hashi.sdx.rest.coding.exception.CharsetException;
 
 class MediaTest {
-	private static final String CONTENT_TYPE = "text/plain";
 	private static final String USASCII_CONTENT = "usascii";
 	private static final String SPECIAL_CONTENT = "spéçíál";
 
@@ -62,22 +61,22 @@ class MediaTest {
 
 	@Test
 	void stripReturnsNotNull() {
-		assertEquals(CONTENT_TYPE, Media.strip("text/plain"));
+		assertEquals("text/plain", Media.strip("text/plain"));
 	}
 
 	@Test
 	void stripReturnsNotNullWithWhitespaces() {
-		assertEquals(CONTENT_TYPE, Media.strip(" \t\ntext/plain \t\n"));
+		assertEquals("text/plain", Media.strip(" \t\ntext/plain \t\n"));
 	}
 
 	@Test
 	void stripReturnsNotNullWithParameters() {
-		assertEquals(CONTENT_TYPE, Media.strip("text/plain;;parameter;;name=value;"));
+		assertEquals("text/plain", Media.strip("text/plain;;parameter;;name=value;"));
 	}
 
 	@Test
 	void stripReturnsNotNullWithWhitespacesAndParameters() {
-		assertEquals(CONTENT_TYPE, Media.strip(" \t\ntext/plain \t\n; \t\n; \t\nparameter \t\n; \t\n; \t\nname \t\n= \t\nvalue \t\n; \t\n"));
+		assertEquals("text/plain", Media.strip(" \t\ntext/plain \t\n; \t\n; \t\nparameter \t\n; \t\n; \t\nname \t\n= \t\nvalue \t\n; \t\n"));
 	}
 
 	@Test

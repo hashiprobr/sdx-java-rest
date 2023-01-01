@@ -7,12 +7,20 @@ import java.util.List;
 import java.util.Map;
 
 class TypeCache {
-	final Map<Class<?>, Class<? extends List<?>>> listTypes;
-	final Map<Class<?>, Class<? extends Map<String, ?>>> mapTypes;
+	private final Map<Class<?>, Class<? extends List<?>>> listTypes;
+	private final Map<Class<?>, Class<? extends Map<String, ?>>> mapTypes;
 
 	TypeCache() {
 		this.listTypes = new HashMap<>();
 		this.mapTypes = new HashMap<>();
+	}
+
+	Map<Class<?>, Class<? extends List<?>>> getListTypes() {
+		return listTypes;
+	}
+
+	Map<Class<?>, Class<? extends Map<String, ?>>> getMapTypes() {
+		return mapTypes;
 	}
 
 	@SuppressWarnings("unchecked")

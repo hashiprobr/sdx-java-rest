@@ -1,5 +1,6 @@
 package br.pro.hashi.sdx.rest.base;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -12,7 +13,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.nio.charset.StandardCharsets;
-import java.util.Objects;
 import java.util.Set;
 
 import org.mockito.MockedConstruction;
@@ -47,7 +47,7 @@ public class BuilderTest {
 		transformerConstruction = mockConstruction(Transformer.class);
 	}
 
-	protected void getMocks() {
+	protected void getTransformer() {
 		transformer = transformerConstruction.constructed().get(0);
 	}
 
@@ -61,11 +61,11 @@ public class BuilderTest {
 	}
 
 	protected void testInitializesWithURLCharsetUTF8() {
-		b.urlCharset.equals(StandardCharsets.UTF_8);
+		assertEquals(StandardCharsets.UTF_8, b.urlCharset);
 	}
 
 	protected void testInitializesWithoutNullBody() {
-		Objects.equals(b.none, null);
+		assertEquals(null, b.none);
 	}
 
 	protected void testInitializesWithoutRedirection() {
@@ -199,19 +199,19 @@ public class BuilderTest {
 
 	protected void testSetsURLCharset() {
 		b.withURLCharset(StandardCharsets.ISO_8859_1);
-		b.urlCharset.equals(StandardCharsets.ISO_8859_1);
+		assertEquals(StandardCharsets.ISO_8859_1, b.urlCharset);
 	}
 
 	protected void testDoesNotSetURLCharset() {
 		assertThrows(IllegalArgumentException.class, () -> {
 			b.withURLCharset(null);
 		});
-		b.urlCharset.equals(StandardCharsets.UTF_8);
+		assertEquals(StandardCharsets.UTF_8, b.urlCharset);
 	}
 
 	protected void testSetsNullBody() {
 		b.withNullBody();
-		Objects.equals(b.none, "");
+		assertEquals("", b.none);
 	}
 
 	protected void testSetsRedirection() {

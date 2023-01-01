@@ -86,7 +86,7 @@ public class Transformer {
 	public Assembler getAssembler(String contentType) {
 		Assembler assembler = assemblers.get(contentType);
 		if (assembler == null) {
-			throw new IllegalArgumentException("No assembler for %s".formatted(contentType));
+			throw new IllegalArgumentException("No assembler associated to %s".formatted(contentType));
 		}
 		return assembler;
 	}
@@ -117,7 +117,7 @@ public class Transformer {
 	public Disassembler getDisassembler(String contentType) {
 		Disassembler disassembler = disassemblers.get(contentType);
 		if (disassembler == null) {
-			throw new IllegalArgumentException("No disassembler for %s".formatted(contentType));
+			throw new IllegalArgumentException("No disassembler associated to %s".formatted(contentType));
 		}
 		return disassembler;
 	}
@@ -148,7 +148,7 @@ public class Transformer {
 	public Serializer getSerializer(String contentType) {
 		Serializer serializer = serializers.get(contentType);
 		if (serializer == null) {
-			throw new IllegalArgumentException("No serializer for %s".formatted(contentType));
+			throw new IllegalArgumentException("No serializer associated to %s".formatted(contentType));
 		}
 		return serializer;
 	}
@@ -190,7 +190,7 @@ public class Transformer {
 	public Deserializer getDeserializer(String contentType) {
 		Deserializer deserializer = deserializers.get(contentType);
 		if (deserializer == null) {
-			throw new IllegalArgumentException("No deserializer for %s".formatted(contentType));
+			throw new IllegalArgumentException("No deserializer associated to %s".formatted(contentType));
 		}
 		return deserializer;
 	}

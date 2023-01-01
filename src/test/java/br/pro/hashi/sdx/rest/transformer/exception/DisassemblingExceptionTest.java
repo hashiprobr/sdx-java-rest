@@ -7,8 +7,6 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import org.junit.jupiter.api.Test;
 
 class DisassemblingExceptionTest {
-	private static final String MESSAGE = "message";
-
 	private DisassemblingException e;
 
 	@Test
@@ -20,16 +18,16 @@ class DisassemblingExceptionTest {
 
 	@Test
 	void messageConstructor() {
-		e = new DisassemblingException(MESSAGE);
-		assertEquals(MESSAGE, e.getMessage());
+		e = new DisassemblingException("message");
+		assertEquals("message", e.getMessage());
 		assertNull(e.getCause());
 	}
 
 	@Test
 	void messageAndCauseConstructor() {
 		Throwable cause = new Throwable();
-		e = new DisassemblingException(MESSAGE, cause);
-		assertEquals(MESSAGE, e.getMessage());
+		e = new DisassemblingException("message", cause);
+		assertEquals("message", e.getMessage());
 		assertSame(cause, e.getCause());
 	}
 

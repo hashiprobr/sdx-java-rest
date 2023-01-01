@@ -6,14 +6,12 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import org.junit.jupiter.api.Test;
 
 class CharsetExceptionTest {
-	private static final String MESSAGE = "message";
-
 	private CharsetException e;
 
 	@Test
 	void messageConstructor() {
-		e = new CharsetException(MESSAGE);
-		assertEquals(MESSAGE, e.getMessage());
+		e = new CharsetException("message");
+		assertEquals("message", e.getMessage());
 		assertNull(e.getCause());
 	}
 }

@@ -11,4 +11,8 @@ public class RESTServer {
 	RESTServer(Transformer transformer) {
 		this.transformer = transformer;
 	}
+
+	Transformer getTransformer() {
+		return transformer;
+	}
 }

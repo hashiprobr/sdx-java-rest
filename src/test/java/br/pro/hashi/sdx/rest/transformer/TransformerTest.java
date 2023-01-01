@@ -8,11 +8,9 @@ import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockConstruction;
 import static org.mockito.Mockito.mockStatic;
-import static org.mockito.Mockito.times;
 
 import java.io.InputStream;
 
@@ -81,6 +79,13 @@ class TransformerTest {
 	}
 
 	@Test
+	void initializesWithoutPNGAssembler() {
+		assertThrows(IllegalArgumentException.class, () -> {
+			t.getAssembler("image/png");
+		});
+	}
+
+	@Test
 	void initializesWithoutNullAssembler() {
 		assertThrows(IllegalArgumentException.class, () -> {
 			t.getAssembler(null);
@@ -90,6 +95,13 @@ class TransformerTest {
 	@Test
 	void initializesWithByteDisassembler() {
 		assertInstanceOf(ByteDisassembler.class, t.getDisassembler("application/octet-stream"));
+	}
+
+	@Test
+	void initializesWithoutPNGDisassembler() {
+		assertThrows(IllegalArgumentException.class, () -> {
+			t.getDisassembler("image/png");
+		});
 	}
 
 	@Test
@@ -110,6 +122,13 @@ class TransformerTest {
 	}
 
 	@Test
+	void initializesWithoutXMLSerializer() {
+		assertThrows(IllegalArgumentException.class, () -> {
+			t.getSerializer("application/xml");
+		});
+	}
+
+	@Test
 	void initializesWithoutNullSerializer() {
 		assertThrows(IllegalArgumentException.class, () -> {
 			t.getSerializer(null);
@@ -124,6 +143,13 @@ class TransformerTest {
 	@Test
 	void initializesWithGsonDeserializer() {
 		assertInstanceOf(SafeGsonDeserializer.class, t.getDeserializer("application/json"));
+	}
+
+	@Test
+	void initializesWithoutXMLDeserializer() {
+		assertThrows(IllegalArgumentException.class, () -> {
+			t.getDeserializer("application/xml");
+		});
 	}
 
 	@Test
@@ -195,12 +221,8 @@ class TransformerTest {
 		try (MockedStatic<Media> media = mockStatic(Media.class)) {
 			String contentType = "application/octet-stream";
 			media.when(() -> Media.strip(contentType)).thenReturn(contentType);
-			assertDoesNotThrow(() -> {
-				t.getAssembler(contentType);
-			});
 			Assembler assembler = mock(Assembler.class);
 			t.putAssembler(contentType, assembler);
-			media.verify(() -> Media.strip(contentType));
 			assertSame(assembler, t.getAssembler(contentType));
 		}
 	}
@@ -210,12 +232,8 @@ class TransformerTest {
 		try (MockedStatic<Media> media = mockStatic(Media.class)) {
 			String contentType = "image/png";
 			media.when(() -> Media.strip(contentType)).thenReturn(contentType);
-			assertThrows(IllegalArgumentException.class, () -> {
-				t.getAssembler(contentType);
-			});
 			Assembler assembler = mock(Assembler.class);
 			t.putAssembler(contentType, assembler);
-			media.verify(() -> Media.strip(contentType));
 			assertSame(assembler, t.getAssembler(contentType));
 		}
 	}
@@ -229,7 +247,6 @@ class TransformerTest {
 			assertThrows(IllegalArgumentException.class, () -> {
 				t.putAssembler(contentType, assembler);
 			});
-			media.verify(() -> Media.strip(contentType));
 			assertThrows(IllegalArgumentException.class, () -> {
 				t.getAssembler(contentType);
 			});
@@ -238,16 +255,13 @@ class TransformerTest {
 
 	@Test
 	void doesNotPutAssemblerIfTypeIsNull() {
-		try (MockedStatic<Media> media = mockStatic(Media.class)) {
-			Assembler assembler = mock(Assembler.class);
-			assertThrows(IllegalArgumentException.class, () -> {
-				t.putAssembler(null, assembler);
-			});
-			media.verify(() -> Media.strip(any()), times(0));
-			assertThrows(IllegalArgumentException.class, () -> {
-				t.getAssembler(null);
-			});
-		}
+		Assembler assembler = mock(Assembler.class);
+		assertThrows(IllegalArgumentException.class, () -> {
+			t.putAssembler(null, assembler);
+		});
+		assertThrows(IllegalArgumentException.class, () -> {
+			t.getAssembler(null);
+		});
 	}
 
 	@Test
@@ -258,7 +272,6 @@ class TransformerTest {
 			assertThrows(IllegalArgumentException.class, () -> {
 				t.putAssembler(contentType, null);
 			});
-			media.verify(() -> Media.strip(contentType));
 			assertThrows(IllegalArgumentException.class, () -> {
 				t.getAssembler(contentType);
 			});
@@ -271,7 +284,6 @@ class TransformerTest {
 			String contentType = "application/octet-stream";
 			media.when(() -> Media.strip(contentType)).thenReturn(contentType);
 			t.removeAssembler(contentType);
-			media.verify(() -> Media.strip(contentType));
 			assertThrows(IllegalArgumentException.class, () -> {
 				t.getAssembler(contentType);
 			});
@@ -286,7 +298,6 @@ class TransformerTest {
 			assertThrows(IllegalArgumentException.class, () -> {
 				t.removeAssembler(contentType);
 			});
-			media.verify(() -> Media.strip(contentType));
 			assertDoesNotThrow(() -> {
 				t.getAssembler(contentType);
 			});
@@ -295,12 +306,9 @@ class TransformerTest {
 
 	@Test
 	void doesNotRemoveAssemblerIfTypeIsNull() {
-		try (MockedStatic<Media> media = mockStatic(Media.class)) {
-			assertThrows(IllegalArgumentException.class, () -> {
-				t.removeAssembler(null);
-			});
-			media.verify(() -> Media.strip(any()), times(0));
-		}
+		assertThrows(IllegalArgumentException.class, () -> {
+			t.removeAssembler(null);
+		});
 	}
 
 	@Test
@@ -308,12 +316,8 @@ class TransformerTest {
 		try (MockedStatic<Media> media = mockStatic(Media.class)) {
 			String contentType = "application/octet-stream";
 			media.when(() -> Media.strip(contentType)).thenReturn(contentType);
-			assertDoesNotThrow(() -> {
-				t.getDisassembler(contentType);
-			});
 			Disassembler disassembler = mock(Disassembler.class);
 			t.putDisassembler(contentType, disassembler);
-			media.verify(() -> Media.strip(contentType));
 			assertSame(disassembler, t.getDisassembler(contentType));
 		}
 	}
@@ -323,12 +327,8 @@ class TransformerTest {
 		try (MockedStatic<Media> media = mockStatic(Media.class)) {
 			String contentType = "image/png";
 			media.when(() -> Media.strip(contentType)).thenReturn(contentType);
-			assertThrows(IllegalArgumentException.class, () -> {
-				t.getDisassembler(contentType);
-			});
 			Disassembler disassembler = mock(Disassembler.class);
 			t.putDisassembler(contentType, disassembler);
-			media.verify(() -> Media.strip(contentType));
 			assertSame(disassembler, t.getDisassembler(contentType));
 		}
 	}
@@ -342,7 +342,6 @@ class TransformerTest {
 			assertThrows(IllegalArgumentException.class, () -> {
 				t.putDisassembler(contentType, disassembler);
 			});
-			media.verify(() -> Media.strip(contentType));
 			assertThrows(IllegalArgumentException.class, () -> {
 				t.getDisassembler(contentType);
 			});
@@ -351,16 +350,13 @@ class TransformerTest {
 
 	@Test
 	void doesNotPutDisassemblerIfTypeIsNull() {
-		try (MockedStatic<Media> media = mockStatic(Media.class)) {
-			Disassembler disassembler = mock(Disassembler.class);
-			assertThrows(IllegalArgumentException.class, () -> {
-				t.putDisassembler(null, disassembler);
-			});
-			media.verify(() -> Media.strip(any()), times(0));
-			assertThrows(IllegalArgumentException.class, () -> {
-				t.getDisassembler(null);
-			});
-		}
+		Disassembler disassembler = mock(Disassembler.class);
+		assertThrows(IllegalArgumentException.class, () -> {
+			t.putDisassembler(null, disassembler);
+		});
+		assertThrows(IllegalArgumentException.class, () -> {
+			t.getDisassembler(null);
+		});
 	}
 
 	@Test
@@ -371,7 +367,6 @@ class TransformerTest {
 			assertThrows(IllegalArgumentException.class, () -> {
 				t.putDisassembler(contentType, null);
 			});
-			media.verify(() -> Media.strip(contentType));
 			assertThrows(IllegalArgumentException.class, () -> {
 				t.getDisassembler(contentType);
 			});
@@ -384,7 +379,6 @@ class TransformerTest {
 			String contentType = "application/octet-stream";
 			media.when(() -> Media.strip(contentType)).thenReturn(contentType);
 			t.removeDisassembler(contentType);
-			media.verify(() -> Media.strip(contentType));
 			assertThrows(IllegalArgumentException.class, () -> {
 				t.getDisassembler(contentType);
 			});
@@ -399,7 +393,6 @@ class TransformerTest {
 			assertThrows(IllegalArgumentException.class, () -> {
 				t.removeDisassembler(contentType);
 			});
-			media.verify(() -> Media.strip(contentType));
 			assertDoesNotThrow(() -> {
 				t.getDisassembler(contentType);
 			});
@@ -408,12 +401,9 @@ class TransformerTest {
 
 	@Test
 	void doesNotRemoveDisssemblerIfTypeIsNull() {
-		try (MockedStatic<Media> media = mockStatic(Media.class)) {
-			assertThrows(IllegalArgumentException.class, () -> {
-				t.removeDisassembler(null);
-			});
-			media.verify(() -> Media.strip(any()), times(0));
-		}
+		assertThrows(IllegalArgumentException.class, () -> {
+			t.removeDisassembler(null);
+		});
 	}
 
 	@Test
@@ -421,12 +411,8 @@ class TransformerTest {
 		try (MockedStatic<Media> media = mockStatic(Media.class)) {
 			String contentType = "text/plain";
 			media.when(() -> Media.strip(contentType)).thenReturn(contentType);
-			assertDoesNotThrow(() -> {
-				t.getSerializer(contentType);
-			});
 			Serializer serializer = mock(Serializer.class);
 			t.putSerializer(contentType, serializer);
-			media.verify(() -> Media.strip(contentType));
 			assertSame(serializer, t.getSerializer(contentType));
 		}
 	}
@@ -436,12 +422,8 @@ class TransformerTest {
 		try (MockedStatic<Media> media = mockStatic(Media.class)) {
 			String contentType = "application/xml";
 			media.when(() -> Media.strip(contentType)).thenReturn(contentType);
-			assertThrows(IllegalArgumentException.class, () -> {
-				t.getSerializer(contentType);
-			});
 			Serializer serializer = mock(Serializer.class);
 			t.putSerializer(contentType, serializer);
-			media.verify(() -> Media.strip(contentType));
 			assertSame(serializer, t.getSerializer(contentType));
 		}
 	}
@@ -455,7 +437,6 @@ class TransformerTest {
 			assertThrows(IllegalArgumentException.class, () -> {
 				t.putSerializer(contentType, serializer);
 			});
-			media.verify(() -> Media.strip(contentType));
 			assertThrows(IllegalArgumentException.class, () -> {
 				t.getSerializer(contentType);
 			});
@@ -464,16 +445,13 @@ class TransformerTest {
 
 	@Test
 	void doesNotPutSerializerIfTypeIsNull() {
-		try (MockedStatic<Media> media = mockStatic(Media.class)) {
-			Serializer serializer = mock(Serializer.class);
-			assertThrows(IllegalArgumentException.class, () -> {
-				t.putSerializer(null, serializer);
-			});
-			media.verify(() -> Media.strip(any()), times(0));
-			assertThrows(IllegalArgumentException.class, () -> {
-				t.getSerializer(null);
-			});
-		}
+		Serializer serializer = mock(Serializer.class);
+		assertThrows(IllegalArgumentException.class, () -> {
+			t.putSerializer(null, serializer);
+		});
+		assertThrows(IllegalArgumentException.class, () -> {
+			t.getSerializer(null);
+		});
 	}
 
 	@Test
@@ -484,7 +462,6 @@ class TransformerTest {
 			assertThrows(IllegalArgumentException.class, () -> {
 				t.putSerializer(contentType, null);
 			});
-			media.verify(() -> Media.strip(contentType));
 			assertThrows(IllegalArgumentException.class, () -> {
 				t.getSerializer(contentType);
 			});
@@ -503,9 +480,12 @@ class TransformerTest {
 
 	@Test
 	void doesNotPutGsonSerializer() {
+		String contentType = "application/json";
+		Serializer serializer = t.getSerializer(contentType);
 		assertThrows(IllegalArgumentException.class, () -> {
 			t.putSerializer(null);
 		});
+		assertSame(serializer, t.getSerializer(contentType));
 	}
 
 	@Test
@@ -514,7 +494,6 @@ class TransformerTest {
 			String contentType = "text/plain";
 			media.when(() -> Media.strip(contentType)).thenReturn(contentType);
 			t.removeSerializer(contentType);
-			media.verify(() -> Media.strip(contentType));
 			assertThrows(IllegalArgumentException.class, () -> {
 				t.getSerializer(contentType);
 			});
@@ -529,7 +508,6 @@ class TransformerTest {
 			assertThrows(IllegalArgumentException.class, () -> {
 				t.removeSerializer(contentType);
 			});
-			media.verify(() -> Media.strip(contentType));
 			assertDoesNotThrow(() -> {
 				t.getSerializer(contentType);
 			});
@@ -538,12 +516,9 @@ class TransformerTest {
 
 	@Test
 	void doesNotRemoveSerializerfTypeIsNull() {
-		try (MockedStatic<Media> media = mockStatic(Media.class)) {
-			assertThrows(IllegalArgumentException.class, () -> {
-				t.removeSerializer(null);
-			});
-			media.verify(() -> Media.strip(any()), times(0));
-		}
+		assertThrows(IllegalArgumentException.class, () -> {
+			t.removeSerializer(null);
+		});
 	}
 
 	@Test
@@ -551,12 +526,8 @@ class TransformerTest {
 		try (MockedStatic<Media> media = mockStatic(Media.class)) {
 			String contentType = "text/plain";
 			media.when(() -> Media.strip(contentType)).thenReturn(contentType);
-			assertDoesNotThrow(() -> {
-				t.getDeserializer(contentType);
-			});
 			Deserializer deserializer = mock(Deserializer.class);
 			t.putDeserializer(contentType, deserializer);
-			media.verify(() -> Media.strip(contentType));
 			assertSame(deserializer, t.getDeserializer(contentType));
 		}
 	}
@@ -566,12 +537,8 @@ class TransformerTest {
 		try (MockedStatic<Media> media = mockStatic(Media.class)) {
 			String contentType = "application/xml";
 			media.when(() -> Media.strip(contentType)).thenReturn(contentType);
-			assertThrows(IllegalArgumentException.class, () -> {
-				t.getDeserializer(contentType);
-			});
 			Deserializer deserializer = mock(Deserializer.class);
 			t.putDeserializer(contentType, deserializer);
-			media.verify(() -> Media.strip(contentType));
 			assertSame(deserializer, t.getDeserializer(contentType));
 		}
 	}
@@ -585,7 +552,6 @@ class TransformerTest {
 			assertThrows(IllegalArgumentException.class, () -> {
 				t.putDeserializer(contentType, deserializer);
 			});
-			media.verify(() -> Media.strip(contentType));
 			assertThrows(IllegalArgumentException.class, () -> {
 				t.getDeserializer(contentType);
 			});
@@ -594,16 +560,13 @@ class TransformerTest {
 
 	@Test
 	void doesNotPutDeserializerIfTypeIsNull() {
-		try (MockedStatic<Media> media = mockStatic(Media.class)) {
-			Deserializer deserializer = mock(Deserializer.class);
-			assertThrows(IllegalArgumentException.class, () -> {
-				t.putDeserializer(null, deserializer);
-			});
-			media.verify(() -> Media.strip(any()), times(0));
-			assertThrows(IllegalArgumentException.class, () -> {
-				t.getDeserializer(null);
-			});
-		}
+		Deserializer deserializer = mock(Deserializer.class);
+		assertThrows(IllegalArgumentException.class, () -> {
+			t.putDeserializer(null, deserializer);
+		});
+		assertThrows(IllegalArgumentException.class, () -> {
+			t.getDeserializer(null);
+		});
 	}
 
 	@Test
@@ -614,7 +577,6 @@ class TransformerTest {
 			assertThrows(IllegalArgumentException.class, () -> {
 				t.putDeserializer(contentType, null);
 			});
-			media.verify(() -> Media.strip(contentType));
 			assertThrows(IllegalArgumentException.class, () -> {
 				t.getDeserializer(contentType);
 			});
@@ -633,9 +595,12 @@ class TransformerTest {
 
 	@Test
 	void doesNotPutGsonDeserializer() {
+		String contentType = "application/json";
+		Deserializer deserializer = t.getDeserializer(contentType);
 		assertThrows(IllegalArgumentException.class, () -> {
 			t.putDeserializer(null);
 		});
+		assertSame(deserializer, t.getDeserializer(contentType));
 	}
 
 	@Test
@@ -654,7 +619,6 @@ class TransformerTest {
 			String contentType = "text/plain";
 			media.when(() -> Media.strip(contentType)).thenReturn(contentType);
 			t.removeDeserializer(contentType);
-			media.verify(() -> Media.strip(contentType));
 			assertThrows(IllegalArgumentException.class, () -> {
 				t.getDeserializer(contentType);
 			});
@@ -669,7 +633,6 @@ class TransformerTest {
 			assertThrows(IllegalArgumentException.class, () -> {
 				t.removeDeserializer(contentType);
 			});
-			media.verify(() -> Media.strip(contentType));
 			assertDoesNotThrow(() -> {
 				t.getDeserializer(contentType);
 			});
@@ -678,11 +641,8 @@ class TransformerTest {
 
 	@Test
 	void doesNotRemoveDeserializerfTypeIsNull() {
-		try (MockedStatic<Media> media = mockStatic(Media.class)) {
-			assertThrows(IllegalArgumentException.class, () -> {
-				t.removeDeserializer(null);
-			});
-			media.verify(() -> Media.strip(any()), times(0));
-		}
+		assertThrows(IllegalArgumentException.class, () -> {
+			t.removeDeserializer(null);
+		});
 	}
 }

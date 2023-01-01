@@ -17,7 +17,7 @@ class RESTServerBuilderTest extends BuilderTest {
 	void setUp() {
 		mockConstructions();
 		b = new RESTServerBuilder();
-		getMocks();
+		getTransformer();
 		setBuilder(b);
 	}
 

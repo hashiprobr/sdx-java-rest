@@ -7,14 +7,12 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import org.junit.jupiter.api.Test;
 
 class ReflectionExceptionTest {
-	private static final String MESSAGE = "message";
-
 	private ReflectionException e;
 
 	@Test
 	void messageConstructor() {
-		e = new ReflectionException(MESSAGE);
-		assertEquals(MESSAGE, e.getMessage());
+		e = new ReflectionException("message");
+		assertEquals("message", e.getMessage());
 		assertNull(e.getCause());
 	}
 

@@ -7,8 +7,6 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import org.junit.jupiter.api.Test;
 
 class DeserializingExceptionTest {
-	private static final String MESSAGE = "message";
-
 	private DeserializingException e;
 
 	@Test
@@ -20,16 +18,16 @@ class DeserializingExceptionTest {
 
 	@Test
 	void messageConstructor() {
-		e = new DeserializingException(MESSAGE);
-		assertEquals(MESSAGE, e.getMessage());
+		e = new DeserializingException("message");
+		assertEquals("message", e.getMessage());
 		assertNull(e.getCause());
 	}
 
 	@Test
 	void messageAndCauseConstructor() {
 		Throwable cause = new Throwable();
-		e = new DeserializingException(MESSAGE, cause);
-		assertEquals(MESSAGE, e.getMessage());
+		e = new DeserializingException("message", cause);
+		assertEquals("message", e.getMessage());
 		assertSame(cause, e.getCause());
 	}
 
