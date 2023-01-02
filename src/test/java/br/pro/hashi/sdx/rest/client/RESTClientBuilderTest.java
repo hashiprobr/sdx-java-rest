@@ -29,14 +29,12 @@ import org.mockito.MockedConstruction;
 
 import br.pro.hashi.sdx.rest.base.BuilderTest;
 
-public class RESTClientBuilderTest extends BuilderTest {
-	private MockedConstruction<TypeCache> typeCacheConstruction;
+class RESTClientBuilderTest extends BuilderTest {
 	private RESTClientBuilder b;
 
 	@BeforeEach
 	void setUp() {
 		mockConstructions();
-		typeCacheConstruction = mockConstruction(TypeCache.class);
 		b = new RESTClientBuilder();
 		getTransformer();
 		setBuilder(b);
@@ -44,7 +42,6 @@ public class RESTClientBuilderTest extends BuilderTest {
 
 	@AfterEach
 	void tearDown() {
-		typeCacheConstruction.close();
 		closeConstructions();
 	}
 
@@ -234,7 +231,6 @@ public class RESTClientBuilderTest extends BuilderTest {
 		assertSame(b.getTransformer(), client.getTransformer());
 		assertSame(b.getURLCharset(), client.getURLCharset());
 		assertNull(client.getNone());
-		assertSame(b.getCache(), client.getCache());
 		HttpClient jettyClient = client.getJettyClient();
 		assertInstanceOf(HttpClientTransportDynamic.class, jettyClient.getTransport());
 		assertInstanceOf(HttpCookieStore.Empty.class, jettyClient.getCookieStore());
@@ -319,16 +315,16 @@ public class RESTClientBuilderTest extends BuilderTest {
 	@Test
 	void buildsWithHTTP1() {
 		RESTClient client = b.build1("http://a");
-		assertInstanceOf(HttpClientTransportOverHTTP.class, client.getJettyClient().getTransport());
+		HttpClient jettyClient = client.getJettyClient();
+		assertInstanceOf(HttpClientTransportOverHTTP.class, jettyClient.getTransport());
+		assertNull(jettyClient.getSslContextFactory());
 	}
 
 	@Test
 	void buildsWithHTTPS1() {
 		b.withTrustStore("path", "password");
 		RESTClient client = b.build1("http://a");
-		HttpClient jettyClient = client.getJettyClient();
-		assertInstanceOf(HttpClientTransportOverHTTP.class, jettyClient.getTransport());
-		SslContextFactory.Client factory = jettyClient.getSslContextFactory();
+		SslContextFactory.Client factory = client.getJettyClient().getSslContextFactory();
 		assertNotNull(factory);
 		assertSame(b.getFactory(), factory);
 	}
@@ -336,16 +332,16 @@ public class RESTClientBuilderTest extends BuilderTest {
 	@Test
 	void buildsWithHTTP2() {
 		RESTClient client = b.build2("http://a");
-		assertInstanceOf(HttpClientTransportOverHTTP2.class, client.getJettyClient().getTransport());
+		HttpClient jettyClient = client.getJettyClient();
+		assertNull(jettyClient.getSslContextFactory());
+		assertInstanceOf(HttpClientTransportOverHTTP2.class, jettyClient.getTransport());
 	}
 
 	@Test
 	void buildsWithHTTPS2() {
 		b.withTrustStore("path", "password");
 		RESTClient client = b.build2("http://a");
-		HttpClient jettyClient = client.getJettyClient();
-		assertInstanceOf(HttpClientTransportOverHTTP2.class, jettyClient.getTransport());
-		SslContextFactory.Client factory = jettyClient.getSslContextFactory();
+		SslContextFactory.Client factory = client.getJettyClient().getSslContextFactory();
 		assertNotNull(factory);
 		assertSame(b.getFactory(), factory);
 	}
@@ -390,7 +386,7 @@ public class RESTClientBuilderTest extends BuilderTest {
 	}
 
 	@Test
-	void doesNotBuildWithHTTPS3() {
+	void doesNotBuildWithHTTP3() {
 		assertThrows(IllegalArgumentException.class, () -> {
 			b.build3("http://a");
 		});

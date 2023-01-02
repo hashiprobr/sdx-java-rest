@@ -12,5 +12,5 @@ public interface Assembler {
 	 * @param body the object.
 	 * @return an {@link InputStream} representing the object.
 	 */
-	public InputStream assemble(Object body);
+	InputStream assemble(Object body);
 }

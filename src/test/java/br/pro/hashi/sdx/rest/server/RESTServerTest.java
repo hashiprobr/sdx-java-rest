@@ -12,14 +12,18 @@ class RESTServerTest {
 	private Transformer transformer;
 	private RESTServer s;
 
+	private RESTServer newRESTServer() {
+		return new RESTServer(transformer);
+	}
+
 	@BeforeEach
 	void setUp() {
 		transformer = mock(Transformer.class);
-		s = new RESTServer(transformer);
 	}
 
 	@Test
 	void stub() {
+		s = newRESTServer();
 		assertNotNull(s);
 	}
 }

@@ -17,5 +17,5 @@ public interface Disassembler {
 	 * @return the object.
 	 * @throws DisassemblingException if the representation cannot be transformed.
 	 */
-	public <T> T disassemble(InputStream stream, Class<T> type) throws DisassemblingException;
+	<T> T disassemble(InputStream stream, Class<T> type) throws DisassemblingException;
 }

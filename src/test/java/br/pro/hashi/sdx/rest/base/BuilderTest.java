@@ -21,7 +21,7 @@ import org.mockito.MockedStatic;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
-import br.pro.hashi.sdx.rest.converter.BaseConverter;
+import br.pro.hashi.sdx.rest.converter.base.BaseConverter;
 import br.pro.hashi.sdx.rest.transformer.Transformer;
 import br.pro.hashi.sdx.rest.transformer.base.Assembler;
 import br.pro.hashi.sdx.rest.transformer.base.Deserializer;

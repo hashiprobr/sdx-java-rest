@@ -23,7 +23,6 @@ import br.pro.hashi.sdx.rest.coding.Percent;
  * Configures and builds objects of type {@link RESTClient}.
  */
 public class RESTClientBuilder extends Builder<RESTClientBuilder> {
-	private final TypeCache cache;
 	private SslContextFactory.Client factory;
 
 	/**
@@ -31,7 +30,6 @@ public class RESTClientBuilder extends Builder<RESTClientBuilder> {
 	 */
 	public RESTClientBuilder() {
 		super(RESTClientBuilder.class);
-		this.cache = new TypeCache();
 		this.factory = null;
 	}
 
@@ -69,11 +67,7 @@ public class RESTClientBuilder extends Builder<RESTClientBuilder> {
 			client.getContentDecoderFactories().add(new GZIPContentDecoder.Factory());
 		}
 		client.setFollowRedirects(redirection);
-		return new RESTClient(transformer, cache, client, urlCharset, none, urlPrefix);
-	}
-
-	TypeCache getCache() {
-		return cache;
+		return new RESTClient(transformer, client, urlCharset, none, urlPrefix);
 	}
 
 	SslContextFactory.Client getFactory() {
@@ -153,16 +147,16 @@ public class RESTClientBuilder extends Builder<RESTClientBuilder> {
 	 */
 	public RESTClient build1(String urlPrefix) {
 		urlPrefix = encode(urlPrefix);
-		HttpClient client;
+		HttpClient client1;
 		if (factory == null) {
-			client = new HttpClient();
+			client1 = new HttpClient();
 		} else {
 			ClientConnector connector = new ClientConnector();
 			connector.setSslContextFactory(factory);
 			HttpClientTransport transport = new HttpClientTransportOverHTTP(connector);
-			client = new HttpClient(transport);
+			client1 = new HttpClient(transport);
 		}
-		return build(client, urlPrefix);
+		return build(client1, urlPrefix);
 	}
 
 	/**

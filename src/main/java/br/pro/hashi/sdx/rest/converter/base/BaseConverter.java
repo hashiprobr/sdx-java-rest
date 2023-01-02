@@ -1,4 +1,4 @@
-package br.pro.hashi.sdx.rest.converter;
+package br.pro.hashi.sdx.rest.converter.base;
 
 import java.lang.reflect.Type;
 
@@ -13,20 +13,9 @@ import com.google.gson.JsonSerializer;
 import br.pro.hashi.sdx.rest.base.Reflection;
 
 /**
- * Converts an object of an arbitrary type {@code T} to an object of a
- * JSON-supported type {@code J} and vice-versa.
- * 
- * @param <J> the JSON-supported type.
- * @param <T> the arbitrary type.
  * @hidden
  */
 public abstract class BaseConverter<J, T> {
-	/**
-	 * Constructs a new base converter.
-	 */
-	BaseConverter() {
-	}
-
 	private JsonElement wrap(J value, JsonSerializationContext context) {
 		if (value == null) {
 			return JsonNull.INSTANCE;
@@ -34,23 +23,17 @@ public abstract class BaseConverter<J, T> {
 		return wrapNonNull(value, context);
 	}
 
-	abstract JsonElement wrapNonNull(J value, JsonSerializationContext context);
+	protected abstract JsonElement wrapNonNull(J value, JsonSerializationContext context);
 
-	abstract J unwrapNonNull(JsonElement value, JsonDeserializationContext context);
+	protected abstract J unwrapNonNull(JsonElement value, JsonDeserializationContext context);
 
 	/**
-	 * Converts an object of type {@code T} to an object of type {@code J}.
-	 * 
-	 * @param value the original object.
-	 * @return the converted object.
+	 * @hidden
 	 */
 	public abstract J serialize(T value);
 
 	/**
-	 * Converts an object of type {@code J} to an object of type {@code T}.
-	 * 
-	 * @param value the original object.
-	 * @return the converted object.
+	 * @hidden
 	 */
 	public abstract T deserialize(J value);
 

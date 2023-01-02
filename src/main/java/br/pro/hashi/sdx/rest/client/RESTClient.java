@@ -11,15 +11,13 @@ import br.pro.hashi.sdx.rest.transformer.Transformer;
  */
 public class RESTClient {
 	private final Transformer transformer;
-	private final TypeCache cache;
 	private final HttpClient jettyClient;
 	private final Charset urlCharset;
 	private final String none;
 	private final String urlPrefix;
 
-	RESTClient(Transformer transformer, TypeCache cache, HttpClient jettyClient, Charset urlCharset, String none, String urlPrefix) {
+	RESTClient(Transformer transformer, HttpClient jettyClient, Charset urlCharset, String none, String urlPrefix) {
 		this.transformer = transformer;
-		this.cache = cache;
 		this.jettyClient = jettyClient;
 		this.urlCharset = urlCharset;
 		this.none = none;
@@ -28,10 +26,6 @@ public class RESTClient {
 
 	Transformer getTransformer() {
 		return transformer;
-	}
-
-	TypeCache getCache() {
-		return cache;
 	}
 
 	Charset getURLCharset() {

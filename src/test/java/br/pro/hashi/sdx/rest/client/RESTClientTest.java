@@ -12,18 +12,16 @@ import br.pro.hashi.sdx.rest.transformer.Transformer;
 
 class RESTClientTest {
 	private Transformer transformer;
-	private TypeCache cache;
 	private HttpClient jettyClient;
 	private RESTClient c;
 
 	private RESTClient newRESTClient(String none) {
-		return new RESTClient(transformer, cache, jettyClient, Coding.CHARSET, none, "http://a");
+		return new RESTClient(transformer, jettyClient, Coding.CHARSET, none, "http://a");
 	}
 
 	@BeforeEach
 	void setUp() {
 		transformer = mock(Transformer.class);
-		cache = mock(TypeCache.class);
 		jettyClient = mock(HttpClient.class);
 	}
 

@@ -16,5 +16,5 @@ public interface Deserializer {
 	 * @return the object.
 	 * @throws DeserializingException if the representation cannot be transformed.
 	 */
-	public <T> T deserialize(String content, Class<T> type) throws DeserializingException;
+	<T> T deserialize(String content, Class<T> type) throws DeserializingException;
 }

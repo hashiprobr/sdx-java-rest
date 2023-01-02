@@ -16,14 +16,18 @@ import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonSerializationContext;
 
 import br.pro.hashi.sdx.rest.base.Reflection;
+import br.pro.hashi.sdx.rest.converter.base.BaseConverter;
 
 /**
  * Provides convenience nested classes for extending type support in Gson.
  */
 public final class Converter {
 	private static abstract class ToNumber<J extends Number, T> extends BaseConverter<J, T> {
+		/**
+		 * @hidden
+		 */
 		@Override
-		JsonElement wrapNonNull(J value, JsonSerializationContext context) {
+		protected final JsonElement wrapNonNull(J value, JsonSerializationContext context) {
 			return new JsonPrimitive(value);
 		}
 	}
@@ -40,13 +44,19 @@ public final class Converter {
 		protected ToBoolean() {
 		}
 
+		/**
+		 * @hidden
+		 */
 		@Override
-		JsonElement wrapNonNull(Boolean value, JsonSerializationContext context) {
+		protected final JsonElement wrapNonNull(Boolean value, JsonSerializationContext context) {
 			return new JsonPrimitive(value);
 		}
 
+		/**
+		 * @hidden
+		 */
 		@Override
-		Boolean unwrapNonNull(JsonElement value, JsonDeserializationContext context) {
+		protected final Boolean unwrapNonNull(JsonElement value, JsonDeserializationContext context) {
 			return value.getAsBoolean();
 		}
 
@@ -81,8 +91,11 @@ public final class Converter {
 		protected ToByte() {
 		}
 
+		/**
+		 * @hidden
+		 */
 		@Override
-		Byte unwrapNonNull(JsonElement value, JsonDeserializationContext context) {
+		protected final Byte unwrapNonNull(JsonElement value, JsonDeserializationContext context) {
 			return value.getAsByte();
 		}
 
@@ -117,8 +130,11 @@ public final class Converter {
 		protected ToShort() {
 		}
 
+		/**
+		 * @hidden
+		 */
 		@Override
-		Short unwrapNonNull(JsonElement value, JsonDeserializationContext context) {
+		protected final Short unwrapNonNull(JsonElement value, JsonDeserializationContext context) {
 			return value.getAsShort();
 		}
 
@@ -153,8 +169,11 @@ public final class Converter {
 		protected ToInteger() {
 		}
 
+		/**
+		 * @hidden
+		 */
 		@Override
-		Integer unwrapNonNull(JsonElement value, JsonDeserializationContext context) {
+		protected final Integer unwrapNonNull(JsonElement value, JsonDeserializationContext context) {
 			return value.getAsInt();
 		}
 
@@ -189,8 +208,11 @@ public final class Converter {
 		protected ToLong() {
 		}
 
+		/**
+		 * @hidden
+		 */
 		@Override
-		Long unwrapNonNull(JsonElement value, JsonDeserializationContext context) {
+		protected final Long unwrapNonNull(JsonElement value, JsonDeserializationContext context) {
 			return value.getAsLong();
 		}
 
@@ -225,8 +247,11 @@ public final class Converter {
 		protected ToFloat() {
 		}
 
+		/**
+		 * @hidden
+		 */
 		@Override
-		Float unwrapNonNull(JsonElement value, JsonDeserializationContext context) {
+		protected final Float unwrapNonNull(JsonElement value, JsonDeserializationContext context) {
 			return value.getAsFloat();
 		}
 
@@ -261,8 +286,11 @@ public final class Converter {
 		protected ToDouble() {
 		}
 
+		/**
+		 * @hidden
+		 */
 		@Override
-		Double unwrapNonNull(JsonElement value, JsonDeserializationContext context) {
+		protected final Double unwrapNonNull(JsonElement value, JsonDeserializationContext context) {
 			return value.getAsDouble();
 		}
 
@@ -297,8 +325,11 @@ public final class Converter {
 		protected ToBigInteger() {
 		}
 
+		/**
+		 * @hidden
+		 */
 		@Override
-		BigInteger unwrapNonNull(JsonElement value, JsonDeserializationContext context) {
+		protected final BigInteger unwrapNonNull(JsonElement value, JsonDeserializationContext context) {
 			return value.getAsBigInteger();
 		}
 
@@ -333,8 +364,11 @@ public final class Converter {
 		protected ToBigDecimal() {
 		}
 
+		/**
+		 * @hidden
+		 */
 		@Override
-		BigDecimal unwrapNonNull(JsonElement value, JsonDeserializationContext context) {
+		protected final BigDecimal unwrapNonNull(JsonElement value, JsonDeserializationContext context) {
 			return value.getAsBigDecimal();
 		}
 
@@ -369,13 +403,19 @@ public final class Converter {
 		protected ToString() {
 		}
 
+		/**
+		 * @hidden
+		 */
 		@Override
-		JsonElement wrapNonNull(String value, JsonSerializationContext context) {
+		protected final JsonElement wrapNonNull(String value, JsonSerializationContext context) {
 			return new JsonPrimitive(value);
 		}
 
+		/**
+		 * @hidden
+		 */
 		@Override
-		String unwrapNonNull(JsonElement value, JsonDeserializationContext context) {
+		protected final String unwrapNonNull(JsonElement value, JsonDeserializationContext context) {
 			return value.getAsString();
 		}
 
@@ -414,8 +454,11 @@ public final class Converter {
 			this.type = Reflection.getSpecificType(ToListOf.class, this, 0);
 		}
 
+		/**
+		 * @hidden
+		 */
 		@Override
-		JsonElement wrapNonNull(List<E> value, JsonSerializationContext context) {
+		protected final JsonElement wrapNonNull(List<E> value, JsonSerializationContext context) {
 			JsonArray array = new JsonArray();
 			for (E element : value) {
 				array.add(context.serialize(element));
@@ -423,8 +466,11 @@ public final class Converter {
 			return array;
 		}
 
+		/**
+		 * @hidden
+		 */
 		@Override
-		List<E> unwrapNonNull(JsonElement value, JsonDeserializationContext context) {
+		protected final List<E> unwrapNonNull(JsonElement value, JsonDeserializationContext context) {
 			List<E> list = new ArrayList<>();
 			for (JsonElement element : value.getAsJsonArray()) {
 				list.add(context.deserialize(element, type));
@@ -468,8 +514,11 @@ public final class Converter {
 			this.type = Reflection.getSpecificType(ToMapOf.class, this, 0);
 		}
 
+		/**
+		 * @hidden
+		 */
 		@Override
-		JsonElement wrapNonNull(Map<String, V> value, JsonSerializationContext context) {
+		protected final JsonElement wrapNonNull(Map<String, V> value, JsonSerializationContext context) {
 			JsonObject object = new JsonObject();
 			for (String key : value.keySet()) {
 				object.add(key, context.serialize(value.get(key)));
@@ -477,8 +526,11 @@ public final class Converter {
 			return object;
 		}
 
+		/**
+		 * @hidden
+		 */
 		@Override
-		Map<String, V> unwrapNonNull(JsonElement value, JsonDeserializationContext context) {
+		protected final Map<String, V> unwrapNonNull(JsonElement value, JsonDeserializationContext context) {
 			Map<String, V> map = new LinkedHashMap<>();
 			JsonObject object = value.getAsJsonObject();
 			for (String key : object.keySet()) {

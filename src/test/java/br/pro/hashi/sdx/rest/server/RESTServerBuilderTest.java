@@ -1,12 +1,10 @@
 package br.pro.hashi.sdx.rest.server;
 
 import static org.junit.jupiter.api.Assertions.assertSame;
-import static org.mockito.Mockito.mockConstruction;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.MockedConstruction;
 
 import br.pro.hashi.sdx.rest.base.BuilderTest;
 
@@ -158,9 +156,7 @@ class RESTServerBuilderTest extends BuilderTest {
 
 	@Test
 	void builds() {
-		try (MockedConstruction<RESTServer> construction = mockConstruction(RESTServer.class)) {
-			RESTServer server = b.build();
-			assertSame(server, construction.constructed().get(0));
-		}
+		RESTServer server = b.build();
+		assertSame(b.getTransformer(), server.getTransformer());
 	}
 }

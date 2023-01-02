@@ -10,5 +10,5 @@ public interface Serializer {
 	 * @param body the object.
 	 * @return a {@link String} representing the object.
 	 */
-	public String serialize(Object body);
+	String serialize(Object body);
 }

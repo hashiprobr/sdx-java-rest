@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
+import br.pro.hashi.sdx.rest.converter.base.BaseConverter;
 import br.pro.hashi.sdx.rest.converter.mock.ConverterToBigDecimal;
 import br.pro.hashi.sdx.rest.converter.mock.ConverterToBigInteger;
 import br.pro.hashi.sdx.rest.converter.mock.ConverterToBoolean;
