@@ -12,9 +12,9 @@ module br.pro.hashi.sdx.rest {
 	requires org.slf4j;
 	requires org.reflections;
 
-	exports br.pro.hashi.sdx.rest.converter;
-	exports br.pro.hashi.sdx.rest.transformer.base;
-	exports br.pro.hashi.sdx.rest.transformer.exception;
 	exports br.pro.hashi.sdx.rest.client;
 	exports br.pro.hashi.sdx.rest.server;
+	exports br.pro.hashi.sdx.rest.transformer.base;
+	exports br.pro.hashi.sdx.rest.transformer.exception;
+	exports br.pro.hashi.sdx.rest.converter;
 }
