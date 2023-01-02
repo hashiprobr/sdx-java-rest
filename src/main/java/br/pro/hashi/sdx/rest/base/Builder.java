@@ -214,7 +214,7 @@ public abstract class Builder<T extends Builder<T>> {
 	/**
 	 * <p>
 	 * Convenience method that associates the content type {@code application/json}
-	 * to a serializer based on {@code Gson}.
+	 * to a serializer based on a {@code Gson}.
 	 * </p>
 	 * 
 	 * @param gson the {@code Gson}.
@@ -280,7 +280,7 @@ public abstract class Builder<T extends Builder<T>> {
 	/**
 	 * <p>
 	 * Convenience method that associates the content type {@code application/json}
-	 * to a deserializer based on {@code Gson}.
+	 * to a deserializer based on a {@code Gson}.
 	 * </p>
 	 * 
 	 * @param gson the {@code Gson}.

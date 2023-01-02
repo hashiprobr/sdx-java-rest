@@ -19,7 +19,7 @@ class GsonDeserializer implements Deserializer {
 		try {
 			body = gson.fromJson(content, type);
 		} catch (JsonSyntaxException exception) {
-			throw new DeserializingException(exception.getCause());
+			throw new DeserializingException(exception);
 		}
 		return body;
 	}
