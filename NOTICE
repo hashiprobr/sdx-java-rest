@@ -1,4 +1,4 @@
-Notices for SDX-REST
+Notices for sdx-rest
 ====================
 
 
@@ -30,7 +30,6 @@ The following dependencies are EPL2 and ASL2.
 
 The following dependencies are ASL2.
 
- * com.google.gson
  * org.reflections
 
 The following dependencies are MIT.
