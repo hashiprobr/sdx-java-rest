@@ -29,7 +29,7 @@ class OctetAssemblerTest {
 		byte[] body = newByteArray();
 		InputStream stream = a.toStream(body);
 		byte[] bytes = new byte[4];
-		stream.read(bytes, 0, 4);
+		stream.readNBytes(bytes, 0, 4);
 		assertEquals(-1, stream.read());
 		assertArrayEquals(body, bytes);
 	}

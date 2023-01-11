@@ -7,7 +7,7 @@ import br.pro.hashi.sdx.rest.transform.Serializer;
 
 class PlainSerializer implements Serializer {
 	@Override
-	public Reader toReader(Object body) {
+	public <T> Reader toReader(T body, Class<T> type) {
 		if (body instanceof String) {
 			return new StringReader((String) body);
 		}

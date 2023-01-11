@@ -12,20 +12,11 @@ import br.pro.hashi.sdx.rest.transform.Serializer;
  */
 public interface SimpleSerializer extends Serializer {
 	/**
-	 * Transforms an arbitrary object into a {@code String} representation.
-	 * 
-	 * @param body the object
-	 * @return the representation
-	 * @throws IllegalArgumentException if the type of the object is not supported
-	 */
-	String toString(Object body);
-
-	/**
 	 * <p>
 	 * {@inheritDoc}
 	 * </p>
 	 * <p>
-	 * The default implementation simply calls {@link #toString(Object)} and
+	 * The default implementation simply calls {@code toString(T, Class<T>)} and
 	 * instantiates a new {@link StringReader} from the {@code String}
 	 * representation. Classes are encouraged to provide a more efficient
 	 * implementation.
@@ -35,7 +26,39 @@ public interface SimpleSerializer extends Serializer {
 	 * @throws IOException              {@inheritDoc}
 	 */
 	@Override
-	default Reader toReader(Object body) throws IOException {
-		return new StringReader(toString(body));
+	default <T> Reader toReader(T body, Class<T> type) throws IOException {
+		return new StringReader(toString(body, type));
 	}
+
+	/**
+	 * <p>
+	 * Transforms an arbitrary object into a {@code String} representation.
+	 * </p>
+	 * <p>
+	 * The default implementation simply calls {@code toString(T, Class<T>)},
+	 * passing {@code body.getClass()} as the second parameter. <strong>Do not use
+	 * this implementation if {@code T} is a generic type.</strong> Either call
+	 * {@code toString(T, Class<T>)} or provide an alternative implementation.
+	 * </p>
+	 * 
+	 * @param <T>  the type of the object
+	 * @param body the object
+	 * @return the representation
+	 * @throws IllegalArgumentException if the type of the object is not supported
+	 */
+	@SuppressWarnings("unchecked")
+	default <T> String toString(T body) {
+		return toString(body, (Class<T>) body.getClass());
+	}
+
+	/**
+	 * Transforms a typed object into a {@code String} representation.
+	 * 
+	 * @param <T>  the type of the object
+	 * @param body the object
+	 * @param type an object representing {@code T}
+	 * @return the representation
+	 * @throws IllegalArgumentException if the type of the object is not supported
+	 */
+	<T> String toString(T body, Class<T> type);
 }

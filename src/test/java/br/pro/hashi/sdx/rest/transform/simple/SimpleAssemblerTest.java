@@ -1,5 +1,6 @@
 package br.pro.hashi.sdx.rest.transform.simple;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.IOException;
@@ -9,33 +10,38 @@ import java.nio.charset.StandardCharsets;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import br.pro.hashi.sdx.rest.transform.Assembler;
-
 class SimpleAssemblerTest {
-	private Assembler a;
+	private SimpleAssembler a;
+	private Object body;
 
 	@BeforeEach
 	void setUp() {
 		a = new SimpleAssembler() {
 			@Override
-			public byte[] toBytes(Object body) {
+			public <T> byte[] toBytes(T body, Class<T> type) {
 				return body.toString().getBytes(StandardCharsets.US_ASCII);
+			}
+		};
+		body = new Object() {
+			@Override
+			public String toString() {
+				return "body";
 			}
 		};
 	}
 
 	@Test
 	void toStreamCallsToBytes() throws IOException {
-		Object body = new Object() {
-			@Override
-			public String toString() {
-				return "body";
-			}
-		};
 		InputStream stream = a.toStream(body);
 		byte[] bytes = new byte[4];
-		stream.read(bytes, 0, 4);
+		stream.readNBytes(bytes, 0, 4);
 		assertEquals(-1, stream.read());
 		assertEquals("body", new String(bytes, StandardCharsets.US_ASCII));
+	}
+
+	@Test
+	void toBytesCallsToBytes() throws IOException {
+		byte[] bytes = a.toBytes(body);
+		assertArrayEquals(new byte[] { 98, 111, 100, 121 }, bytes);
 	}
 }
