@@ -1,5 +1,6 @@
 package br.pro.hashi.sdx.rest.transform;
 
+import java.io.IOException;
 import java.io.Reader;
 
 /**
@@ -12,6 +13,8 @@ public interface Serializer {
 	 * @param body the object
 	 * @return the representation
 	 * @throws IllegalArgumentException if the type of the object is not supported
+	 * @throws IOException              if it is not possible to write to the
+	 *                                  representation
 	 */
-	Reader toReader(Object body);
+	Reader toReader(Object body) throws IOException;
 }

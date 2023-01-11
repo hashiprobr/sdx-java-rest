@@ -1,6 +1,7 @@
 package br.pro.hashi.sdx.rest.transform.simple;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 
 import br.pro.hashi.sdx.rest.transform.Assembler;
@@ -31,9 +32,10 @@ public interface SimpleAssembler extends Assembler {
 	 * </p>
 	 * 
 	 * @throws IllegalArgumentException {@inheritDoc}
+	 * @throws IOException              {@inheritDoc}
 	 */
 	@Override
-	default InputStream toStream(Object body) {
+	default InputStream toStream(Object body) throws IOException {
 		return new ByteArrayInputStream(toBytes(body));
 	}
 }

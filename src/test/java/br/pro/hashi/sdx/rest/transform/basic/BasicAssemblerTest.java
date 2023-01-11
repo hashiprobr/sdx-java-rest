@@ -1,6 +1,7 @@
 package br.pro.hashi.sdx.rest.transform.basic;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -36,7 +37,10 @@ class BasicAssemblerTest {
 	@Test
 	void returnsSameIfBodyIsInputStream() {
 		InputStream body = new ByteArrayInputStream(newByteArray());
-		assertSame(body, a.toStream(body));
+		InputStream stream = assertDoesNotThrow(() -> {
+			return a.toStream(body);
+		});
+		assertSame(body, stream);
 	}
 
 	@Test

@@ -1,5 +1,6 @@
 package br.pro.hashi.sdx.rest.transform.basic;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -34,7 +35,10 @@ class BasicSerializerTest {
 	@Test
 	void returnsSameIfBodyIsReader() {
 		Reader body = new StringReader(newString());
-		assertSame(body, s.toReader(body));
+		Reader reader = assertDoesNotThrow(() -> {
+			return s.toReader(body);
+		});
+		assertSame(body, reader);
 	}
 
 	@Test

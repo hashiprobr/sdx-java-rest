@@ -18,7 +18,7 @@ public interface Disassembler {
 	 * @param type   an object representing {@code T}
 	 * @return the object
 	 * @throws IllegalArgumentException if the type of the object is not supported
-	 * @throws IOException              if it is not possible to read the
+	 * @throws IOException              if it is not possible to read from the
 	 *                                  representation
 	 * @throws DisassemblingException   if it is not possible to transform the
 	 *                                  representation
