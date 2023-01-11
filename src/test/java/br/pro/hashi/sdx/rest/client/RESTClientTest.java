@@ -7,11 +7,11 @@ import org.eclipse.jetty.client.HttpClient;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import br.pro.hashi.sdx.rest.Facade;
 import br.pro.hashi.sdx.rest.coding.Coding;
-import br.pro.hashi.sdx.rest.transformer.Transformer;
 
 class RESTClientTest {
-	private Transformer transformer;
+	private Facade transformer;
 	private HttpClient jettyClient;
 	private RESTClient c;
 
@@ -21,13 +21,14 @@ class RESTClientTest {
 
 	@BeforeEach
 	void setUp() {
-		transformer = mock(Transformer.class);
+		transformer = mock(Facade.class);
 		jettyClient = mock(HttpClient.class);
 	}
 
 	@Test
 	void stub() {
 		c = newRESTClient(null);
-		assertNotNull(c);
+		assertNotNull(c.getFacade());
+		assertNotNull(c.getURLCharset());
 	}
 }

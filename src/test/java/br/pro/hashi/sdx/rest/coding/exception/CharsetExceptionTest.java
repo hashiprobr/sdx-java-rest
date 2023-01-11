@@ -9,7 +9,7 @@ class CharsetExceptionTest {
 	private CharsetException e;
 
 	@Test
-	void messageConstructor() {
+	void constructsWithMessage() {
 		e = new CharsetException("message");
 		assertEquals("message", e.getMessage());
 		assertNull(e.getCause());

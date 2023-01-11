@@ -22,162 +22,24 @@ import org.eclipse.jetty.http2.client.http.HttpClientTransportOverHTTP2;
 import org.eclipse.jetty.http3.client.http.HttpClientTransportOverHTTP3;
 import org.eclipse.jetty.util.HttpCookieStore;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedConstruction;
 
-import br.pro.hashi.sdx.rest.base.BuilderTest;
+import br.pro.hashi.sdx.rest.Builder;
+import br.pro.hashi.sdx.rest.BuilderTest;
 
 class RESTClientBuilderTest extends BuilderTest {
 	private RESTClientBuilder b;
 
-	@BeforeEach
-	void setUp() {
-		mockConstructions();
+	@Override
+	protected Builder<?> build() {
 		b = new RESTClientBuilder();
-		getTransformer();
-		setBuilder(b);
-	}
-
-	@AfterEach
-	void tearDown() {
-		closeConstructions();
-	}
-
-	@Test
-	void initializesWithURLCharsetUTF8() {
-		testInitializesWithURLCharsetUTF8();
-	}
-
-	@Test
-	void initializesWithoutNullBody() {
-		testInitializesWithoutNullBody();
-	}
-
-	@Test
-	void initializesWithoutRedirection() {
-		testInitializesWithoutRedirection();
-	}
-
-	@Test
-	void initializesWithCompression() {
-		testInitializesWithCompression();
+		return b;
 	}
 
 	@Test
 	void initializesWithoutFactory() {
 		assertNull(b.getFactory());
-	}
-
-	@Test
-	void addsBinary() {
-		testAddsBinary();
-	}
-
-	@Test
-	void putsAssembler() {
-		testPutsAssembler();
-	}
-
-	@Test
-	void removesAssembler() {
-		testRemovesAssembler();
-	}
-
-	@Test
-	void putsDisassembler() {
-		testPutsDisassembler();
-	}
-
-	@Test
-	void removesDisassembler() {
-		testRemovesDisassembler();
-	}
-
-	@Test
-	void putsSerializer() {
-		testPutsSerializer();
-	}
-
-	@Test
-	void putsGsonSerializer() {
-		testPutsGsonSerializer();
-	}
-
-	@Test
-	void putsUncheckedSerializer() {
-		testPutsUncheckedSerializer();
-	}
-
-	@Test
-	void doesNotPutUncheckedSerializerIfNull() {
-		testDoesNotPutUncheckedSerializerIfNull();
-	}
-
-	@Test
-	void doesNotPutUncheckedSerializerIfBlank() {
-		testDoesNotPutUncheckedSerializerIfBlank();
-	}
-
-	@Test
-	void removesSerializer() {
-		testRemovesSerializer();
-	}
-
-	@Test
-	void putsDeserializer() {
-		testPutsDeserializer();
-	}
-
-	@Test
-	void putsGsonDeserializer() {
-		testPutsGsonDeserializer();
-	}
-
-	@Test
-	void putsSafeDeserializer() {
-		testPutsSafeDeserializer();
-	}
-
-	@Test
-	void doesNotPutSafeDeserializerIfNull() {
-		testDoesNotPutSafeDeserializerIfNull();
-	}
-
-	@Test
-	void doesNotPutSafeDeserializerIfBlank() {
-		testDoesNotPutSafeDeserializerIfBlank();
-	}
-
-	@Test
-	void removesDeserializer() {
-		testRemovesDeserializer();
-	}
-
-	@Test
-	void setsURLCharset() {
-		testSetsURLCharset();
-	}
-
-	@Test
-	void doesNotSetURLCharset() {
-		testDoesNotSetURLCharset();
-	}
-
-	@Test
-	void setsNullBody() {
-		testSetsNullBody();
-	}
-
-	@Test
-	void setsRedirection() {
-		testSetsRedirection();
-	}
-
-	@Test
-	void setsCompression() {
-		testSetsCompression();
 	}
 
 	@Test
@@ -228,8 +90,6 @@ class RESTClientBuilderTest extends BuilderTest {
 	@Test
 	void builds() {
 		RESTClient client = b.build("http://a");
-		assertSame(b.getTransformer(), client.getTransformer());
-		assertSame(b.getURLCharset(), client.getURLCharset());
 		assertNull(client.getNone());
 		HttpClient jettyClient = client.getJettyClient();
 		assertInstanceOf(HttpClientTransportDynamic.class, jettyClient.getTransport());

@@ -6,10 +6,10 @@ import static org.mockito.Mockito.mock;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import br.pro.hashi.sdx.rest.transformer.Transformer;
+import br.pro.hashi.sdx.rest.Facade;
 
 class RESTServerTest {
-	private Transformer transformer;
+	private Facade transformer;
 	private RESTServer s;
 
 	private RESTServer newRESTServer() {
@@ -18,12 +18,12 @@ class RESTServerTest {
 
 	@BeforeEach
 	void setUp() {
-		transformer = mock(Transformer.class);
+		transformer = mock(Facade.class);
 	}
 
 	@Test
 	void stub() {
 		s = newRESTServer();
-		assertNotNull(s);
+		assertNotNull(s.getFacade());
 	}
 }

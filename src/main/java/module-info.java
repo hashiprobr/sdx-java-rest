@@ -3,7 +3,6 @@
  */
 module br.pro.hashi.sdx.rest {
 	requires transitive org.eclipse.jetty.client;
-	requires transitive com.google.gson;
 
 	requires org.eclipse.jetty.http2.client;
 	requires org.eclipse.jetty.http2.http.client.transport;
@@ -14,7 +13,8 @@ module br.pro.hashi.sdx.rest {
 
 	exports br.pro.hashi.sdx.rest.client;
 	exports br.pro.hashi.sdx.rest.server;
-	exports br.pro.hashi.sdx.rest.transformer.base;
-	exports br.pro.hashi.sdx.rest.transformer.exception;
-	exports br.pro.hashi.sdx.rest.converter;
+	exports br.pro.hashi.sdx.rest.transform;
+	exports br.pro.hashi.sdx.rest.transform.exception;
+	exports br.pro.hashi.sdx.rest.transform.extension;
+	exports br.pro.hashi.sdx.rest.transform.simple;
 }

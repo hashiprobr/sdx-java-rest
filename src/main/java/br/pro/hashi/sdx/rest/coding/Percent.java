@@ -4,30 +4,33 @@ import java.net.URLDecoder;
 import java.nio.charset.Charset;
 
 public final class Percent {
-	public static String strip(String uri) {
-		int index = uri.length() - 1;
-		while (index > 0 && uri.charAt(index) == '/') {
-			index--;
+	public static String stripEndingSlashes(String uri) {
+		int last = uri.length() - 1;
+		while (last > 0 && uri.charAt(last) == '/') {
+			last--;
 		}
-		index++;
-		if (index < uri.length()) {
-			uri = uri.substring(0, index);
+		int length = last + 1;
+		if (length < uri.length()) {
+			uri = uri.substring(0, length);
 		}
 		return uri;
 	}
 
-	public static String[] encode(String uri, Charset charset) {
+	public static String[] splitAndEncode(String uri, Charset charset) {
 		String[] items = uri.split("/", -1);
 		for (int i = 0; i < items.length; i++) {
-			items[i] = Query.encode(items[i].replace("+", "%2B"), charset).replace("+", "%20");
+			String item = items[i].replace("+", "%2B");
+			item = Query.encode(item, charset);
+			items[i] = item.replace("+", "%20");
 		}
 		return items;
 	}
 
-	public static String[] decode(String uri, Charset charset) {
+	public static String[] splitAndDecode(String uri, Charset charset) {
 		String[] items = uri.split("/", -1);
 		for (int i = 0; i < items.length; i++) {
-			items[i] = URLDecoder.decode(items[i].replace("+", "%2B"), charset);
+			String item = items[i].replace("+", "%2B");
+			items[i] = URLDecoder.decode(item, charset);
 		}
 		return items;
 	}

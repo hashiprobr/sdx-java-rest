@@ -16,7 +16,7 @@ import org.eclipse.jetty.io.ClientConnector;
 import org.eclipse.jetty.util.HttpCookieStore;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 
-import br.pro.hashi.sdx.rest.base.Builder;
+import br.pro.hashi.sdx.rest.Builder;
 import br.pro.hashi.sdx.rest.coding.Percent;
 
 /**
@@ -29,7 +29,6 @@ public class RESTClientBuilder extends Builder<RESTClientBuilder> {
 	 * Constructs a new builder.
 	 */
 	public RESTClientBuilder() {
-		super(RESTClientBuilder.class);
 		this.factory = null;
 	}
 
@@ -49,13 +48,13 @@ public class RESTClientBuilder extends Builder<RESTClientBuilder> {
 		if (path.isEmpty()) {
 			throw new IllegalArgumentException("URL prefix path cannot be blank");
 		}
-		path = Percent.strip(path);
+		path = Percent.stripEndingSlashes(path);
 		int index = path.indexOf("/");
 		if (index != -1) {
 			if (index == 0) {
 				throw new IllegalArgumentException("URL prefix authority cannot be empty");
 			}
-			String[] items = Percent.encode(path.substring(index + 1), urlCharset);
+			String[] items = Percent.splitAndEncode(path.substring(index + 1), urlCharset);
 			path = "%s/%s".formatted(path.substring(0, index), String.join("/", items));
 		}
 		return "%s%s".formatted(schema, path);
@@ -67,7 +66,7 @@ public class RESTClientBuilder extends Builder<RESTClientBuilder> {
 			client.getContentDecoderFactories().add(new GZIPContentDecoder.Factory());
 		}
 		client.setFollowRedirects(redirection);
-		return new RESTClient(transformer, client, urlCharset, none, urlPrefix);
+		return new RESTClient(facade, client, urlCharset, none, urlPrefix);
 	}
 
 	SslContextFactory.Client getFactory() {

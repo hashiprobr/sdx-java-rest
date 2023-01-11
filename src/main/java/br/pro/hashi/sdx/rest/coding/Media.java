@@ -1,9 +1,9 @@
 package br.pro.hashi.sdx.rest.coding;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.Reader;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.nio.charset.IllegalCharsetNameException;
@@ -17,8 +17,8 @@ import br.pro.hashi.sdx.rest.coding.exception.CharsetException;
 public final class Media {
 	private static final Base64.Encoder BASE64_ENCODER = Base64.getEncoder();
 	private static final Base64.Decoder BASE64_DECODER = Base64.getDecoder();
-	private static final Pattern BASE64_PATTERN = Pattern.compile("(?:[^;]*;)*\\s*base64\\s*(?:;[^;]*)*", Pattern.CASE_INSENSITIVE);
-	private static final Pattern CHARSET_PATTERN = Pattern.compile("(?:[^;]*;)*\\s*charset\\s*=\\s*([^\\s;]+)\\s*(?:;[^;]*)*", Pattern.CASE_INSENSITIVE);
+	private static final Pattern BASE64_PATTERN = Pattern.compile("(?:[^;]*;)+\\s*base64\\s*(?:;[^;]*)*", Pattern.CASE_INSENSITIVE);
+	private static final Pattern CHARSET_PATTERN = Pattern.compile("(?:[^;]*;)+\\s*charset\\s*=\\s*([^\\s;]+)\\s*(?:;[^;]*)*", Pattern.CASE_INSENSITIVE);
 
 	public static String strip(String contentType) {
 		int index = contentType.indexOf(';');
@@ -32,7 +32,18 @@ public final class Media {
 		return contentType;
 	}
 
-	public static String read(InputStream stream, String contentType) throws CharsetException, IOException {
+	public static String read(Reader reader) throws IOException {
+		StringBuilder builder = new StringBuilder();
+		int length;
+		char[] buffer = new char[8192];
+		while ((length = reader.read(buffer, 0, buffer.length)) != -1) {
+			builder.append(buffer, 0, length);
+		}
+		reader.close();
+		return builder.toString();
+	}
+
+	public static Reader reader(InputStream stream, String contentType) throws CharsetException {
 		Charset charset;
 		if (contentType == null) {
 			charset = Coding.CHARSET;
@@ -51,23 +62,18 @@ public final class Media {
 				charset = Coding.CHARSET;
 			}
 		}
-
-		StringBuilder builder = new StringBuilder();
-		BufferedReader reader = new BufferedReader(new InputStreamReader(stream, charset));
-		int length;
-		char[] buffer = new char[8192];
-		while ((length = reader.read(buffer, 0, buffer.length)) != -1) {
-			builder.append(buffer, 0, length);
-		}
-		reader.close();
-		return builder.toString();
+		return new InputStreamReader(stream, charset);
 	}
 
 	public static InputStream decode(InputStream stream, String contentType) {
-		if (contentType != null && BASE64_PATTERN.matcher(contentType).matches()) {
+		if (hasBase64(contentType)) {
 			stream = BASE64_DECODER.wrap(stream);
 		}
 		return stream;
+	}
+
+	private static boolean hasBase64(String contentType) {
+		return contentType != null && BASE64_PATTERN.matcher(contentType).matches();
 	}
 
 	public static InputStream encode(InputStream stream) {

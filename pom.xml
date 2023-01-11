@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>io.github.hashiprobr</groupId>
   <artifactId>sdx-rest</artifactId>
-  <version>0.0.3-SNAPSHOT</version>
+  <version>0.0.4-SNAPSHOT</version>
   <name>${project.groupId}:${project.artifactId}</name>
   <description>Simple REST framework based on Jetty.</description>
   <url>https://github.com/hashiprobr/sdx-java-rest</url>
@@ -41,11 +41,6 @@
       <version>11.0.13</version>
     </dependency>
     <dependency>
-      <groupId>com.google.code.gson</groupId>
-      <artifactId>gson</artifactId>
-      <version>2.10</version>
-    </dependency>
-    <dependency>
       <groupId>org.eclipse.jetty.http2</groupId>
       <artifactId>http2-http-client-transport</artifactId>
       <version>11.0.13</version>
@@ -67,14 +62,14 @@
     </dependency>
     <dependency>
       <groupId>org.junit.jupiter</groupId>
-      <artifactId>junit-jupiter-api</artifactId>
+      <artifactId>junit-jupiter-params</artifactId>
       <version>5.9.1</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.mockito</groupId>
       <artifactId>mockito-inline</artifactId>
-      <version>4.10.0</version>
+      <version>4.11.0</version>
       <scope>test</scope>
     </dependency>
   </dependencies>

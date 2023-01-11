@@ -1,18 +1,18 @@
 package br.pro.hashi.sdx.rest.server;
 
-import br.pro.hashi.sdx.rest.transformer.Transformer;
+import br.pro.hashi.sdx.rest.Facade;
 
 /**
  * Stub.
  */
 public class RESTServer {
-	private final Transformer transformer;
+	private final Facade facade;
 
-	RESTServer(Transformer transformer) {
-		this.transformer = transformer;
+	RESTServer(Facade facade) {
+		this.facade = facade;
 	}
 
-	Transformer getTransformer() {
-		return transformer;
+	Facade getFacade() {
+		return facade;
 	}
 }

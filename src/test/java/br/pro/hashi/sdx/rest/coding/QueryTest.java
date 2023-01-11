@@ -18,17 +18,17 @@ class QueryTest {
 	private static final String SPECIAL_UTF8 = "sp%C3%A9%C3%A7%C3%AD%C3%A1l";
 
 	@Test
-	void doesNotEncodeUnreservedWithUSASCII() {
+	void ignoresUnreservedWithUSASCII() {
 		assertEquals(UNRESERVED, Query.encode(UNRESERVED, StandardCharsets.US_ASCII));
 	}
 
 	@Test
-	void doesNotEncodeUnreservedWithISO88591() {
+	void ignoresUnreservedWithISO88591() {
 		assertEquals(UNRESERVED, Query.encode(UNRESERVED, StandardCharsets.ISO_8859_1));
 	}
 
 	@Test
-	void doesNotEncodeUnreservedWithUTF8() {
+	void ignoresUnreservedWithUTF8() {
 		assertEquals(UNRESERVED, Query.encode(UNRESERVED, StandardCharsets.UTF_8));
 	}
 

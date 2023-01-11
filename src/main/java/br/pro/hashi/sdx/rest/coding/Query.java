@@ -6,7 +6,37 @@ import java.nio.charset.Charset;
 
 public final class Query {
 	public static String encode(String item, Charset charset) {
-		return URLEncoder.encode(URLDecoder.decode(item, charset), charset).replace("%7E", "~").replace("*", "%2A");
+		item = URLDecoder.decode(item, charset); // avoid double encoding
+		item = URLEncoder.encode(item, charset);
+		return makeConsistentWithRfc3986(item); // decode ~ and encode *
+	}
+
+	private static String makeConsistentWithRfc3986(String item) {
+		StringBuilder builder = new StringBuilder();
+		for (int i = 0; i < item.length(); i++) {
+			char c = item.charAt(i);
+			switch (c) {
+			case '%':
+				i++;
+				char x = item.charAt(i);
+				i++;
+				char y = item.charAt(i);
+				if (x == '7' && y == 'E') {
+					builder.append('~');
+				} else {
+					builder.append(c);
+					builder.append(x);
+					builder.append(y);
+				}
+				break;
+			case '*':
+				builder.append("%2A");
+				break;
+			default:
+				builder.append(c);
+			}
+		}
+		return builder.toString();
 	}
 
 	private Query() {
