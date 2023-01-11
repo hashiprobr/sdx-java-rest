@@ -7,18 +7,18 @@ import org.junit.jupiter.api.Test;
 import br.pro.hashi.sdx.rest.Builder;
 import br.pro.hashi.sdx.rest.BuilderTest;
 
-class RESTServerBuilderTest extends BuilderTest {
-	private RESTServerBuilder b;
+class RestServerBuilderTest extends BuilderTest {
+	private RestServerBuilder b;
 
 	@Override
 	protected Builder<?> newInstance() {
-		b = new RESTServerBuilder();
+		b = new RestServerBuilder();
 		return b;
 	}
 
 	@Test
 	void builds() {
-		RESTServer server = b.build();
+		RestServer server = b.build();
 		assertNotNull(server);
 	}
 }

@@ -4,14 +4,14 @@ import java.lang.reflect.Constructor;
 import java.util.Iterator;
 
 import br.pro.hashi.sdx.rest.Builder;
-import br.pro.hashi.sdx.rest.client.RESTClientBuilder;
+import br.pro.hashi.sdx.rest.client.RestClientBuilder;
 import br.pro.hashi.sdx.rest.reflection.Reflection;
-import br.pro.hashi.sdx.rest.server.RESTServerBuilder;
+import br.pro.hashi.sdx.rest.server.RestServerBuilder;
 
 /**
  * <p>
- * An injector can manipulate an object of type {@link RESTClientBuilder} or
- * {@link RESTServerBuilder}.
+ * An injector can manipulate an object of type {@link RestClientBuilder} or
+ * {@link RestServerBuilder}.
  * </p>
  * <p>
  * The idea is that it can be used to extend transform support (possibly via a

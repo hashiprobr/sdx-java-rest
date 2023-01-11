@@ -10,13 +10,13 @@ import org.junit.jupiter.api.Test;
 import br.pro.hashi.sdx.rest.Facade;
 import br.pro.hashi.sdx.rest.coding.Coding;
 
-class RESTClientTest {
+class RestClientTest {
 	private Facade transformer;
 	private HttpClient jettyClient;
-	private RESTClient c;
+	private RestClient c;
 
-	private RESTClient newRESTClient(String none) {
-		return new RESTClient(transformer, jettyClient, Coding.CHARSET, none, "http://a");
+	private RestClient newRestClient(String none) {
+		return new RestClient(transformer, jettyClient, Coding.CHARSET, none, "http://a");
 	}
 
 	@BeforeEach
@@ -27,8 +27,8 @@ class RESTClientTest {
 
 	@Test
 	void stub() {
-		c = newRESTClient(null);
+		c = newRestClient(null);
 		assertNotNull(c.getFacade());
-		assertNotNull(c.getURLCharset());
+		assertNotNull(c.getUrlCharset());
 	}
 }

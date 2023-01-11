@@ -28,12 +28,12 @@ import org.mockito.MockedConstruction;
 import br.pro.hashi.sdx.rest.Builder;
 import br.pro.hashi.sdx.rest.BuilderTest;
 
-class RESTClientBuilderTest extends BuilderTest {
-	private RESTClientBuilder b;
+class RestClientBuilderTest extends BuilderTest {
+	private RestClientBuilder b;
 
 	@Override
 	protected Builder<?> newInstance() {
-		b = new RESTClientBuilder();
+		b = new RestClientBuilder();
 		return b;
 	}
 
@@ -89,7 +89,7 @@ class RESTClientBuilderTest extends BuilderTest {
 
 	@Test
 	void builds() {
-		RESTClient client = b.build("http://a");
+		RestClient client = b.build("http://a");
 		assertNull(client.getNone());
 		HttpClient jettyClient = client.getJettyClient();
 		assertInstanceOf(HttpClientTransportDynamic.class, jettyClient.getTransport());
@@ -103,113 +103,113 @@ class RESTClientBuilderTest extends BuilderTest {
 		}
 		assertEquals(1, size);
 		assertNull(jettyClient.getSslContextFactory());
-		assertEquals("http://a", client.getURLPrefix());
+		assertEquals("http://a", client.getUrlPrefix());
 	}
 
 	@Test
 	void buildsWithNullBody() {
 		b.withNullBody();
-		RESTClient client = b.build("http://a");
+		RestClient client = b.build("http://a");
 		assertEquals("", client.getNone());
 	}
 
 	@Test
 	void buildsWithRedirection() {
 		b.withRedirection();
-		RESTClient client = b.build("http://a");
+		RestClient client = b.build("http://a");
 		assertTrue(client.getJettyClient().isFollowRedirects());
 	}
 
 	@Test
 	void buildsWithoutCompression() {
 		b.withoutCompression();
-		RESTClient client = b.build("http://a");
+		RestClient client = b.build("http://a");
 		assertTrue(client.getJettyClient().getContentDecoderFactories().isEmpty());
 	}
 
 	@Test
 	void buildsWithTrustStore() {
 		b.withTrustStore("path", "password");
-		RESTClient client = b.build("http://a");
+		RestClient client = b.build("http://a");
 		SslContextFactory.Client factory = client.getJettyClient().getSslContextFactory();
 		assertNotNull(factory);
 		assertSame(b.getFactory(), factory);
 	}
 
 	@Test
-	void buildsWithHTTPS() {
-		RESTClient client = b.build("https://a");
-		assertEquals("https://a", client.getURLPrefix());
+	void buildsWithHttps() {
+		RestClient client = b.build("https://a");
+		assertEquals("https://a", client.getUrlPrefix());
 	}
 
 	@Test
 	void buildsWithReserved() {
-		RESTClient client = b.build("http://a %20+%2B%%2F");
-		assertEquals("http://a %20+%2B%%2F", client.getURLPrefix());
+		RestClient client = b.build("http://a %20+%2B%%2F");
+		assertEquals("http://a %20+%2B%%2F", client.getUrlPrefix());
 	}
 
 	@Test
 	void buildsWithWhitespaces() {
-		RESTClient client = b.build(" \t\nhttp://a \t\n");
-		assertEquals("http://a", client.getURLPrefix());
+		RestClient client = b.build(" \t\nhttp://a \t\n");
+		assertEquals("http://a", client.getUrlPrefix());
 	}
 
 	@Test
 	void buildsWithItems() {
-		RESTClient client = b.build("http://a/0/1/2");
-		assertEquals("http://a/0/1/2", client.getURLPrefix());
+		RestClient client = b.build("http://a/0/1/2");
+		assertEquals("http://a/0/1/2", client.getUrlPrefix());
 	}
 
 	@Test
 	void buildsWithSlashes() {
-		RESTClient client = b.build("http://a///");
-		assertEquals("http://a", client.getURLPrefix());
+		RestClient client = b.build("http://a///");
+		assertEquals("http://a", client.getUrlPrefix());
 	}
 
 	@Test
-	void buildsWithHTTPSAndReservedAndWhitespacesAndItemsAndSlashes() {
-		RESTClient client = b.build(" \t\nhttps://a %20+%2B%%2F/0/ %20+%2B/1/%25%2F/2/// \t\n");
-		assertEquals("https://a %20+%2B%%2F/0/%20%20%2B%2B/1/%25%2F/2", client.getURLPrefix());
+	void buildsWithHttpsAndReservedAndWhitespacesAndItemsAndSlashes() {
+		RestClient client = b.build(" \t\nhttps://a %20+%2B%%2F/0/ %20+%2B/1/%25%2F/2/// \t\n");
+		assertEquals("https://a %20+%2B%%2F/0/%20%20%2B%2B/1/%25%2F/2", client.getUrlPrefix());
 	}
 
 	@Test
-	void buildsWithHTTP1() {
-		RESTClient client = b.build1("http://a");
+	void buildsWithHttp1() {
+		RestClient client = b.build1("http://a");
 		HttpClient jettyClient = client.getJettyClient();
 		assertInstanceOf(HttpClientTransportOverHTTP.class, jettyClient.getTransport());
 		assertNull(jettyClient.getSslContextFactory());
 	}
 
 	@Test
-	void buildsWithHTTPS1() {
+	void buildsWithHttps1() {
 		b.withTrustStore("path", "password");
-		RESTClient client = b.build1("http://a");
+		RestClient client = b.build1("http://a");
 		SslContextFactory.Client factory = client.getJettyClient().getSslContextFactory();
 		assertNotNull(factory);
 		assertSame(b.getFactory(), factory);
 	}
 
 	@Test
-	void buildsWithHTTP2() {
-		RESTClient client = b.build2("http://a");
+	void buildsWithHttp2() {
+		RestClient client = b.build2("http://a");
 		HttpClient jettyClient = client.getJettyClient();
 		assertNull(jettyClient.getSslContextFactory());
 		assertInstanceOf(HttpClientTransportOverHTTP2.class, jettyClient.getTransport());
 	}
 
 	@Test
-	void buildsWithHTTPS2() {
+	void buildsWithHttps2() {
 		b.withTrustStore("path", "password");
-		RESTClient client = b.build2("http://a");
+		RestClient client = b.build2("http://a");
 		SslContextFactory.Client factory = client.getJettyClient().getSslContextFactory();
 		assertNotNull(factory);
 		assertSame(b.getFactory(), factory);
 	}
 
 	@Test
-	void buildsWithHTTPS3() {
+	void buildsWithHttps3() {
 		b.withTrustStore("path", "password");
-		RESTClient client = b.build3("http://a");
+		RestClient client = b.build3("http://a");
 		HttpClient jettyClient = client.getJettyClient();
 		assertInstanceOf(HttpClientTransportOverHTTP3.class, jettyClient.getTransport());
 		SslContextFactory.Client factory = jettyClient.getSslContextFactory();
@@ -218,35 +218,35 @@ class RESTClientBuilderTest extends BuilderTest {
 	}
 
 	@Test
-	void doesNotBuildIfURLPrefixIsNull() {
+	void doesNotBuildIfUrlPrefixIsNull() {
 		assertThrows(IllegalArgumentException.class, () -> {
 			b.build(null);
 		});
 	}
 
 	@Test
-	void doesNotBuildIfURLPrefixDoesNotStartCorrectly() {
+	void doesNotBuildIfUrlPrefixDoesNotStartCorrectly() {
 		assertThrows(IllegalArgumentException.class, () -> {
 			b.build("file://a");
 		});
 	}
 
 	@Test
-	void doesNotBuildIfURLPrefixIsBlank() {
+	void doesNotBuildIfUrlPrefixIsBlank() {
 		assertThrows(IllegalArgumentException.class, () -> {
 			b.build("http:// \t\n");
 		});
 	}
 
 	@Test
-	void doesNotBuildIfURLPrefixAuthorityIsEmpty() {
+	void doesNotBuildIfUrlPrefixAuthorityIsEmpty() {
 		assertThrows(IllegalArgumentException.class, () -> {
 			b.build("http:///a");
 		});
 	}
 
 	@Test
-	void doesNotBuildWithHTTP3() {
+	void doesNotBuildWithHttp3() {
 		assertThrows(IllegalArgumentException.class, () -> {
 			b.build3("http://a");
 		});

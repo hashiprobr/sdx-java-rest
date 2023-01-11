@@ -9,14 +9,14 @@ import br.pro.hashi.sdx.rest.Facade;
 /**
  * Stub.
  */
-public class RESTClient {
+public class RestClient {
 	private final Facade facade;
 	private final HttpClient jettyClient;
 	private final Charset urlCharset;
 	private final String none;
 	private final String urlPrefix;
 
-	RESTClient(Facade facade, HttpClient jettyClient, Charset urlCharset, String none, String urlPrefix) {
+	RestClient(Facade facade, HttpClient jettyClient, Charset urlCharset, String none, String urlPrefix) {
 		this.facade = facade;
 		this.jettyClient = jettyClient;
 		this.urlCharset = urlCharset;
@@ -28,7 +28,7 @@ public class RESTClient {
 		return facade;
 	}
 
-	Charset getURLCharset() {
+	Charset getUrlCharset() {
 		return urlCharset;
 	}
 
@@ -36,7 +36,7 @@ public class RESTClient {
 		return none;
 	}
 
-	String getURLPrefix() {
+	String getUrlPrefix() {
 		return urlPrefix;
 	}
 

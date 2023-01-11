@@ -20,15 +20,15 @@ import br.pro.hashi.sdx.rest.Builder;
 import br.pro.hashi.sdx.rest.coding.Percent;
 
 /**
- * Configures and builds objects of type {@link RESTClient}.
+ * Configures and builds objects of type {@link RestClient}.
  */
-public non-sealed class RESTClientBuilder extends Builder<RESTClientBuilder> {
+public non-sealed class RestClientBuilder extends Builder<RestClientBuilder> {
 	private SslContextFactory.Client factory;
 
 	/**
 	 * Constructs a new builder.
 	 */
-	public RESTClientBuilder() {
+	public RestClientBuilder() {
 		this.factory = null;
 	}
 
@@ -60,13 +60,13 @@ public non-sealed class RESTClientBuilder extends Builder<RESTClientBuilder> {
 		return "%s%s".formatted(schema, path);
 	}
 
-	private RESTClient build(HttpClient client, String urlPrefix) {
+	private RestClient build(HttpClient client, String urlPrefix) {
 		client.setCookieStore(new HttpCookieStore.Empty());
 		if (compression) {
 			client.getContentDecoderFactories().add(new GZIPContentDecoder.Factory());
 		}
 		client.setFollowRedirects(redirection);
-		return new RESTClient(facade, client, urlCharset, none, urlPrefix);
+		return new RestClient(facade, client, urlCharset, none, urlPrefix);
 	}
 
 	SslContextFactory.Client getFactory() {
@@ -77,7 +77,7 @@ public non-sealed class RESTClientBuilder extends Builder<RESTClientBuilder> {
 	 * @hidden
 	 */
 	@Override
-	protected RESTClientBuilder self() {
+	protected RestClientBuilder self() {
 		return this;
 	}
 
@@ -88,7 +88,7 @@ public non-sealed class RESTClientBuilder extends Builder<RESTClientBuilder> {
 	 * @param password the TrustStore password.
 	 * @return this builder, for chaining.
 	 */
-	public RESTClientBuilder withTrustStore(String path, String password) {
+	public RestClientBuilder withTrustStore(String path, String password) {
 		if (path == null) {
 			throw new IllegalArgumentException("TrustStore path cannot be null");
 		}
@@ -109,7 +109,7 @@ public non-sealed class RESTClientBuilder extends Builder<RESTClientBuilder> {
 
 	/**
 	 * <p>
-	 * Builds a dynamic HTTP/2 and HTTP/1.1 {@link RESTClient} with the current
+	 * Builds a dynamic HTTP/2 and HTTP/1.1 {@link RestClient} with the current
 	 * configuration.
 	 * </p>
 	 * <p>
@@ -117,9 +117,9 @@ public non-sealed class RESTClientBuilder extends Builder<RESTClientBuilder> {
 	 * </p>
 	 * 
 	 * @param urlPrefix the URL prefix.
-	 * @return the {@link RESTClient}.
+	 * @return the {@link RestClient}.
 	 */
-	public RESTClient build(String urlPrefix) {
+	public RestClient build(String urlPrefix) {
 		urlPrefix = encode(urlPrefix);
 		ClientConnector connector = new ClientConnector();
 		if (factory != null) {
@@ -135,16 +135,16 @@ public non-sealed class RESTClientBuilder extends Builder<RESTClientBuilder> {
 
 	/**
 	 * <p>
-	 * Builds a static HTTP/1.1 {@link RESTClient} with the current configuration.
+	 * Builds a static HTTP/1.1 {@link RestClient} with the current configuration.
 	 * </p>
 	 * <p>
 	 * This method receives an URL prefix that should be used in all requests.
 	 * </p>
 	 * 
 	 * @param urlPrefix the URL prefix.
-	 * @return the {@link RESTClient}.
+	 * @return the {@link RestClient}.
 	 */
-	public RESTClient build1(String urlPrefix) {
+	public RestClient build1(String urlPrefix) {
 		urlPrefix = encode(urlPrefix);
 		HttpClient client1;
 		if (factory == null) {
@@ -160,16 +160,16 @@ public non-sealed class RESTClientBuilder extends Builder<RESTClientBuilder> {
 
 	/**
 	 * <p>
-	 * Builds a static HTTP/2 {@link RESTClient} with the current configuration.
+	 * Builds a static HTTP/2 {@link RestClient} with the current configuration.
 	 * </p>
 	 * <p>
 	 * This method receives an URL prefix that should be used in all requests.
 	 * </p>
 	 * 
 	 * @param urlPrefix the URL prefix.
-	 * @return the {@link RESTClient}.
+	 * @return the {@link RestClient}.
 	 */
-	public RESTClient build2(String urlPrefix) {
+	public RestClient build2(String urlPrefix) {
 		urlPrefix = encode(urlPrefix);
 		HTTP2Client client2;
 		if (factory == null) {
@@ -186,16 +186,16 @@ public non-sealed class RESTClientBuilder extends Builder<RESTClientBuilder> {
 
 	/**
 	 * <p>
-	 * Builds a static HTTP/3 {@link RESTClient} with the current configuration.
+	 * Builds a static HTTP/3 {@link RestClient} with the current configuration.
 	 * </p>
 	 * <p>
 	 * This method receives an URL prefix that should be used in all requests.
 	 * </p>
 	 * 
 	 * @param urlPrefix the URL prefix.
-	 * @return the {@link RESTClient}.
+	 * @return the {@link RestClient}.
 	 */
-	public RESTClient build3(String urlPrefix) {
+	public RestClient build3(String urlPrefix) {
 		urlPrefix = encode(urlPrefix);
 		if (factory == null) {
 			throw new IllegalArgumentException("HTTP/3 client must have a keytool truststore");

@@ -8,12 +8,12 @@ import org.junit.jupiter.api.Test;
 
 import br.pro.hashi.sdx.rest.Facade;
 
-class RESTServerTest {
+class RestServerTest {
 	private Facade transformer;
-	private RESTServer s;
+	private RestServer s;
 
-	private RESTServer newRESTServer() {
-		return new RESTServer(transformer);
+	private RestServer newRestServer() {
+		return new RestServer(transformer);
 	}
 
 	@BeforeEach
@@ -23,7 +23,7 @@ class RESTServerTest {
 
 	@Test
 	void stub() {
-		s = newRESTServer();
+		s = newRestServer();
 		assertNotNull(s.getFacade());
 	}
 }

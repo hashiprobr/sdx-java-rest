@@ -4,8 +4,8 @@ import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
-import br.pro.hashi.sdx.rest.client.RESTClientBuilder;
-import br.pro.hashi.sdx.rest.server.RESTServerBuilder;
+import br.pro.hashi.sdx.rest.client.RestClientBuilder;
+import br.pro.hashi.sdx.rest.server.RestServerBuilder;
 import br.pro.hashi.sdx.rest.transform.Assembler;
 import br.pro.hashi.sdx.rest.transform.Deserializer;
 import br.pro.hashi.sdx.rest.transform.Disassembler;
@@ -14,7 +14,7 @@ import br.pro.hashi.sdx.rest.transform.Serializer;
 /**
  * @hidden
  */
-public sealed abstract class Builder<T extends Builder<T>> permits RESTClientBuilder, RESTServerBuilder {
+public sealed abstract class Builder<T extends Builder<T>> permits RestClientBuilder, RestServerBuilder {
 	/**
 	 * @hidden
 	 */

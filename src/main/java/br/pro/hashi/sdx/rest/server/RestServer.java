@@ -5,10 +5,10 @@ import br.pro.hashi.sdx.rest.Facade;
 /**
  * Stub.
  */
-public class RESTServer {
+public class RestServer {
 	private final Facade facade;
 
-	RESTServer(Facade facade) {
+	RestServer(Facade facade) {
 		this.facade = facade;
 	}
 
