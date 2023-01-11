@@ -5,7 +5,7 @@ import br.pro.hashi.sdx.rest.Builder;
 /**
  * Configures and builds objects of type {@link RESTServer}.
  */
-public class RESTServerBuilder extends Builder<RESTServerBuilder> {
+public non-sealed class RESTServerBuilder extends Builder<RESTServerBuilder> {
 	/**
 	 * Constructs a new builder.
 	 */

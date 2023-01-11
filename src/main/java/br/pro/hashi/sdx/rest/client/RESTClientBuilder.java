@@ -22,7 +22,7 @@ import br.pro.hashi.sdx.rest.coding.Percent;
 /**
  * Configures and builds objects of type {@link RESTClient}.
  */
-public class RESTClientBuilder extends Builder<RESTClientBuilder> {
+public non-sealed class RESTClientBuilder extends Builder<RESTClientBuilder> {
 	private SslContextFactory.Client factory;
 
 	/**

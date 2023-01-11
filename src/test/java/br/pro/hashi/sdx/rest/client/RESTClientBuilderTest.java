@@ -32,7 +32,7 @@ class RESTClientBuilderTest extends BuilderTest {
 	private RESTClientBuilder b;
 
 	@Override
-	protected Builder<?> build() {
+	protected Builder<?> newInstance() {
 		b = new RESTClientBuilder();
 		return b;
 	}

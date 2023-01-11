@@ -11,7 +11,7 @@ class RESTServerBuilderTest extends BuilderTest {
 	private RESTServerBuilder b;
 
 	@Override
-	protected Builder<?> build() {
+	protected Builder<?> newInstance() {
 		b = new RESTServerBuilder();
 		return b;
 	}

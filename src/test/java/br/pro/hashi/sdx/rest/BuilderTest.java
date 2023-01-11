@@ -28,7 +28,7 @@ public abstract class BuilderTest {
 	@BeforeEach
 	void setUp() {
 		construction = mockConstruction(Facade.class);
-		b = build();
+		b = newInstance();
 		facade = construction.constructed().get(0);
 	}
 
@@ -36,8 +36,6 @@ public abstract class BuilderTest {
 	void tearDown() {
 		construction.close();
 	}
-
-	protected abstract Builder<?> build();
 
 	@Test
 	void initializesWithUtf8() {
@@ -104,7 +102,7 @@ public abstract class BuilderTest {
 	}
 
 	@Test
-	void doesNotSetURLCharset() {
+	void doesNotSetUrlCharset() {
 		assertThrows(NullPointerException.class, () -> {
 			b.withUrlCharset(null);
 		});
@@ -128,4 +126,6 @@ public abstract class BuilderTest {
 		b.withoutCompression();
 		assertFalse(b.compression);
 	}
+
+	protected abstract Builder<?> newInstance();
 }

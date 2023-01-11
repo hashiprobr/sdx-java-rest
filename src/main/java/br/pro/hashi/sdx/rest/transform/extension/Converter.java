@@ -5,9 +5,14 @@ import java.lang.reflect.Type;
 import br.pro.hashi.sdx.rest.reflection.Reflection;
 
 /**
+ * <p>
  * A converter can convert objects of a source type to and from objects of a
- * target type. The idea is that the source type is not supported by a
- * third-party library, but the target type is (possibly via another converter).
+ * target type.
+ * </p>
+ * <p>
+ * The idea is that the source type is not supported by a third-party library,
+ * but the target type is (possibly via another converter).
+ * </p>
  * 
  * @param <S> the source type
  * @param <T> the target type

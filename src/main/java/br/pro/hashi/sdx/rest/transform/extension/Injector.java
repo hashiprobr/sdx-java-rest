@@ -4,37 +4,51 @@ import java.lang.reflect.Constructor;
 import java.util.Iterator;
 
 import br.pro.hashi.sdx.rest.Builder;
+import br.pro.hashi.sdx.rest.client.RESTClientBuilder;
 import br.pro.hashi.sdx.rest.reflection.Reflection;
+import br.pro.hashi.sdx.rest.server.RESTServerBuilder;
 
 /**
- * Stub.
+ * <p>
+ * An injector can manipulate an object of type {@link RESTClientBuilder} or
+ * {@link RESTServerBuilder}.
+ * </p>
+ * <p>
+ * The idea is that it can be used to extend transform support (possibly via a
+ * third-party library).
+ * </p>
  */
 public abstract class Injector {
 	/**
-	 * Stub.
+	 * The builder.
 	 */
 	protected final Builder<?> builder;
 
 	/**
-	 * Stub.
+	 * Constructs a new injector with the specified builder.
 	 *
-	 * @param builder stub
+	 * @param builder the builder
 	 */
 	protected Injector(Builder<?> builder) {
 		this.builder = builder;
 	}
 
 	/**
-	 * Convenience method that instantiates converters in a package (including
-	 * subpackages) and iterates over them. The idea is that it can be used to wrap
-	 * and register the converters in a third-party library.
+	 * <p>
+	 * Convenience method that instantiates concrete converters in a package
+	 * (including subpackages) and iterates over the instances.
+	 * </p>
+	 * <p>
+	 * The idea is that it can be used to wrap and register the converters in a
+	 * third-party library.
+	 * </p>
 	 * 
 	 * @param <T>         the superclass of the converters
 	 * @param packageName the name of the package
 	 * @param type        an object representing {@code T}
 	 * @return an instance of each concrete subclass of {@code T} in the package
 	 */
-	public final <T extends Converter<?, ?>> Iterable<T> getSubConverters(String packageName, Class<T> type) {
+	protected final <T extends Converter<?, ?>> Iterable<T> getSubConverters(String packageName, Class<T> type) {
 		return new Iterable<>() {
 			@Override
 			public Iterator<T> iterator() {
