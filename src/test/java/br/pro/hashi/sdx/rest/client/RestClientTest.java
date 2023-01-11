@@ -7,8 +7,8 @@ import org.eclipse.jetty.client.HttpClient;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import br.pro.hashi.sdx.rest.Facade;
 import br.pro.hashi.sdx.rest.coding.Coding;
+import br.pro.hashi.sdx.rest.transform.facade.Facade;
 
 class RestClientTest {
 	private Facade transformer;

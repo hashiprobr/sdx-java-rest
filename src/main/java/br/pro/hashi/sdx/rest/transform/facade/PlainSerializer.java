@@ -1,11 +1,11 @@
-package br.pro.hashi.sdx.rest.transform.basic;
+package br.pro.hashi.sdx.rest.transform.facade;
 
 import java.io.Reader;
 import java.io.StringReader;
 
 import br.pro.hashi.sdx.rest.transform.Serializer;
 
-public class BasicSerializer implements Serializer {
+class PlainSerializer implements Serializer {
 	@Override
 	public Reader toReader(Object body) {
 		if (body instanceof String) {

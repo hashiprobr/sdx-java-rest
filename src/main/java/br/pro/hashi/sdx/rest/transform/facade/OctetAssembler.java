@@ -1,11 +1,11 @@
-package br.pro.hashi.sdx.rest.transform.basic;
+package br.pro.hashi.sdx.rest.transform.facade;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 
 import br.pro.hashi.sdx.rest.transform.Assembler;
 
-public class BasicAssembler implements Assembler {
+class OctetAssembler implements Assembler {
 	@Override
 	public InputStream toStream(Object body) {
 		if (body instanceof byte[]) {

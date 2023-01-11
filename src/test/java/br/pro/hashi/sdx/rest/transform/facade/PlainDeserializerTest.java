@@ -1,4 +1,4 @@
-package br.pro.hashi.sdx.rest.transform.basic;
+package br.pro.hashi.sdx.rest.transform.facade;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -13,14 +13,14 @@ import org.junit.jupiter.api.Test;
 
 import br.pro.hashi.sdx.rest.transform.Deserializer;
 
-class BasicDeserializerTest {
+class PlainDeserializerTest {
 	private Reader reader;
 	private Deserializer d;
 
 	@BeforeEach
 	void setUp() {
 		reader = new StringReader(newString());
-		d = new BasicDeserializer();
+		d = new PlainDeserializer();
 	}
 
 	@Test

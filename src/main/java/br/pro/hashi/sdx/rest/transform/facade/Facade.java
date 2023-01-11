@@ -1,4 +1,4 @@
-package br.pro.hashi.sdx.rest;
+package br.pro.hashi.sdx.rest.transform.facade;
 
 import java.io.InputStream;
 import java.io.Reader;
@@ -12,10 +12,6 @@ import br.pro.hashi.sdx.rest.transform.Assembler;
 import br.pro.hashi.sdx.rest.transform.Deserializer;
 import br.pro.hashi.sdx.rest.transform.Disassembler;
 import br.pro.hashi.sdx.rest.transform.Serializer;
-import br.pro.hashi.sdx.rest.transform.basic.BasicAssembler;
-import br.pro.hashi.sdx.rest.transform.basic.BasicDeserializer;
-import br.pro.hashi.sdx.rest.transform.basic.BasicDisassembler;
-import br.pro.hashi.sdx.rest.transform.basic.BasicSerializer;
 
 public class Facade {
 	private static final String OCTET_TYPE = "application/octet-stream";
@@ -34,16 +30,16 @@ public class Facade {
 		this.binaryTypes.addAll(Set.of(byte[].class, InputStream.class));
 
 		this.assemblers = new HashMap<>();
-		this.assemblers.put(OCTET_TYPE, new BasicAssembler());
+		this.assemblers.put(OCTET_TYPE, new OctetAssembler());
 
 		this.disassemblers = new HashMap<>();
-		this.disassemblers.put(OCTET_TYPE, new BasicDisassembler());
+		this.disassemblers.put(OCTET_TYPE, new OctetDisassembler());
 
 		this.serializers = new HashMap<>();
-		this.serializers.put(PLAIN_TYPE, new BasicSerializer());
+		this.serializers.put(PLAIN_TYPE, new PlainSerializer());
 
 		this.deserializers = new HashMap<>();
-		this.deserializers.put(PLAIN_TYPE, new BasicDeserializer());
+		this.deserializers.put(PLAIN_TYPE, new PlainDeserializer());
 
 		this.fallbackByteType = null;
 		this.fallbackTextType = null;

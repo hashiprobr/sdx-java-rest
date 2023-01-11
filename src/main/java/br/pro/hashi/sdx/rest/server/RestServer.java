@@ -1,6 +1,6 @@
 package br.pro.hashi.sdx.rest.server;
 
-import br.pro.hashi.sdx.rest.Facade;
+import br.pro.hashi.sdx.rest.transform.facade.Facade;
 
 /**
  * Stub.

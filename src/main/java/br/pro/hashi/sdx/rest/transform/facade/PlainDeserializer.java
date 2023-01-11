@@ -1,4 +1,4 @@
-package br.pro.hashi.sdx.rest.transform.basic;
+package br.pro.hashi.sdx.rest.transform.facade;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -6,7 +6,7 @@ import java.io.Reader;
 import br.pro.hashi.sdx.rest.coding.Media;
 import br.pro.hashi.sdx.rest.transform.Deserializer;
 
-public class BasicDeserializer implements Deserializer {
+class PlainDeserializer implements Deserializer {
 	@SuppressWarnings("unchecked")
 	@Override
 	public <T> T fromReader(Reader reader, Class<T> type) throws IOException {

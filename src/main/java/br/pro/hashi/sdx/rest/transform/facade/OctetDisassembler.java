@@ -1,11 +1,11 @@
-package br.pro.hashi.sdx.rest.transform.basic;
+package br.pro.hashi.sdx.rest.transform.facade;
 
 import java.io.IOException;
 import java.io.InputStream;
 
 import br.pro.hashi.sdx.rest.transform.Disassembler;
 
-public class BasicDisassembler implements Disassembler {
+class OctetDisassembler implements Disassembler {
 	@SuppressWarnings("unchecked")
 	@Override
 	public <T> T fromStream(InputStream stream, Class<T> type) throws IOException {

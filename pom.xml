@@ -131,6 +131,9 @@
             </goals>
           </execution>
         </executions>
+        <configuration>
+          <excludePackageNames>br.pro.hashi.sdx.rest</excludePackageNames>
+        </configuration>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>

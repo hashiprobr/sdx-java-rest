@@ -1,4 +1,4 @@
-package br.pro.hashi.sdx.rest.transform.basic;
+package br.pro.hashi.sdx.rest.transform.facade;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -14,12 +14,12 @@ import org.junit.jupiter.api.Test;
 
 import br.pro.hashi.sdx.rest.transform.Serializer;
 
-class BasicSerializerTest {
+class PlainSerializerTest {
 	private Serializer s;
 
 	@BeforeEach
 	void setUp() {
-		s = new BasicSerializer();
+		s = new PlainSerializer();
 	}
 
 	@Test

@@ -9,6 +9,7 @@ module br.pro.hashi.sdx.rest {
 	requires org.slf4j;
 	requires org.reflections;
 
+	exports br.pro.hashi.sdx.rest;
 	exports br.pro.hashi.sdx.rest.client;
 	exports br.pro.hashi.sdx.rest.server;
 	exports br.pro.hashi.sdx.rest.transform;

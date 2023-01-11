@@ -1,4 +1,4 @@
-package br.pro.hashi.sdx.rest.transform.basic;
+package br.pro.hashi.sdx.rest.transform.facade;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
@@ -16,12 +16,12 @@ import org.junit.jupiter.api.Test;
 
 import br.pro.hashi.sdx.rest.transform.Assembler;
 
-class BasicAssemblerTest {
+class OctetAssemblerTest {
 	private Assembler a;
 
 	@BeforeEach
 	void setUp() {
-		a = new BasicAssembler();
+		a = new OctetAssembler();
 	}
 
 	@Test

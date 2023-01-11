@@ -1,4 +1,4 @@
-package br.pro.hashi.sdx.rest;
+package br.pro.hashi.sdx.rest.transform.facade;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -28,24 +28,20 @@ import br.pro.hashi.sdx.rest.transform.Assembler;
 import br.pro.hashi.sdx.rest.transform.Deserializer;
 import br.pro.hashi.sdx.rest.transform.Disassembler;
 import br.pro.hashi.sdx.rest.transform.Serializer;
-import br.pro.hashi.sdx.rest.transform.basic.BasicAssembler;
-import br.pro.hashi.sdx.rest.transform.basic.BasicDeserializer;
-import br.pro.hashi.sdx.rest.transform.basic.BasicDisassembler;
-import br.pro.hashi.sdx.rest.transform.basic.BasicSerializer;
 
 class FacadeTest {
-	private MockedConstruction<BasicAssembler> assemblerConstruction;
-	private MockedConstruction<BasicDisassembler> disassemblerConstruction;
-	private MockedConstruction<BasicSerializer> serializerConstruction;
-	private MockedConstruction<BasicDeserializer> deserializerConstruction;
+	private MockedConstruction<OctetAssembler> assemblerConstruction;
+	private MockedConstruction<OctetDisassembler> disassemblerConstruction;
+	private MockedConstruction<PlainSerializer> serializerConstruction;
+	private MockedConstruction<PlainDeserializer> deserializerConstruction;
 	private Facade f;
 
 	@BeforeEach
 	void setUp() {
-		assemblerConstruction = mockConstruction(BasicAssembler.class);
-		disassemblerConstruction = mockConstruction(BasicDisassembler.class);
-		serializerConstruction = mockConstruction(BasicSerializer.class);
-		deserializerConstruction = mockConstruction(BasicDeserializer.class);
+		assemblerConstruction = mockConstruction(OctetAssembler.class);
+		disassemblerConstruction = mockConstruction(OctetDisassembler.class);
+		serializerConstruction = mockConstruction(PlainSerializer.class);
+		deserializerConstruction = mockConstruction(PlainDeserializer.class);
 		f = new Facade();
 	}
 
@@ -79,7 +75,7 @@ class FacadeTest {
 
 	@Test
 	void initializesWithBasicAssembler() {
-		assertInstanceOf(BasicAssembler.class, f.getAssembler("application/octet-stream"));
+		assertInstanceOf(OctetAssembler.class, f.getAssembler("application/octet-stream"));
 	}
 
 	@Test
@@ -98,7 +94,7 @@ class FacadeTest {
 
 	@Test
 	void initializesWithBasicDisassembler() {
-		assertInstanceOf(BasicDisassembler.class, f.getDisassembler("application/octet-stream"));
+		assertInstanceOf(OctetDisassembler.class, f.getDisassembler("application/octet-stream"));
 	}
 
 	@Test
@@ -117,7 +113,7 @@ class FacadeTest {
 
 	@Test
 	void initializesWithBasicSerializer() {
-		assertInstanceOf(BasicSerializer.class, f.getSerializer("text/plain"));
+		assertInstanceOf(PlainSerializer.class, f.getSerializer("text/plain"));
 	}
 
 	@Test
@@ -136,7 +132,7 @@ class FacadeTest {
 
 	@Test
 	void initializesWithBasicDeserializer() {
-		assertInstanceOf(BasicDeserializer.class, f.getDeserializer("text/plain"));
+		assertInstanceOf(PlainDeserializer.class, f.getDeserializer("text/plain"));
 	}
 
 	@Test

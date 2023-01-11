@@ -1,4 +1,4 @@
-package br.pro.hashi.sdx.rest.transform.basic;
+package br.pro.hashi.sdx.rest.transform.facade;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
@@ -14,14 +14,14 @@ import org.junit.jupiter.api.Test;
 
 import br.pro.hashi.sdx.rest.transform.Disassembler;
 
-class BasicDisassemblerTest {
+class OctetDisassemblerTest {
 	private InputStream stream;
 	private Disassembler d;
 
 	@BeforeEach
 	void setUp() {
 		stream = new ByteArrayInputStream(newByteArray());
-		d = new BasicDisassembler();
+		d = new OctetDisassembler();
 	}
 
 	@Test

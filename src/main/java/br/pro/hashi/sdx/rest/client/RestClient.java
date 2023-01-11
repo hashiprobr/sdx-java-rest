@@ -4,7 +4,7 @@ import java.nio.charset.Charset;
 
 import org.eclipse.jetty.client.HttpClient;
 
-import br.pro.hashi.sdx.rest.Facade;
+import br.pro.hashi.sdx.rest.transform.facade.Facade;
 
 /**
  * Stub.
