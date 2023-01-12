@@ -37,6 +37,7 @@ class SimpleAssemblerTest {
 		stream.readNBytes(bytes, 0, 4);
 		assertEquals(-1, stream.read());
 		assertEquals("body", new String(bytes, StandardCharsets.US_ASCII));
+		stream.close();
 	}
 
 	@Test

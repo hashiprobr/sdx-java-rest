@@ -30,6 +30,7 @@ class PlainSerializerTest {
 		reader.read(chars, 0, 4);
 		assertEquals(-1, reader.read());
 		assertEquals(body, new String(chars));
+		reader.close();
 	}
 
 	@Test

@@ -32,6 +32,7 @@ class OctetAssemblerTest {
 		stream.readNBytes(bytes, 0, 4);
 		assertEquals(-1, stream.read());
 		assertArrayEquals(body, bytes);
+		stream.close();
 	}
 
 	@Test
