@@ -3,7 +3,6 @@ package br.pro.hashi.sdx.rest.transform.extension;
 import java.lang.reflect.Constructor;
 import java.util.Iterator;
 
-import br.pro.hashi.sdx.rest.Builder;
 import br.pro.hashi.sdx.rest.client.RestClientBuilder;
 import br.pro.hashi.sdx.rest.reflection.Reflection;
 import br.pro.hashi.sdx.rest.server.RestServerBuilder;
@@ -14,25 +13,11 @@ import br.pro.hashi.sdx.rest.server.RestServerBuilder;
  * {@link RestServerBuilder}.
  * </p>
  * <p>
- * The idea is that it can be used to extend transform support (possibly via a
- * third-party library).
+ * The idea is that it can be used to configure and/or extend transform support
+ * (possibly via a third-party library).
  * </p>
  */
 public abstract class Injector {
-	/**
-	 * The builder.
-	 */
-	protected final Builder<?> builder;
-
-	/**
-	 * Constructs a new injector with the specified builder.
-	 *
-	 * @param builder the builder
-	 */
-	protected Injector(Builder<?> builder) {
-		this.builder = builder;
-	}
-
 	/**
 	 * <p>
 	 * Convenience method that instantiates concrete converters in a package
