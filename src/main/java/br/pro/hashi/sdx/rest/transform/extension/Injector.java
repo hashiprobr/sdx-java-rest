@@ -19,6 +19,12 @@ import br.pro.hashi.sdx.rest.server.RestServerBuilder;
  */
 public abstract class Injector {
 	/**
+	 * Constructs a new injector.
+	 */
+	protected Injector() {
+	}
+
+	/**
 	 * <p>
 	 * Convenience method that instantiates concrete converters in a package
 	 * (including subpackages) and iterates over the instances.
