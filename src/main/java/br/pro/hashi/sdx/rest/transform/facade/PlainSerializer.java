@@ -8,6 +8,11 @@ import br.pro.hashi.sdx.rest.transform.Serializer;
 class PlainSerializer implements Serializer {
 	@Override
 	public <T> Reader toReader(T body, Class<T> type) {
+		return toReader(body);
+	}
+
+	@Override
+	public <T> Reader toReader(T body) {
 		if (body instanceof String) {
 			return new StringReader((String) body);
 		}

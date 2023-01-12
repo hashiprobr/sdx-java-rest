@@ -27,7 +27,7 @@ class OctetAssemblerTest {
 	@Test
 	void returnsEqualsIfBodyIsByteArray() throws IOException {
 		byte[] body = newByteArray();
-		InputStream stream = a.toStream(body);
+		InputStream stream = a.toStream(body, byte[].class);
 		byte[] bytes = new byte[4];
 		stream.readNBytes(bytes, 0, 4);
 		assertEquals(-1, stream.read());
@@ -39,7 +39,7 @@ class OctetAssemblerTest {
 	void returnsSameIfBodyIsInputStream() {
 		InputStream body = new ByteArrayInputStream(newByteArray());
 		InputStream stream = assertDoesNotThrow(() -> {
-			return a.toStream(body);
+			return a.toStream(body, InputStream.class);
 		});
 		assertSame(body, stream);
 	}
@@ -48,7 +48,7 @@ class OctetAssemblerTest {
 	void throwsIfBodyIsNeither() {
 		Object body = new Object();
 		assertThrows(IllegalArgumentException.class, () -> {
-			a.toStream(body);
+			a.toStream(body, Object.class);
 		});
 	}
 

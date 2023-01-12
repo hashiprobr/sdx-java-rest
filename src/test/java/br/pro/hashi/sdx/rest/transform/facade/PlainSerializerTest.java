@@ -25,7 +25,7 @@ class PlainSerializerTest {
 	@Test
 	void returnsEqualsIfBodyIsString() throws IOException {
 		String body = newString();
-		Reader reader = s.toReader(body);
+		Reader reader = s.toReader(body, String.class);
 		char[] chars = new char[4];
 		reader.read(chars, 0, 4);
 		assertEquals(-1, reader.read());
@@ -37,7 +37,7 @@ class PlainSerializerTest {
 	void returnsSameIfBodyIsReader() {
 		Reader body = new StringReader(newString());
 		Reader reader = assertDoesNotThrow(() -> {
-			return s.toReader(body);
+			return s.toReader(body, Reader.class);
 		});
 		assertSame(body, reader);
 	}
@@ -46,7 +46,7 @@ class PlainSerializerTest {
 	void throwsIfBodyIsNeither() {
 		Object body = new Object();
 		assertThrows(IllegalArgumentException.class, () -> {
-			s.toReader(body);
+			s.toReader(body, Object.class);
 		});
 	}
 

@@ -8,6 +8,11 @@ import br.pro.hashi.sdx.rest.transform.Assembler;
 class OctetAssembler implements Assembler {
 	@Override
 	public <T> InputStream toStream(T body, Class<T> type) {
+		return toStream(body);
+	}
+
+	@Override
+	public <T> InputStream toStream(T body) {
 		if (body instanceof byte[]) {
 			return new ByteArrayInputStream((byte[]) body);
 		}
