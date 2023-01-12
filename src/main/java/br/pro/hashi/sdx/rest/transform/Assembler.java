@@ -13,9 +13,11 @@ public interface Assembler {
 	 * </p>
 	 * <p>
 	 * The default implementation simply calls {@code toStream(T, Class<T>)},
-	 * passing {@code body.getClass()} as the second parameter. <strong>Do not use
-	 * this implementation if {@code T} is a generic type.</strong> Either call
-	 * {@code toStream(T, Class<T>)} or provide an alternative implementation.
+	 * passing {@code body.getClass()} as the second parameter. Since
+	 * {@code body.getClass()} loses generic information due to erasure, this
+	 * implementation might not be recommended if {@code T} is a generic type. It
+	 * might be better to call {@code toStream(T, Class<T>)} or provide an
+	 * alternative implementation that ensures generic information is not lost.
 	 * </p>
 	 * 
 	 * @param <T>  the type of the object
