@@ -33,7 +33,7 @@ public final class Media {
 		return contentType;
 	}
 
-	public static Reader reader(InputStream stream, String contentType) throws CharsetException {
+	public static Reader reader(InputStream stream, String contentType) {
 		Charset charset;
 		if (contentType == null) {
 			charset = Coding.CHARSET;
