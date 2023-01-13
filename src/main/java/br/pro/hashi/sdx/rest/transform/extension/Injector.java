@@ -26,8 +26,8 @@ public abstract class Injector {
 
 	/**
 	 * <p>
-	 * Convenience method that instantiates concrete converters in a package
-	 * (including subpackages) and iterates over the instances.
+	 * Convenience method that instantiates all concrete converters in a specified
+	 * package (including subpackages) and iterates over the instances.
 	 * </p>
 	 * <p>
 	 * The idea is that it can be used to wrap and register the converters in a
