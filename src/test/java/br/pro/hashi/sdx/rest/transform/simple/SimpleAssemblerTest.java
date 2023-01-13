@@ -1,6 +1,5 @@
 package br.pro.hashi.sdx.rest.transform.simple;
 
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.IOException;
@@ -43,6 +42,6 @@ class SimpleAssemblerTest {
 	@Test
 	void toBytesCallsToBytes() {
 		byte[] bytes = a.toBytes(body);
-		assertArrayEquals(new byte[] { 98, 111, 100, 121 }, bytes);
+		assertEquals("body", new String(bytes, StandardCharsets.US_ASCII));
 	}
 }

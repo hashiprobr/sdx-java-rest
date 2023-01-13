@@ -30,6 +30,7 @@ class SimpleDeserializerTest {
 	@Test
 	void fromReaderCallsFromString() {
 		Reader reader = new StringReader("content");
-		assertEquals("content", d.fromReader(reader, Object.class).toString());
+		Object body = d.fromReader(reader, Object.class);
+		assertEquals("content", body.toString());
 	}
 }

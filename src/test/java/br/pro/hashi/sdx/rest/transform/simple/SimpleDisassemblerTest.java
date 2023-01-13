@@ -31,6 +31,7 @@ class SimpleDisassemblerTest {
 	@Test
 	void fromStreamCallsFromBytes() {
 		InputStream stream = new ByteArrayInputStream("bytes".getBytes(StandardCharsets.US_ASCII));
-		assertEquals("bytes", d.fromStream(stream, Object.class).toString());
+		Object body = d.fromStream(stream, Object.class);
+		assertEquals("bytes", body.toString());
 	}
 }
