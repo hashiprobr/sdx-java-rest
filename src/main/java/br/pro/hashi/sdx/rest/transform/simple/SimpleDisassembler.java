@@ -13,18 +13,6 @@ import br.pro.hashi.sdx.rest.transform.exception.DisassemblingException;
  */
 public interface SimpleDisassembler extends Disassembler {
 	/**
-	 * Transforms a {@code byte[]} representation back into an object if possible.
-	 * 
-	 * @param <T>   the type of the object
-	 * @param bytes the representation
-	 * @param type  an object representing {@code T}
-	 * @return the object
-	 * @throws IllegalArgumentException if the type of the object is not supported
-	 * @throws DisassemblingException   if the representation cannot be transformed
-	 */
-	<T> T fromBytes(byte[] bytes, Class<T> type);
-
-	/**
 	 * <p>
 	 * {@inheritDoc}
 	 * </p>
@@ -34,12 +22,22 @@ public interface SimpleDisassembler extends Disassembler {
 	 * more efficient implementation.
 	 * </p>
 	 * 
-	 * @throws IllegalArgumentException {@inheritDoc}
-	 * @throws UncheckedIOException     {@inheritDoc}
-	 * @throws DisassemblingException   {@inheritDoc}
+	 * @throws UncheckedIOException   {@inheritDoc}
+	 * @throws DisassemblingException {@inheritDoc}
 	 */
 	@Override
 	default <T> T fromStream(InputStream stream, Class<T> type) {
 		return fromBytes(Media.read(stream), type);
 	}
+
+	/**
+	 * Transforms a {@code byte[]} representation back into an object if possible.
+	 * 
+	 * @param <T>   the type of the object
+	 * @param bytes the representation
+	 * @param type  an object representing {@code T}
+	 * @return the object
+	 * @throws DisassemblingException if the representation cannot be transformed
+	 */
+	<T> T fromBytes(byte[] bytes, Class<T> type);
 }

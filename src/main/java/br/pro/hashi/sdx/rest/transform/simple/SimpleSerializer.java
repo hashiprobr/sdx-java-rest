@@ -5,6 +5,7 @@ import java.io.StringReader;
 import java.io.UncheckedIOException;
 
 import br.pro.hashi.sdx.rest.transform.Serializer;
+import br.pro.hashi.sdx.rest.transform.exception.SerializingException;
 
 /**
  * A simple serializer can transform arbitrary objects into non-streaming text
@@ -21,8 +22,8 @@ public interface SimpleSerializer extends Serializer {
 	 * Classes are encouraged to provide a more efficient implementation.
 	 * </p>
 	 * 
-	 * @throws IllegalArgumentException {@inheritDoc}
-	 * @throws UncheckedIOException     {@inheritDoc}
+	 * @throws UncheckedIOException {@inheritDoc}
+	 * @throws SerializingException {@inheritDoc}
 	 */
 	@Override
 	default <T> Reader toReader(T body, Class<T> type) {
@@ -35,15 +36,17 @@ public interface SimpleSerializer extends Serializer {
 	 * </p>
 	 * <p>
 	 * The default implementation simply calls {@code toString(T, Class<T>)},
-	 * passing {@code body.getClass()} as the second parameter. <strong>Do not use
-	 * this implementation if {@code T} is a generic type.</strong> Either call
-	 * {@code toString(T, Class<T>)} or provide an alternative implementation.
+	 * passing {@code body.getClass()} as the second parameter. Since
+	 * {@code body.getClass()} loses generic information due to type erasure, this
+	 * implementation might not be recommended if {@code T} is a generic type. It
+	 * might be better to call {@code toString(T, Class<T>)} or provide an
+	 * alternative implementation that ensures generic information is not lost.
 	 * </p>
 	 * 
 	 * @param <T>  the type of the object
 	 * @param body the object
 	 * @return the representation
-	 * @throws IllegalArgumentException if the type of the object is not supported
+	 * @throws SerializingException if the object cannot be transformed
 	 */
 	@SuppressWarnings("unchecked")
 	default <T> String toString(T body) {
@@ -57,7 +60,7 @@ public interface SimpleSerializer extends Serializer {
 	 * @param body the object
 	 * @param type an object representing {@code T}
 	 * @return the representation
-	 * @throws IllegalArgumentException if the type of the object is not supported
+	 * @throws SerializingException if the object cannot be transformed
 	 */
 	<T> String toString(T body, Class<T> type);
 }

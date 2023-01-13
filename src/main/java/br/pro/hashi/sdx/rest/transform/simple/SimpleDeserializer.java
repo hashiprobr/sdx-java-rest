@@ -13,18 +13,6 @@ import br.pro.hashi.sdx.rest.transform.exception.DeserializingException;
  */
 public interface SimpleDeserializer extends Deserializer {
 	/**
-	 * Transforms a {@code String} representation back into an object if possible.
-	 * 
-	 * @param <T>     the type of the object
-	 * @param content the representation
-	 * @param type    an object representing {@code T}
-	 * @return the object
-	 * @throws IllegalArgumentException if the type of the object is not supported
-	 * @throws DeserializingException   if the representation cannot be transformed
-	 */
-	<T> T fromString(String content, Class<T> type);
-
-	/**
 	 * <p>
 	 * {@inheritDoc}
 	 * </p>
@@ -34,12 +22,22 @@ public interface SimpleDeserializer extends Deserializer {
 	 * more efficient implementation.
 	 * </p>
 	 * 
-	 * @throws IllegalArgumentException {@inheritDoc}
-	 * @throws UncheckedIOException     {@inheritDoc}
-	 * @throws DeserializingException   {@inheritDoc}
+	 * @throws UncheckedIOException   {@inheritDoc}
+	 * @throws DeserializingException {@inheritDoc}
 	 */
 	@Override
 	default <T> T fromReader(Reader reader, Class<T> type) {
 		return fromString(Media.read(reader), type);
 	}
+
+	/**
+	 * Transforms a {@code String} representation back into an object if possible.
+	 * 
+	 * @param <T>     the type of the object
+	 * @param content the representation
+	 * @param type    an object representing {@code T}
+	 * @return the object
+	 * @throws DeserializingException if the representation cannot be transformed
+	 */
+	<T> T fromString(String content, Class<T> type);
 }

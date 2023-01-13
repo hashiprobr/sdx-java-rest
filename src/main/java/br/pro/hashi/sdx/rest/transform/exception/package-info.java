@@ -1,5 +1,5 @@
 /**
- * Provides exceptions to indicate that byte or text representations cannot be
- * transformed back into objects.
+ * Provides exceptions to indicate that objects cannot be transformed into
+ * representations or vice-versa.
  */
 package br.pro.hashi.sdx.rest.transform.exception;

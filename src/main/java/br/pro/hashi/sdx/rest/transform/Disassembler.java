@@ -17,9 +17,8 @@ public interface Disassembler {
 	 * @param stream the representation
 	 * @param type   an object representing {@code T}
 	 * @return the object
-	 * @throws IllegalArgumentException if the type of the object is not supported
-	 * @throws UncheckedIOException     if the representation cannot be read
-	 * @throws DisassemblingException   if the representation cannot be transformed
+	 * @throws UncheckedIOException   if the representation cannot be read
+	 * @throws DisassemblingException if the representation cannot be transformed
 	 */
 	<T> T fromStream(InputStream stream, Class<T> type);
 }

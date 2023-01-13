@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.io.UncheckedIOException;
 
 import br.pro.hashi.sdx.rest.transform.Assembler;
+import br.pro.hashi.sdx.rest.transform.exception.AssemblingException;
 
 /**
  * A simple assembler can transform arbitrary objects into non-streaming byte
@@ -22,8 +23,8 @@ public interface SimpleAssembler extends Assembler {
 	 * implementation.
 	 * </p>
 	 * 
-	 * @throws IllegalArgumentException {@inheritDoc}
-	 * @throws UncheckedIOException     {@inheritDoc}
+	 * @throws UncheckedIOException {@inheritDoc}
+	 * @throws AssemblingException  {@inheritDoc}
 	 */
 	@Override
 	default <T> InputStream toStream(T body, Class<T> type) {
@@ -36,15 +37,17 @@ public interface SimpleAssembler extends Assembler {
 	 * </p>
 	 * <p>
 	 * The default implementation simply calls {@code toBytes(T, Class<T>)}, passing
-	 * {@code body.getClass()} as the second parameter. <strong>Do not use this
-	 * implementation if {@code T} is a generic type.</strong> Either call
-	 * {@code toBytes(T, Class<T>)} or provide an alternative implementation.
+	 * {@code body.getClass()} as the second parameter. Since
+	 * {@code body.getClass()} loses generic information due to erasure, this
+	 * implementation might not be recommended if {@code T} is a generic type. It
+	 * might be better to call {@code toBytes(T, Class<T>)} or provide an
+	 * alternative implementation that ensures generic information is not lost.
 	 * </p>
 	 * 
 	 * @param <T>  the type of the object
 	 * @param body the object
 	 * @return the representation
-	 * @throws IllegalArgumentException if the type of the object is not supported
+	 * @throws AssemblingException if the object cannot be transformed
 	 */
 	@SuppressWarnings("unchecked")
 	default <T> byte[] toBytes(T body) {
@@ -58,7 +61,7 @@ public interface SimpleAssembler extends Assembler {
 	 * @param body the object
 	 * @param type an object representing {@code T}
 	 * @return the representation
-	 * @throws IllegalArgumentException if the type of the object is not supported
+	 * @throws AssemblingException if the object cannot be transformed
 	 */
 	<T> byte[] toBytes(T body, Class<T> type);
 }
