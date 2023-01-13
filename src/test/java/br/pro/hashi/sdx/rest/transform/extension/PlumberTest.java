@@ -27,7 +27,7 @@ class PlumberTest {
 	}
 
 	@Test
-	void readerReadsWhatConsumerWrites() throws IOException {
+	void readsWhatConsumerWrites() throws IOException {
 		Consumer<Writer> consumer = (writer) -> {
 			try {
 				writer.write("content");
@@ -46,7 +46,7 @@ class PlumberTest {
 	}
 
 	@Test
-	void readerThrowsIOExceptionIfConsumerThrowsAnyException() {
+	void throwsIOExceptionIfConsumerThrowsAnyException() {
 		Consumer<Writer> consumer = (writer) -> {
 			throw new RuntimeException();
 		};
@@ -59,7 +59,7 @@ class PlumberTest {
 	}
 
 	@Test
-	void readerThrowsAssertionErrorIfTaskThrowsInterruptedException() throws ExecutionException, InterruptedException {
+	void throwsAssertionErrorIfTaskThrowsInterruptedException() throws ExecutionException, InterruptedException {
 		Consumer<Writer> consumer = (writer) -> {
 		};
 		Reader reader = assertDoesNotThrow(() -> {
