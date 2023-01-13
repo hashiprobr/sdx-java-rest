@@ -19,8 +19,7 @@ public interface SimpleDisassembler extends Disassembler {
 	 * @param type  an object representing {@code T}
 	 * @return the object
 	 * @throws IllegalArgumentException if the type of the object is not supported
-	 * @throws DisassemblingException   if it is not possible to transform the
-	 *                                  representation
+	 * @throws DisassemblingException   if the representation cannot be transformed
 	 */
 	<T> T fromBytes(byte[] bytes, Class<T> type) throws DisassemblingException;
 

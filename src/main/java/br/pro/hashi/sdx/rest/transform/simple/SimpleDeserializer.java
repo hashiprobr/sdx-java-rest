@@ -20,8 +20,7 @@ public interface SimpleDeserializer extends Deserializer {
 	 * @param type    an object representing {@code T}
 	 * @return the object
 	 * @throws IllegalArgumentException if the type of the object is not supported
-	 * @throws DeserializingException   if it is not possible to transform the
-	 *                                  representation
+	 * @throws DeserializingException   if the representation cannot be transformed
 	 */
 	<T> T fromString(String content, Class<T> type) throws DeserializingException;
 

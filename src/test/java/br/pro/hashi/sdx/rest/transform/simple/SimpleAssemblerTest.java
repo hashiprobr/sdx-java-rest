@@ -41,7 +41,7 @@ class SimpleAssemblerTest {
 	}
 
 	@Test
-	void toBytesCallsToBytes() throws IOException {
+	void toBytesCallsToBytes() {
 		byte[] bytes = a.toBytes(body);
 		assertArrayEquals(new byte[] { 98, 111, 100, 121 }, bytes);
 	}

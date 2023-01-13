@@ -17,10 +17,8 @@ public interface Deserializer {
 	 * @param type   an object representing {@code T}
 	 * @return the object
 	 * @throws IllegalArgumentException if the type of the object is not supported
-	 * @throws IOException              if it is not possible to read from the
-	 *                                  representation
-	 * @throws DeserializingException   if it is not possible to transform the
-	 *                                  representation
+	 * @throws IOException              if the representation cannot be read
+	 * @throws DeserializingException   if the representation cannot be transformed
 	 */
 	<T> T fromReader(Reader reader, Class<T> type) throws IOException, DeserializingException;
 }

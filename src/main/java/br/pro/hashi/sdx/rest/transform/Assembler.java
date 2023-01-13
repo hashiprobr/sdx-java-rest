@@ -24,8 +24,7 @@ public interface Assembler {
 	 * @param body the object
 	 * @return the representation
 	 * @throws IllegalArgumentException if the type of the object is not supported
-	 * @throws IOException              if it is not possible to write to the
-	 *                                  representation
+	 * @throws IOException              if the representation cannot be written
 	 */
 	@SuppressWarnings("unchecked")
 	default <T> InputStream toStream(T body) throws IOException {
@@ -40,8 +39,7 @@ public interface Assembler {
 	 * @param type an object representing {@code T}
 	 * @return the representation
 	 * @throws IllegalArgumentException if the type of the object is not supported
-	 * @throws IOException              if it is not possible to write to the
-	 *                                  representation
+	 * @throws IOException              if the representation cannot be written
 	 */
 	<T> InputStream toStream(T body, Class<T> type) throws IOException;
 }

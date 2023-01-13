@@ -249,39 +249,30 @@ class MediaTest {
 	}
 
 	@Test
-	void encodesInChunks() {
+	void encodesInChunks() throws IOException {
 		InputStream stream = Media.encode(newInputStream("012"));
-		int length = assertDoesNotThrow(() -> {
-			return stream.available();
-		});
+		int length = stream.available();
 		assertEquals(4, length);
-		int b = assertDoesNotThrow(() -> {
-			return stream.read();
-		});
+		int b = stream.read();
 		assertEquals(77, b);
-		length = assertDoesNotThrow(() -> {
-			return stream.available();
-		});
+		length = stream.available();
 		assertEquals(3, length);
 		byte[] buffer = new byte[3];
-		length = assertDoesNotThrow(() -> {
-			return stream.readNBytes(buffer, 0, 3);
-		});
+		length = stream.readNBytes(buffer, 0, 3);
 		assertEquals(3, length);
 		assertArrayEquals(new byte[] { 68, 69, 121 }, buffer);
-		b = assertDoesNotThrow(() -> {
-			return stream.read();
-		});
+		b = stream.read();
 		assertEquals(-1, b);
-		assertDoesNotThrow(() -> {
-			stream.close();
-		});
+		stream.close();
 	}
 
 	private void assertReads(String expected, InputStream stream) {
-		byte[] bytes = assertDoesNotThrow(() -> {
-			return stream.readAllBytes();
-		});
+		byte[] bytes;
+		try {
+			bytes = stream.readAllBytes();
+		} catch (IOException exception) {
+			throw new AssertionError(exception);
+		}
 		assertArrayEquals(expected.getBytes(StandardCharsets.US_ASCII), bytes);
 	}
 

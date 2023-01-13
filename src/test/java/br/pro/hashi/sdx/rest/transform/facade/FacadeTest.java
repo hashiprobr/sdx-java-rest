@@ -191,8 +191,9 @@ class FacadeTest {
 
 	@Test
 	void doesNotCleanForAssembling() {
+		Object body = new Object();
 		assertThrows(IllegalArgumentException.class, () -> {
-			f.cleanForAssembling(null, new Object());
+			f.cleanForAssembling(null, body);
 		});
 	}
 
@@ -257,8 +258,9 @@ class FacadeTest {
 
 	@Test
 	void doesNotCleanForSerializing() {
+		Object body = new Object();
 		assertThrows(IllegalArgumentException.class, () -> {
-			f.cleanForSerializing(null, new Object());
+			f.cleanForSerializing(null, body);
 		});
 	}
 

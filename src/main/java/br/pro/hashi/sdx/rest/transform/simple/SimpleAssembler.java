@@ -17,7 +17,7 @@ public interface SimpleAssembler extends Assembler {
 	 * </p>
 	 * <p>
 	 * The default implementation simply calls {@code toBytes(T, Class<T>)} and
-	 * instantiates a new {@link ByteArrayInputStream} from the {@code byte[]}
+	 * instantiates a {@link ByteArrayInputStream} from the {@code byte[]}
 	 * representation. Classes are encouraged to provide a more efficient
 	 * implementation.
 	 * </p>

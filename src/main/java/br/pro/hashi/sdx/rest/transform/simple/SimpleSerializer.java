@@ -17,9 +17,8 @@ public interface SimpleSerializer extends Serializer {
 	 * </p>
 	 * <p>
 	 * The default implementation simply calls {@code toString(T, Class<T>)} and
-	 * instantiates a new {@link StringReader} from the {@code String}
-	 * representation. Classes are encouraged to provide a more efficient
-	 * implementation.
+	 * instantiates a {@link StringReader} from the {@code String} representation.
+	 * Classes are encouraged to provide a more efficient implementation.
 	 * </p>
 	 * 
 	 * @throws IllegalArgumentException {@inheritDoc}

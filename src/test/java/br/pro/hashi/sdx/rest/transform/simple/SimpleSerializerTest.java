@@ -39,7 +39,7 @@ class SimpleSerializerTest {
 	}
 
 	@Test
-	void toStringCallsToString() throws IOException {
+	void toStringCallsToString() {
 		String content = s.toString(body);
 		assertEquals("body", content);
 	}
