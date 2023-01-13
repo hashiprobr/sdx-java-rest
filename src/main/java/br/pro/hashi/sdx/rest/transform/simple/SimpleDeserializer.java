@@ -22,7 +22,7 @@ public interface SimpleDeserializer extends Deserializer {
 	 * @throws IllegalArgumentException if the type of the object is not supported
 	 * @throws DeserializingException   if the representation cannot be transformed
 	 */
-	<T> T fromString(String content, Class<T> type) throws DeserializingException;
+	<T> T fromString(String content, Class<T> type);
 
 	/**
 	 * <p>
@@ -39,7 +39,7 @@ public interface SimpleDeserializer extends Deserializer {
 	 * @throws DeserializingException   {@inheritDoc}
 	 */
 	@Override
-	default <T> T fromReader(Reader reader, Class<T> type) throws IOException, DeserializingException {
+	default <T> T fromReader(Reader reader, Class<T> type) throws IOException {
 		return fromString(Media.read(reader), type);
 	}
 }

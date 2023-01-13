@@ -20,5 +20,5 @@ public interface Deserializer {
 	 * @throws IOException              if the representation cannot be read
 	 * @throws DeserializingException   if the representation cannot be transformed
 	 */
-	<T> T fromReader(Reader reader, Class<T> type) throws IOException, DeserializingException;
+	<T> T fromReader(Reader reader, Class<T> type) throws IOException;
 }

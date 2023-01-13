@@ -21,5 +21,5 @@ public interface Disassembler {
 	 * @throws IOException              if the representation cannot be read
 	 * @throws DisassemblingException   if the representation cannot be transformed
 	 */
-	<T> T fromStream(InputStream stream, Class<T> type) throws IOException, DisassemblingException;
+	<T> T fromStream(InputStream stream, Class<T> type) throws IOException;
 }

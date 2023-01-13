@@ -21,7 +21,7 @@ public interface SimpleDisassembler extends Disassembler {
 	 * @throws IllegalArgumentException if the type of the object is not supported
 	 * @throws DisassemblingException   if the representation cannot be transformed
 	 */
-	<T> T fromBytes(byte[] bytes, Class<T> type) throws DisassemblingException;
+	<T> T fromBytes(byte[] bytes, Class<T> type);
 
 	/**
 	 * <p>
@@ -38,7 +38,7 @@ public interface SimpleDisassembler extends Disassembler {
 	 * @throws DisassemblingException   {@inheritDoc}
 	 */
 	@Override
-	default <T> T fromStream(InputStream stream, Class<T> type) throws IOException, DisassemblingException {
+	default <T> T fromStream(InputStream stream, Class<T> type) throws IOException {
 		return fromBytes(stream.readAllBytes(), type);
 	}
 }

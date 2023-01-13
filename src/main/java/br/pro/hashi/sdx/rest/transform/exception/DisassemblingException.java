@@ -4,7 +4,7 @@ package br.pro.hashi.sdx.rest.transform.exception;
  * Thrown to indicate that a byte representation cannot be transformed back into
  * an object.
  */
-public class DisassemblingException extends Exception {
+public class DisassemblingException extends RuntimeException {
 	private static final long serialVersionUID = 7274443958565302544L;
 
 	/**
