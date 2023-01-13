@@ -25,7 +25,7 @@ public non-sealed class RestServerBuilder extends Builder<RestServerBuilder> {
 	 * 
 	 * @return the {@link RestServer}.
 	 */
-	public RestServer build() {
+	public RestServer build(String packageName) {
 		return new RestServer(facade);
 	}
 }

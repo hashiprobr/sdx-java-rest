@@ -18,7 +18,7 @@ class RestServerBuilderTest extends BuilderTest {
 
 	@Test
 	void builds() {
-		RestServer server = b.build();
+		RestServer server = b.build("package");
 		assertNotNull(server);
 	}
 }
