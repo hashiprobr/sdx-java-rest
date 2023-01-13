@@ -1,8 +1,8 @@
 package br.pro.hashi.sdx.rest.transform.simple;
 
-import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
+import java.io.UncheckedIOException;
 
 import br.pro.hashi.sdx.rest.transform.Serializer;
 
@@ -22,10 +22,10 @@ public interface SimpleSerializer extends Serializer {
 	 * </p>
 	 * 
 	 * @throws IllegalArgumentException {@inheritDoc}
-	 * @throws IOException              {@inheritDoc}
+	 * @throws UncheckedIOException     {@inheritDoc}
 	 */
 	@Override
-	default <T> Reader toReader(T body, Class<T> type) throws IOException {
+	default <T> Reader toReader(T body, Class<T> type) {
 		return new StringReader(toString(body, type));
 	}
 

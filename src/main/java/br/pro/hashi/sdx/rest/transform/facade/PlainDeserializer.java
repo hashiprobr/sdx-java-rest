@@ -1,6 +1,5 @@
 package br.pro.hashi.sdx.rest.transform.facade;
 
-import java.io.IOException;
 import java.io.Reader;
 
 import br.pro.hashi.sdx.rest.coding.Media;
@@ -9,7 +8,7 @@ import br.pro.hashi.sdx.rest.transform.Deserializer;
 class PlainDeserializer implements Deserializer {
 	@SuppressWarnings("unchecked")
 	@Override
-	public <T> T fromReader(Reader reader, Class<T> type) throws IOException {
+	public <T> T fromReader(Reader reader, Class<T> type) {
 		if (type.equals(String.class)) {
 			return (T) Media.read(reader);
 		}

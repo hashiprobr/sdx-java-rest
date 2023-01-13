@@ -1,7 +1,7 @@
 package br.pro.hashi.sdx.rest.transform.simple;
 
-import java.io.IOException;
 import java.io.Reader;
+import java.io.UncheckedIOException;
 
 import br.pro.hashi.sdx.rest.coding.Media;
 import br.pro.hashi.sdx.rest.transform.Deserializer;
@@ -35,11 +35,11 @@ public interface SimpleDeserializer extends Deserializer {
 	 * </p>
 	 * 
 	 * @throws IllegalArgumentException {@inheritDoc}
-	 * @throws IOException              {@inheritDoc}
+	 * @throws UncheckedIOException     {@inheritDoc}
 	 * @throws DeserializingException   {@inheritDoc}
 	 */
 	@Override
-	default <T> T fromReader(Reader reader, Class<T> type) throws IOException {
+	default <T> T fromReader(Reader reader, Class<T> type) {
 		return fromString(Media.read(reader), type);
 	}
 }

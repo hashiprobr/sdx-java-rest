@@ -1,7 +1,7 @@
 package br.pro.hashi.sdx.rest.transform;
 
-import java.io.IOException;
 import java.io.InputStream;
+import java.io.UncheckedIOException;
 
 /**
  * An assembler can transform arbitrary objects into byte representations.
@@ -24,10 +24,10 @@ public interface Assembler {
 	 * @param body the object
 	 * @return the representation
 	 * @throws IllegalArgumentException if the type of the object is not supported
-	 * @throws IOException              if the representation cannot be written
+	 * @throws UncheckedIOException     if the representation cannot be written
 	 */
 	@SuppressWarnings("unchecked")
-	default <T> InputStream toStream(T body) throws IOException {
+	default <T> InputStream toStream(T body) {
 		return toStream(body, (Class<T>) body.getClass());
 	}
 
@@ -39,7 +39,7 @@ public interface Assembler {
 	 * @param type an object representing {@code T}
 	 * @return the representation
 	 * @throws IllegalArgumentException if the type of the object is not supported
-	 * @throws IOException              if the representation cannot be written
+	 * @throws UncheckedIOException     if the representation cannot be written
 	 */
-	<T> InputStream toStream(T body, Class<T> type) throws IOException;
+	<T> InputStream toStream(T body, Class<T> type);
 }

@@ -1,8 +1,9 @@
 package br.pro.hashi.sdx.rest.transform.simple;
 
-import java.io.IOException;
 import java.io.InputStream;
+import java.io.UncheckedIOException;
 
+import br.pro.hashi.sdx.rest.coding.Media;
 import br.pro.hashi.sdx.rest.transform.Disassembler;
 import br.pro.hashi.sdx.rest.transform.exception.DisassemblingException;
 
@@ -34,11 +35,11 @@ public interface SimpleDisassembler extends Disassembler {
 	 * </p>
 	 * 
 	 * @throws IllegalArgumentException {@inheritDoc}
-	 * @throws IOException              {@inheritDoc}
+	 * @throws UncheckedIOException     {@inheritDoc}
 	 * @throws DisassemblingException   {@inheritDoc}
 	 */
 	@Override
-	default <T> T fromStream(InputStream stream, Class<T> type) throws IOException {
-		return fromBytes(stream.readAllBytes(), type);
+	default <T> T fromStream(InputStream stream, Class<T> type) {
+		return fromBytes(Media.read(stream), type);
 	}
 }

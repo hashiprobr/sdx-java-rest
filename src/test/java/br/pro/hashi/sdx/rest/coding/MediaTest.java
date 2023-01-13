@@ -11,6 +11,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
+import java.io.UncheckedIOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
@@ -187,9 +188,24 @@ class MediaTest {
 		Reader reader = assertDoesNotThrow(() -> {
 			return Media.reader(stream, null);
 		});
-		assertThrows(IOException.class, () -> {
+		assertThrows(UncheckedIOException.class, () -> {
 			Media.read(reader);
 		});
+	}
+
+	@Test
+	void doesNotReadBytes() throws IOException {
+		InputStream stream = InputStream.nullInputStream();
+		stream.close();
+		assertThrows(UncheckedIOException.class, () -> {
+			Media.read(stream);
+		});
+	}
+
+	@Test
+	void readsBytes() {
+		InputStream stream = newInputStream(USASCII_CONTENT, StandardCharsets.US_ASCII);
+		assertReads(USASCII_CONTENT, stream);
 	}
 
 	@Test
@@ -267,13 +283,7 @@ class MediaTest {
 	}
 
 	private void assertReads(String expected, InputStream stream) {
-		byte[] bytes;
-		try {
-			bytes = stream.readAllBytes();
-		} catch (IOException exception) {
-			throw new AssertionError(exception);
-		}
-		assertArrayEquals(expected.getBytes(StandardCharsets.US_ASCII), bytes);
+		assertArrayEquals(expected.getBytes(StandardCharsets.US_ASCII), Media.read(stream));
 	}
 
 	private InputStream newInputStream(String content) {

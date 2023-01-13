@@ -1,7 +1,7 @@
 package br.pro.hashi.sdx.rest.transform;
 
-import java.io.IOException;
 import java.io.InputStream;
+import java.io.UncheckedIOException;
 
 import br.pro.hashi.sdx.rest.transform.exception.DisassemblingException;
 
@@ -18,8 +18,8 @@ public interface Disassembler {
 	 * @param type   an object representing {@code T}
 	 * @return the object
 	 * @throws IllegalArgumentException if the type of the object is not supported
-	 * @throws IOException              if the representation cannot be read
+	 * @throws UncheckedIOException     if the representation cannot be read
 	 * @throws DisassemblingException   if the representation cannot be transformed
 	 */
-	<T> T fromStream(InputStream stream, Class<T> type) throws IOException;
+	<T> T fromStream(InputStream stream, Class<T> type);
 }

@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.io.UncheckedIOException;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.nio.charset.IllegalCharsetNameException;
@@ -32,17 +33,6 @@ public final class Media {
 		return contentType;
 	}
 
-	public static String read(Reader reader) throws IOException {
-		StringBuilder builder = new StringBuilder();
-		int length;
-		char[] buffer = new char[8192];
-		while ((length = reader.read(buffer, 0, buffer.length)) != -1) {
-			builder.append(buffer, 0, length);
-		}
-		reader.close();
-		return builder.toString();
-	}
-
 	public static Reader reader(InputStream stream, String contentType) throws CharsetException {
 		Charset charset;
 		if (contentType == null) {
@@ -63,6 +53,31 @@ public final class Media {
 			}
 		}
 		return new InputStreamReader(stream, charset);
+	}
+
+	public static String read(Reader reader) {
+		StringBuilder builder = new StringBuilder();
+		int length;
+		char[] buffer = new char[8192];
+		try {
+			while ((length = reader.read(buffer, 0, buffer.length)) != -1) {
+				builder.append(buffer, 0, length);
+			}
+			reader.close();
+		} catch (IOException exception) {
+			throw new UncheckedIOException(exception);
+		}
+		return builder.toString();
+	}
+
+	public static byte[] read(InputStream stream) {
+		byte[] bytes;
+		try {
+			bytes = stream.readAllBytes();
+		} catch (IOException exception) {
+			throw new UncheckedIOException(exception);
+		}
+		return bytes;
 	}
 
 	public static InputStream decode(InputStream stream, String contentType) {

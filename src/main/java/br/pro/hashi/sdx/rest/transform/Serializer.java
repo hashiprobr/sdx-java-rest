@@ -1,7 +1,7 @@
 package br.pro.hashi.sdx.rest.transform;
 
-import java.io.IOException;
 import java.io.Reader;
+import java.io.UncheckedIOException;
 
 /**
  * A serializer can transform arbitrary objects into text representations.
@@ -24,10 +24,10 @@ public interface Serializer {
 	 * @param body the object
 	 * @return the representation
 	 * @throws IllegalArgumentException if the type of the object is not supported
-	 * @throws IOException              if the representation cannot be written
+	 * @throws UncheckedIOException     if the representation cannot be written
 	 */
 	@SuppressWarnings("unchecked")
-	default <T> Reader toReader(T body) throws IOException {
+	default <T> Reader toReader(T body) {
 		return toReader(body, (Class<T>) body.getClass());
 	}
 
@@ -39,7 +39,7 @@ public interface Serializer {
 	 * @param type an object representing {@code T}
 	 * @return the representation
 	 * @throws IllegalArgumentException if the type of the object is not supported
-	 * @throws IOException              if the representation cannot be written
+	 * @throws UncheckedIOException     if the representation cannot be written
 	 */
-	<T> Reader toReader(T body, Class<T> type) throws IOException;
+	<T> Reader toReader(T body, Class<T> type);
 }
