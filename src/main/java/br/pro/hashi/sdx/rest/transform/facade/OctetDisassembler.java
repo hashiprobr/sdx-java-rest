@@ -4,6 +4,7 @@ import java.io.InputStream;
 
 import br.pro.hashi.sdx.rest.coding.Media;
 import br.pro.hashi.sdx.rest.transform.Disassembler;
+import br.pro.hashi.sdx.rest.transform.exception.DisassemblingException;
 
 class OctetDisassembler implements Disassembler {
 	@SuppressWarnings("unchecked")
@@ -15,6 +16,6 @@ class OctetDisassembler implements Disassembler {
 		if (type.equals(InputStream.class)) {
 			return (T) stream;
 		}
-		throw new IllegalArgumentException("Type must be byte[] or InputStream");
+		throw new DisassemblingException("Type must be byte[] or InputStream");
 	}
 }

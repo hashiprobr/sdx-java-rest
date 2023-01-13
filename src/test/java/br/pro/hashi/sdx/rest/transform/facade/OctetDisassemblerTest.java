@@ -1,7 +1,6 @@
 package br.pro.hashi.sdx.rest.transform.facade;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -13,6 +12,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import br.pro.hashi.sdx.rest.transform.Disassembler;
+import br.pro.hashi.sdx.rest.transform.exception.DisassemblingException;
 
 class OctetDisassemblerTest {
 	private InputStream stream;
@@ -26,23 +26,17 @@ class OctetDisassemblerTest {
 
 	@Test
 	void returnsEqualsIfTypeEqualsByteArray() {
-		byte[] body = assertDoesNotThrow(() -> {
-			return d.fromStream(stream, byte[].class);
-		});
-		assertArrayEquals(newByteArray(), body);
+		assertArrayEquals(newByteArray(), d.fromStream(stream, byte[].class));
 	}
 
 	@Test
 	void returnsSameIfTypeEqualsInputStream() {
-		InputStream body = assertDoesNotThrow(() -> {
-			return d.fromStream(stream, InputStream.class);
-		});
-		assertSame(stream, body);
+		assertSame(stream, d.fromStream(stream, InputStream.class));
 	}
 
 	@Test
 	void throwsIfTypeEqualsNeither() {
-		assertThrows(IllegalArgumentException.class, () -> {
+		assertThrows(DisassemblingException.class, () -> {
 			d.fromStream(stream, Object.class);
 		});
 	}

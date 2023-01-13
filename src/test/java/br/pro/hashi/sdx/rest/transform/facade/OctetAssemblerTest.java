@@ -1,7 +1,6 @@
 package br.pro.hashi.sdx.rest.transform.facade;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -15,6 +14,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import br.pro.hashi.sdx.rest.transform.Assembler;
+import br.pro.hashi.sdx.rest.transform.exception.AssemblingException;
 
 class OctetAssemblerTest {
 	private Assembler a;
@@ -38,16 +38,13 @@ class OctetAssemblerTest {
 	@Test
 	void returnsSameIfBodyIsInputStream() {
 		InputStream body = new ByteArrayInputStream(newByteArray());
-		InputStream stream = assertDoesNotThrow(() -> {
-			return a.toStream(body, InputStream.class);
-		});
-		assertSame(body, stream);
+		assertSame(body, a.toStream(body, InputStream.class));
 	}
 
 	@Test
 	void throwsIfBodyIsNeither() {
 		Object body = new Object();
-		assertThrows(IllegalArgumentException.class, () -> {
+		assertThrows(AssemblingException.class, () -> {
 			a.toStream(body, Object.class);
 		});
 	}

@@ -4,6 +4,7 @@ import java.io.Reader;
 import java.io.StringReader;
 
 import br.pro.hashi.sdx.rest.transform.Serializer;
+import br.pro.hashi.sdx.rest.transform.exception.SerializingException;
 
 class PlainSerializer implements Serializer {
 	@Override
@@ -19,6 +20,6 @@ class PlainSerializer implements Serializer {
 		if (body instanceof Reader) {
 			return (Reader) body;
 		}
-		throw new IllegalArgumentException("Body must be instance of String or Reader");
+		throw new SerializingException("Body must be instance of String or Reader");
 	}
 }

@@ -1,6 +1,5 @@
 package br.pro.hashi.sdx.rest.transform.simple;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -31,9 +30,6 @@ class SimpleDeserializerTest {
 	@Test
 	void fromReaderCallsFromString() {
 		Reader reader = new StringReader("content");
-		Object body = assertDoesNotThrow(() -> {
-			return d.fromReader(reader, Object.class);
-		});
-		assertEquals("content", body.toString());
+		assertEquals("content", d.fromReader(reader, Object.class).toString());
 	}
 }

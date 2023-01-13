@@ -1,6 +1,5 @@
 package br.pro.hashi.sdx.rest.transform.facade;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -13,6 +12,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import br.pro.hashi.sdx.rest.transform.Serializer;
+import br.pro.hashi.sdx.rest.transform.exception.SerializingException;
 
 class PlainSerializerTest {
 	private Serializer s;
@@ -36,16 +36,13 @@ class PlainSerializerTest {
 	@Test
 	void returnsSameIfBodyIsReader() {
 		Reader body = new StringReader(newString());
-		Reader reader = assertDoesNotThrow(() -> {
-			return s.toReader(body, Reader.class);
-		});
-		assertSame(body, reader);
+		assertSame(body, s.toReader(body, Reader.class));
 	}
 
 	@Test
 	void throwsIfBodyIsNeither() {
 		Object body = new Object();
-		assertThrows(IllegalArgumentException.class, () -> {
+		assertThrows(SerializingException.class, () -> {
 			s.toReader(body, Object.class);
 		});
 	}

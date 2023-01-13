@@ -1,6 +1,5 @@
 package br.pro.hashi.sdx.rest.transform.simple;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -32,9 +31,6 @@ class SimpleDisassemblerTest {
 	@Test
 	void fromStreamCallsFromBytes() {
 		InputStream stream = new ByteArrayInputStream("bytes".getBytes(StandardCharsets.US_ASCII));
-		Object body = assertDoesNotThrow(() -> {
-			return d.fromStream(stream, Object.class);
-		});
-		assertEquals("bytes", body.toString());
+		assertEquals("bytes", d.fromStream(stream, Object.class).toString());
 	}
 }

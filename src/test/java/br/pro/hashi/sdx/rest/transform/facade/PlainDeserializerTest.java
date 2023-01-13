@@ -1,6 +1,5 @@
 package br.pro.hashi.sdx.rest.transform.facade;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -12,6 +11,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import br.pro.hashi.sdx.rest.transform.Deserializer;
+import br.pro.hashi.sdx.rest.transform.exception.DeserializingException;
 
 class PlainDeserializerTest {
 	private Reader reader;
@@ -25,23 +25,17 @@ class PlainDeserializerTest {
 
 	@Test
 	void returnsEqualsIfTypeEqualsString() {
-		String body = assertDoesNotThrow(() -> {
-			return d.fromReader(reader, String.class);
-		});
-		assertEquals(newString(), body);
+		assertEquals(newString(), d.fromReader(reader, String.class));
 	}
 
 	@Test
 	void returnsSameIfTypeEqualsReader() {
-		Reader body = assertDoesNotThrow(() -> {
-			return d.fromReader(reader, Reader.class);
-		});
-		assertSame(reader, body);
+		assertSame(reader, d.fromReader(reader, Reader.class));
 	}
 
 	@Test
 	void throwsIfTypeEqualsNeither() {
-		assertThrows(IllegalArgumentException.class, () -> {
+		assertThrows(DeserializingException.class, () -> {
 			d.fromReader(reader, Object.class);
 		});
 	}

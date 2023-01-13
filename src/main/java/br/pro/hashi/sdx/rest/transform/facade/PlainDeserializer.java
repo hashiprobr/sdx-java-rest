@@ -4,6 +4,7 @@ import java.io.Reader;
 
 import br.pro.hashi.sdx.rest.coding.Media;
 import br.pro.hashi.sdx.rest.transform.Deserializer;
+import br.pro.hashi.sdx.rest.transform.exception.DeserializingException;
 
 class PlainDeserializer implements Deserializer {
 	@SuppressWarnings("unchecked")
@@ -15,6 +16,6 @@ class PlainDeserializer implements Deserializer {
 		if (type.equals(Reader.class)) {
 			return (T) reader;
 		}
-		throw new IllegalArgumentException("Type must be String or Reader");
+		throw new DeserializingException("Type must be String or Reader");
 	}
 }
