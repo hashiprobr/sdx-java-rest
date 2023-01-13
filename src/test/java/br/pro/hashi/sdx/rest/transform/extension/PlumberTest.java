@@ -32,7 +32,7 @@ class PlumberTest {
 			try {
 				writer.write("content");
 			} catch (IOException exception) {
-				throw new AssertionError();
+				throw new AssertionError(exception);
 			}
 		};
 		Reader reader = assertDoesNotThrow(() -> {
