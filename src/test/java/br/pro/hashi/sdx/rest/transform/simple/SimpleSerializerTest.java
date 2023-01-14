@@ -1,9 +1,13 @@
 package br.pro.hashi.sdx.rest.transform.simple;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.IOException;
 import java.io.Reader;
+import java.io.StringWriter;
+import java.io.UncheckedIOException;
+import java.io.Writer;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -26,6 +30,23 @@ class SimpleSerializerTest {
 				return "body";
 			}
 		};
+	}
+
+	@Test
+	void writeCallsToString() {
+		StringWriter writer = new StringWriter();
+		s.write(body, writer);
+		String content = writer.toString();
+		assertEquals("body", content);
+	}
+
+	@Test
+	void writeThrowsUncheckedIOExceptionIfWriterThrowsIOException() throws IOException {
+		Writer writer = Writer.nullWriter();
+		writer.close();
+		assertThrows(UncheckedIOException.class, () -> {
+			s.write(body, writer);
+		});
 	}
 
 	@Test

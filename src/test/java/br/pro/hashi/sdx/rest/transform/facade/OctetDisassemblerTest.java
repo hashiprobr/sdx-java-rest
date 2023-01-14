@@ -35,7 +35,7 @@ class OctetDisassemblerTest {
 	}
 
 	@Test
-	void throwsIfTypeEqualsNeither() {
+	void throwsDisassemblingExceptionIfTypeEqualsNeither() {
 		assertThrows(DisassemblingException.class, () -> {
 			d.fromStream(stream, Object.class);
 		});

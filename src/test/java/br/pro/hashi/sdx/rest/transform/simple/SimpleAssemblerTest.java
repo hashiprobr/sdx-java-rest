@@ -1,9 +1,13 @@
 package br.pro.hashi.sdx.rest.transform.simple;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -27,6 +31,23 @@ class SimpleAssemblerTest {
 				return "body";
 			}
 		};
+	}
+
+	@Test
+	void writeCallsToBytes() {
+		ByteArrayOutputStream stream = new ByteArrayOutputStream();
+		a.write(body, stream);
+		byte[] bytes = stream.toByteArray();
+		assertEquals("body", new String(bytes, StandardCharsets.US_ASCII));
+	}
+
+	@Test
+	void writeThrowsUncheckedIOExceptionIfStreamThrowsIOException() throws IOException {
+		OutputStream stream = OutputStream.nullOutputStream();
+		stream.close();
+		assertThrows(UncheckedIOException.class, () -> {
+			a.write(body, stream);
+		});
 	}
 
 	@Test

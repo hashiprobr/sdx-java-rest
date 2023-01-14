@@ -1,7 +1,9 @@
 package br.pro.hashi.sdx.rest.transform.simple;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.UncheckedIOException;
 
 import br.pro.hashi.sdx.rest.transform.Assembler;
@@ -12,6 +14,28 @@ import br.pro.hashi.sdx.rest.transform.exception.AssemblingException;
  * representations.
  */
 public interface SimpleAssembler extends Assembler {
+	/**
+	 * <p>
+	 * {@inheritDoc}
+	 * </p>
+	 * <p>
+	 * The default implementation simply calls {@code toBytes(T, Class<T>)} and
+	 * writes the {@code byte[]} representation. Classes are encouraged to provide a
+	 * more efficient implementation.
+	 * </p>
+	 * 
+	 * @throws UncheckedIOException {@inheritDoc}
+	 * @throws AssemblingException  {@inheritDoc}
+	 */
+	default <T> void write(T body, Class<T> type, OutputStream stream) {
+		try {
+			stream.write(toBytes(body, type));
+			stream.close();
+		} catch (IOException exception) {
+			throw new UncheckedIOException(exception);
+		}
+	}
+
 	/**
 	 * <p>
 	 * {@inheritDoc}

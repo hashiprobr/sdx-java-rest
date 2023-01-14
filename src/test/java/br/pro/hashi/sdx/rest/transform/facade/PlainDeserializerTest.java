@@ -34,7 +34,7 @@ class PlainDeserializerTest {
 	}
 
 	@Test
-	void throwsIfTypeEqualsNeither() {
+	void throwsDeserializingExceptionIfTypeEqualsNeither() {
 		assertThrows(DeserializingException.class, () -> {
 			d.fromReader(reader, Object.class);
 		});

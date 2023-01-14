@@ -1,8 +1,10 @@
 package br.pro.hashi.sdx.rest.transform.simple;
 
+import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.UncheckedIOException;
+import java.io.Writer;
 
 import br.pro.hashi.sdx.rest.transform.Serializer;
 import br.pro.hashi.sdx.rest.transform.exception.SerializingException;
@@ -12,6 +14,28 @@ import br.pro.hashi.sdx.rest.transform.exception.SerializingException;
  * representations.
  */
 public interface SimpleSerializer extends Serializer {
+	/**
+	 * <p>
+	 * {@inheritDoc}
+	 * </p>
+	 * <p>
+	 * The default implementation simply calls {@code toString(T, Class<T>)} and
+	 * writes the {@code String} representation. Classes are encouraged to provide a
+	 * more efficient implementation.
+	 * </p>
+	 * 
+	 * @throws UncheckedIOException {@inheritDoc}
+	 * @throws SerializingException {@inheritDoc}
+	 */
+	default <T> void write(T body, Class<T> type, Writer writer) {
+		try {
+			writer.write(toString(body, type));
+			writer.close();
+		} catch (IOException exception) {
+			throw new UncheckedIOException(exception);
+		}
+	}
+
 	/**
 	 * <p>
 	 * {@inheritDoc}
