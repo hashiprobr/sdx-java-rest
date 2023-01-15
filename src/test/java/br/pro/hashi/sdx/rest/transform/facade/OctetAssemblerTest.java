@@ -1,6 +1,5 @@
 package br.pro.hashi.sdx.rest.transform.facade;
 
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -17,6 +16,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import br.pro.hashi.sdx.rest.transform.Assembler;
+import br.pro.hashi.sdx.rest.transform.Hint;
 import br.pro.hashi.sdx.rest.transform.exception.AssemblingException;
 
 class OctetAssemblerTest {
@@ -32,7 +32,15 @@ class OctetAssemblerTest {
 		byte[] body = newByteArray();
 		ByteArrayOutputStream stream = new ByteArrayOutputStream();
 		a.write(body, byte[].class, stream);
-		assertArrayEquals(body, stream.toByteArray());
+		assertEqualsBody(stream);
+	}
+
+	@Test
+	void writesEqualsIfBodyIsByteArrayWithHint() {
+		byte[] body = newByteArray();
+		ByteArrayOutputStream stream = new ByteArrayOutputStream();
+		a.write(body, new Hint<byte[]>() {}, stream);
+		assertEqualsBody(stream);
 	}
 
 	@Test
@@ -40,7 +48,19 @@ class OctetAssemblerTest {
 		InputStream body = newInputStream();
 		ByteArrayOutputStream stream = new ByteArrayOutputStream();
 		a.write(body, InputStream.class, stream);
-		assertArrayEquals(newByteArray(), stream.toByteArray());
+		assertEqualsBody(stream);
+	}
+
+	@Test
+	void writesEqualsIfBodyIsInputStreamWithHint() {
+		InputStream body = newInputStream();
+		ByteArrayOutputStream stream = new ByteArrayOutputStream();
+		a.write(body, new Hint<InputStream>() {}, stream);
+		assertEqualsBody(stream);
+	}
+
+	private void assertEqualsBody(ByteArrayOutputStream stream) {
+		assertEqualsBody(stream.toByteArray());
 	}
 
 	@Test
@@ -76,17 +96,38 @@ class OctetAssemblerTest {
 	void returnsEqualsIfBodyIsByteArray() throws IOException {
 		byte[] body = newByteArray();
 		InputStream stream = a.toStream(body, byte[].class);
+		assertEqualsBody(stream);
+	}
+
+	@Test
+	void returnsEqualsIfBodyIsByteArrayWithHint() throws IOException {
+		byte[] body = newByteArray();
+		InputStream stream = a.toStream(body, new Hint<byte[]>() {});
+		assertEqualsBody(stream);
+	}
+
+	private void assertEqualsBody(InputStream stream) throws IOException {
 		byte[] bytes = new byte[4];
 		stream.readNBytes(bytes, 0, 4);
 		assertEquals(-1, stream.read());
-		assertArrayEquals(body, bytes);
+		assertEqualsBody(bytes);
 		stream.close();
+	}
+
+	private void assertEqualsBody(byte[] bytes) {
+		assertEquals("body", new String(bytes, StandardCharsets.US_ASCII));
 	}
 
 	@Test
 	void returnsSameIfBodyIsInputStream() {
 		InputStream body = newInputStream();
 		assertSame(body, a.toStream(body, InputStream.class));
+	}
+
+	@Test
+	void returnsSameIfBodyIsInputStreamWithHint() {
+		InputStream body = newInputStream();
+		assertSame(body, a.toStream(body, new Hint<InputStream>() {}));
 	}
 
 	@Test

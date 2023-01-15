@@ -7,11 +7,17 @@ import java.io.OutputStream;
 import java.io.UncheckedIOException;
 
 import br.pro.hashi.sdx.rest.transform.Assembler;
+import br.pro.hashi.sdx.rest.transform.Hint;
 import br.pro.hashi.sdx.rest.transform.exception.AssemblingException;
 
 class OctetAssembler implements Assembler {
 	@Override
 	public <T> void write(T body, Class<T> type, OutputStream stream) {
+		write(body, stream);
+	}
+
+	@Override
+	public <T> void write(T body, Hint<T> hint, OutputStream stream) {
 		write(body, stream);
 	}
 
@@ -40,6 +46,11 @@ class OctetAssembler implements Assembler {
 
 	@Override
 	public <T> InputStream toStream(T body, Class<T> type) {
+		return toStream(body);
+	}
+
+	@Override
+	public <T> InputStream toStream(T body, Hint<T> hint) {
 		return toStream(body);
 	}
 

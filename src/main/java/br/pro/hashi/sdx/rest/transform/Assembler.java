@@ -7,7 +7,7 @@ import java.io.UncheckedIOException;
 import br.pro.hashi.sdx.rest.transform.exception.AssemblingException;
 
 /**
- * An assembler can transform arbitrary objects into byte representations.
+ * An assembler can transform objects into byte representations.
  */
 public interface Assembler {
 	/**
@@ -20,7 +20,7 @@ public interface Assembler {
 	 * the second parameter. Since {@code body.getClass()} loses generic information
 	 * due to erasure, this implementation might not be recommended if {@code T} is
 	 * a generic type. It might be better to call
-	 * {@code write(T, Class<T>, OutputStream)} or provide an alternative
+	 * {@code write(T, Hint<T>, OutputStream)} or provide an alternative
 	 * implementation that ensures generic information is not lost.
 	 * </p>
 	 * 
@@ -36,7 +36,13 @@ public interface Assembler {
 	}
 
 	/**
-	 * Writes the representation of an arbitrary object to an {@link OutputStream}.
+	 * <p>
+	 * Writes the representation of a typed object to an {@link OutputStream}.
+	 * </p>
+	 * <p>
+	 * Do not call this method if {@code T} is a generic type. Call
+	 * {@code write(T, Hint<T>, OutputStream)} instead.
+	 * </p>
 	 * 
 	 * @param <T>    the type of the object
 	 * @param body   the object
@@ -49,6 +55,23 @@ public interface Assembler {
 
 	/**
 	 * <p>
+	 * Writes the representation of a hinted object to an {@link OutputStream}.
+	 * </p>
+	 * <p>
+	 * Call this method if {@code T} is a generic type.
+	 * </p>
+	 * 
+	 * @param <T>    the type of the object
+	 * @param body   the object
+	 * @param hint   an object representing {@code T}
+	 * @param stream the output
+	 * @throws UncheckedIOException if the representation cannot be written
+	 * @throws AssemblingException  if the object cannot be transformed
+	 */
+	<T> void write(T body, Hint<T> hint, OutputStream stream);
+
+	/**
+	 * <p>
 	 * Transforms an arbitrary object into an {@link InputStream} representation.
 	 * </p>
 	 * <p>
@@ -56,7 +79,7 @@ public interface Assembler {
 	 * passing {@code body.getClass()} as the second parameter. Since
 	 * {@code body.getClass()} loses generic information due to erasure, this
 	 * implementation might not be recommended if {@code T} is a generic type. It
-	 * might be better to call {@code toStream(T, Class<T>)} or provide an
+	 * might be better to call {@code toStream(T, Hint<T>)} or provide an
 	 * alternative implementation that ensures generic information is not lost.
 	 * </p>
 	 * 
@@ -72,7 +95,13 @@ public interface Assembler {
 	}
 
 	/**
+	 * <p>
 	 * Transforms a typed object into an {@link InputStream} representation.
+	 * </p>
+	 * <p>
+	 * Do not call this method if {@code T} is a generic type. Call
+	 * {@code toStream(T, Hint<T>)} instead.
+	 * </p>
 	 * 
 	 * @param <T>  the type of the object
 	 * @param body the object
@@ -82,4 +111,21 @@ public interface Assembler {
 	 * @throws AssemblingException  if the object cannot be transformed
 	 */
 	<T> InputStream toStream(T body, Class<T> type);
+
+	/**
+	 * <p>
+	 * Transforms a hinted object into an {@link InputStream} representation.
+	 * </p>
+	 * <p>
+	 * Call this method if {@code T} is a generic type.
+	 * </p>
+	 * 
+	 * @param <T>  the type of the object
+	 * @param body the object
+	 * @param hint an object representing {@code T}
+	 * @return the representation
+	 * @throws UncheckedIOException if the representation cannot be written
+	 * @throws AssemblingException  if the object cannot be transformed
+	 */
+	<T> InputStream toStream(T body, Hint<T> hint);
 }

@@ -5,6 +5,7 @@ import java.io.UncheckedIOException;
 
 import br.pro.hashi.sdx.rest.coding.Media;
 import br.pro.hashi.sdx.rest.transform.Disassembler;
+import br.pro.hashi.sdx.rest.transform.Hint;
 import br.pro.hashi.sdx.rest.transform.exception.DisassemblingException;
 
 /**
@@ -18,8 +19,8 @@ public interface SimpleDisassembler extends Disassembler {
 	 * </p>
 	 * <p>
 	 * The default implementation simply transfers the input to a {@code byte[]} and
-	 * calls {@link #fromBytes(byte[], Class)}. Classes are encouraged to provide a
-	 * more efficient implementation.
+	 * calls {@code fromBytes(byte[], Class<T>)}. Classes are encouraged to provide
+	 * a more efficient implementation.
 	 * </p>
 	 * 
 	 * @throws UncheckedIOException   {@inheritDoc}
@@ -27,11 +28,40 @@ public interface SimpleDisassembler extends Disassembler {
 	 */
 	@Override
 	default <T> T fromStream(InputStream stream, Class<T> type) {
-		return fromBytes(Media.read(stream), type);
+		return fromBytes(fromStream(stream), type);
 	}
 
 	/**
-	 * Transforms a {@code byte[]} representation back into an object if possible.
+	 * <p>
+	 * {@inheritDoc}
+	 * </p>
+	 * <p>
+	 * The default implementation simply transfers the input to a {@code byte[]} and
+	 * calls {@code fromBytes(byte[], Hint<T>)}. Classes are encouraged to provide a
+	 * more efficient implementation.
+	 * </p>
+	 * 
+	 * @throws UncheckedIOException   {@inheritDoc}
+	 * @throws DisassemblingException {@inheritDoc}
+	 */
+	@Override
+	default <T> T fromStream(InputStream stream, Hint<T> hint) {
+		return fromBytes(fromStream(stream), hint);
+	}
+
+	private byte[] fromStream(InputStream stream) {
+		return Media.read(stream);
+	}
+
+	/**
+	 * <p>
+	 * Transforms a {@code byte[]} representation back into a typed object if
+	 * possible.
+	 * </p>
+	 * <p>
+	 * Do not call this method if {@code T} is a generic type. Call
+	 * {@code fromBytes(byte[], Hint<T>)} instead.
+	 * </p>
 	 * 
 	 * @param <T>   the type of the object
 	 * @param bytes the representation
@@ -40,4 +70,21 @@ public interface SimpleDisassembler extends Disassembler {
 	 * @throws DisassemblingException if the representation cannot be transformed
 	 */
 	<T> T fromBytes(byte[] bytes, Class<T> type);
+
+	/**
+	 * <p>
+	 * Transforms a {@code byte[]} representation back into a hinted object if
+	 * possible.
+	 * </p>
+	 * <p>
+	 * Call this method if {@code T} is a generic type.
+	 * </p>
+	 * 
+	 * @param <T>   the type of the object
+	 * @param bytes the representation
+	 * @param hint  an object representing {@code T}
+	 * @return the object
+	 * @throws DisassemblingException if the representation cannot be transformed
+	 */
+	<T> T fromBytes(byte[] bytes, Hint<T> hint);
 }

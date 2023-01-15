@@ -12,6 +12,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import br.pro.hashi.sdx.rest.transform.Disassembler;
+import br.pro.hashi.sdx.rest.transform.Hint;
 import br.pro.hashi.sdx.rest.transform.exception.DisassemblingException;
 
 class OctetDisassemblerTest {
@@ -30,14 +31,31 @@ class OctetDisassemblerTest {
 	}
 
 	@Test
+	void returnsEqualsIfTypeEqualsByteArrayWithHint() {
+		assertArrayEquals(newByteArray(), d.fromStream(stream, new Hint<byte[]>() {}));
+	}
+
+	@Test
 	void returnsSameIfTypeEqualsInputStream() {
 		assertSame(stream, d.fromStream(stream, InputStream.class));
+	}
+
+	@Test
+	void returnsSameIfTypeEqualsInputStreamWithHint() {
+		assertSame(stream, d.fromStream(stream, new Hint<InputStream>() {}));
 	}
 
 	@Test
 	void throwsDisassemblingExceptionIfTypeEqualsNeither() {
 		assertThrows(DisassemblingException.class, () -> {
 			d.fromStream(stream, Object.class);
+		});
+	}
+
+	@Test
+	void throwsDisassemblingExceptionIfTypeEqualsNeitherWithHint() {
+		assertThrows(DisassemblingException.class, () -> {
+			d.fromStream(stream, new Hint<Object>() {});
 		});
 	}
 

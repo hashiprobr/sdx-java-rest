@@ -11,6 +11,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import br.pro.hashi.sdx.rest.transform.Deserializer;
+import br.pro.hashi.sdx.rest.transform.Hint;
 import br.pro.hashi.sdx.rest.transform.exception.DeserializingException;
 
 class PlainDeserializerTest {
@@ -29,14 +30,31 @@ class PlainDeserializerTest {
 	}
 
 	@Test
+	void returnsEqualsIfTypeEqualsStringWithHint() {
+		assertEquals(newString(), d.fromReader(reader, new Hint<String>() {}));
+	}
+
+	@Test
 	void returnsSameIfTypeEqualsReader() {
 		assertSame(reader, d.fromReader(reader, Reader.class));
+	}
+
+	@Test
+	void returnsSameIfTypeEqualsReaderWithHint() {
+		assertSame(reader, d.fromReader(reader, new Hint<Reader>() {}));
 	}
 
 	@Test
 	void throwsDeserializingExceptionIfTypeEqualsNeither() {
 		assertThrows(DeserializingException.class, () -> {
 			d.fromReader(reader, Object.class);
+		});
+	}
+
+	@Test
+	void throwsDeserializingExceptionIfTypeEqualsNeitherWithHint() {
+		assertThrows(DeserializingException.class, () -> {
+			d.fromReader(reader, new Hint<Object>() {});
 		});
 	}
 
