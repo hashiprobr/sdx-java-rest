@@ -17,34 +17,33 @@ import br.pro.hashi.sdx.rest.reflection.Reflection;
  * @param <S> the source type
  * @param <T> the target type
  */
-public abstract class Converter<S, T> {
-	private final Type sourceType;
-	private final Type targetType;
-
+public interface Converter<S, T> {
 	/**
-	 * Constructs a new converter.
-	 */
-	protected Converter() {
-		this.sourceType = Reflection.getSpecificType(Converter.class, 0, this);
-		this.targetType = Reflection.getSpecificType(Converter.class, 1, this);
-	}
-
-	/**
+	 * <p>
 	 * Obtains the source type.
+	 * </p>
+	 * <p>
+	 * Classes are encouraged to provide an alternative implementation.
+	 * </p>
 	 * 
 	 * @return an object representing {@code S}
 	 */
-	public final Type getSourceType() {
-		return sourceType;
+	default Type getSourceType() {
+		return Reflection.getSpecificType(Converter.class, 0, this);
 	}
 
 	/**
+	 * <p>
 	 * Obtains the target type.
+	 * </p>
+	 * <p>
+	 * Classes are encouraged to provide an alternative implementation.
+	 * </p>
 	 * 
 	 * @return an object representing {@code T}
 	 */
-	public final Type getTargetType() {
-		return targetType;
+	default Type getTargetType() {
+		return Reflection.getSpecificType(Converter.class, 1, this);
 	}
 
 	/**
@@ -53,7 +52,7 @@ public abstract class Converter<S, T> {
 	 * @param source an object of type {@code S}
 	 * @return an object of type {@code T}
 	 */
-	public abstract T to(S source);
+	T to(S source);
 
 	/**
 	 * Converts an object of the source type from an object of the target type.
@@ -61,5 +60,5 @@ public abstract class Converter<S, T> {
 	 * @param target an object of type {@code T}
 	 * @return an object of type {@code S}
 	 */
-	public abstract S from(T target);
+	S from(T target);
 }
