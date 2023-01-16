@@ -38,7 +38,7 @@ class PlainSerializerTest {
 	void writesEqualsIfBodyIsStringWithHint() {
 		String body = newString();
 		StringWriter writer = new StringWriter();
-		s.write(body, new Hint<String>() {}, writer);
+		s.write(body, new Hint<String>() {}.getType(), writer);
 		assertEqualsBody(writer);
 	}
 
@@ -54,7 +54,7 @@ class PlainSerializerTest {
 	void writesEqualsIfBodyIsReaderWithHint() {
 		Reader body = newReader();
 		StringWriter writer = new StringWriter();
-		s.write(body, new Hint<Reader>() {}, writer);
+		s.write(body, new Hint<Reader>() {}.getType(), writer);
 		assertEqualsBody(writer);
 	}
 
@@ -101,7 +101,7 @@ class PlainSerializerTest {
 	@Test
 	void returnsEqualsIfBodyIsStringWithHint() throws IOException {
 		String body = newString();
-		Reader reader = s.toReader(body, new Hint<String>() {});
+		Reader reader = s.toReader(body, new Hint<String>() {}.getType());
 		assertEqualsBody(reader);
 	}
 
@@ -126,7 +126,7 @@ class PlainSerializerTest {
 	@Test
 	void returnsSameIfBodyIsReaderWithHint() {
 		Reader body = newReader();
-		assertSame(body, s.toReader(body, new Hint<Reader>() {}));
+		assertSame(body, s.toReader(body, new Hint<Reader>() {}.getType()));
 	}
 
 	@Test

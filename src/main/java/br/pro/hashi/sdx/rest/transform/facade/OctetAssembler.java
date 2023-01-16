@@ -5,24 +5,19 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UncheckedIOException;
+import java.lang.reflect.Type;
 
 import br.pro.hashi.sdx.rest.transform.Assembler;
-import br.pro.hashi.sdx.rest.transform.Hint;
 import br.pro.hashi.sdx.rest.transform.exception.AssemblingException;
 
 class OctetAssembler implements Assembler {
 	@Override
-	public <T> void write(T body, Class<T> type, OutputStream stream) {
+	public void write(Object body, Type type, OutputStream stream) {
 		write(body, stream);
 	}
 
 	@Override
-	public <T> void write(T body, Hint<T> hint, OutputStream stream) {
-		write(body, stream);
-	}
-
-	@Override
-	public <T> void write(T body, OutputStream stream) {
+	public void write(Object body, OutputStream stream) {
 		if (body instanceof byte[]) {
 			try {
 				stream.write((byte[]) body);
@@ -45,17 +40,12 @@ class OctetAssembler implements Assembler {
 	}
 
 	@Override
-	public <T> InputStream toStream(T body, Class<T> type) {
+	public InputStream toStream(Object body, Type type) {
 		return toStream(body);
 	}
 
 	@Override
-	public <T> InputStream toStream(T body, Hint<T> hint) {
-		return toStream(body);
-	}
-
-	@Override
-	public <T> InputStream toStream(T body) {
+	public InputStream toStream(Object body) {
 		if (body instanceof byte[]) {
 			return new ByteArrayInputStream((byte[]) body);
 		}

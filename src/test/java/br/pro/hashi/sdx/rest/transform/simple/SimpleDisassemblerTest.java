@@ -6,6 +6,7 @@ import static org.mockito.Mockito.when;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -21,18 +22,9 @@ class SimpleDisassemblerTest {
 	void setUp() {
 		d = new SimpleDisassembler() {
 			@Override
-			public <T> T fromBytes(byte[] bytes, Class<T> type) {
-				return mockWithBytes(type, bytes);
-			}
-
-			@SuppressWarnings("unchecked")
-			@Override
-			public <T> T fromBytes(byte[] bytes, Hint<T> hint) {
-				return mockWithBytes((Class<T>) hint.getType(), bytes);
-			}
-
-			private <T> T mockWithBytes(Class<T> type, byte[] bytes) {
-				T body = mock(type);
+			public <T> T fromBytes(byte[] bytes, Type type) {
+				@SuppressWarnings("unchecked")
+				T body = mock((Class<T>) type);
 				when(body.toString()).thenReturn(new String(bytes, StandardCharsets.US_ASCII));
 				return body;
 			}
@@ -49,7 +41,7 @@ class SimpleDisassemblerTest {
 	@Test
 	void fromStreamCallsFromBytesWithHint() {
 		InputStream stream = newInputStream();
-		Object body = d.fromStream(stream, new Hint<Object>() {});
+		Object body = d.fromStream(stream, new Hint<Object>() {}.getType());
 		assertEqualsInputStream(body);
 	}
 

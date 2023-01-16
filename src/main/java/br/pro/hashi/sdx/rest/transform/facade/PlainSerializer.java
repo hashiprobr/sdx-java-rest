@@ -5,24 +5,19 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.io.UncheckedIOException;
 import java.io.Writer;
+import java.lang.reflect.Type;
 
-import br.pro.hashi.sdx.rest.transform.Hint;
 import br.pro.hashi.sdx.rest.transform.Serializer;
 import br.pro.hashi.sdx.rest.transform.exception.SerializingException;
 
 class PlainSerializer implements Serializer {
 	@Override
-	public <T> void write(T body, Class<T> type, Writer writer) {
+	public void write(Object body, Type type, Writer writer) {
 		write(body, writer);
 	}
 
 	@Override
-	public <T> void write(T body, Hint<T> hint, Writer writer) {
-		write(body, writer);
-	}
-
-	@Override
-	public <T> void write(T body, Writer writer) {
+	public void write(Object body, Writer writer) {
 		if (body instanceof String) {
 			try {
 				writer.write((String) body);
@@ -45,17 +40,12 @@ class PlainSerializer implements Serializer {
 	}
 
 	@Override
-	public <T> Reader toReader(T body, Class<T> type) {
+	public Reader toReader(Object body, Type type) {
 		return toReader(body);
 	}
 
 	@Override
-	public <T> Reader toReader(T body, Hint<T> hint) {
-		return toReader(body);
-	}
-
-	@Override
-	public <T> Reader toReader(T body) {
+	public Reader toReader(Object body) {
 		if (body instanceof String) {
 			return new StringReader((String) body);
 		}

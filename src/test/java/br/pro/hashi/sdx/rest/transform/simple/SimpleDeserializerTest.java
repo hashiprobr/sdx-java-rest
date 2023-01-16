@@ -6,6 +6,7 @@ import static org.mockito.Mockito.when;
 
 import java.io.Reader;
 import java.io.StringReader;
+import java.lang.reflect.Type;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -20,18 +21,9 @@ class SimpleDeserializerTest {
 	void setUp() {
 		d = new SimpleDeserializer() {
 			@Override
-			public <T> T fromString(String content, Class<T> type) {
-				return mockWithContent(type, content);
-			}
-
-			@SuppressWarnings("unchecked")
-			@Override
-			public <T> T fromString(String content, Hint<T> hint) {
-				return mockWithContent((Class<T>) hint.getType(), content);
-			}
-
-			private <T> T mockWithContent(Class<T> type, String content) {
-				T body = mock(type);
+			public <T> T fromString(String content, Type type) {
+				@SuppressWarnings("unchecked")
+				T body = mock((Class<T>) type);
 				when(body.toString()).thenReturn(content);
 				return body;
 			}
@@ -48,7 +40,7 @@ class SimpleDeserializerTest {
 	@Test
 	void fromReaderCallsFromStringWithHint() {
 		Reader reader = newReader();
-		Object body = d.fromReader(reader, new Hint<Object>() {});
+		Object body = d.fromReader(reader, new Hint<Object>() {}.getType());
 		assertEqualsReader(body);
 	}
 

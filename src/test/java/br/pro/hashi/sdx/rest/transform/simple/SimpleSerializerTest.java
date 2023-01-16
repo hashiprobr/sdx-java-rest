@@ -8,6 +8,7 @@ import java.io.Reader;
 import java.io.StringWriter;
 import java.io.UncheckedIOException;
 import java.io.Writer;
+import java.lang.reflect.Type;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -22,12 +23,7 @@ class SimpleSerializerTest {
 	void setUp() {
 		s = new SimpleSerializer() {
 			@Override
-			public <T> String toString(T body, Class<T> type) {
-				return body.toString();
-			}
-
-			@Override
-			public <T> String toString(T body, Hint<T> hint) {
+			public String toString(Object body, Type type) {
 				return body.toString();
 			}
 		};
@@ -49,7 +45,7 @@ class SimpleSerializerTest {
 	@Test
 	void writeCallsToStringWithHint() {
 		StringWriter writer = new StringWriter();
-		s.write(body, new Hint<Object>() {}, writer);
+		s.write(body, new Hint<Object>() {}.getType(), writer);
 		assertEqualsBody(writer);
 	}
 
@@ -74,7 +70,7 @@ class SimpleSerializerTest {
 
 	@Test
 	void toReaderCallsToStringWithHint() throws IOException {
-		Reader reader = s.toReader(body, new Hint<Object>() {});
+		Reader reader = s.toReader(body, new Hint<Object>() {}.getType());
 		assertEqualsBody(reader);
 	}
 
@@ -94,7 +90,7 @@ class SimpleSerializerTest {
 
 	@Test
 	void toStringCallsToStringWithHint() {
-		String content = s.toString(body, new Hint<Object>() {});
+		String content = s.toString(body, new Hint<Object>() {}.getType());
 		assertEqualsBody(content);
 	}
 

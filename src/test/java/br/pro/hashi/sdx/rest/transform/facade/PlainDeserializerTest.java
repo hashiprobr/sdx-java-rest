@@ -31,7 +31,7 @@ class PlainDeserializerTest {
 
 	@Test
 	void returnsEqualsIfTypeEqualsStringWithHint() {
-		assertEquals(newString(), d.fromReader(reader, new Hint<String>() {}));
+		assertEquals(newString(), d.fromReader(reader, new Hint<String>() {}.getType()));
 	}
 
 	@Test
@@ -41,7 +41,7 @@ class PlainDeserializerTest {
 
 	@Test
 	void returnsSameIfTypeEqualsReaderWithHint() {
-		assertSame(reader, d.fromReader(reader, new Hint<Reader>() {}));
+		assertSame(reader, d.fromReader(reader, new Hint<Reader>() {}.getType()));
 	}
 
 	@Test
@@ -54,7 +54,7 @@ class PlainDeserializerTest {
 	@Test
 	void throwsDeserializingExceptionIfTypeEqualsNeitherWithHint() {
 		assertThrows(DeserializingException.class, () -> {
-			d.fromReader(reader, new Hint<Object>() {});
+			d.fromReader(reader, new Hint<Object>() {}.getType());
 		});
 	}
 

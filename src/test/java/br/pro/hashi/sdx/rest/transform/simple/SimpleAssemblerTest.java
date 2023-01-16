@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UncheckedIOException;
+import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -23,16 +24,7 @@ class SimpleAssemblerTest {
 	void setUp() {
 		a = new SimpleAssembler() {
 			@Override
-			public <T> byte[] toBytes(T body, Class<T> type) {
-				return getBytesFrom(body);
-			}
-
-			@Override
-			public <T> byte[] toBytes(T body, Hint<T> hint) {
-				return getBytesFrom(body);
-			}
-
-			private <T> byte[] getBytesFrom(T body) {
+			public byte[] toBytes(Object body, Type type) {
 				return body.toString().getBytes(StandardCharsets.US_ASCII);
 			}
 		};
@@ -54,7 +46,7 @@ class SimpleAssemblerTest {
 	@Test
 	void writeCallsToBytesWithHint() {
 		ByteArrayOutputStream stream = new ByteArrayOutputStream();
-		a.write(body, new Hint<Object>() {}, stream);
+		a.write(body, new Hint<Object>() {}.getType(), stream);
 		assertEqualsBody(stream);
 	}
 
@@ -79,7 +71,7 @@ class SimpleAssemblerTest {
 
 	@Test
 	void toStreamCallsToBytesWithHint() throws IOException {
-		InputStream stream = a.toStream(body, new Hint<Object>() {});
+		InputStream stream = a.toStream(body, new Hint<Object>() {}.getType());
 		assertEqualsBody(stream);
 	}
 
@@ -99,7 +91,7 @@ class SimpleAssemblerTest {
 
 	@Test
 	void toBytesCallsToBytesWithHint() {
-		byte[] bytes = a.toBytes(body, new Hint<Object>() {});
+		byte[] bytes = a.toBytes(body, new Hint<Object>() {}.getType());
 		assertEqualsBody(bytes);
 	}
 

@@ -32,7 +32,7 @@ class OctetDisassemblerTest {
 
 	@Test
 	void returnsEqualsIfTypeEqualsByteArrayWithHint() {
-		assertArrayEquals(newByteArray(), d.fromStream(stream, new Hint<byte[]>() {}));
+		assertArrayEquals(newByteArray(), d.fromStream(stream, new Hint<byte[]>() {}.getType()));
 	}
 
 	@Test
@@ -42,7 +42,7 @@ class OctetDisassemblerTest {
 
 	@Test
 	void returnsSameIfTypeEqualsInputStreamWithHint() {
-		assertSame(stream, d.fromStream(stream, new Hint<InputStream>() {}));
+		assertSame(stream, d.fromStream(stream, new Hint<InputStream>() {}.getType()));
 	}
 
 	@Test
@@ -55,7 +55,7 @@ class OctetDisassemblerTest {
 	@Test
 	void throwsDisassemblingExceptionIfTypeEqualsNeitherWithHint() {
 		assertThrows(DisassemblingException.class, () -> {
-			d.fromStream(stream, new Hint<Object>() {});
+			d.fromStream(stream, new Hint<Object>() {}.getType());
 		});
 	}
 

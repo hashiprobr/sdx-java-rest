@@ -133,6 +133,18 @@
         </executions>
         <configuration>
           <excludePackageNames>br.pro.hashi.sdx.rest</excludePackageNames>
+          <tags>
+            <tag>
+              <name>implSpec</name>
+              <placement>m</placement>
+              <head>Implementation Specification</head>
+            </tag>
+            <tag>
+              <name>implNote</name>
+              <placement>m</placement>
+              <head>Implementation Notes</head>
+            </tag>
+          </tags>
         </configuration>
       </plugin>
       <plugin>
