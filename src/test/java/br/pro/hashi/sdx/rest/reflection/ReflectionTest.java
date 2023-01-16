@@ -28,8 +28,29 @@ import br.pro.hashi.sdx.rest.reflection.mock.FinalChildWithBoth;
 import br.pro.hashi.sdx.rest.reflection.mock.FinalChildWithLeft;
 import br.pro.hashi.sdx.rest.reflection.mock.FinalChildWithNeither;
 import br.pro.hashi.sdx.rest.reflection.mock.FinalChildWithRight;
+import br.pro.hashi.sdx.rest.reflection.mock.FinalImplementationWithBoth;
+import br.pro.hashi.sdx.rest.reflection.mock.FinalImplementationWithDiamond;
+import br.pro.hashi.sdx.rest.reflection.mock.FinalImplementationWithLeft;
+import br.pro.hashi.sdx.rest.reflection.mock.FinalImplementationWithNeither;
+import br.pro.hashi.sdx.rest.reflection.mock.FinalImplementationWithRight;
+import br.pro.hashi.sdx.rest.reflection.mock.FinalMixedWithBoth;
+import br.pro.hashi.sdx.rest.reflection.mock.FinalMixedWithLeft;
+import br.pro.hashi.sdx.rest.reflection.mock.FinalMixedWithNeither;
+import br.pro.hashi.sdx.rest.reflection.mock.FinalMixedWithRight;
+import br.pro.hashi.sdx.rest.reflection.mock.GenericInterface;
 import br.pro.hashi.sdx.rest.reflection.mock.GenericParent;
+import br.pro.hashi.sdx.rest.reflection.mock.ImplementationWithBoth;
+import br.pro.hashi.sdx.rest.reflection.mock.ImplementationWithDiamond;
+import br.pro.hashi.sdx.rest.reflection.mock.ImplementationWithLeft;
+import br.pro.hashi.sdx.rest.reflection.mock.ImplementationWithNeither;
+import br.pro.hashi.sdx.rest.reflection.mock.ImplementationWithRight;
+import br.pro.hashi.sdx.rest.reflection.mock.MixedWithBoth;
+import br.pro.hashi.sdx.rest.reflection.mock.MixedWithLeft;
+import br.pro.hashi.sdx.rest.reflection.mock.MixedWithNeither;
+import br.pro.hashi.sdx.rest.reflection.mock.MixedWithRight;
 import br.pro.hashi.sdx.rest.reflection.mock.Parent;
+import br.pro.hashi.sdx.rest.reflection.mock.PartialGenericInterface;
+import br.pro.hashi.sdx.rest.reflection.mock.PartialGenericParent;
 import br.pro.hashi.sdx.rest.reflection.mock.WithInvalidNoArgsConstructor;
 import br.pro.hashi.sdx.rest.reflection.mock.WithPackageNoArgsConstructor;
 import br.pro.hashi.sdx.rest.reflection.mock.WithPrivateNoArgsConstructor;
@@ -90,78 +111,201 @@ class ReflectionTest {
 
 	@Test
 	void getsBothSpecificTypesFromFinalChildWithBoth() {
-		assertBothSpecificTypesCorrect(new FinalChildWithBoth());
+		assertBothSpecificTypesCorrect(GenericParent.class, new FinalChildWithBoth());
 	}
 
 	@Test
 	void getsBothSpecificTypesFromFinalChildWithLeft() {
-		assertBothSpecificTypesCorrect(new FinalChildWithLeft());
+		assertBothSpecificTypesCorrect(GenericParent.class, new FinalChildWithLeft());
 	}
 
 	@Test
 	void getsBothSpecificTypesFromFinalChildWithRight() {
-		assertBothSpecificTypesCorrect(new FinalChildWithRight());
+		assertBothSpecificTypesCorrect(GenericParent.class, new FinalChildWithRight());
 	}
 
 	@Test
 	void getsBothSpecificTypesFromFinalChildWithNeither() {
-		assertBothSpecificTypesCorrect(new FinalChildWithNeither());
+		assertBothSpecificTypesCorrect(GenericParent.class, new FinalChildWithNeither());
 	}
 
 	@Test
 	void getsBothSpecificTypesFromChildWithBoth() {
-		assertBothSpecificTypesCorrect(new ChildWithBoth());
-	}
-
-	private <S extends GenericParent<?, ?>> void assertBothSpecificTypesCorrect(S child) {
-		assertLeftSpecificTypeCorrect(child);
-		assertRightSpecificTypeCorrect(child);
+		assertBothSpecificTypesCorrect(GenericParent.class, new ChildWithBoth());
 	}
 
 	@Test
 	void getsLeftSpecificTypeFromChildWithLeft() {
 		ChildWithLeft<Double> child = new ChildWithLeft<>();
-		assertLeftSpecificTypeCorrect(child);
-		assertRightSpecificTypeInvalid(child);
+		assertLeftSpecificTypeCorrect(GenericParent.class, child);
+		assertRightSpecificTypeInvalid(GenericParent.class, child);
 	}
 
 	@Test
 	void getsRightSpecificTypeFromChildWithRight() {
 		ChildWithRight<Integer> child = new ChildWithRight<>();
-		assertLeftSpecificTypeInvalid(child);
-		assertRightSpecificTypeCorrect(child);
+		assertLeftSpecificTypeInvalid(GenericParent.class, child);
+		assertRightSpecificTypeCorrect(GenericParent.class, child);
 	}
 
 	@Test
 	void getsNeitherSpecificTypeFromChildWithNeither() {
 		ChildWithNeither<Integer, Double> child = new ChildWithNeither<>();
-		assertLeftSpecificTypeInvalid(child);
-		assertRightSpecificTypeInvalid(child);
+		assertLeftSpecificTypeInvalid(GenericParent.class, child);
+		assertRightSpecificTypeInvalid(GenericParent.class, child);
 	}
 
-	private <S extends GenericParent<?, ?>> void assertLeftSpecificTypeCorrect(S child) {
-		assertSpecificTypeEquals(Integer.class, child, 0);
+	@Test
+	void getsBothSpecificTypesFromFinalImplementationWithBoth() {
+		assertBothSpecificTypesCorrect(GenericInterface.class, new FinalImplementationWithBoth());
 	}
 
-	private <S extends GenericParent<?, ?>> void assertRightSpecificTypeCorrect(S child) {
-		assertSpecificTypeEquals(Double.class, child, 1);
+	@Test
+	void getsBothSpecificTypesFromFinalImplementationWithDiamond() {
+		assertBothSpecificTypesCorrect(GenericInterface.class, new FinalImplementationWithDiamond());
 	}
 
-	private <S extends GenericParent<?, ?>> void assertLeftSpecificTypeInvalid(S child) {
-		assertSpecificTypeThrows(child, 0);
+	@Test
+	void getsBothSpecificTypesFromFinalImplementationWithLeft() {
+		assertBothSpecificTypesCorrect(GenericInterface.class, new FinalImplementationWithLeft());
 	}
 
-	private <S extends GenericParent<?, ?>> void assertRightSpecificTypeInvalid(S child) {
-		assertSpecificTypeThrows(child, 1);
+	@Test
+	void getsBothSpecificTypesFromFinalImplementationWithRight() {
+		assertBothSpecificTypesCorrect(GenericInterface.class, new FinalImplementationWithRight());
 	}
 
-	private <S extends GenericParent<?, ?>> void assertSpecificTypeEquals(Class<?> type, S child, int i) {
-		assertEquals(type, Reflection.getSpecificType(GenericParent.class, child, i));
+	@Test
+	void getsBothSpecificTypesFromFinalImplementationWithNeither() {
+		assertBothSpecificTypesCorrect(GenericInterface.class, new FinalImplementationWithNeither());
 	}
 
-	private <S extends GenericParent<?, ?>> void assertSpecificTypeThrows(S child, int i) {
+	@Test
+	void getsBothSpecificTypesFromImplementationWithBoth() {
+		assertBothSpecificTypesCorrect(GenericInterface.class, new ImplementationWithBoth());
+	}
+
+	@Test
+	void getsBothSpecificTypesFromImplementationWithDiamond() {
+		assertBothSpecificTypesCorrect(GenericInterface.class, new ImplementationWithDiamond());
+	}
+
+	@Test
+	void getsLeftSpecificTypeFromImplementationWithLeft() {
+		ImplementationWithLeft<Double> implementation = new ImplementationWithLeft<>();
+		assertLeftSpecificTypeCorrect(GenericInterface.class, implementation);
+		assertRightSpecificTypeInvalid(GenericInterface.class, implementation);
+	}
+
+	@Test
+	void getsRightSpecificTypeFromImplementationWithRight() {
+		ImplementationWithRight<Integer> implementation = new ImplementationWithRight<>();
+		assertLeftSpecificTypeInvalid(GenericInterface.class, implementation);
+		assertRightSpecificTypeCorrect(GenericInterface.class, implementation);
+	}
+
+	@Test
+	void getsNeitherSpecificTypeFromImplementationWithNeither() {
+		ImplementationWithNeither<Integer, Double> implementation = new ImplementationWithNeither<>();
+		assertLeftSpecificTypeInvalid(GenericInterface.class, implementation);
+		assertRightSpecificTypeInvalid(GenericInterface.class, implementation);
+	}
+
+	private <T, S extends T> void assertBothSpecificTypesCorrect(Class<T> rootType, S object) {
+		assertLeftSpecificTypeCorrect(rootType, object);
+		assertRightSpecificTypeCorrect(rootType, object);
+	}
+
+	private <T, S extends T> void assertLeftSpecificTypeCorrect(Class<T> rootType, S object) {
+		assertSpecificTypeEquals(Integer.class, rootType, 0, object);
+	}
+
+	private <T, S extends T> void assertRightSpecificTypeCorrect(Class<T> rootType, S object) {
+		assertSpecificTypeEquals(Double.class, rootType, 1, object);
+	}
+
+	private <T, S extends T> void assertLeftSpecificTypeInvalid(Class<T> rootType, S object) {
+		assertSpecificTypeThrows(rootType, 0, object);
+	}
+
+	private <T, S extends T> void assertRightSpecificTypeInvalid(Class<T> rootType, S object) {
+		assertSpecificTypeThrows(rootType, 1, object);
+	}
+
+	@Test
+	void getsBothSpecificTypesFromFinalMixedWithBoth() {
+		assertBothSpecificTypesCorrect(new FinalMixedWithBoth());
+	}
+
+	@Test
+	void getsBothSpecificTypesFromFinalMixedWithLeft() {
+		assertBothSpecificTypesCorrect(new FinalMixedWithLeft());
+	}
+
+	@Test
+	void getsBothSpecificTypesFromFinalMixedWithRight() {
+		assertBothSpecificTypesCorrect(new FinalMixedWithRight());
+	}
+
+	@Test
+	void getsBothSpecificTypesFromFinalMixedWithNeither() {
+		assertBothSpecificTypesCorrect(new FinalMixedWithNeither());
+	}
+
+	@Test
+	void getsBothSpecificTypesFromMixedWithBoth() {
+		assertBothSpecificTypesCorrect(new MixedWithBoth());
+	}
+
+	@Test
+	void getsLeftSpecificTypeFromMixedWithLeft() {
+		MixedWithLeft<Integer> mixed = new MixedWithLeft<>();
+		assertLeftSpecificTypeCorrect(mixed);
+		assertRightSpecificTypeInvalid(mixed);
+	}
+
+	@Test
+	void getsRightSpecificTypeFromMixedWithRight() {
+		MixedWithRight<Integer> mixed = new MixedWithRight<>();
+		assertLeftSpecificTypeInvalid(mixed);
+		assertRightSpecificTypeCorrect(mixed);
+	}
+
+	@Test
+	void getsNeitherSpecificTypeFromMixedWithNeither() {
+		MixedWithNeither<Integer, Double> mixed = new MixedWithNeither<>();
+		assertLeftSpecificTypeInvalid(mixed);
+		assertRightSpecificTypeInvalid(mixed);
+	}
+
+	private <S extends PartialGenericParent<?> & PartialGenericInterface<?>> void assertBothSpecificTypesCorrect(S mixed) {
+		assertLeftSpecificTypeCorrect(mixed);
+		assertRightSpecificTypeCorrect(mixed);
+	}
+
+	private <S extends PartialGenericParent<?> & PartialGenericInterface<?>> void assertLeftSpecificTypeCorrect(S mixed) {
+		assertSpecificTypeEquals(Integer.class, PartialGenericParent.class, 0, mixed);
+	}
+
+	private <S extends PartialGenericParent<?> & PartialGenericInterface<?>> void assertRightSpecificTypeCorrect(S mixed) {
+		assertSpecificTypeEquals(Double.class, PartialGenericInterface.class, 0, mixed);
+	}
+
+	private <S extends PartialGenericParent<?> & PartialGenericInterface<?>> void assertLeftSpecificTypeInvalid(S mixed) {
+		assertSpecificTypeThrows(PartialGenericParent.class, 0, mixed);
+	}
+
+	private <S extends PartialGenericParent<?> & PartialGenericInterface<?>> void assertRightSpecificTypeInvalid(S mixed) {
+		assertSpecificTypeThrows(PartialGenericInterface.class, 0, mixed);
+	}
+
+	private <T, S extends T> void assertSpecificTypeEquals(Class<?> type, Class<T> rootType, int rootIndex, S object) {
+		assertEquals(type, Reflection.getSpecificType(rootType, rootIndex, object));
+	}
+
+	private <T, S extends T> void assertSpecificTypeThrows(Class<T> rootType, int rootIndex, S object) {
 		assertThrows(ReflectionException.class, () -> {
-			Reflection.getSpecificType(GenericParent.class, child, i);
+			Reflection.getSpecificType(rootType, rootIndex, object);
 		});
 	}
 }

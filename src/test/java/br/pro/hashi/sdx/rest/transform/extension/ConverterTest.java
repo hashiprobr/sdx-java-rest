@@ -29,14 +29,14 @@ class ConverterTest {
 
 	@Test
 	void getsSourceType() {
-		reflection.when(() -> Reflection.getSpecificType(eq(Converter.class), any(), eq(0))).thenReturn(Double.class);
+		reflection.when(() -> Reflection.getSpecificType(eq(Converter.class), eq(0), any())).thenReturn(Double.class);
 		c = new ConcreteConverter();
 		assertEquals(Double.class, c.getSourceType());
 	}
 
 	@Test
 	void getsTargetType() {
-		reflection.when(() -> Reflection.getSpecificType(eq(Converter.class), any(), eq(1))).thenReturn(Integer.class);
+		reflection.when(() -> Reflection.getSpecificType(eq(Converter.class), eq(1), any())).thenReturn(Integer.class);
 		c = new ConcreteConverter();
 		assertEquals(Integer.class, c.getTargetType());
 	}

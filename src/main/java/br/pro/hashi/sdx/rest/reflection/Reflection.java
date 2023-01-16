@@ -54,30 +54,105 @@ public final class Reflection {
 		};
 	}
 
-	public static <T, S extends T> Type getSpecificType(Class<T> superType, S object, int i) {
-		Stack<Class<?>> stack = new Stack<>();
-		Class<?> subType;
-		for (subType = object.getClass(); !subType.equals(superType); subType = subType.getSuperclass()) {
-			stack.push(subType);
-		}
-		TypeVariable<?>[] typeVariables = superType.getTypeParameters();
-		Type type;
-		while (!stack.empty()) {
-			subType = stack.pop();
-			ParameterizedType parameterizedType = (ParameterizedType) subType.getGenericSuperclass();
-			Type[] types = parameterizedType.getActualTypeArguments();
-			type = types[i];
-			if (type instanceof TypeVariable) {
-				typeVariables = subType.getTypeParameters();
-				i = 0;
-				while (!typeVariables[i].equals(type)) {
-					i++;
+	public static <T, S extends T> Type getSpecificType(Class<T> rootType, int rootIndex, S object) {
+		Class<?> type = object.getClass();
+
+		Stack<Node> stack = new Stack<>();
+		stack.push(new Node(null, type));
+
+		Type specificType;
+		TypeVariable<?>[] typeVariables;
+
+		while (!stack.isEmpty()) {
+			Node node = stack.peek();
+
+			if (node.hasNext()) {
+				Class<?> superType = node.getSuperType();
+
+				if (superType != null) {
+					if (superType.equals(rootType)) {
+						int index = rootIndex;
+
+						while (node != null) {
+							ParameterizedType genericSuperType = node.getGenericSuperType();
+							Type[] types = genericSuperType.getActualTypeArguments();
+							specificType = types[index];
+
+							if (specificType instanceof TypeVariable) {
+								typeVariables = node.getTypeParameters();
+								index = 0;
+								while (!specificType.equals(typeVariables[index])) {
+									index++;
+								}
+							} else {
+								return specificType;
+							}
+
+							node = node.getParent();
+						}
+					} else {
+						stack.push(new Node(node, superType));
+					}
 				}
 			} else {
-				return type;
+				stack.pop();
 			}
 		}
-		throw new ReflectionException("Class %s must specify type %s".formatted(subType.getName(), typeVariables[i].getName()));
+
+		typeVariables = rootType.getTypeParameters();
+		String typeVariableName = typeVariables[rootIndex].getName();
+		throw new ReflectionException("Class %s must specify type %s".formatted(type.getName(), typeVariableName));
+	}
+
+	private static class Node {
+		private Node parent;
+		private Class<?> type;
+		private Class<?>[] interfaces;
+		private Type[] genericInterfaces;
+		private int index;
+
+		private Node(Node parent, Class<?> type) {
+			this.parent = parent;
+			this.type = type;
+			this.interfaces = type.getInterfaces();
+			this.genericInterfaces = type.getGenericInterfaces();
+			this.index = -2;
+			// superclass == -1
+			// interface >= 0
+		}
+
+		private Node getParent() {
+			return parent;
+		}
+
+		private TypeVariable<?>[] getTypeParameters() {
+			return type.getTypeParameters();
+		}
+
+		private boolean hasNext() {
+			index++;
+			return index < interfaces.length;
+		}
+
+		private Class<?> getSuperType() {
+			Class<?> superType;
+			if (index == -1) {
+				superType = type.getSuperclass();
+			} else {
+				superType = interfaces[index];
+			}
+			return superType;
+		}
+
+		private ParameterizedType getGenericSuperType() {
+			Type genericType;
+			if (index == -1) {
+				genericType = type.getGenericSuperclass();
+			} else {
+				genericType = genericInterfaces[index];
+			}
+			return (ParameterizedType) genericType;
+		}
 	}
 
 	private Reflection() {

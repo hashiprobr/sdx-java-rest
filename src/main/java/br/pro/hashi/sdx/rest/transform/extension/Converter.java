@@ -25,8 +25,8 @@ public abstract class Converter<S, T> {
 	 * Constructs a new converter.
 	 */
 	protected Converter() {
-		this.sourceType = Reflection.getSpecificType(Converter.class, this, 0);
-		this.targetType = Reflection.getSpecificType(Converter.class, this, 1);
+		this.sourceType = Reflection.getSpecificType(Converter.class, 0, this);
+		this.targetType = Reflection.getSpecificType(Converter.class, 1, this);
 	}
 
 	/**
