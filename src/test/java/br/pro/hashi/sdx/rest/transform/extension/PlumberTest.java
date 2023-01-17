@@ -2,6 +2,7 @@ package br.pro.hashi.sdx.rest.transform.extension;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
@@ -46,16 +47,34 @@ class PlumberTest {
 	}
 
 	@Test
-	void throwsIOExceptionIfConsumerThrowsAnyException() {
+	void throwsIOExceptionIfConsumerThrowsNonPlumberException() {
+		RuntimeException cause = new RuntimeException();
 		Consumer<Writer> consumer = (writer) -> {
-			throw new RuntimeException();
+			throw cause;
 		};
 		Reader reader = assertDoesNotThrow(() -> {
 			return p.connect(consumer);
 		});
-		assertThrows(IOException.class, () -> {
+		Exception exception = assertThrows(IOException.class, () -> {
 			reader.read();
 		});
+		assertSame(cause, exception.getCause());
+	}
+
+	@Test
+	void throwsIOExceptionIfConsumerThrowsPlumberException() {
+		RuntimeException cause = new RuntimeException();
+		Plumber.Exception plumberCause = new Plumber.Exception(cause);
+		Consumer<Writer> consumer = (writer) -> {
+			throw plumberCause;
+		};
+		Reader reader = assertDoesNotThrow(() -> {
+			return p.connect(consumer);
+		});
+		Exception exception = assertThrows(IOException.class, () -> {
+			reader.read();
+		});
+		assertSame(cause, exception.getCause());
 	}
 
 	@Test

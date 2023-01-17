@@ -81,10 +81,31 @@ public class Plumber {
 			try {
 				task.get();
 			} catch (ExecutionException exception) {
-				throw new IOException(exception.getCause());
+				Throwable cause = exception.getCause();
+				if (cause instanceof Exception) {
+					cause = cause.getCause();
+				}
+				throw new IOException(cause);
 			} catch (InterruptedException exception) {
 				throw new AssertionError(exception);
 			}
+		}
+	}
+
+	/**
+	 * Thrown to indicate that the consumer threw a checked exception.
+	 */
+	public static class Exception extends RuntimeException {
+		private static final long serialVersionUID = 2014049919915961004L;
+
+		/**
+		 * Constructs a new exception with the specified cause and a detail message of
+		 * {@code (cause == null ? null : cause.toString())}.
+		 * 
+		 * @param cause the cause
+		 */
+		public Exception(Throwable cause) {
+			super(cause);
 		}
 	}
 }
