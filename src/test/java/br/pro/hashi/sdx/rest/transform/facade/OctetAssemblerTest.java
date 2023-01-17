@@ -59,6 +59,22 @@ class OctetAssemblerTest {
 		assertEqualsBody(stream);
 	}
 
+	@Test
+	void writesEqualsIfBodyIsByteArrayInputStream() {
+		InputStream body = newInputStream();
+		ByteArrayOutputStream stream = new ByteArrayOutputStream();
+		a.write(body, ByteArrayInputStream.class, stream);
+		assertEqualsBody(stream);
+	}
+
+	@Test
+	void writesEqualsIfBodyIsByteArrayInputStreamWithHint() {
+		InputStream body = newInputStream();
+		ByteArrayOutputStream stream = new ByteArrayOutputStream();
+		a.write(body, new Hint<ByteArrayInputStream>() {}.getType(), stream);
+		assertEqualsBody(stream);
+	}
+
 	private void assertEqualsBody(ByteArrayOutputStream stream) {
 		assertEqualsBody(stream.toByteArray());
 	}
@@ -128,6 +144,18 @@ class OctetAssemblerTest {
 	void returnsSameIfBodyIsInputStreamWithHint() {
 		InputStream body = newInputStream();
 		assertSame(body, a.toStream(body, new Hint<InputStream>() {}.getType()));
+	}
+
+	@Test
+	void returnsSameIfBodyIsByteArrayInputStream() {
+		InputStream body = newInputStream();
+		assertSame(body, a.toStream(body, ByteArrayInputStream.class));
+	}
+
+	@Test
+	void returnsSameIfBodyIsByteArrayInputStreamWithHint() {
+		InputStream body = newInputStream();
+		assertSame(body, a.toStream(body, new Hint<ByteArrayInputStream>() {}.getType()));
 	}
 
 	@Test

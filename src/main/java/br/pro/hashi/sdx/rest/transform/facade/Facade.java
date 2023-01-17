@@ -62,7 +62,7 @@ public class Facade {
 				contentType = OCTET_TYPE;
 			} else {
 				if (fallbackByteType == null) {
-					throw new IllegalArgumentException("Content type is null, body is instance of neither byte[] or InputStream, and no fallback byte type was specified");
+					throw new IllegalArgumentException("Content type is null, body is not instance of byte[] or InputStream, and no fallback byte type was specified");
 				}
 				contentType = fallbackByteType;
 			}
@@ -72,11 +72,11 @@ public class Facade {
 
 	public String cleanForDisassembling(String contentType, Class<?> type) {
 		if (contentType == null) {
-			if (type.equals(byte[].class) || type.equals(InputStream.class)) {
+			if (byte[].class.isAssignableFrom(type) || InputStream.class.isAssignableFrom(type)) {
 				contentType = OCTET_TYPE;
 			} else {
 				if (fallbackByteType == null) {
-					throw new IllegalArgumentException("Content type is null, type is neither byte[] or InputStream, and no fallback byte type was specified");
+					throw new IllegalArgumentException("Content type is null, type is not assignable to byte[] or InputStream, and no fallback byte type was specified");
 				}
 				contentType = fallbackByteType;
 			}
@@ -90,7 +90,7 @@ public class Facade {
 				contentType = PLAIN_TYPE;
 			} else {
 				if (fallbackTextType == null) {
-					throw new IllegalArgumentException("Content type is null, body is instance of neither String or Reader, and no fallback text type was specified");
+					throw new IllegalArgumentException("Content type is null, body is not instance of String or Reader, and no fallback text type was specified");
 				}
 				contentType = fallbackTextType;
 			}
@@ -100,11 +100,11 @@ public class Facade {
 
 	public String cleanForDeserializing(String contentType, Class<?> type) {
 		if (contentType == null) {
-			if (type.equals(String.class) || type.equals(Reader.class)) {
+			if (String.class.isAssignableFrom(type) || Reader.class.isAssignableFrom(type)) {
 				contentType = PLAIN_TYPE;
 			} else {
 				if (fallbackTextType == null) {
-					throw new IllegalArgumentException("Content type is null, type is neither String or Reader, and no fallback text type was specified");
+					throw new IllegalArgumentException("Content type is null, type is not assignable to String or Reader, and no fallback text type was specified");
 				}
 				contentType = fallbackTextType;
 			}
