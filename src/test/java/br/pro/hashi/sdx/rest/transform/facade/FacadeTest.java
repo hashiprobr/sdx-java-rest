@@ -27,6 +27,7 @@ import br.pro.hashi.sdx.rest.coding.Media;
 import br.pro.hashi.sdx.rest.transform.Assembler;
 import br.pro.hashi.sdx.rest.transform.Deserializer;
 import br.pro.hashi.sdx.rest.transform.Disassembler;
+import br.pro.hashi.sdx.rest.transform.Hint;
 import br.pro.hashi.sdx.rest.transform.Serializer;
 
 class FacadeTest {
@@ -59,8 +60,28 @@ class FacadeTest {
 	}
 
 	@Test
+	void initializesWithByteArrayAsBinaryWithHint() {
+		assertTrue(f.isBinary(new Hint<byte[]>() {}));
+	}
+
+	@Test
 	void initializesWithInputStreamAsBinary() {
 		assertTrue(f.isBinary(InputStream.class));
+	}
+
+	@Test
+	void initializesWithInputStreamAsBinaryWithHint() {
+		assertTrue(f.isBinary(new Hint<InputStream>() {}));
+	}
+
+	@Test
+	void initializesWithByteArrayInputStreamAsBinary() {
+		assertTrue(f.isBinary(ByteArrayInputStream.class));
+	}
+
+	@Test
+	void initializesWithByteArrayInputStreamAsBinaryWithHint() {
+		assertTrue(f.isBinary(new Hint<ByteArrayInputStream>() {}));
 	}
 
 	@Test
@@ -69,8 +90,18 @@ class FacadeTest {
 	}
 
 	@Test
+	void initializesWithoutObjectAsBinaryWithHint() {
+		assertFalse(f.isBinary(new Hint<Object>() {}));
+	}
+
+	@Test
 	void initializesWithoutNullAsBinary() {
-		assertFalse(f.isBinary(null));
+		assertFalse(f.isBinary((Class<?>) null));
+	}
+
+	@Test
+	void initializesWithoutNullAsBinaryWithHint() {
+		assertFalse(f.isBinary((Hint<?>) null));
 	}
 
 	@Test
@@ -156,11 +187,25 @@ class FacadeTest {
 	}
 
 	@Test
+	void addsObjectAsBinaryWithHint() {
+		f.addBinary(new Hint<Object>() {});
+		assertTrue(f.isBinary(new Hint<Object>() {}));
+	}
+
+	@Test
 	void doesNotAddNullAsBinary() {
 		assertThrows(NullPointerException.class, () -> {
-			f.addBinary(null);
+			f.addBinary((Class<?>) null);
 		});
-		assertFalse(f.isBinary(null));
+		assertFalse(f.isBinary((Class<?>) null));
+	}
+
+	@Test
+	void doesNotAddNullAsBinaryWithHint() {
+		assertThrows(NullPointerException.class, () -> {
+			f.addBinary((Hint<?>) null);
+		});
+		assertFalse(f.isBinary((Hint<?>) null));
 	}
 
 	@Test

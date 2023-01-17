@@ -2,6 +2,8 @@ package br.pro.hashi.sdx.rest.transform.facade;
 
 import java.io.InputStream;
 import java.io.Reader;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -11,13 +13,15 @@ import br.pro.hashi.sdx.rest.coding.Media;
 import br.pro.hashi.sdx.rest.transform.Assembler;
 import br.pro.hashi.sdx.rest.transform.Deserializer;
 import br.pro.hashi.sdx.rest.transform.Disassembler;
+import br.pro.hashi.sdx.rest.transform.Hint;
 import br.pro.hashi.sdx.rest.transform.Serializer;
 
 public class Facade {
 	private static final String OCTET_TYPE = "application/octet-stream";
 	private static final String PLAIN_TYPE = "text/plain";
 
-	private final Set<Class<?>> binaryTypes;
+	private final Set<Class<?>> binaryClasses;
+	private final Set<ParameterizedType> binaryParameterizedTypes;
 	private final Map<String, Assembler> assemblers;
 	private final Map<String, Disassembler> disassemblers;
 	private final Map<String, Serializer> serializers;
@@ -26,8 +30,10 @@ public class Facade {
 	private String fallbackTextType;
 
 	public Facade() {
-		this.binaryTypes = new HashSet<>();
-		this.binaryTypes.addAll(Set.of(byte[].class, InputStream.class));
+		this.binaryClasses = new HashSet<>();
+		this.binaryClasses.addAll(Set.of(byte[].class, InputStream.class));
+
+		this.binaryParameterizedTypes = new HashSet<>();
 
 		this.assemblers = new HashMap<>();
 		this.assemblers.put(OCTET_TYPE, new OctetAssembler());
@@ -46,14 +52,45 @@ public class Facade {
 	}
 
 	public boolean isBinary(Class<?> type) {
-		return binaryTypes.contains(type);
+		if (type == null) {
+			return false;
+		}
+		for (Class<?> superType : binaryClasses) {
+			if (superType.isAssignableFrom(type)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public boolean isBinary(Hint<?> hint) {
+		if (hint == null) {
+			return false;
+		}
+		Type type = hint.getType();
+		if (type instanceof ParameterizedType) {
+			return binaryParameterizedTypes.contains(type);
+		}
+		return isBinary((Class<?>) type);
 	}
 
 	public void addBinary(Class<?> type) {
 		if (type == null) {
 			throw new NullPointerException("Type cannot be null");
 		}
-		binaryTypes.add(type);
+		binaryClasses.add(type);
+	}
+
+	public void addBinary(Hint<?> hint) {
+		if (hint == null) {
+			throw new NullPointerException("Hint cannot be null");
+		}
+		Type type = hint.getType();
+		if (type instanceof ParameterizedType) {
+			binaryParameterizedTypes.add((ParameterizedType) type);
+		} else {
+			binaryClasses.add((Class<?>) type);
+		}
 	}
 
 	public String cleanForAssembling(String contentType, Object body) {
