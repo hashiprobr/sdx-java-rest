@@ -14,6 +14,8 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.Reader;
 import java.io.StringReader;
+import java.util.List;
+import java.util.Map;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -92,6 +94,11 @@ class FacadeTest {
 	@Test
 	void initializesWithoutObjectAsBinaryWithHint() {
 		assertFalse(f.isBinary(new Hint<Object>() {}));
+	}
+
+	@Test
+	void initializesWithoutParameterizedTypeAsBinaryWithHint() {
+		assertFalse(f.isBinary(new Hint<List<Map<Integer, Double>>>() {}));
 	}
 
 	@Test
@@ -190,6 +197,12 @@ class FacadeTest {
 	void addsObjectAsBinaryWithHint() {
 		f.addBinary(new Hint<Object>() {});
 		assertTrue(f.isBinary(new Hint<Object>() {}));
+	}
+
+	@Test
+	void addsParameterizedTypeAsBinary() {
+		f.addBinary(new Hint<List<Map<Integer, Double>>>() {});
+		assertTrue(f.isBinary(new Hint<List<Map<Integer, Double>>>() {}));
 	}
 
 	@Test
