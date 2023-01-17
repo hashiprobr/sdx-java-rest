@@ -76,7 +76,13 @@ class SimpleSerializerTest {
 
 	private void assertEqualsBody(Reader reader) throws IOException {
 		char[] chars = new char[4];
-		reader.read(chars, 0, 4);
+		int offset = 0;
+		int remaining = chars.length;
+		while (remaining > 0) {
+			int length = reader.read(chars, offset, remaining);
+			offset += length;
+			remaining -= length;
+		}
 		assertEquals(-1, reader.read());
 		assertEqualsBody(new String(chars));
 		reader.close();

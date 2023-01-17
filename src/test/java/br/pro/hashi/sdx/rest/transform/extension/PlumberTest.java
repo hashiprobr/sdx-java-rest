@@ -40,7 +40,13 @@ class PlumberTest {
 			return p.connect(consumer);
 		});
 		char[] chars = new char[7];
-		reader.read(chars, 0, 7);
+		int offset = 0;
+		int remaining = chars.length;
+		while (remaining > 0) {
+			int length = reader.read(chars, offset, remaining);
+			offset += length;
+			remaining -= length;
+		}
 		assertEquals(-1, reader.read(chars, 0, 1));
 		assertEquals("content", new String(chars));
 		reader.close();
