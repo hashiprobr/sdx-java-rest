@@ -105,10 +105,10 @@ public final class Reflection {
 	}
 
 	private static class Node {
-		private Node parent;
-		private Class<?> type;
-		private Class<?>[] interfaces;
-		private Type[] genericInterfaces;
+		private final Node parent;
+		private final Class<?> type;
+		private final Class<?>[] interfaces;
+		private final Type[] genericInterfaces;
 		private int index;
 
 		private Node(Node parent, Class<?> type) {
