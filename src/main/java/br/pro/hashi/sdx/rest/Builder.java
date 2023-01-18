@@ -9,13 +9,14 @@ import br.pro.hashi.sdx.rest.server.RestServerBuilder;
 import br.pro.hashi.sdx.rest.transform.Assembler;
 import br.pro.hashi.sdx.rest.transform.Deserializer;
 import br.pro.hashi.sdx.rest.transform.Disassembler;
+import br.pro.hashi.sdx.rest.transform.Hint;
 import br.pro.hashi.sdx.rest.transform.Serializer;
 import br.pro.hashi.sdx.rest.transform.facade.Facade;
 
 /**
- * Stub.
+ * Base class for {@link RestClientBuilder} and {@link RestServerBuilder}.
  * 
- * @param <T> stub
+ * @param <T> the subclass
  */
 public sealed abstract class Builder<T extends Builder<T>> permits RestClientBuilder, RestServerBuilder {
 	/**
@@ -71,12 +72,17 @@ public sealed abstract class Builder<T extends Builder<T>> permits RestClientBui
 	 * Adds a type that should be considered binary.
 	 * </p>
 	 * <p>
-	 * Objects of types considered binary are transformed by {@link Assembler}s and
-	 * {@link Disassembler}s, while other objects are transformed by
-	 * {@link Serializer}s and {@link Deserializer}s.
+	 * Since {@link Class<?>} objects do not have generic information due to type
+	 * erasure, do not call this method if the type is generic. Call
+	 * {@link #withBinary(Hint<?>)} instead.
 	 * </p>
 	 * <p>
-	 * The only types considered binary by default are {@code byte[]}
+	 * Objects of types considered binary are transformed by an {@link Assembler} or
+	 * a {@link Disassembler}, while other objects are transformed by a
+	 * {@link Serializer}s or a {@link Deserializer}.
+	 * </p>
+	 * <p>
+	 * The only types considered binary by default are {@code byte[]} and
 	 * {@link InputStream}.
 	 * </p>
 	 * 
@@ -86,6 +92,32 @@ public sealed abstract class Builder<T extends Builder<T>> permits RestClientBui
 	 */
 	public final T withBinary(Class<?> type) {
 		facade.addBinary(type);
+		return self();
+	}
+
+	/**
+	 * <p>
+	 * Adds a hinted type that should be considered binary.
+	 * </p>
+	 * <p>
+	 * Call this method if the type is generic.
+	 * </p>
+	 * <p>
+	 * Objects of types considered binary are transformed by an {@link Assembler} or
+	 * a {@link Disassembler}, while other objects are transformed by a
+	 * {@link Serializer}s or a {@link Deserializer}.
+	 * </p>
+	 * <p>
+	 * The only types considered binary by default are {@code byte[]} and
+	 * {@link InputStream}.
+	 * </p>
+	 * 
+	 * @param hint the type hint
+	 * @return this builder, for chaining
+	 * @throws NullPointerException if the type hint is null
+	 */
+	public final T withBinary(Hint<?> hint) {
+		facade.addBinary(hint);
 		return self();
 	}
 

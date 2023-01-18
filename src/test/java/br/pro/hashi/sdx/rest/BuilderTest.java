@@ -18,6 +18,7 @@ import org.mockito.MockedConstruction;
 import br.pro.hashi.sdx.rest.transform.Assembler;
 import br.pro.hashi.sdx.rest.transform.Deserializer;
 import br.pro.hashi.sdx.rest.transform.Disassembler;
+import br.pro.hashi.sdx.rest.transform.Hint;
 import br.pro.hashi.sdx.rest.transform.Serializer;
 import br.pro.hashi.sdx.rest.transform.facade.Facade;
 
@@ -67,6 +68,13 @@ public abstract class BuilderTest {
 	void addsBinary() {
 		b.withBinary(Object.class);
 		verify(facade).addBinary(Object.class);
+	}
+
+	@Test
+	void addsBinaryWithHint() {
+		Hint<Object> hint = new Hint<Object>() {};
+		b.withBinary(hint);
+		verify(facade).addBinary(hint);
 	}
 
 	@Test
