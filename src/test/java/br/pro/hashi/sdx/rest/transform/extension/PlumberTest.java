@@ -32,8 +32,9 @@ class PlumberTest {
 		Consumer<Writer> consumer = (writer) -> {
 			try {
 				writer.write("content");
+				writer.close();
 			} catch (IOException exception) {
-				throw new AssertionError(exception);
+				throw new Plumber.Exception(exception);
 			}
 		};
 		Reader reader = assertDoesNotThrow(() -> {
@@ -56,6 +57,11 @@ class PlumberTest {
 	void throwsIOExceptionIfConsumerThrowsNonPlumberException() {
 		RuntimeException cause = new RuntimeException();
 		Consumer<Writer> consumer = (writer) -> {
+			try {
+				writer.close();
+			} catch (IOException exception) {
+				throw new Plumber.Exception(exception);
+			}
 			throw cause;
 		};
 		Reader reader = assertDoesNotThrow(() -> {
@@ -72,6 +78,11 @@ class PlumberTest {
 		RuntimeException cause = new RuntimeException();
 		Plumber.Exception plumberCause = new Plumber.Exception(cause);
 		Consumer<Writer> consumer = (writer) -> {
+			try {
+				writer.close();
+			} catch (IOException exception) {
+				throw new Plumber.Exception(exception);
+			}
 			throw plumberCause;
 		};
 		Reader reader = assertDoesNotThrow(() -> {
@@ -86,6 +97,11 @@ class PlumberTest {
 	@Test
 	void throwsAssertionErrorIfTaskThrowsInterruptedException() throws ExecutionException, InterruptedException {
 		Consumer<Writer> consumer = (writer) -> {
+			try {
+				writer.close();
+			} catch (IOException exception) {
+				throw new Plumber.Exception(exception);
+			}
 		};
 		Reader reader = assertDoesNotThrow(() -> {
 			return p.connect(consumer);

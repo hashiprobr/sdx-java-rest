@@ -41,11 +41,7 @@ public class Plumber {
 	public Reader connect(Consumer<Writer> consumer) throws IOException {
 		PipedWriter writer = new PipedWriter();
 		FutureTask<Void> task = new FutureTask<>(() -> {
-			try {
-				consumer.accept(writer);
-			} finally {
-				writer.close();
-			}
+			consumer.accept(writer);
 			return null;
 		});
 		Reader reader = new CheckedPipedReader(writer, task);
