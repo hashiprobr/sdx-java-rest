@@ -2,6 +2,8 @@ package br.pro.hashi.sdx.rest.client;
 
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.eclipse.jetty.client.HttpClient;
 
@@ -79,6 +81,7 @@ public final class RestClient {
 	 * 
 	 * @param name the query name
 	 * @return the proxy, for chaining
+	 * @throws NullPointerException if the query name is null
 	 * @hidden
 	 */
 	public Proxy q(String name) {
@@ -91,6 +94,8 @@ public final class RestClient {
 	 * @param name  the query name
 	 * @param value the query value
 	 * @return the proxy, for chaining
+	 * @throws NullPointerException if the query name is null or the query value is
+	 *                              null
 	 * @hidden
 	 */
 	public Proxy q(String name, Object value) {
@@ -108,6 +113,7 @@ public final class RestClient {
 	 * 
 	 * @param name the query name
 	 * @return the proxy, for chaining
+	 * @throws NullPointerException if the query name is null
 	 */
 	public Proxy withQuery(String name) {
 		return new Proxy().withQuery(name);
@@ -125,6 +131,8 @@ public final class RestClient {
 	 * @param name  the query name
 	 * @param value the query value
 	 * @return the proxy, for chaining
+	 * @throws NullPointerException if the query name is null or the query value is
+	 *                              null
 	 */
 	public Proxy withQuery(String name, Object value) {
 		return new Proxy().withQuery(name, value);
@@ -136,6 +144,9 @@ public final class RestClient {
 	 * @param name  the header name
 	 * @param value the header value
 	 * @return the proxy, for chaining
+	 * @throws NullPointerException     if the header name is null or the header
+	 *                                  value is null
+	 * @throws IllegalArgumentException if the header name is blank
 	 * @hidden
 	 */
 	public Proxy h(String name, Object value) {
@@ -154,6 +165,9 @@ public final class RestClient {
 	 * @param name  the header name
 	 * @param value the header value
 	 * @return the proxy, for chaining
+	 * @throws NullPointerException     if the header name is null or the header
+	 *                                  value is null
+	 * @throws IllegalArgumentException if the header name is blank
 	 */
 	public Proxy withHeader(String name, Object value) {
 		return new Proxy().withHeader(name, value);
@@ -190,7 +204,14 @@ public final class RestClient {
 	 * Represents a request configuration.
 	 */
 	public final class Proxy {
+		private List<Entry> queries;
+		private List<Entry> headers;
+		private Object body;
+
 		private Proxy() {
+			this.queries = new ArrayList<>();
+			this.headers = new ArrayList<>();
+			this.body = none;
 		}
 
 		/**
@@ -198,6 +219,7 @@ public final class RestClient {
 		 * 
 		 * @param name the query name
 		 * @return this proxy, for chaining
+		 * @throws NullPointerException if the query name is null
 		 * @hidden
 		 */
 		public Proxy q(String name) {
@@ -210,6 +232,8 @@ public final class RestClient {
 		 * @param name  the query name
 		 * @param value the query value
 		 * @return this proxy, for chaining
+		 * @throws NullPointerException if the query name is null or the query value is
+		 *                              null
 		 * @hidden
 		 */
 		public Proxy q(String name, Object value) {
@@ -230,8 +254,13 @@ public final class RestClient {
 		 * 
 		 * @param name the query name
 		 * @return this proxy, for chaining
+		 * @throws NullPointerException if the query name is null
 		 */
 		public Proxy withQuery(String name) {
+			if (name == null) {
+				throw new NullPointerException("Query name cannot be null");
+			}
+			queries.add(new Entry(name, null));
 			return this;
 		}
 
@@ -250,8 +279,17 @@ public final class RestClient {
 		 * @param name  the query name
 		 * @param value the query value
 		 * @return this proxy, for chaining
+		 * @throws NullPointerException if the query name is null or the query value is
+		 *                              null
 		 */
 		public Proxy withQuery(String name, Object value) {
+			if (name == null) {
+				throw new NullPointerException("Query name cannot be null");
+			}
+			if (value == null) {
+				throw new NullPointerException("Query value cannot be null");
+			}
+			queries.add(new Entry(name, value));
 			return this;
 		}
 
@@ -261,6 +299,9 @@ public final class RestClient {
 		 * @param name  the header name
 		 * @param value the header value
 		 * @return this proxy, for chaining
+		 * @throws NullPointerException     if the header name is null or the header
+		 *                                  value is null
+		 * @throws IllegalArgumentException if the header name is blank
 		 * @hidden
 		 */
 		public Proxy h(String name, Object value) {
@@ -282,8 +323,22 @@ public final class RestClient {
 		 * @param name  the header name
 		 * @param value the header value
 		 * @return this proxy, for chaining
+		 * @throws NullPointerException     if the header name is null or the header
+		 *                                  value is null
+		 * @throws IllegalArgumentException if the header name is blank
 		 */
 		public Proxy withHeader(String name, Object value) {
+			if (name == null) {
+				throw new NullPointerException("Header name cannot be null");
+			}
+			name = name.strip();
+			if (name.isEmpty()) {
+				throw new IllegalArgumentException("Header name cannot be blank");
+			}
+			if (value == null) {
+				throw new NullPointerException("Header value cannot be null");
+			}
+			headers.add(new Entry(name, value));
 			return this;
 		}
 
@@ -310,7 +365,11 @@ public final class RestClient {
 		 * @return this proxy, for chaining
 		 */
 		public Proxy withBody(Object body) {
+			this.body = body;
 			return this;
+		}
+
+		private record Entry(String name, Object value) {
 		}
 	}
 }
