@@ -1,5 +1,6 @@
 package br.pro.hashi.sdx.rest.server;
 
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.mockito.Mockito.mock;
 
@@ -19,6 +20,12 @@ class RestServerTest {
 	@BeforeEach
 	void setUp() {
 		facade = mock(Facade.class);
+	}
+
+	@Test
+	void builds() {
+		s = RestServer.from("package");
+		assertNotNull(s);
 	}
 
 	@Test

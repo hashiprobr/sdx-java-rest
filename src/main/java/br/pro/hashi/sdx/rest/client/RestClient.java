@@ -10,6 +10,25 @@ import br.pro.hashi.sdx.rest.transform.facade.Facade;
  * Stub.
  */
 public final class RestClient {
+	/**
+	 * Instantiates a REST client using a specified URL prefix.
+	 * 
+	 * @param urlPrefix the URL prefix
+	 * @return the client
+	 */
+	public static RestClient to(String urlPrefix) {
+		return builder().build(urlPrefix);
+	}
+
+	/**
+	 * Convenience method for instantiating a REST client builder.
+	 * 
+	 * @return the client builder
+	 */
+	public static RestClientBuilder builder() {
+		return new RestClientBuilder();
+	}
+
 	private final Facade facade;
 	private final HttpClient jettyClient;
 	private final Charset urlCharset;
