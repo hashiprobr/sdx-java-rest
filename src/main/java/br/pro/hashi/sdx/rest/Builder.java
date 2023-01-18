@@ -1,6 +1,7 @@
 package br.pro.hashi.sdx.rest;
 
 import java.io.InputStream;
+import java.io.Reader;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
@@ -205,11 +206,43 @@ public sealed abstract class Builder<T extends Builder<T>> permits RestClientBui
 		return self();
 	}
 
+	/**
+	 * <p>
+	 * Sets the fallback content type for objects considered binary.
+	 * </p>
+	 * <p>
+	 * If the content type is not specified, an assembler or disassembler checks if
+	 * the object is a {@code byte[]} or an {@link InputStream}. In this case, it
+	 * simply uses {@code application/octet-stream}. Otherwise, it uses the fallback
+	 * type set by this method.
+	 * </p>
+	 * 
+	 * @param fallbackByteType the fallback type
+	 * @return this builder, for chaining
+	 * @throws NullPointerException     if the fallback type is null
+	 * @throws IllegalArgumentException if the fallback type is blank
+	 */
 	public final T withFallbackByteType(String fallbackByteType) {
 		facade.setFallbackByteType(fallbackByteType);
 		return self();
 	}
 
+	/**
+	 * <p>
+	 * Sets the fallback content type for objects not considered binary.
+	 * </p>
+	 * <p>
+	 * If the content type is not specified, a serializer or deserializer checks if
+	 * the object is a {@code String} or a {@link Reader}. In this case, it simply
+	 * uses {@code text/plain}. Otherwise, it uses the fallback type set by this
+	 * method.
+	 * </p>
+	 * 
+	 * @param fallbackTextType the fallback type
+	 * @return this builder, for chaining
+	 * @throws NullPointerException     if the fallback type is null
+	 * @throws IllegalArgumentException if the fallback type is blank
+	 */
 	public final T withFallbackTextType(String fallbackTextType) {
 		facade.setFallbackTextType(fallbackTextType);
 		return self();
