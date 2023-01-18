@@ -3,7 +3,7 @@ package br.pro.hashi.sdx.rest.server;
 import br.pro.hashi.sdx.rest.transform.facade.Facade;
 
 /**
- * Stub.
+ * Main object for receiving REST requests.
  */
 public final class RestServer {
 	/**

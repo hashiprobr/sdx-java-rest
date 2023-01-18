@@ -35,7 +35,7 @@ class RestClientTest {
 	}
 
 	@Test
-	void stub() {
+	void constructs() {
 		c = newRestClient(null);
 		assertSame(facade, c.getFacade());
 		assertSame(jettyClient, c.getJettyClient());

@@ -29,7 +29,7 @@ class RestServerTest {
 	}
 
 	@Test
-	void stub() {
+	void constructs() {
 		s = newRestServer();
 		assertSame(facade, s.getFacade());
 	}
