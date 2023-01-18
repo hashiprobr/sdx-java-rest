@@ -205,6 +205,16 @@ public sealed abstract class Builder<T extends Builder<T>> permits RestClientBui
 		return self();
 	}
 
+	public final T withFallbackByteType(String fallbackByteType) {
+		facade.setFallbackByteType(fallbackByteType);
+		return self();
+	}
+
+	public final T withFallbackTextType(String fallbackTextType) {
+		facade.setFallbackTextType(fallbackTextType);
+		return self();
+	}
+
 	/**
 	 * <p>
 	 * Sets the charset that should be used when percent-encoding or

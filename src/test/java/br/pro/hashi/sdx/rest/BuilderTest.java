@@ -2,6 +2,7 @@ package br.pro.hashi.sdx.rest;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
@@ -66,14 +67,14 @@ public abstract class BuilderTest {
 
 	@Test
 	void addsBinary() {
-		b.withBinary(Object.class);
+		assertSame(b, b.withBinary(Object.class));
 		verify(facade).addBinary(Object.class);
 	}
 
 	@Test
 	void addsBinaryWithHint() {
 		Hint<Object> hint = new Hint<Object>() {};
-		b.withBinary(hint);
+		assertSame(b, b.withBinary(hint));
 		verify(facade).addBinary(hint);
 	}
 
@@ -81,7 +82,7 @@ public abstract class BuilderTest {
 	void putsAssembler() {
 		String contentType = "image/png";
 		Assembler assembler = mock(Assembler.class);
-		b.withAssembler(contentType, assembler);
+		assertSame(b, b.withAssembler(contentType, assembler));
 		verify(facade).putAssembler(contentType, assembler);
 	}
 
@@ -89,7 +90,7 @@ public abstract class BuilderTest {
 	void putsDisassembler() {
 		String contentType = "image/png";
 		Disassembler disassembler = mock(Disassembler.class);
-		b.withDisassembler(contentType, disassembler);
+		assertSame(b, b.withDisassembler(contentType, disassembler));
 		verify(facade).putDisassembler(contentType, disassembler);
 	}
 
@@ -97,7 +98,7 @@ public abstract class BuilderTest {
 	void putsSerializer() {
 		String contentType = "application/xml";
 		Serializer serializer = mock(Serializer.class);
-		b.withSerializer(contentType, serializer);
+		assertSame(b, b.withSerializer(contentType, serializer));
 		verify(facade).putSerializer(contentType, serializer);
 	}
 
@@ -105,39 +106,53 @@ public abstract class BuilderTest {
 	void putsDeserializer() {
 		String contentType = "application/xml";
 		Deserializer deserializer = mock(Deserializer.class);
-		b.withDeserializer(contentType, deserializer);
+		assertSame(b, b.withDeserializer(contentType, deserializer));
 		verify(facade).putDeserializer(contentType, deserializer);
 	}
 
 	@Test
+	void setsFallbackByteType() {
+		String contentType = "fallback";
+		assertSame(b, b.withFallbackByteType(contentType));
+		verify(facade).setFallbackByteType(contentType);
+	}
+
+	@Test
+	void setsFallbackTextType() {
+		String contentType = "fallback";
+		assertSame(b, b.withFallbackTextType(contentType));
+		verify(facade).setFallbackTextType(contentType);
+	}
+
+	@Test
 	void setsUrlCharset() {
-		b.withUrlCharset(StandardCharsets.ISO_8859_1);
+		assertSame(b, b.withUrlCharset(StandardCharsets.ISO_8859_1));
 		assertEquals(StandardCharsets.ISO_8859_1, b.urlCharset);
 	}
 
 	@Test
 	void doesNotSetUrlCharset() {
 		assertThrows(NullPointerException.class, () -> {
-			b.withUrlCharset(null);
+			assertSame(b, b.withUrlCharset(null));
 		});
 		assertEquals(StandardCharsets.UTF_8, b.urlCharset);
 	}
 
 	@Test
 	void setsNullBody() {
-		b.withNullBody();
+		assertSame(b, b.withNullBody());
 		assertEquals("", b.none);
 	}
 
 	@Test
 	void setsRedirection() {
-		b.withRedirection();
+		assertSame(b, b.withRedirection());
 		assertTrue(b.redirection);
 	}
 
 	@Test
 	void setsCompression() {
-		b.withoutCompression();
+		assertSame(b, b.withoutCompression());
 		assertFalse(b.compression);
 	}
 
