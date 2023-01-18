@@ -13,34 +13,51 @@ import br.pro.hashi.sdx.rest.transform.Serializer;
 import br.pro.hashi.sdx.rest.transform.facade.Facade;
 
 /**
- * @hidden
+ * Stub.
+ * 
+ * @param <T> stub
  */
 public sealed abstract class Builder<T extends Builder<T>> permits RestClientBuilder, RestServerBuilder {
 	/**
+	 * Internal member.
+	 * 
 	 * @hidden
 	 */
 	protected final Facade facade;
 
 	/**
+	 * Internal member.
+	 * 
 	 * @hidden
 	 */
 	protected Charset urlCharset;
 
 	/**
+	 * Internal member.
+	 * 
 	 * @hidden
 	 */
 	protected String none;
 
 	/**
+	 * Internal member.
+	 * 
 	 * @hidden
 	 */
 	protected boolean redirection;
 
 	/**
+	 * Internal member.
+	 * 
 	 * @hidden
 	 */
 	protected boolean compression;
 
+	/**
+	 * Internal member.
+	 * 
+	 * @hidden
+	 */
 	protected Builder() {
 		this.facade = new Facade();
 		this.urlCharset = StandardCharsets.UTF_8;
@@ -65,6 +82,7 @@ public sealed abstract class Builder<T extends Builder<T>> permits RestClientBui
 	 * 
 	 * @param type the type
 	 * @return this builder, for chaining
+	 * @throws NullPointerException if the type is null
 	 */
 	public final T withBinary(Class<?> type) {
 		facade.addBinary(type);
@@ -83,6 +101,9 @@ public sealed abstract class Builder<T extends Builder<T>> permits RestClientBui
 	 * @param contentType the content type
 	 * @param assembler   the assembler
 	 * @return this builder, for chaining
+	 * @throws NullPointerException     if the content type is null or the assembler
+	 *                                  is null
+	 * @throws IllegalArgumentException if the content type is blank
 	 */
 	public final T withAssembler(String contentType, Assembler assembler) {
 		facade.putAssembler(contentType, assembler);
@@ -101,6 +122,9 @@ public sealed abstract class Builder<T extends Builder<T>> permits RestClientBui
 	 * @param contentType  the content type
 	 * @param disassembler the disassembler
 	 * @return this builder, for chaining
+	 * @throws NullPointerException     if the content type is null or the
+	 *                                  disassembler is null
+	 * @throws IllegalArgumentException if the content type is blank
 	 */
 	public final T withDisassembler(String contentType, Disassembler disassembler) {
 		facade.putDisassembler(contentType, disassembler);
@@ -119,6 +143,9 @@ public sealed abstract class Builder<T extends Builder<T>> permits RestClientBui
 	 * @param contentType the content type
 	 * @param serializer  the serializer
 	 * @return this builder, for chaining
+	 * @throws NullPointerException     if the content type is null or the
+	 *                                  serializer is null
+	 * @throws IllegalArgumentException if the content type is blank
 	 */
 	public final T withSerializer(String contentType, Serializer serializer) {
 		facade.putSerializer(contentType, serializer);
@@ -137,6 +164,9 @@ public sealed abstract class Builder<T extends Builder<T>> permits RestClientBui
 	 * @param contentType  the content type
 	 * @param deserializer the deserializer
 	 * @return this builder, for chaining
+	 * @throws NullPointerException     if the content type is null or the
+	 *                                  deserializer is null
+	 * @throws IllegalArgumentException if the content type is blank
 	 */
 	public final T withDeserializer(String contentType, Deserializer deserializer) {
 		facade.putDeserializer(contentType, deserializer);
@@ -154,6 +184,7 @@ public sealed abstract class Builder<T extends Builder<T>> permits RestClientBui
 	 * 
 	 * @param urlCharset the charset
 	 * @return this builder, for chaining
+	 * @throws NullPointerException if the charset is null
 	 */
 	public final T withUrlCharset(Charset urlCharset) {
 		if (urlCharset == null) {
@@ -165,12 +196,12 @@ public sealed abstract class Builder<T extends Builder<T>> permits RestClientBui
 
 	/**
 	 * <p>
-	 * Establishes that {@code null} is a valid body that should be serialized and
-	 * {@code ""} is an empty body.
+	 * Establishes that {@code null} is a valid body that should be serialized or
+	 * assembled and {@code ""} is an empty body.
 	 * </p>
 	 * <p>
 	 * The default behavior is considering {@code ""} as a valid body that should be
-	 * serialized and {@code null} as an empty body.
+	 * serialized or assembled and {@code null} as an empty body.
 	 * </p>
 	 * 
 	 * @return this builder, for chaining
@@ -201,6 +232,9 @@ public sealed abstract class Builder<T extends Builder<T>> permits RestClientBui
 	}
 
 	/**
+	 * Internal member.
+	 * 
+	 * @return this builder, for chaining
 	 * @hidden
 	 */
 	protected abstract T self();

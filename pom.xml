@@ -132,7 +132,6 @@
           </execution>
         </executions>
         <configuration>
-          <excludePackageNames>br.pro.hashi.sdx.rest</excludePackageNames>
           <tags>
             <tag>
               <name>implSpec</name>

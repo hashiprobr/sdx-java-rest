@@ -39,6 +39,11 @@ public abstract class BuilderTest {
 	}
 
 	@Test
+	void initializesWithFacade() {
+		assertEquals(facade, b.facade);
+	}
+
+	@Test
 	void initializesWithUtf8() {
 		assertEquals(StandardCharsets.UTF_8, b.urlCharset);
 	}

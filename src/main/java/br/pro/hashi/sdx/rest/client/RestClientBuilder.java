@@ -74,14 +74,6 @@ public non-sealed class RestClientBuilder extends Builder<RestClientBuilder> {
 	}
 
 	/**
-	 * @hidden
-	 */
-	@Override
-	protected RestClientBuilder self() {
-		return this;
-	}
-
-	/**
 	 * Sets a keytool truststore that should be used to enable HTTPS support.
 	 * 
 	 * @param path     the TrustStore path.
@@ -206,5 +198,13 @@ public non-sealed class RestClientBuilder extends Builder<RestClientBuilder> {
 		HttpClientTransport transport = new HttpClientTransportOverHTTP3(client3);
 		HttpClient client = new HttpClient(transport);
 		return build(client, urlPrefix);
+	}
+
+	/**
+	 * @hidden
+	 */
+	@Override
+	protected RestClientBuilder self() {
+		return this;
 	}
 }

@@ -43,7 +43,7 @@ public class RestClient {
 	/**
 	 * Stub.
 	 * 
-	 * @return stub.
+	 * @return stub
 	 */
 	public HttpClient getJettyClient() {
 		return jettyClient;

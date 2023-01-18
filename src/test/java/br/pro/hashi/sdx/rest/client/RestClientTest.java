@@ -1,6 +1,8 @@
 package br.pro.hashi.sdx.rest.client;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.mockito.Mockito.mock;
 
 import org.eclipse.jetty.client.HttpClient;
@@ -11,24 +13,27 @@ import br.pro.hashi.sdx.rest.coding.Coding;
 import br.pro.hashi.sdx.rest.transform.facade.Facade;
 
 class RestClientTest {
-	private Facade transformer;
+	private Facade facade;
 	private HttpClient jettyClient;
 	private RestClient c;
 
 	private RestClient newRestClient(String none) {
-		return new RestClient(transformer, jettyClient, Coding.CHARSET, none, "http://a");
+		return new RestClient(facade, jettyClient, Coding.CHARSET, none, "http://a");
 	}
 
 	@BeforeEach
 	void setUp() {
-		transformer = mock(Facade.class);
+		facade = mock(Facade.class);
 		jettyClient = mock(HttpClient.class);
 	}
 
 	@Test
 	void stub() {
 		c = newRestClient(null);
-		assertNotNull(c.getFacade());
-		assertNotNull(c.getUrlCharset());
+		assertSame(facade, c.getFacade());
+		assertSame(jettyClient, c.getJettyClient());
+		assertEquals(Coding.CHARSET, c.getUrlCharset());
+		assertNull(c.getNone());
+		assertEquals("http://a", c.getUrlPrefix());
 	}
 }
