@@ -122,11 +122,11 @@ class PlainSerializerTest {
 	}
 
 	private void assertEqualsBody(Reader reader) throws IOException {
+		int length;
 		char[] chars = new char[4];
 		int offset = 0;
 		int remaining = chars.length;
-		while (remaining > 0) {
-			int length = reader.read(chars, offset, remaining);
+		while (remaining > 0 && (length = reader.read(chars, offset, remaining)) != -1) {
 			offset += length;
 			remaining -= length;
 		}
