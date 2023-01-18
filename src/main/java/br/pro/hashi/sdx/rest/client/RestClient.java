@@ -206,12 +206,12 @@ public final class RestClient {
 	public final class Proxy {
 		private List<Entry> queries;
 		private List<Entry> headers;
-		private Object body;
+		private List<Body> bodies;
 
 		private Proxy() {
 			this.queries = new ArrayList<>();
 			this.headers = new ArrayList<>();
-			this.body = none;
+			this.bodies = new ArrayList<>();
 		}
 
 		/**
@@ -365,7 +365,11 @@ public final class RestClient {
 		 * @return this proxy, for chaining
 		 */
 		public Proxy withBody(Object body) {
-			this.body = body;
+			if (body instanceof Body) {
+				bodies.add((Body) body);
+			} else {
+				bodies.add(new Body(body));
+			}
 			return this;
 		}
 

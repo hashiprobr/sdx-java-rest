@@ -12,21 +12,42 @@ import br.pro.hashi.sdx.rest.transform.Hint;
  */
 public class Body {
 	private final Object actual;
+	private final String name;
 	private Type type;
-	private Charset charset;
 	private String contentType;
+	private Charset charset;
 	private boolean base64;
 
 	/**
-	 * Constructs a new wrapped body.
+	 * Constructs a wrapped body.
 	 * 
 	 * @param actual the actual body
 	 */
 	public Body(Object actual) {
+		this("", actual);
+	}
+
+	/**
+	 * Constructs a named wrapped body for a multipart request.
+	 * 
+	 * @param actual the actual body
+	 * @param name   the part name
+	 * @throws NullPointerException     if the part name is null
+	 * @throws IllegalArgumentException if the part name is blank
+	 */
+	public Body(String name, Object actual) {
+		if (name == null) {
+			throw new NullPointerException("Part name cannot be null");
+		}
+		name = name.strip();
+		if (name.isEmpty()) {
+			throw new IllegalArgumentException("Part name cannot be blank");
+		}
 		this.actual = actual;
+		this.name = name;
 		this.type = actual.getClass();
-		this.charset = Coding.CHARSET;
 		this.contentType = null;
+		this.charset = Coding.CHARSET;
 		this.base64 = false;
 	}
 
@@ -34,16 +55,20 @@ public class Body {
 		return actual;
 	}
 
+	String getName() {
+		return name;
+	}
+
 	Type getType() {
 		return type;
 	}
 
-	Charset getCharset() {
-		return charset;
-	}
-
 	String getContentType() {
 		return contentType;
+	}
+
+	Charset getCharset() {
+		return charset;
 	}
 
 	boolean isBase64() {
@@ -51,7 +76,7 @@ public class Body {
 	}
 
 	/**
-	 * Hint the type of this body.
+	 * Hint the type of this body for assembling or serializing.
 	 * 
 	 * @param hint the hint
 	 * @return this body, for chaining
@@ -62,38 +87,6 @@ public class Body {
 			throw new NullPointerException("Hint cannot be null");
 		}
 		this.type = hint.getType();
-		return this;
-	}
-
-	/**
-	 * Alias for {@link #inCharset(Charset)}.
-	 * 
-	 * @param charset the charset
-	 * @return this body, for chaining
-	 * @throws NullPointerException if the charset is null
-	 * @hidden
-	 */
-	public final Body in(Charset charset) {
-		return inCharset(charset);
-	}
-
-	/**
-	 * <p>
-	 * Set the charset for this body.
-	 * </p>
-	 * <p>
-	 * The alias {@link #in(Charset)} is available for short chaining.
-	 * </p>
-	 * 
-	 * @param charset the charset
-	 * @return this body, for chaining
-	 * @throws NullPointerException if the charset is null
-	 */
-	public final Body inCharset(Charset charset) {
-		if (charset == null) {
-			throw new NullPointerException("Charset cannot be null");
-		}
-		this.charset = charset;
 		return this;
 	}
 
@@ -131,6 +124,38 @@ public class Body {
 		if (contentType == null) {
 			throw new IllegalArgumentException("Content type cannot be blank");
 		}
+		return this;
+	}
+
+	/**
+	 * Alias for {@link #inCharset(Charset)}.
+	 * 
+	 * @param charset the charset
+	 * @return this body, for chaining
+	 * @throws NullPointerException if the charset is null
+	 * @hidden
+	 */
+	public final Body in(Charset charset) {
+		return inCharset(charset);
+	}
+
+	/**
+	 * <p>
+	 * Set the charset for this body.
+	 * </p>
+	 * <p>
+	 * The alias {@link #in(Charset)} is available for short chaining.
+	 * </p>
+	 * 
+	 * @param charset the charset
+	 * @return this body, for chaining
+	 * @throws NullPointerException if the charset is null
+	 */
+	public final Body inCharset(Charset charset) {
+		if (charset == null) {
+			throw new NullPointerException("Charset cannot be null");
+		}
+		this.charset = charset;
 		return this;
 	}
 
