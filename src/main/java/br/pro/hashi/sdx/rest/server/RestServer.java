@@ -5,7 +5,7 @@ import br.pro.hashi.sdx.rest.transform.facade.Facade;
 /**
  * Stub.
  */
-public class RestServer {
+public final class RestServer {
 	private final Facade facade;
 
 	RestServer(Facade facade) {

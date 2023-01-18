@@ -9,7 +9,7 @@ import br.pro.hashi.sdx.rest.transform.facade.Facade;
 /**
  * Stub.
  */
-public class RestClient {
+public final class RestClient {
 	private final Facade facade;
 	private final HttpClient jettyClient;
 	private final Charset urlCharset;

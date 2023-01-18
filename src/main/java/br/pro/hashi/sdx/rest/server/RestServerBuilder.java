@@ -13,12 +13,12 @@ public non-sealed class RestServerBuilder extends Builder<RestServerBuilder> {
 	}
 
 	/**
-	 * Builds a REST server using the resources of a specified package.
+	 * Builds a server using the resources of a specified package.
 	 * 
 	 * @param packageName the package name
 	 * @return the REST server
 	 */
-	public RestServer build(String packageName) {
+	public final RestServer build(String packageName) {
 		return new RestServer(facade);
 	}
 
@@ -26,7 +26,7 @@ public non-sealed class RestServerBuilder extends Builder<RestServerBuilder> {
 	 * @hidden
 	 */
 	@Override
-	protected RestServerBuilder self() {
+	protected final RestServerBuilder self() {
 		return this;
 	}
 }

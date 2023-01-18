@@ -3,7 +3,6 @@ package br.pro.hashi.sdx.rest.client;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -11,7 +10,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mockConstruction;
 import static org.mockito.Mockito.verify;
 
-import java.util.Set;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.eclipse.jetty.client.ContentDecoder;
 import org.eclipse.jetty.client.GZIPContentDecoder;
@@ -57,7 +58,7 @@ class RestClientBuilderTest extends BuilderTest {
 
 	@Test
 	void doesNotSetTrustStoreIfPathIsNull() {
-		assertThrows(IllegalArgumentException.class, () -> {
+		assertThrows(NullPointerException.class, () -> {
 			b.withTrustStore(null, "password");
 		});
 		assertNull(b.getFactory());
@@ -73,7 +74,7 @@ class RestClientBuilderTest extends BuilderTest {
 
 	@Test
 	void doesNotSetTrustStoreIfPasswordIsNull() {
-		assertThrows(IllegalArgumentException.class, () -> {
+		assertThrows(NullPointerException.class, () -> {
 			b.withTrustStore("path", null);
 		});
 		assertNull(b.getFactory());
@@ -90,20 +91,28 @@ class RestClientBuilderTest extends BuilderTest {
 	@Test
 	void builds() {
 		RestClient client = b.build("http://a");
+		assertSame(b.getFacade(), client.getFacade());
+		assertEquals(StandardCharsets.UTF_8, client.getUrlCharset());
 		assertNull(client.getNone());
+		assertEquals("http://a", client.getUrlPrefix());
 		HttpClient jettyClient = client.getJettyClient();
-		assertInstanceOf(HttpClientTransportDynamic.class, jettyClient.getTransport());
 		assertInstanceOf(HttpCookieStore.Empty.class, jettyClient.getCookieStore());
 		assertFalse(jettyClient.isFollowRedirects());
-		Set<ContentDecoder.Factory> factories = jettyClient.getContentDecoderFactories();
-		int size = 0;
-		for (ContentDecoder.Factory factory : factories) {
-			assertInstanceOf(GZIPContentDecoder.Factory.class, factory);
-			size++;
+		List<ContentDecoder.Factory> factories = new ArrayList<>();
+		for (ContentDecoder.Factory factory : jettyClient.getContentDecoderFactories()) {
+			factories.add(factory);
 		}
-		assertEquals(1, size);
+		assertEquals(1, factories.size());
+		assertInstanceOf(GZIPContentDecoder.Factory.class, factories.get(0));
 		assertNull(jettyClient.getSslContextFactory());
-		assertEquals("http://a", client.getUrlPrefix());
+		assertInstanceOf(HttpClientTransportDynamic.class, jettyClient.getTransport());
+	}
+
+	@Test
+	void buildsWithUrlCharset() {
+		b.withUrlCharset(StandardCharsets.ISO_8859_1);
+		RestClient client = b.build("http://a");
+		assertEquals(StandardCharsets.ISO_8859_1, client.getUrlCharset());
 	}
 
 	@Test
@@ -131,9 +140,7 @@ class RestClientBuilderTest extends BuilderTest {
 	void buildsWithTrustStore() {
 		b.withTrustStore("path", "password");
 		RestClient client = b.build("http://a");
-		SslContextFactory.Client factory = client.getJettyClient().getSslContextFactory();
-		assertNotNull(factory);
-		assertSame(b.getFactory(), factory);
+		assertSame(b.getFactory(), client.getJettyClient().getSslContextFactory());
 	}
 
 	@Test
@@ -144,8 +151,8 @@ class RestClientBuilderTest extends BuilderTest {
 
 	@Test
 	void buildsWithReserved() {
-		RestClient client = b.build("http://a %20+%2B%%2F");
-		assertEquals("http://a %20+%2B%%2F", client.getUrlPrefix());
+		RestClient client = b.build("http://a%20 %2B+%25%%2F/");
+		assertEquals("http://a%20 %2B+%25%%2F", client.getUrlPrefix());
 	}
 
 	@Test
@@ -168,25 +175,25 @@ class RestClientBuilderTest extends BuilderTest {
 
 	@Test
 	void buildsWithHttpsAndReservedAndWhitespacesAndItemsAndSlashes() {
-		RestClient client = b.build(" \t\nhttps://a %20+%2B%%2F/0/ %20+%2B/1/%25%2F/2/// \t\n");
-		assertEquals("https://a %20+%2B%%2F/0/%20%20%2B%2B/1/%25%2F/2", client.getUrlPrefix());
+		RestClient client = b.build(" \t\nhttps://a%20 %2B+%25%%2F/0/%20 %2B+/1/%25%2F/2/// \t\n");
+		assertEquals("https://a%20 %2B+%25%%2F/0/%20%20%2B%2B/1/%25%2F/2", client.getUrlPrefix());
 	}
 
 	@Test
 	void buildsWithHttp1() {
 		RestClient client = b.build1("http://a");
 		HttpClient jettyClient = client.getJettyClient();
-		assertInstanceOf(HttpClientTransportOverHTTP.class, jettyClient.getTransport());
 		assertNull(jettyClient.getSslContextFactory());
+		assertInstanceOf(HttpClientTransportOverHTTP.class, jettyClient.getTransport());
 	}
 
 	@Test
 	void buildsWithHttps1() {
 		b.withTrustStore("path", "password");
 		RestClient client = b.build1("http://a");
-		SslContextFactory.Client factory = client.getJettyClient().getSslContextFactory();
-		assertNotNull(factory);
-		assertSame(b.getFactory(), factory);
+		HttpClient jettyClient = client.getJettyClient();
+		assertSame(b.getFactory(), jettyClient.getSslContextFactory());
+		assertInstanceOf(HttpClientTransportOverHTTP.class, jettyClient.getTransport());
 	}
 
 	@Test
@@ -201,9 +208,9 @@ class RestClientBuilderTest extends BuilderTest {
 	void buildsWithHttps2() {
 		b.withTrustStore("path", "password");
 		RestClient client = b.build2("http://a");
-		SslContextFactory.Client factory = client.getJettyClient().getSslContextFactory();
-		assertNotNull(factory);
-		assertSame(b.getFactory(), factory);
+		HttpClient jettyClient = client.getJettyClient();
+		assertSame(b.getFactory(), jettyClient.getSslContextFactory());
+		assertInstanceOf(HttpClientTransportOverHTTP2.class, jettyClient.getTransport());
 	}
 
 	@Test
@@ -211,15 +218,20 @@ class RestClientBuilderTest extends BuilderTest {
 		b.withTrustStore("path", "password");
 		RestClient client = b.build3("http://a");
 		HttpClient jettyClient = client.getJettyClient();
+		assertSame(b.getFactory(), jettyClient.getSslContextFactory());
 		assertInstanceOf(HttpClientTransportOverHTTP3.class, jettyClient.getTransport());
-		SslContextFactory.Client factory = jettyClient.getSslContextFactory();
-		assertNotNull(factory);
-		assertSame(b.getFactory(), factory);
+	}
+
+	@Test
+	void doesNotBuildWithHttp3() {
+		assertThrows(IllegalArgumentException.class, () -> {
+			b.build3("http://a");
+		});
 	}
 
 	@Test
 	void doesNotBuildIfUrlPrefixIsNull() {
-		assertThrows(IllegalArgumentException.class, () -> {
+		assertThrows(NullPointerException.class, () -> {
 			b.build(null);
 		});
 	}
@@ -242,13 +254,6 @@ class RestClientBuilderTest extends BuilderTest {
 	void doesNotBuildIfUrlPrefixAuthorityIsEmpty() {
 		assertThrows(IllegalArgumentException.class, () -> {
 			b.build("http:///a");
-		});
-	}
-
-	@Test
-	void doesNotBuildWithHttp3() {
-		assertThrows(IllegalArgumentException.class, () -> {
-			b.build3("http://a");
 		});
 	}
 }
