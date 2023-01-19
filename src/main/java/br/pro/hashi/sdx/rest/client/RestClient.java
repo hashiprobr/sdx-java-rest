@@ -204,9 +204,9 @@ public final class RestClient {
 	 * Represents a request configuration.
 	 */
 	public final class Proxy {
-		private List<Entry> queries;
-		private List<Entry> headers;
-		private List<Body> bodies;
+		private final List<Entry> queries;
+		private final List<Entry> headers;
+		private final List<Body> bodies;
 
 		private Proxy() {
 			this.queries = new ArrayList<>();

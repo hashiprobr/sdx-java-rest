@@ -11,41 +11,56 @@ import br.pro.hashi.sdx.rest.transform.Hint;
  * Wrapper for customizing a body via a fluent interface.
  */
 public class Body {
+	private static Type getType(Hint<?> hint) {
+		if (hint == null) {
+			throw new NullPointerException("Hint cannot be null");
+		}
+		return hint.getType();
+	}
+
 	private final Object actual;
-	private final String name;
-	private Type type;
+	private final Type type;
+	private String name;
 	private String contentType;
 	private Charset charset;
 	private boolean base64;
 
 	/**
+	 * <p>
 	 * Constructs a wrapped body.
+	 * </p>
+	 * <p>
+	 * This constructor calls {@code body.getClass()} to obtain the body type. Since
+	 * {@code body.getClass()} loses generic information due to type erasure, do not
+	 * call it if the type is generic. Call {@code Body(T, Hint<T>)} instead.
+	 * </p>
 	 * 
 	 * @param actual the actual body
 	 */
 	public Body(Object actual) {
-		this("", actual);
+		this(actual, actual.getClass());
 	}
 
 	/**
-	 * Constructs a named wrapped body for a multipart request.
+	 * <p>
+	 * Constructs a wrapped body with hinted type.
+	 * </p>
+	 * <p>
+	 * Call this constructor if the body type is generic.
+	 * </p>
 	 * 
 	 * @param actual the actual body
-	 * @param name   the part name
-	 * @throws NullPointerException     if the part name is null
-	 * @throws IllegalArgumentException if the part name is blank
+	 * @param hint   the type hint
+	 * @throws NullPointerException if the type hint is null
 	 */
-	public Body(String name, Object actual) {
-		if (name == null) {
-			throw new NullPointerException("Part name cannot be null");
-		}
-		name = name.strip();
-		if (name.isEmpty()) {
-			throw new IllegalArgumentException("Part name cannot be blank");
-		}
+	public <T> Body(T actual, Hint<T> hint) {
+		this(actual, getType(hint));
+	}
+
+	private Body(Object actual, Type type) {
 		this.actual = actual;
-		this.name = name;
-		this.type = actual.getClass();
+		this.type = type;
+		this.name = "";
 		this.contentType = null;
 		this.charset = Coding.CHARSET;
 		this.base64 = false;
@@ -55,12 +70,12 @@ public class Body {
 		return actual;
 	}
 
-	String getName() {
-		return name;
-	}
-
 	Type getType() {
 		return type;
+	}
+
+	String getName() {
+		return name;
 	}
 
 	String getContentType() {
@@ -76,17 +91,22 @@ public class Body {
 	}
 
 	/**
-	 * Hint the type of this body for assembling or serializing.
+	 * Set the name of this body for a multipart request.
 	 * 
-	 * @param hint the hint
+	 * @param name the name
 	 * @return this body, for chaining
-	 * @throws NullPointerException if the hint is null
+	 * @throws NullPointerException     if the hint is null
+	 * @throws IllegalArgumentException if the name is blank
 	 */
-	public final Body is(Hint<?> hint) {
-		if (hint == null) {
-			throw new NullPointerException("Hint cannot be null");
+	public final Body withName(String name) {
+		if (name == null) {
+			throw new NullPointerException("Name cannot be null");
 		}
-		this.type = hint.getType();
+		name = name.strip();
+		if (name.isEmpty()) {
+			throw new IllegalArgumentException("Name cannot be blank");
+		}
+		this.name = name;
 		return this;
 	}
 
@@ -124,6 +144,7 @@ public class Body {
 		if (contentType == null) {
 			throw new IllegalArgumentException("Content type cannot be blank");
 		}
+		this.contentType = contentType;
 		return this;
 	}
 

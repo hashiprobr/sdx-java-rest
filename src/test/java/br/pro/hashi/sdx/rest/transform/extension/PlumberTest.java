@@ -107,9 +107,9 @@ class PlumberTest {
 			return p.connect(consumer);
 		});
 		CheckedPipedReader checkedReader = (CheckedPipedReader) reader;
-		FutureTask<Void> task = spy(checkedReader.task);
+		FutureTask<Void> task = spy(checkedReader.getTask());
 		when(task.get()).thenThrow(InterruptedException.class);
-		checkedReader.task = task;
+		checkedReader.setTask(task);
 		assertThrows(AssertionError.class, () -> {
 			reader.read();
 		});

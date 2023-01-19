@@ -13,10 +13,6 @@ class RestServerTest {
 	private Facade facade;
 	private RestServer s;
 
-	private RestServer newRestServer() {
-		return new RestServer(facade);
-	}
-
 	@BeforeEach
 	void setUp() {
 		facade = mock(Facade.class);
@@ -32,5 +28,9 @@ class RestServerTest {
 	void constructs() {
 		s = newRestServer();
 		assertSame(facade, s.getFacade());
+	}
+
+	private RestServer newRestServer() {
+		return new RestServer(facade);
 	}
 }

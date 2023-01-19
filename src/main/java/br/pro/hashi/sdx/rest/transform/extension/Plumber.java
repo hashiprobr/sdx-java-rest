@@ -50,10 +50,18 @@ public class Plumber {
 	}
 
 	static class CheckedPipedReader extends PipedReader {
-		FutureTask<Void> task;
+		private FutureTask<Void> task;
 
 		private CheckedPipedReader(PipedWriter writer, FutureTask<Void> task) throws IOException {
 			super(writer);
+			this.task = task;
+		}
+
+		FutureTask<Void> getTask() {
+			return task;
+		}
+
+		void setTask(FutureTask<Void> task) {
 			this.task = task;
 		}
 
