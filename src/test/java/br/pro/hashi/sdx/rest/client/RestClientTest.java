@@ -1,6 +1,5 @@
 package br.pro.hashi.sdx.rest.client;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -10,7 +9,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockConstruction;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -43,16 +44,25 @@ class RestClientTest {
 	}
 
 	@Test
-	void starts() {
+	void starts() throws Exception {
 		c = newRestClient();
-		assertDoesNotThrow(() -> {
-			c.start();
-		});
+		when(jettyClient.isRunning()).thenReturn(false);
+		c.start();
+		verify(jettyClient).start();
 	}
 
 	@Test
-	void doesNotStart() throws Exception {
+	void doesNotStartIfJettyClientAlreadyStarted() throws Exception {
 		c = newRestClient();
+		when(jettyClient.isRunning()).thenReturn(true);
+		c.start();
+		verify(jettyClient, times(0)).start();
+	}
+
+	@Test
+	void doesNotStartIfJettyClientThrowsException() throws Exception {
+		c = newRestClient();
+		when(jettyClient.isRunning()).thenReturn(false);
 		doThrow(Exception.class).when(jettyClient).start();
 		assertThrows(ClientException.class, () -> {
 			c.start();
@@ -60,16 +70,25 @@ class RestClientTest {
 	}
 
 	@Test
-	void stops() {
+	void stops() throws Exception {
 		c = newRestClient();
-		assertDoesNotThrow(() -> {
-			c.stop();
-		});
+		when(jettyClient.isRunning()).thenReturn(true);
+		c.stop();
+		verify(jettyClient).stop();
 	}
 
 	@Test
-	void doesNotStop() throws Exception {
+	void doesNotStopIfJettyClientAlreadyStopped() throws Exception {
 		c = newRestClient();
+		when(jettyClient.isRunning()).thenReturn(false);
+		c.stop();
+		verify(jettyClient, times(0)).stop();
+	}
+
+	@Test
+	void doesNotStopIfJettyClientThrowsException() throws Exception {
+		c = newRestClient();
+		when(jettyClient.isRunning()).thenReturn(true);
 		doThrow(Exception.class).when(jettyClient).stop();
 		assertThrows(ClientException.class, () -> {
 			c.stop();

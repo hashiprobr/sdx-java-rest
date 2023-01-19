@@ -88,6 +88,9 @@ public final class RestClient {
 	 * @throws ClientException if the Jetty HttpClient cannot be started
 	 */
 	public void start() {
+		if (jettyClient.isRunning()) {
+			return;
+		}
 		logger.info("Starting REST client...");
 		try {
 			jettyClient.start();
@@ -103,6 +106,9 @@ public final class RestClient {
 	 * @throws ClientException if the Jetty HttpClient cannot be stopped
 	 */
 	public void stop() {
+		if (!jettyClient.isRunning()) {
+			return;
+		}
 		logger.info("Stopping REST client...");
 		try {
 			jettyClient.stop();
