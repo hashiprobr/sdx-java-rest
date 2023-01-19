@@ -49,6 +49,7 @@ public class Body {
 	 * Call this constructor if the body type is generic.
 	 * </p>
 	 * 
+	 * @param <T>    the type of the actual body
 	 * @param actual the actual body
 	 * @param hint   the type hint
 	 * @throws NullPointerException if the type hint is null

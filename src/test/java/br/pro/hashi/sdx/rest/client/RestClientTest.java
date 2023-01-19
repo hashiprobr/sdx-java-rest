@@ -1,6 +1,9 @@
 package br.pro.hashi.sdx.rest.client;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.mockito.Mockito.mock;
 
 import java.nio.charset.StandardCharsets;
@@ -26,6 +29,16 @@ class RestClientTest {
 	void builds() {
 		c = RestClient.to("http://a");
 		assertNotNull(c);
+	}
+
+	@Test
+	void constructs() {
+		c = newRestClient();
+		assertSame(facade, c.getFacade());
+		assertSame(jettyClient, c.getJettyClient());
+		assertEquals(StandardCharsets.UTF_8, c.getUrlCharset());
+		assertNull(c.getNone());
+		assertEquals("http://a", c.getUrlPrefix());
 	}
 
 	private RestClient newRestClient() {
