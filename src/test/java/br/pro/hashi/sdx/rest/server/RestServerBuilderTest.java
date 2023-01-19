@@ -1,6 +1,6 @@
 package br.pro.hashi.sdx.rest.server;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 
 import org.junit.jupiter.api.Test;
 
@@ -19,6 +19,6 @@ class RestServerBuilderTest extends BuilderTest {
 	@Test
 	void builds() {
 		RestServer server = b.build("package");
-		assertNotNull(server);
+		assertSame(b.getFacade(), server.getFacade());
 	}
 }

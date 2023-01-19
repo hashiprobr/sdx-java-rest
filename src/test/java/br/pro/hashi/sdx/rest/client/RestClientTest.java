@@ -7,6 +7,8 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockConstruction;
+import static org.mockito.Mockito.verify;
 
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -14,6 +16,7 @@ import java.util.List;
 import org.eclipse.jetty.client.HttpClient;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.MockedConstruction;
 
 import br.pro.hashi.sdx.rest.transform.Hint;
 import br.pro.hashi.sdx.rest.transform.facade.Facade;
@@ -31,19 +34,74 @@ class RestClientTest {
 	}
 
 	@Test
-	void builds() {
+	void constructs() {
 		c = RestClient.to("http://a");
 		assertNotNull(c);
 	}
 
 	@Test
-	void constructs() {
-		c = newRestClient();
-		assertSame(facade, c.getFacade());
-		assertSame(jettyClient, c.getJettyClient());
-		assertEquals(StandardCharsets.UTF_8, c.getUrlCharset());
-		assertNull(c.getNone());
-		assertEquals("http://a", c.getUrlPrefix());
+	void forwardsToProxyWithQuery() {
+		try (MockedConstruction<RestClient.Proxy> construction = mockConstruction(RestClient.Proxy.class)) {
+			c = newRestClient();
+			c.q("name");
+			p = construction.constructed().get(0);
+			verify(p).withQuery("name");
+		}
+	}
+
+	@Test
+	void forwardsToProxyWithQueryWithValue() {
+		try (MockedConstruction<RestClient.Proxy> construction = mockConstruction(RestClient.Proxy.class)) {
+			c = newRestClient();
+			Object value = new Object();
+			c.q("name", value);
+			p = construction.constructed().get(0);
+			verify(p).withQuery("name", value);
+		}
+	}
+
+	@Test
+	void forwardsToProxyWithHeader() {
+		try (MockedConstruction<RestClient.Proxy> construction = mockConstruction(RestClient.Proxy.class)) {
+			c = newRestClient();
+			Object value = new Object();
+			c.h("name", value);
+			p = construction.constructed().get(0);
+			verify(p).withHeader("name", value);
+		}
+	}
+
+	@Test
+	void forwardsToProxyWithBody() {
+		try (MockedConstruction<RestClient.Proxy> construction = mockConstruction(RestClient.Proxy.class)) {
+			c = newRestClient();
+			Object body = new Object();
+			c.b(body);
+			p = construction.constructed().get(0);
+			verify(p).withBody(body);
+		}
+	}
+
+	@Test
+	void forwardsToProxyWithBodyWithHint() {
+		try (MockedConstruction<RestClient.Proxy> construction = mockConstruction(RestClient.Proxy.class)) {
+			c = newRestClient();
+			Object body = new Object();
+			Hint<Object> hint = new Hint<Object>() {};
+			c.b(body, hint);
+			p = construction.constructed().get(0);
+			verify(p).withBody(body, hint);
+		}
+	}
+
+	@Test
+	void forwardsToProxyWithTimeout() {
+		try (MockedConstruction<RestClient.Proxy> construction = mockConstruction(RestClient.Proxy.class)) {
+			c = newRestClient();
+			c.t(1);
+			p = construction.constructed().get(0);
+			verify(p).withTimeout(1);
+		}
 	}
 
 	@Test
