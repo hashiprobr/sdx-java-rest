@@ -70,13 +70,13 @@ public final class RestClient {
 
 	/**
 	 * <p>
-	 * Obtains the Jetty HttpClient used by this client.
+	 * Obtains the Jetty HttpClient used internally by this client.
 	 * </p>
 	 * <p>
 	 * Call this method if you want to override the default configuration.
 	 * </p>
 	 * 
-	 * @return the Jetty client
+	 * @return the internal client
 	 */
 	public HttpClient getJettyClient() {
 		return jettyClient;
