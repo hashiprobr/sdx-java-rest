@@ -18,7 +18,7 @@ public final class RestServer {
 	}
 
 	/**
-	 * Convenience method for instantiating a REST server builder.
+	 * Convenience method that instantiates a REST server builder.
 	 * 
 	 * @return the server builder
 	 */

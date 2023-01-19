@@ -92,7 +92,7 @@ public class Body {
 	}
 
 	/**
-	 * Set the name of this body for a multipart request.
+	 * Sets the name of this body for a multipart request.
 	 * 
 	 * @param name the name
 	 * @return this body, for chaining
@@ -126,7 +126,7 @@ public class Body {
 
 	/**
 	 * <p>
-	 * Set the content type for this body.
+	 * Sets the content type for this body.
 	 * </p>
 	 * <p>
 	 * The alias {@link #as(String)} is available for short chaining.
@@ -163,7 +163,7 @@ public class Body {
 
 	/**
 	 * <p>
-	 * Set the charset for this body.
+	 * Sets the charset for this body.
 	 * </p>
 	 * <p>
 	 * The alias {@link #in(Charset)} is available for short chaining.
@@ -182,7 +182,7 @@ public class Body {
 	}
 
 	/**
-	 * Encode this body in Base64.
+	 * Encodes this body in Base64.
 	 * 
 	 * @return this body, for chaining
 	 */

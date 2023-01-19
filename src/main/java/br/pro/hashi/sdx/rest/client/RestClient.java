@@ -25,7 +25,7 @@ public final class RestClient {
 	}
 
 	/**
-	 * Convenience method for instantiating a REST client builder.
+	 * Convenience method that instantiates a REST client builder.
 	 * 
 	 * @return the client builder
 	 */
@@ -105,7 +105,7 @@ public final class RestClient {
 
 	/**
 	 * <p>
-	 * Convenience method to instantiate a {@link RestClient.Proxy} and call
+	 * Convenience method that instantiates a {@link RestClient.Proxy} and calls
 	 * {@link RestClient.Proxy#withQuery(String)}.
 	 * </p>
 	 * <p>
@@ -122,7 +122,7 @@ public final class RestClient {
 
 	/**
 	 * <p>
-	 * Convenience method to instantiate a {@link RestClient.Proxy} and call
+	 * Convenience method that instantiates a {@link RestClient.Proxy} and calls
 	 * {@link RestClient.Proxy#withQuery(String, Object)}.
 	 * </p>
 	 * <p>
@@ -156,7 +156,7 @@ public final class RestClient {
 
 	/**
 	 * <p>
-	 * Convenience method to instantiate a {@link RestClient.Proxy} and call
+	 * Convenience method that instantiates a {@link RestClient.Proxy} and calls
 	 * {@link RestClient.Proxy#withHeader(String, Object)}.
 	 * </p>
 	 * <p>
@@ -187,7 +187,7 @@ public final class RestClient {
 
 	/**
 	 * <p>
-	 * Convenience method to instantiate a {@link RestClient.Proxy} and call
+	 * Convenience method that instantiates a {@link RestClient.Proxy} and calls
 	 * {@link RestClient.Proxy#withBody(Object)}.
 	 * </p>
 	 * <p>
@@ -217,7 +217,7 @@ public final class RestClient {
 
 	/**
 	 * <p>
-	 * Convenience method to instantiate a {@link RestClient.Proxy} and call
+	 * Convenience method that instantiates a {@link RestClient.Proxy} and calls
 	 * {@code RestClient.Proxy.withBody(T, Hint<T>)}.
 	 * </p>
 	 * <p>
@@ -248,7 +248,7 @@ public final class RestClient {
 
 	/**
 	 * <p>
-	 * Convenience method to instantiate a {@link RestClient.Proxy} and call
+	 * Convenience method that instantiates a {@link RestClient.Proxy} and calls
 	 * {@link RestClient.Proxy#withTimeout(int)}.
 	 * </p>
 	 * <p>
@@ -323,7 +323,7 @@ public final class RestClient {
 
 		/**
 		 * <p>
-		 * Add a query without value to the request.
+		 * Adds a query without value to the request.
 		 * </p>
 		 * <p>
 		 * The value is converted to {@code String} via {@code toString()} and encoded
@@ -347,7 +347,7 @@ public final class RestClient {
 
 		/**
 		 * <p>
-		 * Add a query to the request.
+		 * Adds a query to the request.
 		 * </p>
 		 * <p>
 		 * The value is converted to {@code String} via {@code toString()} and encoded
@@ -391,7 +391,7 @@ public final class RestClient {
 
 		/**
 		 * <p>
-		 * Add a header to the request.
+		 * Adds a header to the request.
 		 * </p>
 		 * <p>
 		 * The value is converted to {@code String} via {@code toString()} and encoded
@@ -436,7 +436,7 @@ public final class RestClient {
 
 		/**
 		 * <p>
-		 * Add a body to the request.
+		 * Adds a body to the request.
 		 * </p>
 		 * <p>
 		 * This method calls {@code body.getClass()} to obtain the body type. Since
@@ -475,7 +475,7 @@ public final class RestClient {
 
 		/**
 		 * <p>
-		 * Add a body with hinted type to the request.
+		 * Adds a body with hinted type to the request.
 		 * </p>
 		 * <p>
 		 * Call this method if the body type is generic.
@@ -513,7 +513,7 @@ public final class RestClient {
 
 		/**
 		 * <p>
-		 * Set the timeout of the request.
+		 * Sets the timeout of the request.
 		 * </p>
 		 * <p>
 		 * The alias {@link #t(int)} is available for short chaining.
@@ -530,7 +530,6 @@ public final class RestClient {
 			this.timeout = timeout;
 			return this;
 		}
-
 	}
 
 	record Entry(String name, Object value) {
