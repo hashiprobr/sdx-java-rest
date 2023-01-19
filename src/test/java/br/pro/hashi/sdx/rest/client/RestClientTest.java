@@ -40,7 +40,7 @@ class RestClientTest {
 	}
 
 	@Test
-	void forwardsToProxyWithQuery() {
+	void forwardsWithQueryToProxy() {
 		try (MockedConstruction<RestClient.Proxy> construction = mockConstruction(RestClient.Proxy.class)) {
 			c = newRestClient();
 			c.q("name");
@@ -50,7 +50,7 @@ class RestClientTest {
 	}
 
 	@Test
-	void forwardsToProxyWithQueryWithValue() {
+	void forwardsWithQueryToProxyWithValue() {
 		try (MockedConstruction<RestClient.Proxy> construction = mockConstruction(RestClient.Proxy.class)) {
 			c = newRestClient();
 			Object value = new Object();
@@ -61,7 +61,7 @@ class RestClientTest {
 	}
 
 	@Test
-	void forwardsToProxyWithHeader() {
+	void forwardsWithHeaderToProxy() {
 		try (MockedConstruction<RestClient.Proxy> construction = mockConstruction(RestClient.Proxy.class)) {
 			c = newRestClient();
 			Object value = new Object();
@@ -72,7 +72,7 @@ class RestClientTest {
 	}
 
 	@Test
-	void forwardsToProxyWithBody() {
+	void forwardsWithBodyToProxy() {
 		try (MockedConstruction<RestClient.Proxy> construction = mockConstruction(RestClient.Proxy.class)) {
 			c = newRestClient();
 			Object body = new Object();
@@ -83,7 +83,7 @@ class RestClientTest {
 	}
 
 	@Test
-	void forwardsToProxyWithBodyWithHint() {
+	void forwardsWithBodyToProxyWithHint() {
 		try (MockedConstruction<RestClient.Proxy> construction = mockConstruction(RestClient.Proxy.class)) {
 			c = newRestClient();
 			Object body = new Object();
@@ -95,7 +95,7 @@ class RestClientTest {
 	}
 
 	@Test
-	void forwardsToProxyWithTimeout() {
+	void forwardsWithTimeoutToProxy() {
 		try (MockedConstruction<RestClient.Proxy> construction = mockConstruction(RestClient.Proxy.class)) {
 			c = newRestClient();
 			c.t(1);
