@@ -272,7 +272,7 @@ public final class RestClient {
 		private final List<Body> bodies;
 		private int timeout;
 
-		private Proxy() {
+		Proxy() {
 			this.queries = new ArrayList<>();
 			this.headers = new ArrayList<>();
 			this.bodies = new ArrayList<>();
@@ -531,7 +531,8 @@ public final class RestClient {
 			return this;
 		}
 
-		private record Entry(String name, Object value) {
-		}
+	}
+
+	record Entry(String name, Object value) {
 	}
 }
