@@ -7,6 +7,7 @@ import java.util.List;
 
 import org.eclipse.jetty.client.HttpClient;
 
+import br.pro.hashi.sdx.rest.transform.Hint;
 import br.pro.hashi.sdx.rest.transform.facade.Facade;
 
 /**
@@ -201,17 +202,97 @@ public final class RestClient {
 	}
 
 	/**
+	 * Alias for {@code withBody(T, Hint<T>)}.
+	 * 
+	 * @param <T>  the type of the body
+	 * @param body the body
+	 * @param hint the type hint
+	 * @return the proxy, for chaining
+	 * @throws NullPointerException if the type hint is null
+	 * @hidden
+	 */
+	public <T> Proxy b(T body, Hint<T> hint) {
+		return withBody(body, hint);
+	}
+
+	/**
+	 * <p>
+	 * Convenience method to instantiate a {@link RestClient.Proxy} and call
+	 * {@code RestClient.Proxy.withBody(T, Hint<T>)}.
+	 * </p>
+	 * <p>
+	 * The alias {@code b(T, Hint<T>)} is available for short chaining.
+	 * </p>
+	 * 
+	 * @param <T>  the type of the body
+	 * @param body the body
+	 * @param hint the type hint
+	 * @return the proxy, for chaining
+	 * @throws NullPointerException if the type hint is null
+	 */
+	public <T> Proxy withBody(T body, Hint<T> hint) {
+		return new Proxy().withBody(body, hint);
+	}
+
+	/**
+	 * Alias for {@link #withTimeout(int)}.
+	 * 
+	 * @param timeout the timeout, in seconds
+	 * @return this proxy, for chaining
+	 * @throws IllegalArgumentException if the timeout is not positive
+	 * @hidden
+	 */
+	public Proxy t(int timeout) {
+		return withTimeout(timeout);
+	}
+
+	/**
+	 * <p>
+	 * Convenience method to instantiate a {@link RestClient.Proxy} and call
+	 * {@link RestClient.Proxy#withTimeout(int)}.
+	 * </p>
+	 * <p>
+	 * The alias {@link #t(int)} is available for short chaining.
+	 * </p>
+	 * 
+	 * @param timeout the timeout, in seconds
+	 * @return this proxy, for chaining
+	 * @throws IllegalArgumentException if the timeout is not positive
+	 */
+	public Proxy withTimeout(int timeout) {
+		return new Proxy().withTimeout(timeout);
+	}
+
+	/**
 	 * Represents a request configuration.
 	 */
 	public final class Proxy {
 		private final List<Entry> queries;
 		private final List<Entry> headers;
 		private final List<Body> bodies;
+		private int timeout;
 
 		private Proxy() {
 			this.queries = new ArrayList<>();
 			this.headers = new ArrayList<>();
 			this.bodies = new ArrayList<>();
+			this.timeout = 0;
+		}
+
+		List<Entry> getQueries() {
+			return queries;
+		}
+
+		List<Entry> getHeaders() {
+			return headers;
+		}
+
+		List<Body> getBodies() {
+			return bodies;
+		}
+
+		int getTimeout() {
+			return timeout;
 		}
 
 		/**
@@ -358,6 +439,11 @@ public final class RestClient {
 		 * Add a body to the request.
 		 * </p>
 		 * <p>
+		 * This method calls {@code body.getClass()} to obtain the body type. Since
+		 * {@code body.getClass()} loses generic information due to type erasure, do not
+		 * call it if the type is generic. Call {@code withBody(T, Hint<T>)} instead.
+		 * </p>
+		 * <p>
 		 * The alias {@link #b(Object)} is available for short chaining.
 		 * </p>
 		 * 
@@ -370,6 +456,78 @@ public final class RestClient {
 			} else {
 				bodies.add(new Body(body));
 			}
+			return this;
+		}
+
+		/**
+		 * Alias for {@code withBody(T, Hint<T>)}.
+		 * 
+		 * @param <T>  the type of the body
+		 * @param body the body
+		 * @param hint the type hint
+		 * @return this proxy, for chaining
+		 * @throws NullPointerException if the type hint is null
+		 * @hidden
+		 */
+		public <T> Proxy b(T body, Hint<T> hint) {
+			return withBody(body, hint);
+		}
+
+		/**
+		 * <p>
+		 * Add a body with hinted type to the request.
+		 * </p>
+		 * <p>
+		 * Call this method if the body type is generic.
+		 * </p>
+		 * <p>
+		 * The alias {@code b(T, Hint<T>)} is available for short chaining.
+		 * </p>
+		 * 
+		 * @param <T>  the type of the body
+		 * @param body the body
+		 * @param hint the type hint
+		 * @return this proxy, for chaining
+		 * @throws NullPointerException if the type hint is null
+		 */
+		public <T> Proxy withBody(T body, Hint<T> hint) {
+			if (body instanceof Body) {
+				bodies.add((Body) body);
+			} else {
+				bodies.add(new Body(body, hint));
+			}
+			return this;
+		}
+
+		/**
+		 * Alias for {@link #withTimeout(int)}.
+		 * 
+		 * @param timeout the timeout, in seconds
+		 * @return this proxy, for chaining
+		 * @throws IllegalArgumentException if the timeout is not positive
+		 * @hidden
+		 */
+		public Proxy t(int timeout) {
+			return withTimeout(timeout);
+		}
+
+		/**
+		 * <p>
+		 * Set the timeout of the request.
+		 * </p>
+		 * <p>
+		 * The alias {@link #t(int)} is available for short chaining.
+		 * </p>
+		 * 
+		 * @param timeout the timeout, in seconds
+		 * @return this proxy, for chaining
+		 * @throws IllegalArgumentException if the timeout is not positive
+		 */
+		public Proxy withTimeout(int timeout) {
+			if (timeout < 1) {
+				throw new IllegalArgumentException("Timeout must be positive");
+			}
+			this.timeout = timeout;
 			return this;
 		}
 

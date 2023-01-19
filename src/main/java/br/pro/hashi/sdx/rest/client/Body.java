@@ -96,7 +96,7 @@ public class Body {
 	 * 
 	 * @param name the name
 	 * @return this body, for chaining
-	 * @throws NullPointerException     if the hint is null
+	 * @throws NullPointerException     if the name is null
 	 * @throws IllegalArgumentException if the name is blank
 	 */
 	public final Body withName(String name) {
