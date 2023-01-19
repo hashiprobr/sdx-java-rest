@@ -7,7 +7,8 @@ import br.pro.hashi.sdx.rest.transform.facade.Facade;
  */
 public final class RestServer {
 	/**
-	 * Instantiates a REST server using the resources of a specified package.
+	 * Instantiates a default REST server using the resources of a specified
+	 * package.
 	 * 
 	 * @param packageName the package name
 	 * @return the server

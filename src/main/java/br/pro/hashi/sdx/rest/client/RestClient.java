@@ -15,7 +15,7 @@ import br.pro.hashi.sdx.rest.transform.facade.Facade;
  */
 public final class RestClient {
 	/**
-	 * Instantiates a REST client using a specified URL prefix.
+	 * Instantiates a default REST client using a specified URL prefix.
 	 * 
 	 * @param urlPrefix the URL prefix
 	 * @return the client
