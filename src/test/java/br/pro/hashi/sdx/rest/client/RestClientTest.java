@@ -1,11 +1,13 @@
 package br.pro.hashi.sdx.rest.client;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockConstruction;
 import static org.mockito.Mockito.verify;
@@ -18,6 +20,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedConstruction;
 
+import br.pro.hashi.sdx.rest.client.exception.ClientException;
 import br.pro.hashi.sdx.rest.transform.Hint;
 import br.pro.hashi.sdx.rest.transform.facade.Facade;
 
@@ -37,6 +40,40 @@ class RestClientTest {
 	void constructs() {
 		c = RestClient.to("http://a");
 		assertNotNull(c);
+	}
+
+	@Test
+	void starts() {
+		c = newRestClient();
+		assertDoesNotThrow(() -> {
+			c.start();
+		});
+	}
+
+	@Test
+	void doesNotStart() throws Exception {
+		c = newRestClient();
+		doThrow(Exception.class).when(jettyClient).start();
+		assertThrows(ClientException.class, () -> {
+			c.start();
+		});
+	}
+
+	@Test
+	void stops() {
+		c = newRestClient();
+		assertDoesNotThrow(() -> {
+			c.stop();
+		});
+	}
+
+	@Test
+	void doesNotStop() throws Exception {
+		c = newRestClient();
+		doThrow(Exception.class).when(jettyClient).stop();
+		assertThrows(ClientException.class, () -> {
+			c.stop();
+		});
 	}
 
 	@Test

@@ -6,7 +6,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.jetty.client.HttpClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import br.pro.hashi.sdx.rest.client.exception.ClientException;
 import br.pro.hashi.sdx.rest.transform.Hint;
 import br.pro.hashi.sdx.rest.transform.facade.Facade;
 
@@ -33,6 +36,7 @@ public final class RestClient {
 		return new RestClientBuilder();
 	}
 
+	private final Logger logger;
 	private final Facade facade;
 	private final HttpClient jettyClient;
 	private final Charset urlCharset;
@@ -40,6 +44,7 @@ public final class RestClient {
 	private final String urlPrefix;
 
 	RestClient(Facade facade, HttpClient jettyClient, Charset urlCharset, String none, String urlPrefix) {
+		this.logger = LoggerFactory.getLogger(RestClient.class);
 		this.facade = facade;
 		this.jettyClient = jettyClient;
 		this.urlCharset = urlCharset;
@@ -75,6 +80,36 @@ public final class RestClient {
 	 */
 	public HttpClient getJettyClient() {
 		return jettyClient;
+	}
+
+	/**
+	 * Starts this client.
+	 * 
+	 * @throws ClientException if the Jetty HttpClient cannot be started
+	 */
+	public void start() {
+		logger.info("Starting REST client...");
+		try {
+			jettyClient.start();
+		} catch (Exception exception) {
+			throw new ClientException(exception);
+		}
+		logger.info("REST client started");
+	}
+
+	/**
+	 * Stops this client.
+	 * 
+	 * @throws ClientException if the Jetty HttpClient cannot be stopped
+	 */
+	public void stop() {
+		logger.info("Stopping REST client...");
+		try {
+			jettyClient.stop();
+		} catch (Exception exception) {
+			throw new ClientException(exception);
+		}
+		logger.info("REST client stopped");
 	}
 
 	/**
