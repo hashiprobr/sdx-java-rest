@@ -27,45 +27,45 @@ class OctetDisassemblerTest {
 
 	@Test
 	void returnsEqualsIfTypeEqualsByteArray() {
-		assertArrayEquals(newByteArray(), d.fromStream(stream, byte[].class));
+		assertArrayEquals(newByteArray(), d.read(stream, byte[].class));
 	}
 
 	@Test
 	void returnsEqualsIfTypeEqualsByteArrayWithHint() {
-		assertArrayEquals(newByteArray(), d.fromStream(stream, new Hint<byte[]>() {}.getType()));
+		assertArrayEquals(newByteArray(), d.read(stream, new Hint<byte[]>() {}.getType()));
 	}
 
 	@Test
 	void returnsSameIfTypeEqualsInputStream() {
-		assertSame(stream, d.fromStream(stream, InputStream.class));
+		assertSame(stream, d.read(stream, InputStream.class));
 	}
 
 	@Test
 	void returnsSameIfTypeEqualsInputStreamWithHint() {
-		assertSame(stream, d.fromStream(stream, new Hint<InputStream>() {}.getType()));
+		assertSame(stream, d.read(stream, new Hint<InputStream>() {}.getType()));
 	}
 
 	@Test
 	void returnsSameIfTypeEqualsByteArrayInputStream() {
-		assertSame(stream, d.fromStream(stream, ByteArrayInputStream.class));
+		assertSame(stream, d.read(stream, ByteArrayInputStream.class));
 	}
 
 	@Test
 	void returnsSameIfTypeEqualsByteArrayInputStreamWithHint() {
-		assertSame(stream, d.fromStream(stream, new Hint<ByteArrayInputStream>() {}.getType()));
+		assertSame(stream, d.read(stream, new Hint<ByteArrayInputStream>() {}.getType()));
 	}
 
 	@Test
 	void throwsDisassemblingExceptionIfTypeEqualsNeither() {
 		assertThrows(DisassemblingException.class, () -> {
-			d.fromStream(stream, Object.class);
+			d.read(stream, Object.class);
 		});
 	}
 
 	@Test
 	void throwsDisassemblingExceptionIfTypeEqualsNeitherWithHint() {
 		assertThrows(DisassemblingException.class, () -> {
-			d.fromStream(stream, new Hint<Object>() {}.getType());
+			d.read(stream, new Hint<Object>() {}.getType());
 		});
 	}
 

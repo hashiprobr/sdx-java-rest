@@ -59,7 +59,7 @@ public class RestResponse {
 		decode();
 		// responseType = facade.cleanForDisassembling(responseType, type);
 		Disassembler disassembler = facade.getDisassembler(responseType);
-		return disassembler.fromStream(stream, type);
+		return disassembler.read(stream, type);
 	}
 
 	private <T> T deserialize(String responseType, Class<T> type) {

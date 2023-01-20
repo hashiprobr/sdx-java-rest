@@ -23,5 +23,5 @@ public interface Disassembler {
 	 * @throws UncheckedIOException   if the representation cannot be read
 	 * @throws DisassemblingException if the representation cannot be transformed
 	 */
-	<T> T fromStream(InputStream stream, Type type);
+	<T> T read(InputStream stream, Type type);
 }

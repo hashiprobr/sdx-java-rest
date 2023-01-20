@@ -22,7 +22,7 @@ class SimpleDisassemblerTest {
 	void setUp() {
 		d = new SimpleDisassembler() {
 			@Override
-			public <T> T fromBytes(byte[] bytes, Type type) {
+			public <T> T read(byte[] bytes, Type type) {
 				@SuppressWarnings("unchecked")
 				T body = mock((Class<T>) type);
 				when(body.toString()).thenReturn(new String(bytes, StandardCharsets.US_ASCII));
@@ -34,14 +34,14 @@ class SimpleDisassemblerTest {
 	@Test
 	void fromStreamCallsFromBytes() {
 		InputStream stream = newInputStream();
-		Object body = d.fromStream(stream, Object.class);
+		Object body = d.read(stream, Object.class);
 		assertEqualsInputStream(body);
 	}
 
 	@Test
 	void fromStreamCallsFromBytesWithHint() {
 		InputStream stream = newInputStream();
-		Object body = d.fromStream(stream, new Hint<Object>() {}.getType());
+		Object body = d.read(stream, new Hint<Object>() {}.getType());
 		assertEqualsInputStream(body);
 	}
 

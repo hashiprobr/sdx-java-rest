@@ -21,7 +21,7 @@ class SimpleDeserializerTest {
 	void setUp() {
 		d = new SimpleDeserializer() {
 			@Override
-			public <T> T fromString(String content, Type type) {
+			public <T> T read(String content, Type type) {
 				@SuppressWarnings("unchecked")
 				T body = mock((Class<T>) type);
 				when(body.toString()).thenReturn(content);
@@ -33,14 +33,14 @@ class SimpleDeserializerTest {
 	@Test
 	void fromReaderCallsFromString() {
 		Reader reader = newReader();
-		Object body = d.fromReader(reader, Object.class);
+		Object body = d.read(reader, Object.class);
 		assertEqualsReader(body);
 	}
 
 	@Test
 	void fromReaderCallsFromStringWithHint() {
 		Reader reader = newReader();
-		Object body = d.fromReader(reader, new Hint<Object>() {}.getType());
+		Object body = d.read(reader, new Hint<Object>() {}.getType());
 		assertEqualsReader(body);
 	}
 

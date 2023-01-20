@@ -22,5 +22,5 @@ public interface Deserializer {
 	 * @throws UncheckedIOException   if the representation cannot be read
 	 * @throws DeserializingException if the representation cannot be transformed
 	 */
-	<T> T fromReader(Reader reader, Type type);
+	<T> T read(Reader reader, Type type);
 }

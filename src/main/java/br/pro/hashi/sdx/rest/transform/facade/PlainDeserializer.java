@@ -10,7 +10,7 @@ import br.pro.hashi.sdx.rest.transform.exception.DeserializingException;
 class PlainDeserializer implements Deserializer {
 	@SuppressWarnings("unchecked")
 	@Override
-	public <T> T fromReader(Reader reader, Type type) {
+	public <T> T read(Reader reader, Type type) {
 		if (type instanceof Class) {
 			if (String.class.isAssignableFrom((Class<?>) type)) {
 				return (T) Media.read(reader);

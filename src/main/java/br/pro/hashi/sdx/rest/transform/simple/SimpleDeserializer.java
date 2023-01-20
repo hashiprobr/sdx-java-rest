@@ -17,15 +17,15 @@ public interface SimpleDeserializer extends Deserializer {
 	 * {@inheritDoc}
 	 * 
 	 * @implSpec The default implementation simply transfers the input to a
-	 *           {@code String} and calls {@link #fromString(String, Type)}. Classes
-	 *           are encouraged to provide a more efficient implementation.
+	 *           {@code String} and calls {@link #read(String, Type)}. Classes are
+	 *           encouraged to provide a more efficient implementation.
 	 * 
 	 * @throws UncheckedIOException   {@inheritDoc}
 	 * @throws DeserializingException {@inheritDoc}
 	 */
 	@Override
-	default <T> T fromReader(Reader reader, Type type) {
-		return fromString(Media.read(reader), type);
+	default <T> T read(Reader reader, Type type) {
+		return read(Media.read(reader), type);
 	}
 
 	/**
@@ -39,5 +39,5 @@ public interface SimpleDeserializer extends Deserializer {
 	 * @return the object
 	 * @throws DeserializingException if the representation cannot be transformed
 	 */
-	<T> T fromString(String content, Type type);
+	<T> T read(String content, Type type);
 }

@@ -26,45 +26,45 @@ class PlainDeserializerTest {
 
 	@Test
 	void returnsEqualsIfTypeEqualsString() {
-		assertEquals(newString(), d.fromReader(reader, String.class));
+		assertEquals(newString(), d.read(reader, String.class));
 	}
 
 	@Test
 	void returnsEqualsIfTypeEqualsStringWithHint() {
-		assertEquals(newString(), d.fromReader(reader, new Hint<String>() {}.getType()));
+		assertEquals(newString(), d.read(reader, new Hint<String>() {}.getType()));
 	}
 
 	@Test
 	void returnsSameIfTypeEqualsReader() {
-		assertSame(reader, d.fromReader(reader, Reader.class));
+		assertSame(reader, d.read(reader, Reader.class));
 	}
 
 	@Test
 	void returnsSameIfTypeEqualsReaderWithHint() {
-		assertSame(reader, d.fromReader(reader, new Hint<Reader>() {}.getType()));
+		assertSame(reader, d.read(reader, new Hint<Reader>() {}.getType()));
 	}
 
 	@Test
 	void returnsSameIfTypeEqualsStringReader() {
-		assertSame(reader, d.fromReader(reader, StringReader.class));
+		assertSame(reader, d.read(reader, StringReader.class));
 	}
 
 	@Test
 	void returnsSameIfTypeEqualsStringReaderWithHint() {
-		assertSame(reader, d.fromReader(reader, new Hint<StringReader>() {}.getType()));
+		assertSame(reader, d.read(reader, new Hint<StringReader>() {}.getType()));
 	}
 
 	@Test
 	void throwsDeserializingExceptionIfTypeEqualsNeither() {
 		assertThrows(DeserializingException.class, () -> {
-			d.fromReader(reader, Object.class);
+			d.read(reader, Object.class);
 		});
 	}
 
 	@Test
 	void throwsDeserializingExceptionIfTypeEqualsNeitherWithHint() {
 		assertThrows(DeserializingException.class, () -> {
-			d.fromReader(reader, new Hint<Object>() {}.getType());
+			d.read(reader, new Hint<Object>() {}.getType());
 		});
 	}
 

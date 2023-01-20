@@ -17,15 +17,15 @@ public interface SimpleDisassembler extends Disassembler {
 	 * {@inheritDoc}
 	 * 
 	 * @implSpec The default implementation simply transfers the input to a
-	 *           {@code byte[]} and calls {@link #fromBytes(byte[], Type)}. Classes
-	 *           are encouraged to provide a more efficient implementation.
+	 *           {@code byte[]} and calls {@link #read(byte[], Type)}. Classes are
+	 *           encouraged to provide a more efficient implementation.
 	 * 
 	 * @throws UncheckedIOException   {@inheritDoc}
 	 * @throws DisassemblingException {@inheritDoc}
 	 */
 	@Override
-	default <T> T fromStream(InputStream stream, Type type) {
-		return fromBytes(Media.read(stream), type);
+	default <T> T read(InputStream stream, Type type) {
+		return read(Media.read(stream), type);
 	}
 
 	/**
@@ -39,5 +39,5 @@ public interface SimpleDisassembler extends Disassembler {
 	 * @return the object
 	 * @throws DisassemblingException if the representation cannot be transformed
 	 */
-	<T> T fromBytes(byte[] bytes, Type type);
+	<T> T read(byte[] bytes, Type type);
 }
