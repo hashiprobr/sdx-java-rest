@@ -93,6 +93,9 @@ public class Body {
 
 	/**
 	 * Sets the name of this body for a multipart request.
+	 * 
+	 * @param name the name
+	 * @return this body, for chaining
 	 */
 	public final Body withName(String name) {
 		this.name = name;

@@ -53,7 +53,7 @@ class BodyTest {
 	}
 
 	@Test
-	void initializesWithNullName() {
+	void initializesWithoutName() {
 		b = newBody();
 		assertNull(b.getName());
 	}
