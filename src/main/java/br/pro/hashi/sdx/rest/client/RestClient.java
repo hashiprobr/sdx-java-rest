@@ -658,7 +658,7 @@ public final class RestClient {
 			if (value == null) {
 				throw new NullPointerException("Header value cannot be null");
 			}
-			headers.add(new Entry(name, value));
+			headers.add(new Entry(name, value.toString()));
 			return this;
 		}
 
@@ -996,13 +996,13 @@ public final class RestClient {
 		String withQueries(String uri) {
 			String[] items;
 			StringJoiner joiner = new StringJoiner("&");
+
 			int index = uri.indexOf('?');
 			if (index == -1) {
 				items = splitAndEncode(Percent.stripEndingSlashes(uri));
 			} else {
 				String prefix = uri.substring(0, index);
 				String suffix = uri.substring(index + 1);
-
 				items = splitAndEncode(Percent.stripEndingSlashes(prefix));
 
 				for (String item : suffix.split("&", -1)) {

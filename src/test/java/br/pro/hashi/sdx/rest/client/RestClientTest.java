@@ -337,6 +337,16 @@ class RestClientTest {
 	}
 
 	@Test
+	void proxyAddsEncodedQuery() {
+		p = newProxy();
+		assertSame(p, p.q("?=& %3F%3D%26%20+"));
+		assertEquals(1, p.getQueries().size());
+		RestClient.Entry entry = p.getQueries().get(0);
+		assertEquals("%3F%3D%26+%3F%3D%26++", entry.name());
+		assertNull(entry.value());
+	}
+
+	@Test
 	void proxyDoesNotAddQuery() {
 		p = newProxy();
 		assertThrows(NullPointerException.class, () -> {
@@ -353,6 +363,16 @@ class RestClientTest {
 		RestClient.Entry entry = p.getQueries().get(0);
 		assertEquals("name", entry.name());
 		assertEquals("0", entry.value());
+	}
+
+	@Test
+	void proxyAddsEncodedQueryWithValue() {
+		p = newProxy();
+		assertSame(p, p.q("?=& %3F%3D%26%20+", "?=& %3F%3D%26%20+"));
+		assertEquals(1, p.getQueries().size());
+		RestClient.Entry entry = p.getQueries().get(0);
+		assertEquals("%3F%3D%26+%3F%3D%26++", entry.name());
+		assertEquals("%3F%3D%26+%3F%3D%26++", entry.value());
 	}
 
 	@Test
@@ -377,12 +397,11 @@ class RestClientTest {
 	@Test
 	void proxyAddsHeader() {
 		p = newProxy();
-		Object value = new Object();
-		assertSame(p, p.h("name", value));
+		assertSame(p, p.h("name", 0));
 		assertEquals(1, p.getHeaders().size());
 		RestClient.Entry entry = p.getHeaders().get(0);
 		assertEquals("name", entry.name());
-		assertSame(value, entry.value());
+		assertEquals("0", entry.value());
 	}
 
 	@Test
@@ -627,54 +646,54 @@ class RestClientTest {
 
 	@ParameterizedTest
 	@CsvSource({
-			"'',                                                  /",
-			"'',                                                  /?",
-			"'',                                                  ///",
-			"'',                                                  ///?",
-			"?%2F,                                                /?/",
-			"?%2F%3F%2F,                                          /?/?/",
-			"?%2F,                                                ///?/",
-			"?%2F%3F%2F,                                          ///?/?/",
-			"/abc,                                                /abc?",
-			"/abc,                                                /abc/",
-			"/abc,                                                /abc/?",
-			"/abc,                                                /abc///",
-			"/abc,                                                /abc///?",
-			"/abc?%2F,                                            /abc?/",
-			"/abc?%2F%3F%2F,                                      /abc?/?/",
-			"/abc?%2F,                                            /abc/?/",
-			"/abc?%2F%3F%2F,                                      /abc/?/?/",
-			"/abc?%2F,                                            /abc///?/",
-			"/abc?%2F%3F%2F,                                      /abc///?/?/",
-			"/aaa/bbb/ccc,                                        /aaa/bbb/ccc?",
-			"/aaa/bbb/ccc,                                        /aaa/bbb/ccc/",
-			"/aaa/bbb/ccc,                                        /aaa/bbb/ccc/?",
-			"/aaa/bbb/ccc,                                        /aaa/bbb/ccc///",
-			"/aaa/bbb/ccc,                                        /aaa/bbb/ccc///?",
-			"/aaa/bbb/ccc?%2F,                                    /aaa/bbb/ccc?/",
-			"/aaa/bbb/ccc?%2F%3F%2F,                              /aaa/bbb/ccc?/?/",
-			"/aaa/bbb/ccc?%2F,                                    /aaa/bbb/ccc/?/",
-			"/aaa/bbb/ccc?%2F%3F%2F,                              /aaa/bbb/ccc/?/?/",
-			"/aaa/bbb/ccc?%2F,                                    /aaa/bbb/ccc///?/",
-			"/aaa/bbb/ccc?%2F%3F%2F,                              /aaa/bbb/ccc///?/?/",
-			"/%3F%3D%26%20%3D%26%20?%3F=&+%3F%3D%26+,             /%3F=& %3D%26%20??=& %3F%3D%26%20",
-			"/%3F%26%3D%20%3D%26%20?%3F&=+%3F%3D%26+,             /%3F&= %3D%26%20??&= %3F%3D%26%20",
-			"/%3F%3D%3D%3D%26%20%3D%26%20?%3F=%3D%3D&+%3F%3D%26+, /%3F===& %3D%26%20??===& %3F%3D%26%20",
-			"/%3F%26%3D%3D%3D%20%3D%26%20?%3F&=%3D%3D+%3F%3D%26+, /%3F&=== %3D%26%20??&=== %3F%3D%26%20",
-			"/abc?x,                                              /abc?x",
-			"/abc?x&y,                                            /abc?x&y",
-			"/abc?x&y&z,                                          /abc?x&y&z",
-			"/abc?x&y&z=2.3,                                      /abc?x&y&z=2.3",
-			"/abc?x&y=1,                                          /abc?x&y=1",
-			"/abc?x&y=1&z,                                        /abc?x&y=1&z",
-			"/abc?x&y=1&z=2.3,                                    /abc?x&y=1&z=2.3",
-			"/abc?x=k,                                            /abc?x=k",
-			"/abc?x=k&y,                                          /abc?x=k&y",
-			"/abc?x=k&y&z,                                        /abc?x=k&y&z",
-			"/abc?x=k&y&z=2.3,                                    /abc?x=k&y&z=2.3",
-			"/abc?x=k&y=1,                                        /abc?x=k&y=1",
-			"/abc?x=k&y=1&z,                                      /abc?x=k&y=1&z",
-			"/abc?x=k&y=1&z=2.3,                                  /abc?x=k&y=1&z=2.3",
+			"'',                                                   /",
+			"'',                                                   /?",
+			"'',                                                   ///",
+			"'',                                                   ///?",
+			"?%2F,                                                 /?/",
+			"?%2F%3F%2F,                                           /?/?/",
+			"?%2F,                                                 ///?/",
+			"?%2F%3F%2F,                                           ///?/?/",
+			"/abc,                                                 /abc?",
+			"/abc,                                                 /abc/",
+			"/abc,                                                 /abc/?",
+			"/abc,                                                 /abc///",
+			"/abc,                                                 /abc///?",
+			"/abc?%2F,                                             /abc?/",
+			"/abc?%2F%3F%2F,                                       /abc?/?/",
+			"/abc?%2F,                                             /abc/?/",
+			"/abc?%2F%3F%2F,                                       /abc/?/?/",
+			"/abc?%2F,                                             /abc///?/",
+			"/abc?%2F%3F%2F,                                       /abc///?/?/",
+			"/aaa/bbb/ccc,                                         /aaa/bbb/ccc?",
+			"/aaa/bbb/ccc,                                         /aaa/bbb/ccc/",
+			"/aaa/bbb/ccc,                                         /aaa/bbb/ccc/?",
+			"/aaa/bbb/ccc,                                         /aaa/bbb/ccc///",
+			"/aaa/bbb/ccc,                                         /aaa/bbb/ccc///?",
+			"/aaa/bbb/ccc?%2F,                                     /aaa/bbb/ccc?/",
+			"/aaa/bbb/ccc?%2F%3F%2F,                               /aaa/bbb/ccc?/?/",
+			"/aaa/bbb/ccc?%2F,                                     /aaa/bbb/ccc/?/",
+			"/aaa/bbb/ccc?%2F%3F%2F,                               /aaa/bbb/ccc/?/?/",
+			"/aaa/bbb/ccc?%2F,                                     /aaa/bbb/ccc///?/",
+			"/aaa/bbb/ccc?%2F%3F%2F,                               /aaa/bbb/ccc///?/?/",
+			"/%3F%3D%26%20%3D%26%20?%3F=&+%3F%3D%26++,             /%3F=& %3D%26%20??=& %3F%3D%26%20+",
+			"/%3F%26%3D%20%3D%26%20?%3F&=+%3F%3D%26++,             /%3F&= %3D%26%20??&= %3F%3D%26%20+",
+			"/%3F%3D%3D%3D%26%20%3D%26%20?%3F=%3D%3D&+%3F%3D%26++, /%3F===& %3D%26%20??===& %3F%3D%26%20+",
+			"/%3F%26%3D%3D%3D%20%3D%26%20?%3F&=%3D%3D+%3F%3D%26++, /%3F&=== %3D%26%20??&=== %3F%3D%26%20+",
+			"/abc?x,                                               /abc?x",
+			"/abc?x&y,                                             /abc?x&y",
+			"/abc?x&y&z,                                           /abc?x&y&z",
+			"/abc?x&y&z=2.3,                                       /abc?x&y&z=2.3",
+			"/abc?x&y=1,                                           /abc?x&y=1",
+			"/abc?x&y=1&z,                                         /abc?x&y=1&z",
+			"/abc?x&y=1&z=2.3,                                     /abc?x&y=1&z=2.3",
+			"/abc?x=k,                                             /abc?x=k",
+			"/abc?x=k&y,                                           /abc?x=k&y",
+			"/abc?x=k&y&z,                                         /abc?x=k&y&z",
+			"/abc?x=k&y&z=2.3,                                     /abc?x=k&y&z=2.3",
+			"/abc?x=k&y=1,                                         /abc?x=k&y=1",
+			"/abc?x=k&y=1&z,                                       /abc?x=k&y=1&z",
+			"/abc?x=k&y=1&z=2.3,                                   /abc?x=k&y=1&z=2.3",
 	})
 	void proxyWithoutQueries(String expected, String uri) {
 		p = spyNewProxy();
