@@ -51,27 +51,19 @@ public class Facade {
 		this.fallbackTextType = null;
 	}
 
-	public boolean isBinary(Class<?> type) {
+	public boolean isBinary(Type type) {
 		if (type == null) {
 			return false;
 		}
+		if (type instanceof ParameterizedType) {
+			return binaryParameterizedTypes.contains(type);
+		}
 		for (Class<?> superType : binaryClasses) {
-			if (superType.isAssignableFrom(type)) {
+			if (superType.isAssignableFrom((Class<?>) type)) {
 				return true;
 			}
 		}
 		return false;
-	}
-
-	public boolean isBinary(Hint<?> hint) {
-		if (hint == null) {
-			return false;
-		}
-		Type type = hint.getType();
-		if (type instanceof ParameterizedType) {
-			return binaryParameterizedTypes.contains(type);
-		}
-		return isBinary((Class<?>) type);
 	}
 
 	public void addBinary(Class<?> type) {

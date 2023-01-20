@@ -10,12 +10,14 @@ import static org.mockito.Mockito.mockConstruction;
 import static org.mockito.Mockito.verify;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Locale;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedConstruction;
 
+import br.pro.hashi.sdx.rest.coding.Coding;
 import br.pro.hashi.sdx.rest.transform.Assembler;
 import br.pro.hashi.sdx.rest.transform.Deserializer;
 import br.pro.hashi.sdx.rest.transform.Disassembler;
@@ -48,6 +50,11 @@ public abstract class BuilderTest {
 	@Test
 	void initializesWithUtf8() {
 		assertEquals(StandardCharsets.UTF_8, b.urlCharset);
+	}
+
+	@Test
+	void initializesWithDefaultLocale() {
+		assertEquals(Coding.LOCALE, b.locale);
 	}
 
 	@Test
@@ -133,9 +140,28 @@ public abstract class BuilderTest {
 	@Test
 	void doesNotSetUrlCharset() {
 		assertThrows(NullPointerException.class, () -> {
-			assertSame(b, b.withUrlCharset(null));
+			b.withUrlCharset(null);
 		});
 		assertEquals(StandardCharsets.UTF_8, b.urlCharset);
+	}
+
+	@Test
+	void setsLocale() {
+		if (Coding.LOCALE.equals(Locale.US)) {
+			assertSame(b, b.withLocale(Locale.UK));
+			assertEquals(Locale.UK, b.locale);
+		} else {
+			assertSame(b, b.withLocale(Locale.US));
+			assertEquals(Locale.US, b.locale);
+		}
+	}
+
+	@Test
+	void doesNotSetLocale() {
+		assertThrows(NullPointerException.class, () -> {
+			b.withLocale(null);
+		});
+		assertEquals(Coding.LOCALE, b.locale);
 	}
 
 	@Test

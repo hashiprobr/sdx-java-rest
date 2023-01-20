@@ -53,9 +53,9 @@ class BodyTest {
 	}
 
 	@Test
-	void initializesWithEmptyName() {
+	void initializesWithNullName() {
 		b = newBody();
-		assertEquals("", b.getName());
+		assertNull(b.getName());
 	}
 
 	@Test
@@ -84,22 +84,6 @@ class BodyTest {
 	}
 
 	@Test
-	void doesNotSetNameIfItIsNull() {
-		b = newBody();
-		assertThrows(NullPointerException.class, () -> {
-			b.withName(null);
-		});
-	}
-
-	@Test
-	void doesNotSetNameIfItIsBlank() {
-		b = newBody();
-		assertThrows(IllegalArgumentException.class, () -> {
-			b.withName(" \t\n");
-		});
-	}
-
-	@Test
 	void setsContentType() {
 		try (MockedStatic<Media> media = mockStatic(Media.class)) {
 			b = newBody();
@@ -116,6 +100,7 @@ class BodyTest {
 		assertThrows(NullPointerException.class, () -> {
 			b.as(null);
 		});
+		assertNull(b.getContentType());
 	}
 
 	@Test
@@ -127,6 +112,7 @@ class BodyTest {
 			assertThrows(IllegalArgumentException.class, () -> {
 				b.as(contentType);
 			});
+			assertNull(b.getContentType());
 		}
 	}
 
@@ -148,6 +134,7 @@ class BodyTest {
 		assertThrows(NullPointerException.class, () -> {
 			b.in(null);
 		});
+		assertEquals(Coding.CHARSET, b.getCharset());
 	}
 
 	@Test

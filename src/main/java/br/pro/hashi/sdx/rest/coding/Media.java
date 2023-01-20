@@ -3,6 +3,7 @@ package br.pro.hashi.sdx.rest.coding;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.Reader;
 import java.io.UncheckedIOException;
 import java.nio.ByteBuffer;
@@ -91,33 +92,37 @@ public final class Media {
 		return contentType != null && BASE64_PATTERN.matcher(contentType).matches();
 	}
 
+	public static OutputStream encode(OutputStream stream) {
+		return BASE64_ENCODER.wrap(stream);
+	}
+
 	public static InputStream encode(InputStream stream) {
 		return new EncInputStream(stream);
 	}
 
 	private static class EncInputStream extends InputStream {
 		private final InputStream stream;
-		private final byte[] input;
-		private ByteBuffer output;
+		private final byte[] decoded;
+		private final byte[] encoded;
+		private int offset;
+		private int remaining;
 
 		private EncInputStream(InputStream stream) {
 			this.stream = stream;
-			this.input = new byte[12288];
-			this.output = null;
+			this.decoded = new byte[6144];
+			this.encoded = new byte[8192];
+			this.offset = 0;
+			this.remaining = 0;
 		}
 
 		@Override
 		public int available() throws IOException {
-			int length = stream.available() * 4 / 3;
-			if (output != null) {
-				length += output.remaining();
-			}
-			return length;
+			int length = stream.available();
+			return length * 4 / 3 + remaining;
 		}
 
 		@Override
 		public void close() throws IOException {
-			output = null;
 			stream.close();
 		}
 
@@ -134,22 +139,32 @@ public final class Media {
 		@Override
 		public int read(byte[] b, int off, int len) throws IOException {
 			int length;
-			if (output == null) {
-				length = stream.readNBytes(input, 0, input.length);
+			if (remaining == 0) {
+				length = stream.readNBytes(decoded, 0, decoded.length);
 				if (length == 0) {
 					return -1;
 				}
-				ByteBuffer buffer = ByteBuffer.wrap(input, 0, length);
-				output = BASE64_ENCODER.encode(buffer);
+				offset = 0;
+				if (length == decoded.length) {
+					BASE64_ENCODER.encode(decoded, encoded);
+					remaining = encoded.length;
+				} else {
+					ByteBuffer decodedBuffer = ByteBuffer.wrap(decoded, 0, length);
+					ByteBuffer encodedBuffer = BASE64_ENCODER.encode(decodedBuffer);
+					remaining = encodedBuffer.remaining();
+					encodedBuffer.get(encoded, 0, remaining);
+				}
 			}
-			length = output.remaining();
-			if (len < length) {
-				output.get(b, off, len);
-				length = len;
-			} else {
-				output.get(b, off, length);
-				output = null;
+			length = Math.min(len, remaining);
+			int i = off;
+			int j = offset;
+			while (i < off + length) {
+				b[i] = encoded[j];
+				i++;
+				j++;
 			}
+			offset += length;
+			remaining -= length;
 			return length;
 		}
 	}

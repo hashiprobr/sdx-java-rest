@@ -63,7 +63,7 @@ class FacadeTest {
 
 	@Test
 	void initializesWithByteArrayAsBinaryWithHint() {
-		assertTrue(f.isBinary(new Hint<byte[]>() {}));
+		assertTrue(f.isBinary(new Hint<byte[]>() {}.getType()));
 	}
 
 	@Test
@@ -73,7 +73,7 @@ class FacadeTest {
 
 	@Test
 	void initializesWithInputStreamAsBinaryWithHint() {
-		assertTrue(f.isBinary(new Hint<InputStream>() {}));
+		assertTrue(f.isBinary(new Hint<InputStream>() {}.getType()));
 	}
 
 	@Test
@@ -83,7 +83,7 @@ class FacadeTest {
 
 	@Test
 	void initializesWithByteArrayInputStreamAsBinaryWithHint() {
-		assertTrue(f.isBinary(new Hint<ByteArrayInputStream>() {}));
+		assertTrue(f.isBinary(new Hint<ByteArrayInputStream>() {}.getType()));
 	}
 
 	@Test
@@ -93,22 +93,17 @@ class FacadeTest {
 
 	@Test
 	void initializesWithoutObjectAsBinaryWithHint() {
-		assertFalse(f.isBinary(new Hint<Object>() {}));
+		assertFalse(f.isBinary(new Hint<Object>() {}.getType()));
 	}
 
 	@Test
 	void initializesWithoutParameterizedTypeAsBinaryWithHint() {
-		assertFalse(f.isBinary(new Hint<List<Map<Integer, Double>>>() {}));
+		assertFalse(f.isBinary(new Hint<List<Map<Integer, Double>>>() {}.getType()));
 	}
 
 	@Test
 	void initializesWithoutNullAsBinary() {
-		assertFalse(f.isBinary((Class<?>) null));
-	}
-
-	@Test
-	void initializesWithoutNullAsBinaryWithHint() {
-		assertFalse(f.isBinary((Hint<?>) null));
+		assertFalse(f.isBinary(null));
 	}
 
 	@Test
@@ -196,13 +191,13 @@ class FacadeTest {
 	@Test
 	void addsObjectAsBinaryWithHint() {
 		f.addBinary(new Hint<Object>() {});
-		assertTrue(f.isBinary(new Hint<Object>() {}));
+		assertTrue(f.isBinary(new Hint<Object>() {}.getType()));
 	}
 
 	@Test
 	void addsParameterizedTypeAsBinary() {
 		f.addBinary(new Hint<List<Map<Integer, Double>>>() {});
-		assertTrue(f.isBinary(new Hint<List<Map<Integer, Double>>>() {}));
+		assertTrue(f.isBinary(new Hint<List<Map<Integer, Double>>>() {}.getType()));
 	}
 
 	@Test
@@ -210,7 +205,7 @@ class FacadeTest {
 		assertThrows(NullPointerException.class, () -> {
 			f.addBinary((Class<?>) null);
 		});
-		assertFalse(f.isBinary((Class<?>) null));
+		assertFalse(f.isBinary(null));
 	}
 
 	@Test
@@ -218,7 +213,7 @@ class FacadeTest {
 		assertThrows(NullPointerException.class, () -> {
 			f.addBinary((Hint<?>) null);
 		});
-		assertFalse(f.isBinary((Hint<?>) null));
+		assertFalse(f.isBinary(null));
 	}
 
 	@Test

@@ -61,7 +61,7 @@ public class Body {
 	private Body(Object actual, Type type) {
 		this.actual = actual;
 		this.type = type;
-		this.name = "";
+		this.name = null;
 		this.contentType = null;
 		this.charset = Coding.CHARSET;
 		this.base64 = false;
@@ -93,20 +93,8 @@ public class Body {
 
 	/**
 	 * Sets the name of this body for a multipart request.
-	 * 
-	 * @param name the name
-	 * @return this body, for chaining
-	 * @throws NullPointerException     if the name is null
-	 * @throws IllegalArgumentException if the name is blank
 	 */
 	public final Body withName(String name) {
-		if (name == null) {
-			throw new NullPointerException("Name cannot be null");
-		}
-		name = name.strip();
-		if (name.isEmpty()) {
-			throw new IllegalArgumentException("Name cannot be blank");
-		}
 		this.name = name;
 		return this;
 	}

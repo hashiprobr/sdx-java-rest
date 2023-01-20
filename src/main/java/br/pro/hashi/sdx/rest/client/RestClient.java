@@ -1,16 +1,40 @@
 package br.pro.hashi.sdx.rest.client;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.UncheckedIOException;
+import java.lang.reflect.Type;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
+import java.util.StringJoiner;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.function.Consumer;
 
 import org.eclipse.jetty.client.HttpClient;
+import org.eclipse.jetty.client.api.Request;
+import org.eclipse.jetty.client.api.Response;
+import org.eclipse.jetty.client.util.InputStreamResponseListener;
+import org.eclipse.jetty.client.util.MultiPartRequestContent;
+import org.eclipse.jetty.client.util.OutputStreamRequestContent;
+import org.eclipse.jetty.http.HttpFields;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import br.pro.hashi.sdx.rest.client.exception.ClientException;
+import br.pro.hashi.sdx.rest.coding.Media;
+import br.pro.hashi.sdx.rest.coding.Percent;
+import br.pro.hashi.sdx.rest.coding.Query;
+import br.pro.hashi.sdx.rest.server.exception.ServerException;
+import br.pro.hashi.sdx.rest.transform.Assembler;
 import br.pro.hashi.sdx.rest.transform.Hint;
+import br.pro.hashi.sdx.rest.transform.Serializer;
 import br.pro.hashi.sdx.rest.transform.facade.Facade;
 
 /**
@@ -40,14 +64,16 @@ public final class RestClient {
 	private final Facade facade;
 	private final HttpClient jettyClient;
 	private final Charset urlCharset;
+	private final Locale locale;
 	private final String none;
 	private final String urlPrefix;
 
-	RestClient(Facade facade, HttpClient jettyClient, Charset urlCharset, String none, String urlPrefix) {
+	RestClient(Facade facade, HttpClient jettyClient, Charset urlCharset, Locale locale, String none, String urlPrefix) {
 		this.logger = LoggerFactory.getLogger(RestClient.class);
 		this.facade = facade;
 		this.jettyClient = jettyClient;
 		this.urlCharset = urlCharset;
+		this.locale = locale;
 		this.none = none;
 		this.urlPrefix = urlPrefix;
 	}
@@ -302,6 +328,30 @@ public final class RestClient {
 	 */
 	public Proxy withTimeout(int timeout) {
 		return new Proxy().withTimeout(timeout);
+	}
+
+	public RestResponse get(String uri) {
+		return new Proxy().get(uri);
+	}
+
+	public RestResponse post(String uri) {
+		return new Proxy().post(uri);
+	}
+
+	public RestResponse put(String uri) {
+		return new Proxy().put(uri);
+	}
+
+	public RestResponse patch(String uri) {
+		return new Proxy().patch(uri);
+	}
+
+	public RestResponse delete(String uri) {
+		return new Proxy().delete(uri);
+	}
+
+	public RestResponse request(String method, String uri) {
+		return new Proxy().request(method, uri);
 	}
 
 	/**
@@ -570,6 +620,198 @@ public final class RestClient {
 			}
 			this.timeout = timeout;
 			return this;
+		}
+
+		public RestResponse get(String uri) {
+			return doRequest("GET", uri);
+		}
+
+		public RestResponse post(String uri) {
+			return doRequest("POST", uri);
+		}
+
+		public RestResponse put(String uri) {
+			return doRequest("PUT", uri);
+		}
+
+		public RestResponse patch(String uri) {
+			return doRequest("PATCH", uri);
+		}
+
+		public RestResponse delete(String uri) {
+			return doRequest("DELETE", uri);
+		}
+
+		public RestResponse request(String method, String uri) {
+			if (method == null) {
+				throw new NullPointerException("Method cannot be null");
+			}
+			method = method.strip();
+			if (method.isEmpty()) {
+				throw new IllegalArgumentException("Method cannot be blank");
+			}
+			return doRequest(method.toUpperCase(locale), uri);
+		}
+
+		private RestResponse doRequest(String method, String uri) {
+			if (uri == null) {
+				throw new NullPointerException("URI cannot be null");
+			}
+			uri = uri.strip();
+			if (uri.isEmpty()) {
+				throw new IllegalArgumentException("URI cannot be blank");
+			}
+			if (!uri.startsWith("/")) {
+				throw new IllegalArgumentException("URI must start with /");
+			}
+			String url = "%s%s".formatted(urlPrefix, withQueries(uri));
+			Request request = jettyClient.newRequest(url).method(method);
+			addHeaders(request);
+			List<Task> tasks = addBodiesAndGetTasks(request);
+			return send(request, tasks, timeout);
+		}
+
+		private String withQueries(String uri) {
+			int index = uri.indexOf('?');
+			String[] items;
+			StringJoiner joiner = new StringJoiner("&");
+			if (index == -1) {
+				items = splitAndEncode(uri);
+			} else {
+				String prefix = uri.substring(0, index);
+				String suffix = uri.substring(index + 1);
+				items = splitAndEncode(prefix);
+				for (String item : suffix.split("&", -1)) {
+					index = item.indexOf('=');
+					if (index == -1) {
+						joiner.add(encode(item));
+					} else {
+						prefix = item.substring(0, index);
+						suffix = item.substring(index + 1);
+						joiner.add("%s=%s".formatted(encode(prefix), encode(suffix)));
+					}
+				}
+			}
+
+			for (Entry entry : queries) {
+				String name = encode(entry.name());
+				Object value = entry.value();
+				if (value == null) {
+					joiner.add(name);
+				} else {
+					joiner.add("%s=%s".formatted(name, encode(value.toString())));
+				}
+			}
+
+			uri = String.join("/", items);
+			if (joiner.length() > 0) {
+				uri = "%s?%s".formatted(uri, joiner.toString());
+			}
+			return uri;
+		}
+
+		private String[] splitAndEncode(String uri) {
+			return Percent.splitAndEncode(uri, urlCharset);
+		}
+
+		private String encode(String item) {
+			return Query.encode(item, urlCharset);
+		}
+
+		private void addHeaders(Request request) {
+			request.headers((fields) -> {
+				for (Entry entry : headers) {
+					fields.add(entry.name(), entry.value().toString());
+				}
+			});
+		}
+
+		private List<Task> addBodiesAndGetTasks(Request request) {
+			List<Task> tasks = new ArrayList<>();
+			if (!bodies.isEmpty()) {
+				if (bodies.size() == 1) {
+					Body body = bodies.get(0);
+					request.body(addTaskAndGetContent(tasks, body));
+				} else {
+					try (MultiPartRequestContent content = new MultiPartRequestContent()) {
+						for (Body body : bodies) {
+							content.addFieldPart(body.getName(), addTaskAndGetContent(tasks, body), null);
+						}
+						request.body(content);
+					}
+				}
+			}
+			return tasks;
+		}
+
+		private Request.Content addTaskAndGetContent(List<Task> tasks, Body body) {
+			Object actual = body.getActual();
+			Type type = body.getType();
+			String contentType = body.getContentType();
+			Charset charset = body.getCharset();
+			boolean base64 = body.isBase64();
+
+			Consumer<OutputStream> consumer;
+			if (facade.isBinary(type)) {
+				contentType = facade.cleanForAssembling(contentType, actual);
+				Assembler assembler = facade.getAssembler(contentType);
+				consumer = (stream) -> {
+					assembler.write(body, type, stream);
+				};
+			} else {
+				contentType = facade.cleanForSerializing(contentType, actual);
+				Serializer serializer = facade.getSerializer(contentType);
+				consumer = (stream) -> {
+					OutputStreamWriter writer = new OutputStreamWriter(stream, charset);
+					serializer.write(body, type, writer);
+				};
+				contentType = "%s;charset=%s".formatted(contentType, charset.name());
+			}
+			if (base64) {
+				contentType = "%s;base64".formatted(contentType);
+			}
+
+			OutputStreamRequestContent content = new OutputStreamRequestContent(contentType);
+			OutputStream stream = content.getOutputStream();
+			if (base64) {
+				stream = Media.encode(stream);
+			}
+
+			tasks.add(new Task(consumer, stream));
+			return content;
+		}
+
+		private RestResponse send(Request request, List<Task> tasks, int timeout) {
+			if (!jettyClient.isRunning()) {
+				start();
+			}
+			InputStreamResponseListener listener = new InputStreamResponseListener();
+			request.send(listener);
+
+			for (Task task : tasks) {
+				try (OutputStream stream = task.stream()) {
+					task.consumer.accept(stream);
+				} catch (IOException exception) {
+					throw new UncheckedIOException(exception);
+				}
+			}
+
+			Response response;
+			try {
+				response = listener.get(timeout, TimeUnit.SECONDS);
+			} catch (ExecutionException | TimeoutException exception) {
+				throw new ServerException(exception);
+			} catch (InterruptedException exception) {
+				throw new AssertionError(exception);
+			}
+			int status = response.getStatus();
+			HttpFields fields = response.getHeaders();
+			String contentType = fields.get("Content-Type");
+			InputStream stream = listener.getInputStream();
+			return new RestResponse(facade, status, fields, contentType, stream);
+		}
+
+		private record Task(Consumer<OutputStream> consumer, OutputStream stream) {
 		}
 	}
 

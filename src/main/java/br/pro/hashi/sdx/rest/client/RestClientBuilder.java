@@ -187,7 +187,7 @@ public non-sealed class RestClientBuilder extends Builder<RestClientBuilder> {
 			throw new IllegalArgumentException("URL prefix path cannot be blank");
 		}
 		path = Percent.stripEndingSlashes(path);
-		int index = path.indexOf("/");
+		int index = path.indexOf('/');
 		if (index != -1) {
 			if (index == 0) {
 				throw new IllegalArgumentException("URL prefix authority cannot be empty");
@@ -204,7 +204,7 @@ public non-sealed class RestClientBuilder extends Builder<RestClientBuilder> {
 			client.getContentDecoderFactories().add(new GZIPContentDecoder.Factory());
 		}
 		client.setFollowRedirects(redirection);
-		return new RestClient(facade, client, urlCharset, none, urlPrefix);
+		return new RestClient(facade, client, urlCharset, locale, none, urlPrefix);
 	}
 
 	/**

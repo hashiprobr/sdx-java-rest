@@ -22,6 +22,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.MockedConstruction;
 
 import br.pro.hashi.sdx.rest.client.exception.ClientException;
+import br.pro.hashi.sdx.rest.coding.Coding;
 import br.pro.hashi.sdx.rest.transform.Hint;
 import br.pro.hashi.sdx.rest.transform.facade.Facade;
 
@@ -338,6 +339,6 @@ class RestClientTest {
 	}
 
 	private RestClient newRestClient(String none) {
-		return new RestClient(facade, jettyClient, StandardCharsets.UTF_8, none, "http://a");
+		return new RestClient(facade, jettyClient, StandardCharsets.UTF_8, Coding.LOCALE, none, "http://a");
 	}
 }

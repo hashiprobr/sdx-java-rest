@@ -4,8 +4,10 @@ import java.io.InputStream;
 import java.io.Reader;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.Locale;
 
 import br.pro.hashi.sdx.rest.client.RestClientBuilder;
+import br.pro.hashi.sdx.rest.coding.Coding;
 import br.pro.hashi.sdx.rest.server.RestServerBuilder;
 import br.pro.hashi.sdx.rest.transform.Assembler;
 import br.pro.hashi.sdx.rest.transform.Deserializer;
@@ -39,6 +41,13 @@ public sealed abstract class Builder<T extends Builder<T>> permits RestClientBui
 	 * 
 	 * @hidden
 	 */
+	protected Locale locale;
+
+	/**
+	 * Internal member.
+	 * 
+	 * @hidden
+	 */
 	protected String none;
 
 	/**
@@ -63,6 +72,7 @@ public sealed abstract class Builder<T extends Builder<T>> permits RestClientBui
 	protected Builder() {
 		this.facade = new Facade();
 		this.urlCharset = StandardCharsets.UTF_8;
+		this.locale = Coding.LOCALE;
 		this.none = null;
 		this.redirection = false;
 		this.compression = true;
@@ -266,6 +276,21 @@ public sealed abstract class Builder<T extends Builder<T>> permits RestClientBui
 			throw new NullPointerException("URL charset cannot be null");
 		}
 		this.urlCharset = urlCharset;
+		return self();
+	}
+
+	/**
+	 * Sets the locale that should be used when processing a request.
+	 * 
+	 * @param locale the locale
+	 * @return this builder, for chaining
+	 * @throws NullPointerException if the locale is null
+	 */
+	public final T withLocale(Locale locale) {
+		if (locale == null) {
+			throw new NullPointerException("Locale cannot be null");
+		}
+		this.locale = locale;
 		return self();
 	}
 
