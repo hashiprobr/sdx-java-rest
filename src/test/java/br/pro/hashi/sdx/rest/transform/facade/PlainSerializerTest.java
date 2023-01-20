@@ -1,6 +1,8 @@
 package br.pro.hashi.sdx.rest.transform.facade;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.spy;
@@ -93,19 +95,22 @@ class PlainSerializerTest {
 		String body = newString();
 		Writer writer = Writer.nullWriter();
 		writer.close();
-		assertThrows(UncheckedIOException.class, () -> {
+		Exception exception = assertThrows(UncheckedIOException.class, () -> {
 			s.write(body, String.class, writer);
 		});
+		assertInstanceOf(IOException.class, exception.getCause());
 	}
 
 	@Test
 	void throwsIfBodyIsStringButCloseThrows() throws IOException {
 		String body = newString();
 		Writer writer = spy(Writer.nullWriter());
-		doThrow(IOException.class).when(writer).close();
-		assertThrows(UncheckedIOException.class, () -> {
+		Throwable cause = new IOException();
+		doThrow(cause).when(writer).close();
+		Exception exception = assertThrows(UncheckedIOException.class, () -> {
 			s.write(body, String.class, writer);
 		});
+		assertSame(cause, exception.getCause());
 	}
 
 	@Test
@@ -113,19 +118,22 @@ class PlainSerializerTest {
 		Reader body = newReader();
 		Writer writer = Writer.nullWriter();
 		writer.close();
-		assertThrows(UncheckedIOException.class, () -> {
+		Exception exception = assertThrows(UncheckedIOException.class, () -> {
 			s.write(body, Reader.class, writer);
 		});
+		assertInstanceOf(IOException.class, exception.getCause());
 	}
 
 	@Test
 	void throwsIfBodyIsReaderButCloseThrows() throws IOException {
 		Reader body = newReader();
 		Writer writer = spy(Writer.nullWriter());
-		doThrow(IOException.class).when(writer).close();
-		assertThrows(UncheckedIOException.class, () -> {
+		Throwable cause = new IOException();
+		doThrow(cause).when(writer).close();
+		Exception exception = assertThrows(UncheckedIOException.class, () -> {
 			s.write(body, Reader.class, writer);
 		});
+		assertSame(cause, exception.getCause());
 	}
 
 	private Reader newReader() {

@@ -1,6 +1,8 @@
 package br.pro.hashi.sdx.rest.transform.simple;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.spy;
@@ -75,17 +77,20 @@ class SimpleAssemblerTest {
 	void throwsIfWriteThrows() throws IOException {
 		OutputStream stream = OutputStream.nullOutputStream();
 		stream.close();
-		assertThrows(UncheckedIOException.class, () -> {
+		Exception exception = assertThrows(UncheckedIOException.class, () -> {
 			a.write(body, stream);
 		});
+		assertInstanceOf(IOException.class, exception.getCause());
 	}
 
 	@Test
 	void throwsIfCloseThrows() throws IOException {
 		OutputStream stream = spy(OutputStream.nullOutputStream());
-		doThrow(IOException.class).when(stream).close();
-		assertThrows(UncheckedIOException.class, () -> {
+		Throwable cause = new IOException();
+		doThrow(cause).when(stream).close();
+		Exception exception = assertThrows(UncheckedIOException.class, () -> {
 			a.write(body, stream);
 		});
+		assertSame(cause, exception.getCause());
 	}
 }
