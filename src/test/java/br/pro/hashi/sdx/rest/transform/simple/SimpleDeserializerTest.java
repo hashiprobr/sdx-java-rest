@@ -31,14 +31,14 @@ class SimpleDeserializerTest {
 	}
 
 	@Test
-	void fromReaderCallsFromString() {
+	void readCallsFromString() {
 		Reader reader = newReader();
 		Object body = d.read(reader, Object.class);
 		assertEqualsReader(body);
 	}
 
 	@Test
-	void fromReaderCallsFromStringWithHint() {
+	void readCallsFromStringWithHint() {
 		Reader reader = newReader();
 		Object body = d.read(reader, new Hint<Object>() {}.getType());
 		assertEqualsReader(body);
