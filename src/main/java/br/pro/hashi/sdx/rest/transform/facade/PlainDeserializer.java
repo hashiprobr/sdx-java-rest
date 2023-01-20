@@ -11,14 +11,12 @@ class PlainDeserializer implements Deserializer {
 	@SuppressWarnings("unchecked")
 	@Override
 	public <T> T read(Reader reader, Type type) {
-		if (type instanceof Class) {
-			if (String.class.isAssignableFrom((Class<?>) type)) {
-				return (T) Media.read(reader);
-			}
-			if (Reader.class.isAssignableFrom((Class<?>) type)) {
-				return (T) reader;
-			}
+		if (type.equals(String.class)) {
+			return (T) Media.read(reader);
 		}
-		throw new DeserializingException("Type must be assignable to String or Reader");
+		if (type.equals(Reader.class)) {
+			return (T) reader;
+		}
+		throw new DeserializingException("Type must be equal to String or Reader");
 	}
 }

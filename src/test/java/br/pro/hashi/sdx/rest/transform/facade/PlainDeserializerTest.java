@@ -45,16 +45,6 @@ class PlainDeserializerTest {
 	}
 
 	@Test
-	void returnsSameIfTypeEqualsStringReader() {
-		assertSame(reader, d.read(reader, StringReader.class));
-	}
-
-	@Test
-	void returnsSameIfTypeEqualsStringReaderWithHint() {
-		assertSame(reader, d.read(reader, new Hint<StringReader>() {}.getType()));
-	}
-
-	@Test
 	void throwsDeserializingExceptionIfTypeEqualsNeither() {
 		assertThrows(DeserializingException.class, () -> {
 			d.read(reader, Object.class);

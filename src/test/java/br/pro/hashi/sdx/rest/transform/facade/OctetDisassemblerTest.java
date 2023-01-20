@@ -46,16 +46,6 @@ class OctetDisassemblerTest {
 	}
 
 	@Test
-	void returnsSameIfTypeEqualsByteArrayInputStream() {
-		assertSame(stream, d.read(stream, ByteArrayInputStream.class));
-	}
-
-	@Test
-	void returnsSameIfTypeEqualsByteArrayInputStreamWithHint() {
-		assertSame(stream, d.read(stream, new Hint<ByteArrayInputStream>() {}.getType()));
-	}
-
-	@Test
 	void throwsDisassemblingExceptionIfTypeEqualsNeither() {
 		assertThrows(DisassemblingException.class, () -> {
 			d.read(stream, Object.class);

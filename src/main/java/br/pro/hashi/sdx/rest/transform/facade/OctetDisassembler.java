@@ -11,14 +11,12 @@ class OctetDisassembler implements Disassembler {
 	@SuppressWarnings("unchecked")
 	@Override
 	public <T> T read(InputStream stream, Type type) {
-		if (type instanceof Class) {
-			if (byte[].class.isAssignableFrom((Class<?>) type)) {
-				return (T) Media.read(stream);
-			}
-			if (InputStream.class.isAssignableFrom((Class<?>) type)) {
-				return (T) stream;
-			}
+		if (type.equals(byte[].class)) {
+			return (T) Media.read(stream);
 		}
-		throw new DisassemblingException("Type must be assignable to byte[] or InputStream");
+		if (type.equals(InputStream.class)) {
+			return (T) stream;
+		}
+		throw new DisassemblingException("Type must be equal to byte[] or InputStream");
 	}
 }

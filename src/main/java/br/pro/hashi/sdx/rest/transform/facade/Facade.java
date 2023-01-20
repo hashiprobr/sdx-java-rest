@@ -101,11 +101,11 @@ public class Facade {
 
 	public String cleanForDisassembling(String contentType, Class<?> type) {
 		if (contentType == null) {
-			if (byte[].class.isAssignableFrom(type) || InputStream.class.isAssignableFrom(type)) {
+			if (type.equals(byte[].class) || type.equals(InputStream.class)) {
 				contentType = OCTET_TYPE;
 			} else {
 				if (fallbackByteType == null) {
-					throw new IllegalArgumentException("Content type is null, type is not assignable to byte[] or InputStream, and no fallback byte type was specified");
+					throw new IllegalArgumentException("Content type is null, type is not equal to byte[] or InputStream, and no fallback byte type was specified");
 				}
 				contentType = fallbackByteType;
 			}
@@ -129,11 +129,11 @@ public class Facade {
 
 	public String cleanForDeserializing(String contentType, Class<?> type) {
 		if (contentType == null) {
-			if (String.class.isAssignableFrom(type) || Reader.class.isAssignableFrom(type)) {
+			if (type.equals(String.class) || type.equals(Reader.class)) {
 				contentType = PLAIN_TYPE;
 			} else {
 				if (fallbackTextType == null) {
-					throw new IllegalArgumentException("Content type is null, type is not assignable to String or Reader, and no fallback text type was specified");
+					throw new IllegalArgumentException("Content type is null, type is not equal to String or Reader, and no fallback text type was specified");
 				}
 				contentType = fallbackTextType;
 			}

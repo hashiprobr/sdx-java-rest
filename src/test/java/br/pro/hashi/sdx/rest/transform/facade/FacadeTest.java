@@ -267,11 +267,6 @@ class FacadeTest {
 	}
 
 	@Test
-	void cleansForDisassemblingIfTypeEqualsByteArrayInputStream() {
-		assertEquals("application/octet-stream", f.cleanForDisassembling(null, ByteArrayInputStream.class));
-	}
-
-	@Test
 	void cleansForDisassemblingIfTypeEqualsObject() {
 		try (MockedStatic<Media> media = mockStatic(Media.class)) {
 			String fallbackByteType = "image/png";
@@ -336,11 +331,6 @@ class FacadeTest {
 	@Test
 	void cleansForDeserializingIfTypeEqualsReader() {
 		assertEquals("text/plain", f.cleanForDeserializing(null, Reader.class));
-	}
-
-	@Test
-	void cleansForDeserializingIfTypeEqualsStringReader() {
-		assertEquals("text/plain", f.cleanForDeserializing(null, StringReader.class));
 	}
 
 	@Test
