@@ -330,26 +330,174 @@ public final class RestClient {
 		return new Proxy().withTimeout(timeout);
 	}
 
+	/**
+	 * Convenience method that instantiates a {@link RestClient.Proxy} and calls
+	 * {@link RestClient.Proxy#get(String)}.
+	 * 
+	 * @param uri the URI
+	 * @return the response
+	 * @throws NullPointerException     if the URI is null
+	 * @throws IllegalArgumentException if the URI is invalid
+	 */
 	public RestResponse get(String uri) {
 		return new Proxy().get(uri);
 	}
 
+	/**
+	 * Convenience method that instantiates a {@link RestClient.Proxy} and calls
+	 * {@link RestClient.Proxy#post(String)}.
+	 * 
+	 * @param uri the URI
+	 * @return the response
+	 * @throws NullPointerException     if the URI is null
+	 * @throws IllegalArgumentException if the URI is invalid
+	 * @hidden
+	 */
 	public RestResponse post(String uri) {
 		return new Proxy().post(uri);
 	}
 
+	/**
+	 * Convenience method that instantiates a {@link RestClient.Proxy} and calls
+	 * {@link RestClient.Proxy#post(String, Object)}.
+	 * 
+	 * @param uri  the URI
+	 * @param body the body
+	 * @return the response
+	 * @throws NullPointerException     if the URI is null
+	 * @throws IllegalArgumentException if the URI is invalid
+	 */
+	public RestResponse post(String uri, Object body) {
+		return new Proxy().post(uri, body);
+	}
+
+	/**
+	 * Convenience method that instantiates a {@link RestClient.Proxy} and calls
+	 * {@code RestClient.Proxy.post(String, T, Hint<T>)}.
+	 * 
+	 * @param <T>  the type of the object
+	 * @param uri  the URI
+	 * @param body the body
+	 * @param hint the type hint
+	 * @return the response
+	 * @throws NullPointerException     if the URI is null or the type hint is null
+	 * @throws IllegalArgumentException if the URI is invalid
+	 */
+	public <T> RestResponse post(String uri, T body, Hint<T> hint) {
+		return new Proxy().post(uri, body, hint);
+	}
+
+	/**
+	 * Convenience method that instantiates a {@link RestClient.Proxy} and calls
+	 * {@link RestClient.Proxy#put(String)}.
+	 * 
+	 * @param uri the URI
+	 * @return the response
+	 * @throws NullPointerException     if the URI is null
+	 * @throws IllegalArgumentException if the URI is invalid
+	 * @hidden
+	 */
 	public RestResponse put(String uri) {
 		return new Proxy().put(uri);
 	}
 
+	/**
+	 * Convenience method that instantiates a {@link RestClient.Proxy} and calls
+	 * {@link RestClient.Proxy#put(String, Object)}.
+	 * 
+	 * @param uri  the URI
+	 * @param body the body
+	 * @return the response
+	 * @throws NullPointerException     if the URI is null
+	 * @throws IllegalArgumentException if the URI is invalid
+	 */
+	public RestResponse put(String uri, Object body) {
+		return new Proxy().put(uri, body);
+	}
+
+	/**
+	 * Convenience method that instantiates a {@link RestClient.Proxy} and calls
+	 * {@code RestClient.Proxy.put(String, T, Hint<T>)}.
+	 * 
+	 * @param <T>  the type of the object
+	 * @param uri  the URI
+	 * @param body the body
+	 * @param hint the type hint
+	 * @return the response
+	 * @throws NullPointerException     if the URI is null or the type hint is null
+	 * @throws IllegalArgumentException if the URI is invalid
+	 */
+	public <T> RestResponse put(String uri, T body, Hint<T> hint) {
+		return new Proxy().put(uri, body, hint);
+	}
+
+	/**
+	 * Convenience method that instantiates a {@link RestClient.Proxy} and calls
+	 * {@link RestClient.Proxy#patch(String)}.
+	 * 
+	 * @param uri the URI
+	 * @return the response
+	 * @throws NullPointerException     if the URI is null
+	 * @throws IllegalArgumentException if the URI is invalid
+	 * @hidden
+	 */
 	public RestResponse patch(String uri) {
 		return new Proxy().patch(uri);
 	}
 
+	/**
+	 * Convenience method that instantiates a {@link RestClient.Proxy} and calls
+	 * {@link RestClient.Proxy#patch(String, Object)}.
+	 * 
+	 * @param uri  the URI
+	 * @param body the body
+	 * @return the response
+	 * @throws NullPointerException     if the URI is null
+	 * @throws IllegalArgumentException if the URI is invalid
+	 */
+	public RestResponse patch(String uri, Object body) {
+		return new Proxy().patch(uri, body);
+	}
+
+	/**
+	 * Convenience method that instantiates a {@link RestClient.Proxy} and calls
+	 * {@code RestClient.Proxy.patch(String, T, Hint<T>)}.
+	 * 
+	 * @param <T>  the type of the object
+	 * @param uri  the URI
+	 * @param body the body
+	 * @param hint the type hint
+	 * @return the response
+	 * @throws NullPointerException     if the URI is null or the type hint is null
+	 * @throws IllegalArgumentException if the URI is invalid
+	 */
+	public <T> RestResponse patch(String uri, T body, Hint<T> hint) {
+		return new Proxy().patch(uri, body, hint);
+	}
+
+	/**
+	 * Convenience method that instantiates a {@link RestClient.Proxy} and calls
+	 * {@link RestClient.Proxy#delete(String)}.
+	 * 
+	 * @param uri the URI
+	 * @return the response
+	 * @throws NullPointerException     if the URI is null
+	 * @throws IllegalArgumentException if the URI is invalid
+	 */
 	public RestResponse delete(String uri) {
 		return new Proxy().delete(uri);
 	}
 
+	/**
+	 * Convenience method that instantiates a {@link RestClient.Proxy} and calls
+	 * {@link RestClient.Proxy#request(String, String)}.
+	 * 
+	 * @param method the method
+	 * @param uri    the URI
+	 * @return the response
+	 * @throws NullPointerException     if the method is null or the URI is null
+	 * @throws IllegalArgumentException if the method is blank or the URI is invalid
+	 */
 	public RestResponse request(String method, String uri) {
 		return new Proxy().request(method, uri);
 	}
@@ -432,7 +580,7 @@ public final class RestClient {
 			if (name == null) {
 				throw new NullPointerException("Query name cannot be null");
 			}
-			queries.add(new Entry(name, null));
+			queries.add(new Entry(encode(name), null));
 			return this;
 		}
 
@@ -461,7 +609,7 @@ public final class RestClient {
 			if (value == null) {
 				throw new NullPointerException("Query value cannot be null");
 			}
-			queries.add(new Entry(name, value));
+			queries.add(new Entry(encode(name), encode(value.toString())));
 			return this;
 		}
 
@@ -622,26 +770,200 @@ public final class RestClient {
 			return this;
 		}
 
+		/**
+		 * Sends a GET request to a specified URI.
+		 * 
+		 * @param uri the URI
+		 * @return the response
+		 * @throws NullPointerException     if the URI is null
+		 * @throws IllegalArgumentException if the URI is invalid
+		 */
 		public RestResponse get(String uri) {
 			return doRequest("GET", uri);
 		}
 
+		/**
+		 * Sends a POST request without body to a specified URI.
+		 * 
+		 * @param uri the URI
+		 * @return the response
+		 * @throws NullPointerException     if the URI is null
+		 * @throws IllegalArgumentException if the URI is invalid
+		 * @hidden
+		 */
 		public RestResponse post(String uri) {
 			return doRequest("POST", uri);
 		}
 
+		/**
+		 * <p>
+		 * Sends a POST request to a specified URI.
+		 * </p>
+		 * <p>
+		 * This method calls {@code body.getClass()} to obtain the body type. Since
+		 * {@code body.getClass()} loses generic information due to type erasure, do not
+		 * call it if the type is generic. Call {@code post(String, T, Hint<T>)}
+		 * instead.
+		 * </p>
+		 * 
+		 * @param uri  the URI
+		 * @param body the body
+		 * @return the response
+		 * @throws NullPointerException     if the URI is null
+		 * @throws IllegalArgumentException if the URI is invalid
+		 */
+		public RestResponse post(String uri, Object body) {
+			return withBody(body).doRequest("POST", uri);
+		}
+
+		/**
+		 * <p>
+		 * Sends a POST request with hinted type to a specified URI.
+		 * </p>
+		 * <p>
+		 * Call this method if the body type is generic.
+		 * </p>
+		 * 
+		 * @param <T>  the type of the object
+		 * @param uri  the URI
+		 * @param body the body
+		 * @param hint the type hint
+		 * @return the response
+		 * @throws NullPointerException     if the URI is null or the type hint is null
+		 * @throws IllegalArgumentException if the URI is invalid
+		 */
+		public <T> RestResponse post(String uri, T body, Hint<T> hint) {
+			return withBody(body, hint).doRequest("POST", uri);
+		}
+
+		/**
+		 * Sends a PUT request without body to a specified URI.
+		 * 
+		 * @param uri the URI
+		 * @return the response
+		 * @throws NullPointerException     if the URI is null
+		 * @throws IllegalArgumentException if the URI is invalid
+		 * @hidden
+		 */
 		public RestResponse put(String uri) {
 			return doRequest("PUT", uri);
 		}
 
+		/**
+		 * <p>
+		 * Sends a PUT request to a specified URI.
+		 * </p>
+		 * <p>
+		 * This method calls {@code body.getClass()} to obtain the body type. Since
+		 * {@code body.getClass()} loses generic information due to type erasure, do not
+		 * call it if the type is generic. Call {@code put(String, T, Hint<T>)} instead.
+		 * </p>
+		 * 
+		 * @param uri  the URI
+		 * @param body the body
+		 * @return the response
+		 * @throws NullPointerException     if the URI is null
+		 * @throws IllegalArgumentException if the URI is invalid
+		 */
+		public RestResponse put(String uri, Object body) {
+			return withBody(body).doRequest("PUT", uri);
+		}
+
+		/**
+		 * <p>
+		 * Sends a PUT request with hinted type to a specified URI.
+		 * </p>
+		 * <p>
+		 * Call this method if the body type is generic.
+		 * </p>
+		 * 
+		 * @param <T>  the type of the object
+		 * @param uri  the URI
+		 * @param body the body
+		 * @param hint the type hint
+		 * @return the response
+		 * @throws NullPointerException     if the URI is null or the type hint is null
+		 * @throws IllegalArgumentException if the URI is invalid
+		 */
+		public <T> RestResponse put(String uri, T body, Hint<T> hint) {
+			return withBody(body, hint).doRequest("PUT", uri);
+		}
+
+		/**
+		 * Sends a PATCH request without body to a specified URI.
+		 * 
+		 * @param uri the URI
+		 * @return the response
+		 * @throws NullPointerException     if the URI is null
+		 * @throws IllegalArgumentException if the URI is invalid
+		 * @hidden
+		 */
 		public RestResponse patch(String uri) {
 			return doRequest("PATCH", uri);
 		}
 
+		/**
+		 * <p>
+		 * Sends a PATCH request to a specified URI.
+		 * </p>
+		 * <p>
+		 * This method calls {@code body.getClass()} to obtain the body type. Since
+		 * {@code body.getClass()} loses generic information due to type erasure, do not
+		 * call it if the type is generic. Call {@code patch(String, T, Hint<T>)}
+		 * instead.
+		 * </p>
+		 * 
+		 * @param uri  the URI
+		 * @param body the body
+		 * @return the response
+		 * @throws NullPointerException     if the URI is null
+		 * @throws IllegalArgumentException if the URI is invalid
+		 */
+		public RestResponse patch(String uri, Object body) {
+			return withBody(body).doRequest("PATCH", uri);
+		}
+
+		/**
+		 * <p>
+		 * Sends a PATCH request with hinted type to a specified URI.
+		 * </p>
+		 * <p>
+		 * Call this method if the body type is generic.
+		 * </p>
+		 * 
+		 * @param <T>  the type of the object
+		 * @param uri  the URI
+		 * @param body the body
+		 * @param hint the type hint
+		 * @return the response
+		 * @throws NullPointerException     if the URI is null or the type hint is null
+		 * @throws IllegalArgumentException if the URI is invalid
+		 */
+		public <T> RestResponse patch(String uri, T body, Hint<T> hint) {
+			return withBody(body, hint).doRequest("PATCH", uri);
+		}
+
+		/**
+		 * Sends a DELETE request to a specified URI.
+		 * 
+		 * @param uri the URI
+		 * @return the response
+		 * @throws NullPointerException     if the URI is null
+		 * @throws IllegalArgumentException if the URI is invalid
+		 */
 		public RestResponse delete(String uri) {
 			return doRequest("DELETE", uri);
 		}
 
+		/**
+		 * Sends a specified method to a specified URI.
+		 * 
+		 * @param method the method
+		 * @param uri    the URI
+		 * @return the response
+		 * @throws NullPointerException     if the method is null or the URI is null
+		 * @throws IllegalArgumentException if the method is blank or the URI is invalid
+		 */
 		public RestResponse request(String method, String uri) {
 			if (method == null) {
 				throw new NullPointerException("Method cannot be null");
@@ -653,7 +975,7 @@ public final class RestClient {
 			return doRequest(method.toUpperCase(locale), uri);
 		}
 
-		private RestResponse doRequest(String method, String uri) {
+		RestResponse doRequest(String method, String uri) {
 			if (uri == null) {
 				throw new NullPointerException("URI cannot be null");
 			}
@@ -671,16 +993,18 @@ public final class RestClient {
 			return send(request, tasks, timeout);
 		}
 
-		private String withQueries(String uri) {
-			int index = uri.indexOf('?');
+		String withQueries(String uri) {
 			String[] items;
 			StringJoiner joiner = new StringJoiner("&");
+			int index = uri.indexOf('?');
 			if (index == -1) {
-				items = splitAndEncode(uri);
+				items = splitAndEncode(Percent.stripEndingSlashes(uri));
 			} else {
 				String prefix = uri.substring(0, index);
 				String suffix = uri.substring(index + 1);
-				items = splitAndEncode(prefix);
+
+				items = splitAndEncode(Percent.stripEndingSlashes(prefix));
+
 				for (String item : suffix.split("&", -1)) {
 					index = item.indexOf('=');
 					if (index == -1) {
@@ -694,16 +1018,19 @@ public final class RestClient {
 			}
 
 			for (Entry entry : queries) {
-				String name = encode(entry.name());
+				String name = entry.name();
 				Object value = entry.value();
 				if (value == null) {
 					joiner.add(name);
 				} else {
-					joiner.add("%s=%s".formatted(name, encode(value.toString())));
+					joiner.add("%s=%s".formatted(name, value));
 				}
 			}
 
 			uri = String.join("/", items);
+			if (uri.length() == 1) {
+				uri = "";
+			}
 			if (joiner.length() > 0) {
 				uri = "%s?%s".formatted(uri, joiner.toString());
 			}
@@ -718,7 +1045,7 @@ public final class RestClient {
 			return Query.encode(item, urlCharset);
 		}
 
-		private void addHeaders(Request request) {
+		void addHeaders(Request request) {
 			request.headers((fields) -> {
 				for (Entry entry : headers) {
 					fields.add(entry.name(), entry.value().toString());
@@ -726,7 +1053,7 @@ public final class RestClient {
 			});
 		}
 
-		private List<Task> addBodiesAndGetTasks(Request request) {
+		List<Task> addBodiesAndGetTasks(Request request) {
 			List<Task> tasks = new ArrayList<>();
 			if (!bodies.isEmpty()) {
 				if (bodies.size() == 1) {
@@ -781,7 +1108,7 @@ public final class RestClient {
 			return content;
 		}
 
-		private RestResponse send(Request request, List<Task> tasks, int timeout) {
+		RestResponse send(Request request, List<Task> tasks, int timeout) {
 			if (!jettyClient.isRunning()) {
 				start();
 			}
@@ -811,7 +1138,7 @@ public final class RestClient {
 			return new RestResponse(facade, status, fields, contentType, stream);
 		}
 
-		private record Task(Consumer<OutputStream> consumer, OutputStream stream) {
+		record Task(Consumer<OutputStream> consumer, OutputStream stream) {
 		}
 	}
 
