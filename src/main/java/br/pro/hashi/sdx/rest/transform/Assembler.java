@@ -1,6 +1,5 @@
 package br.pro.hashi.sdx.rest.transform;
 
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UncheckedIOException;
 import java.lang.reflect.Type;
@@ -45,37 +44,4 @@ public interface Assembler {
 	 * @throws AssemblingException  if the object cannot be transformed
 	 */
 	void write(Object body, Type type, OutputStream stream);
-
-	/**
-	 * Transforms an arbitrary object into an {@link InputStream} representation.
-	 * 
-	 * @implSpec The default implementation simply calls
-	 *           {@link #toStream(Object, Type)}, passing {@code body.getClass()} as
-	 *           the second parameter. Since {@code body.getClass()} loses generic
-	 *           information due to type erasure, this implementation might not be
-	 *           recommended if the object is generic. It might be better to call
-	 *           {@link #toStream(Object, Type)} or provide an alternative
-	 *           implementation that ensures generic information is not lost.
-	 * 
-	 * @param body the object
-	 * @return the representation
-	 * @throws UncheckedIOException if the representation cannot be written
-	 * @throws AssemblingException  if the object cannot be transformed
-	 */
-	default InputStream toStream(Object body) {
-		return toStream(body, body.getClass());
-	}
-
-	/**
-	 * Transforms a typed object into an {@link InputStream} representation.
-	 * 
-	 * @implNote The implementation can assume that the type is correct.
-	 * 
-	 * @param body the object
-	 * @param type the type of the object
-	 * @return the representation
-	 * @throws UncheckedIOException if the representation cannot be written
-	 * @throws AssemblingException  if the object cannot be transformed
-	 */
-	InputStream toStream(Object body, Type type);
 }

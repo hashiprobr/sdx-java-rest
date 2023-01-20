@@ -1,7 +1,6 @@
 package br.pro.hashi.sdx.rest.transform.facade;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.ByteArrayInputStream;
@@ -108,62 +107,8 @@ class OctetAssemblerTest {
 		});
 	}
 
-	@Test
-	void returnsEqualsIfBodyIsByteArray() throws IOException {
-		byte[] body = newByteArray();
-		InputStream stream = a.toStream(body, byte[].class);
-		assertEqualsBody(stream);
-	}
-
-	@Test
-	void returnsEqualsIfBodyIsByteArrayWithHint() throws IOException {
-		byte[] body = newByteArray();
-		InputStream stream = a.toStream(body, new Hint<byte[]>() {}.getType());
-		assertEqualsBody(stream);
-	}
-
-	private void assertEqualsBody(InputStream stream) throws IOException {
-		byte[] bytes = new byte[4];
-		stream.readNBytes(bytes, 0, 4);
-		assertEquals(-1, stream.read());
-		assertEqualsBody(bytes);
-		stream.close();
-	}
-
 	private void assertEqualsBody(byte[] bytes) {
 		assertEquals("body", new String(bytes, StandardCharsets.US_ASCII));
-	}
-
-	@Test
-	void returnsSameIfBodyIsInputStream() {
-		InputStream body = newInputStream();
-		assertSame(body, a.toStream(body, InputStream.class));
-	}
-
-	@Test
-	void returnsSameIfBodyIsInputStreamWithHint() {
-		InputStream body = newInputStream();
-		assertSame(body, a.toStream(body, new Hint<InputStream>() {}.getType()));
-	}
-
-	@Test
-	void returnsSameIfBodyIsByteArrayInputStream() {
-		InputStream body = newInputStream();
-		assertSame(body, a.toStream(body, ByteArrayInputStream.class));
-	}
-
-	@Test
-	void returnsSameIfBodyIsByteArrayInputStreamWithHint() {
-		InputStream body = newInputStream();
-		assertSame(body, a.toStream(body, new Hint<ByteArrayInputStream>() {}.getType()));
-	}
-
-	@Test
-	void throwsAssemblingExceptionIfBodyIsNeither() {
-		Object body = new Object();
-		assertThrows(AssemblingException.class, () -> {
-			a.toStream(body, Object.class);
-		});
 	}
 
 	private InputStream newInputStream() {

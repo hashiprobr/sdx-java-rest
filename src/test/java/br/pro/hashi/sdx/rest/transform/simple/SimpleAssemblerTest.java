@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UncheckedIOException;
 import java.lang.reflect.Type;
@@ -61,26 +60,6 @@ class SimpleAssemblerTest {
 		assertThrows(UncheckedIOException.class, () -> {
 			a.write(body, stream);
 		});
-	}
-
-	@Test
-	void toStreamCallsToBytes() throws IOException {
-		InputStream stream = a.toStream(body);
-		assertEqualsBody(stream);
-	}
-
-	@Test
-	void toStreamCallsToBytesWithHint() throws IOException {
-		InputStream stream = a.toStream(body, new Hint<Object>() {}.getType());
-		assertEqualsBody(stream);
-	}
-
-	private void assertEqualsBody(InputStream stream) throws IOException {
-		byte[] bytes = new byte[4];
-		stream.readNBytes(bytes, 0, 4);
-		assertEquals(-1, stream.read());
-		assertEqualsBody(bytes);
-		stream.close();
 	}
 
 	@Test

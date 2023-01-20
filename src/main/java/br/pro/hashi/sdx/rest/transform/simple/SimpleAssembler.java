@@ -1,8 +1,6 @@
 package br.pro.hashi.sdx.rest.transform.simple;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UncheckedIOException;
 import java.lang.reflect.Type;
@@ -35,23 +33,6 @@ public interface SimpleAssembler extends Assembler {
 		} catch (IOException exception) {
 			throw new UncheckedIOException(exception);
 		}
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @implSpec The default implementation simply calls
-	 *           {@link #toBytes(Object, Type)} and instantiates a
-	 *           {@link ByteArrayInputStream} from the {@code byte[]}
-	 *           representation. Classes are encouraged to provide a more efficient
-	 *           implementation.
-	 * 
-	 * @throws UncheckedIOException {@inheritDoc}
-	 * @throws AssemblingException  {@inheritDoc}
-	 */
-	@Override
-	default InputStream toStream(Object body, Type type) {
-		return new ByteArrayInputStream(toBytes(body, type));
 	}
 
 	/**

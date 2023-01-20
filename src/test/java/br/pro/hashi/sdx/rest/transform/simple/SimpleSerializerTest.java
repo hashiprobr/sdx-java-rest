@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.IOException;
-import java.io.Reader;
 import java.io.StringWriter;
 import java.io.UncheckedIOException;
 import java.io.Writer;
@@ -60,32 +59,6 @@ class SimpleSerializerTest {
 		assertThrows(UncheckedIOException.class, () -> {
 			s.write(body, writer);
 		});
-	}
-
-	@Test
-	void toReaderCallsToString() throws IOException {
-		Reader reader = s.toReader(body);
-		assertEqualsBody(reader);
-	}
-
-	@Test
-	void toReaderCallsToStringWithHint() throws IOException {
-		Reader reader = s.toReader(body, new Hint<Object>() {}.getType());
-		assertEqualsBody(reader);
-	}
-
-	private void assertEqualsBody(Reader reader) throws IOException {
-		int length;
-		char[] chars = new char[4];
-		int offset = 0;
-		int remaining = chars.length;
-		while (remaining > 0 && (length = reader.read(chars, offset, remaining)) != -1) {
-			offset += length;
-			remaining -= length;
-		}
-		assertEquals(-1, reader.read());
-		assertEqualsBody(new String(chars));
-		reader.close();
 	}
 
 	@Test

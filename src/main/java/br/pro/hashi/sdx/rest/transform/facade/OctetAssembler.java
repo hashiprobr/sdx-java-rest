@@ -1,6 +1,5 @@
 package br.pro.hashi.sdx.rest.transform.facade;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -37,21 +36,5 @@ class OctetAssembler implements Assembler {
 			return;
 		}
 		throw new AssemblingException("Body must be instance of byte[] or InputStream to be written");
-	}
-
-	@Override
-	public InputStream toStream(Object body, Type type) {
-		return toStream(body);
-	}
-
-	@Override
-	public InputStream toStream(Object body) {
-		if (body instanceof byte[]) {
-			return new ByteArrayInputStream((byte[]) body);
-		}
-		if (body instanceof InputStream) {
-			return (InputStream) body;
-		}
-		throw new AssemblingException("Body must be instance of byte[] or InputStream to be read");
 	}
 }

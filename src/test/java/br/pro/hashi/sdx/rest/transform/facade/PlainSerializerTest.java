@@ -1,7 +1,6 @@
 package br.pro.hashi.sdx.rest.transform.facade;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.IOException;
@@ -107,68 +106,8 @@ class PlainSerializerTest {
 		});
 	}
 
-	@Test
-	void returnsEqualsIfBodyIsString() throws IOException {
-		String body = newString();
-		Reader reader = s.toReader(body, String.class);
-		assertEqualsBody(reader);
-	}
-
-	@Test
-	void returnsEqualsIfBodyIsStringWithHint() throws IOException {
-		String body = newString();
-		Reader reader = s.toReader(body, new Hint<String>() {}.getType());
-		assertEqualsBody(reader);
-	}
-
-	private void assertEqualsBody(Reader reader) throws IOException {
-		int length;
-		char[] chars = new char[4];
-		int offset = 0;
-		int remaining = chars.length;
-		while (remaining > 0 && (length = reader.read(chars, offset, remaining)) != -1) {
-			offset += length;
-			remaining -= length;
-		}
-		assertEquals(-1, reader.read());
-		assertEqualsBody(new String(chars));
-		reader.close();
-	}
-
 	private void assertEqualsBody(String content) {
 		assertEquals("body", content);
-	}
-
-	@Test
-	void returnsSameIfBodyIsReader() {
-		Reader body = newReader();
-		assertSame(body, s.toReader(body, Reader.class));
-	}
-
-	@Test
-	void returnsSameIfBodyIsReaderWithHint() {
-		Reader body = newReader();
-		assertSame(body, s.toReader(body, new Hint<Reader>() {}.getType()));
-	}
-
-	@Test
-	void returnsSameIfBodyIsStringReader() {
-		Reader body = newReader();
-		assertSame(body, s.toReader(body, StringReader.class));
-	}
-
-	@Test
-	void returnsSameIfBodyIsStringReaderWithHint() {
-		Reader body = newReader();
-		assertSame(body, s.toReader(body, new Hint<StringReader>() {}.getType()));
-	}
-
-	@Test
-	void throwsSerializingExceptionIfBodyIsNeither() {
-		Object body = new Object();
-		assertThrows(SerializingException.class, () -> {
-			s.toReader(body, Object.class);
-		});
 	}
 
 	private Reader newReader() {

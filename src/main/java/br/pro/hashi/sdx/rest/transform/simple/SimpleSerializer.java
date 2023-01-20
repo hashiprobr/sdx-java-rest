@@ -1,8 +1,6 @@
 package br.pro.hashi.sdx.rest.transform.simple;
 
 import java.io.IOException;
-import java.io.Reader;
-import java.io.StringReader;
 import java.io.UncheckedIOException;
 import java.io.Writer;
 import java.lang.reflect.Type;
@@ -35,22 +33,6 @@ public interface SimpleSerializer extends Serializer {
 		} catch (IOException exception) {
 			throw new UncheckedIOException(exception);
 		}
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @implSpec The default implementation simply calls
-	 *           {@link #toString(Object, Type)} and instantiates a
-	 *           {@link StringReader} from the {@code String} representation.
-	 *           Classes are encouraged to provide a more efficient implementation.
-	 * 
-	 * @throws UncheckedIOException {@inheritDoc}
-	 * @throws SerializingException {@inheritDoc}
-	 */
-	@Override
-	default Reader toReader(Object body, Type type) {
-		return new StringReader(toString(body, type));
 	}
 
 	/**
