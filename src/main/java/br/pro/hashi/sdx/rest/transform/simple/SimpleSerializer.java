@@ -36,7 +36,8 @@ public interface SimpleSerializer extends Serializer {
 	}
 
 	/**
-	 * Transforms an arbitrary object into a {@code String} representation.
+	 * Transforms an arbitrary object into a {@code String} representation if
+	 * possible.
 	 * 
 	 * @implSpec The default implementation simply calls
 	 *           {@link #toString(Object, Type)}, passing {@code body.getClass()} as
@@ -55,7 +56,7 @@ public interface SimpleSerializer extends Serializer {
 	}
 
 	/**
-	 * Transforms a typed object into a {@code String} representation.
+	 * Transforms a typed object into a {@code String} representation if possible.
 	 * 
 	 * @implNote The implementation can assume that the type is correct.
 	 * 

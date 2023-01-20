@@ -11,7 +11,8 @@ import br.pro.hashi.sdx.rest.transform.exception.AssemblingException;
  */
 public interface Assembler {
 	/**
-	 * Writes the representation of an arbitrary object to an {@link OutputStream}.
+	 * Writes the representation of an arbitrary object to an {@link OutputStream}
+	 * if possible.
 	 * 
 	 * @implSpec The default implementation simply calls
 	 *           {@link #write(Object, Type, OutputStream)}, passing
@@ -33,7 +34,8 @@ public interface Assembler {
 	}
 
 	/**
-	 * Writes the representation of a typed object to an {@link OutputStream}.
+	 * Writes the representation of a typed object to an {@link OutputStream} if
+	 * possible.
 	 * 
 	 * @implNote The implementation can assume that the type is correct.
 	 * 

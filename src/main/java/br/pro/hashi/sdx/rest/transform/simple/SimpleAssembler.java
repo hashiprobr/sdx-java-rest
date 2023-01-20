@@ -36,7 +36,8 @@ public interface SimpleAssembler extends Assembler {
 	}
 
 	/**
-	 * Transforms an arbitrary object into a {@code byte[]} representation.
+	 * Transforms an arbitrary object into a {@code byte[]} representation if
+	 * possible.
 	 * 
 	 * @implSpec The default implementation simply calls
 	 *           {@link #toBytes(Object, Type)}, passing {@code body.getClass()} as
@@ -55,7 +56,7 @@ public interface SimpleAssembler extends Assembler {
 	}
 
 	/**
-	 * Transforms a typed object into a {@code byte[]} representation.
+	 * Transforms a typed object into a {@code byte[]} representation if possible.
 	 * 
 	 * @implNote The implementation can assume that the type is correct.
 	 * 

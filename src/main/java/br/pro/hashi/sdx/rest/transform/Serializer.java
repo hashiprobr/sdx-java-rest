@@ -11,7 +11,8 @@ import br.pro.hashi.sdx.rest.transform.exception.SerializingException;
  */
 public interface Serializer {
 	/**
-	 * Writes the representation of an arbitrary object to a {@link Writer}.
+	 * Writes the representation of an arbitrary object to a {@link Writer} if
+	 * possible.
 	 * 
 	 * @implSpec The default implementation simply calls
 	 *           {@link #write(Object, Type, Writer)}, passing
@@ -32,7 +33,7 @@ public interface Serializer {
 	}
 
 	/**
-	 * Writes the representation of a typed object to a {@link Writer}.
+	 * Writes the representation of a typed object to a {@link Writer} if possible.
 	 * 
 	 * @implNote The implementation can assume that the type is correct.
 	 * 
