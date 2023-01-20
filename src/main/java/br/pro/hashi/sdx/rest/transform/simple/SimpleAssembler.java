@@ -29,9 +29,14 @@ public interface SimpleAssembler extends Assembler {
 		byte[] bytes = toBytes(body, type);
 		try {
 			stream.write(bytes);
-			stream.close();
 		} catch (IOException exception) {
 			throw new UncheckedIOException(exception);
+		} finally {
+			try {
+				stream.close();
+			} catch (IOException exception) {
+				throw new UncheckedIOException(exception);
+			}
 		}
 	}
 

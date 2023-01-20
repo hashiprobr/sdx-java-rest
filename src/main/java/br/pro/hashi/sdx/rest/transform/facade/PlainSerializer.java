@@ -17,24 +17,24 @@ class PlainSerializer implements Serializer {
 
 	@Override
 	public void write(Object body, Writer writer) {
-		if (body instanceof String) {
-			try {
+		try {
+			if (body instanceof String) {
 				writer.write((String) body);
-				writer.close();
-			} catch (IOException exception) {
-				throw new UncheckedIOException(exception);
+				return;
 			}
-			return;
-		}
-		if (body instanceof Reader) {
-			try {
+			if (body instanceof Reader) {
 				((Reader) body).transferTo(writer);
+				return;
+			}
+			throw new SerializingException("Body must be instance of String or Reader");
+		} catch (IOException exception) {
+			throw new UncheckedIOException(exception);
+		} finally {
+			try {
 				writer.close();
 			} catch (IOException exception) {
 				throw new UncheckedIOException(exception);
 			}
-			return;
 		}
-		throw new SerializingException("Body must be instance of String or Reader to be written");
 	}
 }

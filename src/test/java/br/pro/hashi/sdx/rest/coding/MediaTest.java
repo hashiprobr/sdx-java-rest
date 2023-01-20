@@ -1,17 +1,21 @@
 package br.pro.hashi.sdx.rest.coding;
 
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.spy;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.UncheckedIOException;
+import java.io.Writer;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
@@ -164,7 +168,7 @@ class MediaTest {
 	}
 
 	@Test
-	void doesNotReadIllegal() {
+	void doesNotReadIfCharsetIsIllegal() {
 		InputStream stream = newInputStream(SPECIAL_CONTENT, StandardCharsets.ISO_8859_1);
 		Exception exception = assertThrows(CharsetException.class, () -> {
 			Media.reader(stream, ";charset=iso=8859=1");
@@ -173,7 +177,7 @@ class MediaTest {
 	}
 
 	@Test
-	void doesNotReadUnsupported() {
+	void doesNotReadIfCharsetIsUnsupported() {
 		InputStream stream = newInputStream(SPECIAL_CONTENT, StandardCharsets.ISO_8859_1);
 		Exception exception = assertThrows(CharsetException.class, () -> {
 			Media.reader(stream, ";charset=latin-1");
@@ -182,7 +186,7 @@ class MediaTest {
 	}
 
 	@Test
-	void doesNotReadInvalid() throws IOException {
+	void throwsIfReadingReaderThrows() throws IOException {
 		InputStream stream = InputStream.nullInputStream();
 		stream.close();
 		Reader reader = assertDoesNotThrow(() -> {
@@ -194,7 +198,25 @@ class MediaTest {
 	}
 
 	@Test
-	void doesNotReadBytes() throws IOException {
+	void throwsIfClosingReaderThrows() throws IOException {
+		InputStream stream = spy(InputStream.nullInputStream());
+		doThrow(IOException.class).when(stream).close();
+		Reader reader = assertDoesNotThrow(() -> {
+			return Media.reader(stream, null);
+		});
+		assertThrows(UncheckedIOException.class, () -> {
+			Media.read(reader);
+		});
+	}
+
+	@Test
+	void readsBytes() {
+		InputStream stream = newInputStream(USASCII_CONTENT, StandardCharsets.US_ASCII);
+		assertEquals(USASCII_CONTENT, new String(Media.read(stream), StandardCharsets.US_ASCII));
+	}
+
+	@Test
+	void throwsIfReadingStreamThrows() throws IOException {
 		InputStream stream = InputStream.nullInputStream();
 		stream.close();
 		assertThrows(UncheckedIOException.class, () -> {
@@ -203,24 +225,27 @@ class MediaTest {
 	}
 
 	@Test
-	void readsBytes() {
-		InputStream stream = newInputStream(USASCII_CONTENT, StandardCharsets.US_ASCII);
-		assertReads(USASCII_CONTENT, stream);
+	void throwsIfClosingStreamThrows() throws IOException {
+		InputStream stream = spy(InputStream.nullInputStream());
+		doThrow(IOException.class).when(stream).close();
+		assertThrows(UncheckedIOException.class, () -> {
+			Media.read(stream);
+		});
 	}
 
 	@Test
 	void decodesZeroChars() {
-		assertReads("", Media.decode(newInputStream(""), ";base64"));
+		assertReads("", "", ";base64");
 	}
 
 	@Test
 	void decodesOneChar() {
-		assertReads("0", Media.decode(newInputStream("MA=="), ";base64"));
+		assertReads("0", "MA==", ";base64");
 	}
 
 	@Test
 	void decodesTwoChars() {
-		assertReads("01", Media.decode(newInputStream("MDE="), ";base64"));
+		assertReads("01", "MDE=", ";base64");
 	}
 
 	@ParameterizedTest
@@ -230,7 +255,7 @@ class MediaTest {
 			"type/subtype;;parameter;;BASE64;name=value;",
 			" \t\ntype/subtype \t\n; \t\n; \t\nparameter \t\n; \t\n; \t\nBASE64 \t\n; \t\nname \t\n= \t\nvalue \t\n; \t\n" })
 	void decodesThreeChars(String contentType) {
-		assertReads("012", Media.decode(newInputStream("MDEy"), contentType));
+		assertReads("012", "MDEy", contentType);
 	}
 
 	@ParameterizedTest
@@ -241,56 +266,43 @@ class MediaTest {
 			"type/subtype;;parameter;;name=value;",
 			" \t\ntype/subtype \t\n; \t\n; \t\nparameter \t\n; \t\n; \t\nname \t\n= \t\nvalue \t\n; \t\n" })
 	void doesNotDecode(String contentType) {
-		assertReads("MDEy", Media.decode(newInputStream("MDEy"), contentType));
+		assertReads("MDEy", "MDEy", contentType);
 	}
 
-	@Test
-	void encodesZeroChars() {
-		assertReads("", Media.encode(newInputStream("")));
-	}
-
-	@Test
-	void encodesOneChar() {
-		assertReads("MA==", Media.encode(newInputStream("0")));
-	}
-
-	@Test
-	void encodesTwoChars() {
-		assertReads("MDE=", Media.encode(newInputStream("01")));
-	}
-
-	@Test
-	void encodesThreeChars() {
-		assertReads("MDEy", Media.encode(newInputStream("012")));
-	}
-
-	@Test
-	void encodesInChunks() throws IOException {
-		InputStream stream = Media.encode(newInputStream("012"));
-		int length = stream.available();
-		assertEquals(4, length);
-		int b = stream.read();
-		assertEquals(77, b);
-		length = stream.available();
-		assertEquals(3, length);
-		byte[] buffer = new byte[3];
-		length = stream.readNBytes(buffer, 0, 3);
-		assertEquals(3, length);
-		assertArrayEquals(new byte[] { 68, 69, 121 }, buffer);
-		b = stream.read();
-		assertEquals(-1, b);
-		stream.close();
-	}
-
-	private void assertReads(String expected, InputStream stream) {
-		assertArrayEquals(expected.getBytes(StandardCharsets.US_ASCII), Media.read(stream));
-	}
-
-	private InputStream newInputStream(String content) {
-		return newInputStream(content, StandardCharsets.US_ASCII);
+	private void assertReads(String expected, String content, String contentType) {
+		InputStream stream = Media.decode(newInputStream(content, StandardCharsets.US_ASCII), contentType);
+		assertEquals(expected, new String(Media.read(stream), StandardCharsets.US_ASCII));
 	}
 
 	private InputStream newInputStream(String content, Charset charset) {
 		return new ByteArrayInputStream(content.getBytes(charset));
+	}
+
+	@Test
+	void encodesZeroChars() throws IOException {
+		assertWrites("", "");
+	}
+
+	@Test
+	void encodesOneChar() throws IOException {
+		assertWrites("MA==", "0");
+	}
+
+	@Test
+	void encodesTwoChars() throws IOException {
+		assertWrites("MDE=", "01");
+	}
+
+	@Test
+	void encodesThreeChars() throws IOException {
+		assertWrites("MDEy", "012");
+	}
+
+	private void assertWrites(String expected, String content) throws IOException {
+		ByteArrayOutputStream stream = new ByteArrayOutputStream();
+		Writer writer = new OutputStreamWriter(Media.encode(stream), StandardCharsets.US_ASCII);
+		writer.write(content);
+		writer.close();
+		assertEquals(expected, new String(stream.toByteArray(), StandardCharsets.US_ASCII));
 	}
 }

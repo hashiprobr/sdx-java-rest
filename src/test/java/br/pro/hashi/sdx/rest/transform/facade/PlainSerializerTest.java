@@ -2,6 +2,8 @@ package br.pro.hashi.sdx.rest.transform.facade;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.spy;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -26,7 +28,7 @@ class PlainSerializerTest {
 	}
 
 	@Test
-	void writesEqualsIfBodyIsString() {
+	void writesIfBodyIsString() {
 		String body = newString();
 		StringWriter writer = new StringWriter();
 		s.write(body, String.class, writer);
@@ -34,7 +36,7 @@ class PlainSerializerTest {
 	}
 
 	@Test
-	void writesEqualsIfBodyIsStringWithHint() {
+	void writesIfBodyIsStringWithHint() {
 		String body = newString();
 		StringWriter writer = new StringWriter();
 		s.write(body, new Hint<String>() {}.getType(), writer);
@@ -42,7 +44,7 @@ class PlainSerializerTest {
 	}
 
 	@Test
-	void writesEqualsIfBodyIsReader() {
+	void writesIfBodyIsReader() {
 		Reader body = newReader();
 		StringWriter writer = new StringWriter();
 		s.write(body, Reader.class, writer);
@@ -50,7 +52,7 @@ class PlainSerializerTest {
 	}
 
 	@Test
-	void writesEqualsIfBodyIsReaderWithHint() {
+	void writesIfBodyIsReaderWithHint() {
 		Reader body = newReader();
 		StringWriter writer = new StringWriter();
 		s.write(body, new Hint<Reader>() {}.getType(), writer);
@@ -58,7 +60,7 @@ class PlainSerializerTest {
 	}
 
 	@Test
-	void writesEqualsIfBodyIsStringReader() {
+	void writesIfBodyIsStringReader() {
 		Reader body = newReader();
 		StringWriter writer = new StringWriter();
 		s.write(body, StringReader.class, writer);
@@ -66,7 +68,7 @@ class PlainSerializerTest {
 	}
 
 	@Test
-	void writesEqualsIfBodyIsStringReaderWithHint() {
+	void writesIfBodyIsStringReaderWithHint() {
 		Reader body = newReader();
 		StringWriter writer = new StringWriter();
 		s.write(body, new Hint<StringReader>() {}.getType(), writer);
@@ -74,11 +76,20 @@ class PlainSerializerTest {
 	}
 
 	private void assertEqualsBody(StringWriter writer) {
-		assertEqualsBody(writer.toString());
+		assertEquals("body", writer.toString());
 	}
 
 	@Test
-	void writeThrowsUncheckedIOExceptionIfBodyIsStringButStreamThrowsIOException() throws IOException {
+	void doesNotWriteIfBodyIsNeither() {
+		Object body = new Object();
+		Writer writer = new StringWriter();
+		assertThrows(SerializingException.class, () -> {
+			s.write(body, Object.class, writer);
+		});
+	}
+
+	@Test
+	void throwsIfBodyIsStringButWriteThrows() throws IOException {
 		String body = newString();
 		Writer writer = Writer.nullWriter();
 		writer.close();
@@ -88,7 +99,17 @@ class PlainSerializerTest {
 	}
 
 	@Test
-	void writeThrowsUncheckedIOExceptionIfBodyIsReaderButStreamThrowsIOException() throws IOException {
+	void throwsIfBodyIsStringButCloseThrows() throws IOException {
+		String body = newString();
+		Writer writer = spy(Writer.nullWriter());
+		doThrow(IOException.class).when(writer).close();
+		assertThrows(UncheckedIOException.class, () -> {
+			s.write(body, String.class, writer);
+		});
+	}
+
+	@Test
+	void throwsIfBodyIsReaderButWriteThrows() throws IOException {
 		Reader body = newReader();
 		Writer writer = Writer.nullWriter();
 		writer.close();
@@ -98,16 +119,13 @@ class PlainSerializerTest {
 	}
 
 	@Test
-	void writeThrowsSerializingExceptionIfBodyIsNeither() {
-		Object body = new Object();
-		Writer writer = new StringWriter();
-		assertThrows(SerializingException.class, () -> {
-			s.write(body, Object.class, writer);
+	void throwsIfBodyIsReaderButCloseThrows() throws IOException {
+		Reader body = newReader();
+		Writer writer = spy(Writer.nullWriter());
+		doThrow(IOException.class).when(writer).close();
+		assertThrows(UncheckedIOException.class, () -> {
+			s.write(body, Reader.class, writer);
 		});
-	}
-
-	private void assertEqualsBody(String content) {
-		assertEquals("body", content);
 	}
 
 	private Reader newReader() {

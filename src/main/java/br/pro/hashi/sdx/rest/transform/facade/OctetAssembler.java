@@ -17,24 +17,24 @@ class OctetAssembler implements Assembler {
 
 	@Override
 	public void write(Object body, OutputStream stream) {
-		if (body instanceof byte[]) {
-			try {
+		try {
+			if (body instanceof byte[]) {
 				stream.write((byte[]) body);
-				stream.close();
-			} catch (IOException exception) {
-				throw new UncheckedIOException(exception);
+				return;
 			}
-			return;
-		}
-		if (body instanceof InputStream) {
-			try {
+			if (body instanceof InputStream) {
 				((InputStream) body).transferTo(stream);
+				return;
+			}
+			throw new AssemblingException("Body must be instance of byte[] or InputStream");
+		} catch (IOException exception) {
+			throw new UncheckedIOException(exception);
+		} finally {
+			try {
 				stream.close();
 			} catch (IOException exception) {
 				throw new UncheckedIOException(exception);
 			}
-			return;
 		}
-		throw new AssemblingException("Body must be instance of byte[] or InputStream to be written");
 	}
 }

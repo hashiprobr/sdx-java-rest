@@ -29,9 +29,14 @@ public interface SimpleSerializer extends Serializer {
 		String content = toString(body, type);
 		try {
 			writer.write(content);
-			writer.close();
 		} catch (IOException exception) {
 			throw new UncheckedIOException(exception);
+		} finally {
+			try {
+				writer.close();
+			} catch (IOException exception) {
+				throw new UncheckedIOException(exception);
+			}
 		}
 	}
 

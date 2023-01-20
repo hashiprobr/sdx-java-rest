@@ -2,6 +2,8 @@ package br.pro.hashi.sdx.rest.transform.facade;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.spy;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -27,7 +29,7 @@ class OctetAssemblerTest {
 	}
 
 	@Test
-	void writesEqualsIfBodyIsByteArray() {
+	void writesIfBodyIsByteArray() {
 		byte[] body = newByteArray();
 		ByteArrayOutputStream stream = new ByteArrayOutputStream();
 		a.write(body, byte[].class, stream);
@@ -35,7 +37,7 @@ class OctetAssemblerTest {
 	}
 
 	@Test
-	void writesEqualsIfBodyIsByteArrayWithHint() {
+	void writesIfBodyIsByteArrayWithHint() {
 		byte[] body = newByteArray();
 		ByteArrayOutputStream stream = new ByteArrayOutputStream();
 		a.write(body, new Hint<byte[]>() {}.getType(), stream);
@@ -43,7 +45,7 @@ class OctetAssemblerTest {
 	}
 
 	@Test
-	void writesEqualsIfBodyIsInputStream() {
+	void writesIfBodyIsInputStream() {
 		InputStream body = newInputStream();
 		ByteArrayOutputStream stream = new ByteArrayOutputStream();
 		a.write(body, InputStream.class, stream);
@@ -51,7 +53,7 @@ class OctetAssemblerTest {
 	}
 
 	@Test
-	void writesEqualsIfBodyIsInputStreamWithHint() {
+	void writesIfBodyIsInputStreamWithHint() {
 		InputStream body = newInputStream();
 		ByteArrayOutputStream stream = new ByteArrayOutputStream();
 		a.write(body, new Hint<InputStream>() {}.getType(), stream);
@@ -59,7 +61,7 @@ class OctetAssemblerTest {
 	}
 
 	@Test
-	void writesEqualsIfBodyIsByteArrayInputStream() {
+	void writesIfBodyIsByteArrayInputStream() {
 		InputStream body = newInputStream();
 		ByteArrayOutputStream stream = new ByteArrayOutputStream();
 		a.write(body, ByteArrayInputStream.class, stream);
@@ -67,7 +69,7 @@ class OctetAssemblerTest {
 	}
 
 	@Test
-	void writesEqualsIfBodyIsByteArrayInputStreamWithHint() {
+	void writesIfBodyIsByteArrayInputStreamWithHint() {
 		InputStream body = newInputStream();
 		ByteArrayOutputStream stream = new ByteArrayOutputStream();
 		a.write(body, new Hint<ByteArrayInputStream>() {}.getType(), stream);
@@ -75,11 +77,20 @@ class OctetAssemblerTest {
 	}
 
 	private void assertEqualsBody(ByteArrayOutputStream stream) {
-		assertEqualsBody(stream.toByteArray());
+		assertEquals("body", new String(stream.toByteArray(), StandardCharsets.US_ASCII));
 	}
 
 	@Test
-	void writeThrowsUncheckedIOExceptionIfBodyIsByteArrayButStreamThrowsIOException() throws IOException {
+	void doesNotWriteIfBodyIsNeither() {
+		Object body = new Object();
+		ByteArrayOutputStream stream = new ByteArrayOutputStream();
+		assertThrows(AssemblingException.class, () -> {
+			a.write(body, Object.class, stream);
+		});
+	}
+
+	@Test
+	void throwsIfBodyIsByteArrayButWriteThrows() throws IOException {
 		byte[] body = newByteArray();
 		OutputStream stream = OutputStream.nullOutputStream();
 		stream.close();
@@ -89,7 +100,17 @@ class OctetAssemblerTest {
 	}
 
 	@Test
-	void writeThrowsUncheckedIOExceptionIfBodyIsInputStreamButStreamThrowsIOException() throws IOException {
+	void throwsIfBodyIsByteArrayButCloseThrows() throws IOException {
+		byte[] body = newByteArray();
+		OutputStream stream = spy(OutputStream.nullOutputStream());
+		doThrow(IOException.class).when(stream).close();
+		assertThrows(UncheckedIOException.class, () -> {
+			a.write(body, byte[].class, stream);
+		});
+	}
+
+	@Test
+	void throwsIfBodyIsInputStreamButWriteThrows() throws IOException {
 		InputStream body = newInputStream();
 		OutputStream stream = OutputStream.nullOutputStream();
 		stream.close();
@@ -99,16 +120,13 @@ class OctetAssemblerTest {
 	}
 
 	@Test
-	void writeThrowsAssemblingExceptionIfBodyIsNeither() {
-		Object body = new Object();
-		ByteArrayOutputStream stream = new ByteArrayOutputStream();
-		assertThrows(AssemblingException.class, () -> {
-			a.write(body, Object.class, stream);
+	void throwsIfBodyIsInputStreamButCloseThrows() throws IOException {
+		InputStream body = newInputStream();
+		OutputStream stream = spy(OutputStream.nullOutputStream());
+		doThrow(IOException.class).when(stream).close();
+		assertThrows(UncheckedIOException.class, () -> {
+			a.write(body, InputStream.class, stream);
 		});
-	}
-
-	private void assertEqualsBody(byte[] bytes) {
-		assertEquals("body", new String(bytes, StandardCharsets.US_ASCII));
 	}
 
 	private InputStream newInputStream() {

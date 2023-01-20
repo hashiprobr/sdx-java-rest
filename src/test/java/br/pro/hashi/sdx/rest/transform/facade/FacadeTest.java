@@ -107,7 +107,7 @@ class FacadeTest {
 	}
 
 	@Test
-	void initializesWithBasicAssembler() {
+	void initializesWithOctetAssembler() {
 		assertInstanceOf(OctetAssembler.class, f.getAssembler("application/octet-stream"));
 	}
 
@@ -126,7 +126,7 @@ class FacadeTest {
 	}
 
 	@Test
-	void initializesWithBasicDisassembler() {
+	void initializesWithOctetDisassembler() {
 		assertInstanceOf(OctetDisassembler.class, f.getDisassembler("application/octet-stream"));
 	}
 
@@ -145,7 +145,7 @@ class FacadeTest {
 	}
 
 	@Test
-	void initializesWithBasicSerializer() {
+	void initializesWithPlainSerializer() {
 		assertInstanceOf(PlainSerializer.class, f.getSerializer("text/plain"));
 	}
 
@@ -164,7 +164,7 @@ class FacadeTest {
 	}
 
 	@Test
-	void initializesWithBasicDeserializer() {
+	void initializesWithPlainDeserializer() {
 		assertInstanceOf(PlainDeserializer.class, f.getDeserializer("text/plain"));
 	}
 

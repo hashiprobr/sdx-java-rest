@@ -32,14 +32,14 @@ class SimpleDisassemblerTest {
 	}
 
 	@Test
-	void readCallsFromBytes() {
+	void reads() {
 		InputStream stream = newInputStream();
 		Object body = d.read(stream, Object.class);
 		assertEqualsInputStream(body);
 	}
 
 	@Test
-	void readCallsFromBytesWithHint() {
+	void readsWithHint() {
 		InputStream stream = newInputStream();
 		Object body = d.read(stream, new Hint<Object>() {}.getType());
 		assertEqualsInputStream(body);

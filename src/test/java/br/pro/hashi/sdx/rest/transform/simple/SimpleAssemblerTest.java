@@ -2,6 +2,8 @@ package br.pro.hashi.sdx.rest.transform.simple;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.spy;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -36,14 +38,14 @@ class SimpleAssemblerTest {
 	}
 
 	@Test
-	void writeCallsToBytes() {
+	void writes() {
 		ByteArrayOutputStream stream = new ByteArrayOutputStream();
 		a.write(body, stream);
 		assertEqualsBody(stream);
 	}
 
 	@Test
-	void writeCallsToBytesWithHint() {
+	void writesWithHint() {
 		ByteArrayOutputStream stream = new ByteArrayOutputStream();
 		a.write(body, new Hint<Object>() {}.getType(), stream);
 		assertEqualsBody(stream);
@@ -54,7 +56,23 @@ class SimpleAssemblerTest {
 	}
 
 	@Test
-	void writeThrowsUncheckedIOExceptionIfStreamThrowsIOException() throws IOException {
+	void returnsBytes() {
+		byte[] bytes = a.toBytes(body);
+		assertEqualsBody(bytes);
+	}
+
+	@Test
+	void returnsBytesWithHint() {
+		byte[] bytes = a.toBytes(body, new Hint<Object>() {}.getType());
+		assertEqualsBody(bytes);
+	}
+
+	private void assertEqualsBody(byte[] bytes) {
+		assertEquals("body", new String(bytes, StandardCharsets.US_ASCII));
+	}
+
+	@Test
+	void throwsIfWriteThrows() throws IOException {
 		OutputStream stream = OutputStream.nullOutputStream();
 		stream.close();
 		assertThrows(UncheckedIOException.class, () -> {
@@ -63,18 +81,11 @@ class SimpleAssemblerTest {
 	}
 
 	@Test
-	void toBytesCallsToBytes() {
-		byte[] bytes = a.toBytes(body);
-		assertEqualsBody(bytes);
-	}
-
-	@Test
-	void toBytesCallsToBytesWithHint() {
-		byte[] bytes = a.toBytes(body, new Hint<Object>() {}.getType());
-		assertEqualsBody(bytes);
-	}
-
-	private void assertEqualsBody(byte[] bytes) {
-		assertEquals("body", new String(bytes, StandardCharsets.US_ASCII));
+	void throwsIfCloseThrows() throws IOException {
+		OutputStream stream = spy(OutputStream.nullOutputStream());
+		doThrow(IOException.class).when(stream).close();
+		assertThrows(UncheckedIOException.class, () -> {
+			a.write(body, stream);
+		});
 	}
 }
