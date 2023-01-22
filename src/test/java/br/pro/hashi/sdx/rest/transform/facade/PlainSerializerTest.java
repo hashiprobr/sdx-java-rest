@@ -91,7 +91,7 @@ class PlainSerializerTest {
 	}
 
 	@Test
-	void throwsIfBodyIsStringButWriteThrows() throws IOException {
+	void doesNotWriteIfBodyIsStringButWriteThrows() throws IOException {
 		String body = newString();
 		Writer writer = Writer.nullWriter();
 		writer.close();
@@ -102,7 +102,7 @@ class PlainSerializerTest {
 	}
 
 	@Test
-	void throwsIfBodyIsStringButCloseThrows() throws IOException {
+	void doesNotWriteIfBodyIsStringButCloseThrows() throws IOException {
 		String body = newString();
 		Writer writer = spy(Writer.nullWriter());
 		Throwable cause = new IOException();
@@ -114,7 +114,7 @@ class PlainSerializerTest {
 	}
 
 	@Test
-	void throwsIfBodyIsReaderButWriteThrows() throws IOException {
+	void doesNotWriteIfBodyIsReaderButWriteThrows() throws IOException {
 		Reader body = newReader();
 		Writer writer = Writer.nullWriter();
 		writer.close();
@@ -125,7 +125,7 @@ class PlainSerializerTest {
 	}
 
 	@Test
-	void throwsIfBodyIsReaderButCloseThrows() throws IOException {
+	void doesNotWriteIfBodyIsReaderButCloseThrows() throws IOException {
 		Reader body = newReader();
 		Writer writer = spy(Writer.nullWriter());
 		Throwable cause = new IOException();

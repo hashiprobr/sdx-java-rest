@@ -74,7 +74,7 @@ class SimpleAssemblerTest {
 	}
 
 	@Test
-	void throwsIfWriteThrows() throws IOException {
+	void doesNotWriteIfWriteThrows() throws IOException {
 		OutputStream stream = OutputStream.nullOutputStream();
 		stream.close();
 		Exception exception = assertThrows(UncheckedIOException.class, () -> {
@@ -84,7 +84,7 @@ class SimpleAssemblerTest {
 	}
 
 	@Test
-	void throwsIfCloseThrows() throws IOException {
+	void doesNotWriteIfCloseThrows() throws IOException {
 		OutputStream stream = spy(OutputStream.nullOutputStream());
 		Throwable cause = new IOException();
 		doThrow(cause).when(stream).close();

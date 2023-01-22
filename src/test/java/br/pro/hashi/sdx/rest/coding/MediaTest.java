@@ -2,8 +2,10 @@ package br.pro.hashi.sdx.rest.coding;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.spy;
@@ -186,27 +188,30 @@ class MediaTest {
 	}
 
 	@Test
-	void throwsIfReadingReaderThrows() throws IOException {
+	void doesNotReadIfReadThrows() throws IOException {
 		InputStream stream = InputStream.nullInputStream();
 		stream.close();
 		Reader reader = assertDoesNotThrow(() -> {
 			return Media.reader(stream, null);
 		});
-		assertThrows(UncheckedIOException.class, () -> {
+		Exception exception = assertThrows(UncheckedIOException.class, () -> {
 			Media.read(reader);
 		});
+		assertInstanceOf(IOException.class, exception.getCause());
 	}
 
 	@Test
-	void throwsIfClosingReaderThrows() throws IOException {
+	void doesNotReadIfCloseThrows() throws IOException {
 		InputStream stream = spy(InputStream.nullInputStream());
-		doThrow(IOException.class).when(stream).close();
+		Throwable cause = new IOException();
+		doThrow(cause).when(stream).close();
 		Reader reader = assertDoesNotThrow(() -> {
 			return Media.reader(stream, null);
 		});
-		assertThrows(UncheckedIOException.class, () -> {
+		Exception exception = assertThrows(UncheckedIOException.class, () -> {
 			Media.read(reader);
 		});
+		assertSame(cause, exception.getCause());
 	}
 
 	@Test
@@ -216,21 +221,24 @@ class MediaTest {
 	}
 
 	@Test
-	void throwsIfReadingStreamThrows() throws IOException {
+	void doesNotReadBytesIfReadThrows() throws IOException {
 		InputStream stream = InputStream.nullInputStream();
 		stream.close();
-		assertThrows(UncheckedIOException.class, () -> {
+		Exception exception = assertThrows(UncheckedIOException.class, () -> {
 			Media.read(stream);
 		});
+		assertInstanceOf(IOException.class, exception.getCause());
 	}
 
 	@Test
-	void throwsIfClosingStreamThrows() throws IOException {
+	void doesNotReadBytesIfCloseThrows() throws IOException {
 		InputStream stream = spy(InputStream.nullInputStream());
-		doThrow(IOException.class).when(stream).close();
-		assertThrows(UncheckedIOException.class, () -> {
+		Throwable cause = new IOException();
+		doThrow(cause).when(stream).close();
+		Exception exception = assertThrows(UncheckedIOException.class, () -> {
 			Media.read(stream);
 		});
+		assertSame(cause, exception.getCause());
 	}
 
 	@Test

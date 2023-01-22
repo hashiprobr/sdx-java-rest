@@ -92,7 +92,7 @@ class OctetAssemblerTest {
 	}
 
 	@Test
-	void throwsIfBodyIsByteArrayButWriteThrows() throws IOException {
+	void doesNotWriteIfBodyIsByteArrayButWriteThrows() throws IOException {
 		byte[] body = newByteArray();
 		OutputStream stream = OutputStream.nullOutputStream();
 		stream.close();
@@ -103,7 +103,7 @@ class OctetAssemblerTest {
 	}
 
 	@Test
-	void throwsIfBodyIsByteArrayButCloseThrows() throws IOException {
+	void doesNotWriteIfBodyIsByteArrayButCloseThrows() throws IOException {
 		byte[] body = newByteArray();
 		OutputStream stream = spy(OutputStream.nullOutputStream());
 		Throwable cause = new IOException();
@@ -115,7 +115,7 @@ class OctetAssemblerTest {
 	}
 
 	@Test
-	void throwsIfBodyIsInputStreamButWriteThrows() throws IOException {
+	void doesNotWriteIfBodyIsInputStreamButWriteThrows() throws IOException {
 		InputStream body = newInputStream();
 		OutputStream stream = OutputStream.nullOutputStream();
 		stream.close();
@@ -126,7 +126,7 @@ class OctetAssemblerTest {
 	}
 
 	@Test
-	void throwsIfBodyIsInputStreamButCloseThrows() throws IOException {
+	void doesNotWriteIfBodyIsInputStreamButCloseThrows() throws IOException {
 		InputStream body = newInputStream();
 		OutputStream stream = spy(OutputStream.nullOutputStream());
 		Throwable cause = new IOException();

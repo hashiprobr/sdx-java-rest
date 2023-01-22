@@ -73,7 +73,7 @@ class SimpleSerializerTest {
 	}
 
 	@Test
-	void throwsIfWriteThrows() throws IOException {
+	void doesNotWriteIfWriteThrows() throws IOException {
 		Writer writer = Writer.nullWriter();
 		writer.close();
 		Exception exception = assertThrows(UncheckedIOException.class, () -> {
@@ -83,7 +83,7 @@ class SimpleSerializerTest {
 	}
 
 	@Test
-	void throwsIfCloseThrows() throws IOException {
+	void doesNotWriteIfCloseThrows() throws IOException {
 		Writer writer = spy(Writer.nullWriter());
 		Throwable cause = new IOException();
 		doThrow(cause).when(writer).close();
