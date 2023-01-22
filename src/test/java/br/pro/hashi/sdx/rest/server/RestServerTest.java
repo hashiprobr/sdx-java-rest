@@ -8,7 +8,7 @@ class RestServerTest {
 	private RestServer s;
 
 	@Test
-	void constructs() {
+	void builds() {
 		s = RestServer.from("package");
 		assertNotNull(s);
 	}

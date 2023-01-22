@@ -51,7 +51,7 @@ class RestClientTest {
 	}
 
 	@Test
-	void constructs() {
+	void builds() {
 		c = RestClient.to("http://a");
 		assertNotNull(c);
 	}
