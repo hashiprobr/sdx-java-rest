@@ -7,6 +7,7 @@ import java.io.OutputStreamWriter;
 import java.io.UncheckedIOException;
 import java.lang.reflect.Type;
 import java.nio.charset.Charset;
+import java.nio.charset.CharsetEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
@@ -253,6 +254,20 @@ public final class RestClient {
 	}
 
 	/**
+	 * Alias for {@code withBody(T, Hint<T>)}.
+	 * 
+	 * @param <T>  the type of the body
+	 * @param body the body
+	 * @param hint the type hint
+	 * @return the proxy, for chaining
+	 * @throws NullPointerException if the type hint is null
+	 * @hidden
+	 */
+	public <T> Proxy b(T body, Hint<T> hint) {
+		return withBody(body, hint);
+	}
+
+	/**
 	 * <p>
 	 * Convenience method that instantiates a {@link RestClient.Proxy} and calls
 	 * {@link RestClient.Proxy#withBody(Object)}.
@@ -266,20 +281,6 @@ public final class RestClient {
 	 */
 	public Proxy withBody(Object body) {
 		return new Proxy().withBody(body);
-	}
-
-	/**
-	 * Alias for {@code withBody(T, Hint<T>)}.
-	 * 
-	 * @param <T>  the type of the body
-	 * @param body the body
-	 * @param hint the type hint
-	 * @return the proxy, for chaining
-	 * @throws NullPointerException if the type hint is null
-	 * @hidden
-	 */
-	public <T> Proxy b(T body, Hint<T> hint) {
-		return withBody(body, hint);
 	}
 
 	/**
@@ -506,12 +507,14 @@ public final class RestClient {
 	 * Represents a request configuration.
 	 */
 	public final class Proxy {
+		private final CharsetEncoder encoder;
 		private final List<Entry> queries;
 		private final List<Entry> headers;
 		private final List<Body> bodies;
 		private int timeout;
 
 		Proxy() {
+			this.encoder = StandardCharsets.US_ASCII.newEncoder();
 			this.queries = new ArrayList<>();
 			this.headers = new ArrayList<>();
 			this.bodies = new ArrayList<>();
@@ -613,6 +616,10 @@ public final class RestClient {
 			return this;
 		}
 
+		private String encode(String item) {
+			return Query.encode(item, urlCharset);
+		}
+
 		/**
 		 * Alias for {@link #withHeader(String, Object)}.
 		 * 
@@ -655,10 +662,17 @@ public final class RestClient {
 			if (name.isEmpty()) {
 				throw new IllegalArgumentException("Header name cannot be blank");
 			}
+			if (!encoder.canEncode(name)) {
+				throw new IllegalArgumentException("Header name must be in US-ASCII");
+			}
 			if (value == null) {
 				throw new NullPointerException("Header value cannot be null");
 			}
-			headers.add(new Entry(name, value.toString()));
+			String valueString = value.toString();
+			if (!encoder.canEncode(valueString)) {
+				throw new IllegalArgumentException("Header value string must be in US-ASCII");
+			}
+			headers.add(new Entry(name, valueString));
 			return this;
 		}
 
@@ -671,6 +685,20 @@ public final class RestClient {
 		 */
 		public Proxy b(Object body) {
 			return withBody(body);
+		}
+
+		/**
+		 * Alias for {@code withBody(T, Hint<T>)}.
+		 * 
+		 * @param <T>  the type of the body
+		 * @param body the body
+		 * @param hint the type hint
+		 * @return this proxy, for chaining
+		 * @throws NullPointerException if the type hint is null
+		 * @hidden
+		 */
+		public <T> Proxy b(T body, Hint<T> hint) {
+			return withBody(body, hint);
 		}
 
 		/**
@@ -696,20 +724,6 @@ public final class RestClient {
 				bodies.add(new Body(body));
 			}
 			return this;
-		}
-
-		/**
-		 * Alias for {@code withBody(T, Hint<T>)}.
-		 * 
-		 * @param <T>  the type of the body
-		 * @param body the body
-		 * @param hint the type hint
-		 * @return this proxy, for chaining
-		 * @throws NullPointerException if the type hint is null
-		 * @hidden
-		 */
-		public <T> Proxy b(T body, Hint<T> hint) {
-			return withBody(body, hint);
 		}
 
 		/**
@@ -1008,11 +1022,11 @@ public final class RestClient {
 				for (String item : suffix.split("&", -1)) {
 					index = item.indexOf('=');
 					if (index == -1) {
-						joiner.add(encode(item));
+						joiner.add(recode(item));
 					} else {
 						prefix = item.substring(0, index);
 						suffix = item.substring(index + 1);
-						joiner.add("%s=%s".formatted(encode(prefix), encode(suffix)));
+						joiner.add("%s=%s".formatted(recode(prefix), recode(suffix)));
 					}
 				}
 			}
@@ -1041,8 +1055,8 @@ public final class RestClient {
 			return Percent.splitAndEncode(uri, urlCharset);
 		}
 
-		private String encode(String item) {
-			return Query.encode(item, urlCharset);
+		private String recode(String item) {
+			return Query.recode(item, urlCharset);
 		}
 
 		void addHeaders(Request request) {

@@ -48,7 +48,7 @@ public abstract class BuilderTest {
 	}
 
 	@Test
-	void initializesWithUtf8() {
+	void initializesWithUTF8() {
 		assertEquals(StandardCharsets.UTF_8, b.urlCharset);
 	}
 

@@ -6,11 +6,12 @@ import java.nio.charset.Charset;
 
 public final class Query {
 	public static String encode(String item, Charset charset) {
-		item = URLDecoder.decode(item, charset); // avoid double encoding
 		item = URLEncoder.encode(item, charset);
-		return makeConsistentWithRfc3986(item); // decode ~ and encode *
+		return makeConsistentWithRfc3986(item);
 	}
 
+	// decode ~
+	// encode *
 	private static String makeConsistentWithRfc3986(String item) {
 		StringBuilder builder = new StringBuilder();
 		for (int i = 0; i < item.length(); i++) {
@@ -37,6 +38,11 @@ public final class Query {
 			}
 		}
 		return builder.toString();
+	}
+
+	public static String recode(String item, Charset charset) {
+		item = URLDecoder.decode(item, charset);
+		return encode(item, charset);
 	}
 
 	private Query() {

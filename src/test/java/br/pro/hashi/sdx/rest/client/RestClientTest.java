@@ -1,7 +1,6 @@
 package br.pro.hashi.sdx.rest.client;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -53,7 +52,7 @@ class RestClientTest {
 	@Test
 	void builds() {
 		c = RestClient.to("http://a");
-		assertNotNull(c);
+		assertEquals("http://a", c.getUrlPrefix());
 	}
 
 	@Test
@@ -76,10 +75,12 @@ class RestClientTest {
 	void doesNotStartIfJettyClientThrowsException() throws Exception {
 		c = newRestClient();
 		when(jettyClient.isRunning()).thenReturn(false);
-		doThrow(Exception.class).when(jettyClient).start();
-		assertThrows(ClientException.class, () -> {
+		Throwable cause = new Exception();
+		doThrow(cause).when(jettyClient).start();
+		Exception exception = assertThrows(ClientException.class, () -> {
 			c.start();
 		});
+		assertSame(cause, exception.getCause());
 	}
 
 	@Test
@@ -102,10 +103,12 @@ class RestClientTest {
 	void doesNotStopIfJettyClientThrowsException() throws Exception {
 		c = newRestClient();
 		when(jettyClient.isRunning()).thenReturn(true);
-		doThrow(Exception.class).when(jettyClient).stop();
-		assertThrows(ClientException.class, () -> {
+		Throwable cause = new Exception();
+		doThrow(cause).when(jettyClient).stop();
+		Exception exception = assertThrows(ClientException.class, () -> {
 			c.stop();
 		});
+		assertSame(cause, exception.getCause());
 	}
 
 	@Test
@@ -342,7 +345,7 @@ class RestClientTest {
 		assertSame(p, p.q("?=& %3F%3D%26%20+"));
 		assertEquals(1, p.getQueries().size());
 		RestClient.Entry entry = p.getQueries().get(0);
-		assertEquals("%3F%3D%26+%3F%3D%26++", entry.name());
+		assertEquals("%3F%3D%26+%253F%253D%2526%2520%2B", entry.name());
 		assertNull(entry.value());
 	}
 
@@ -371,8 +374,8 @@ class RestClientTest {
 		assertSame(p, p.q("?=& %3F%3D%26%20+", "?=& %3F%3D%26%20+"));
 		assertEquals(1, p.getQueries().size());
 		RestClient.Entry entry = p.getQueries().get(0);
-		assertEquals("%3F%3D%26+%3F%3D%26++", entry.name());
-		assertEquals("%3F%3D%26+%3F%3D%26++", entry.value());
+		assertEquals("%3F%3D%26+%253F%253D%2526%2520%2B", entry.name());
+		assertEquals("%3F%3D%26+%253F%253D%2526%2520%2B", entry.value());
 	}
 
 	@Test

@@ -20,7 +20,7 @@ public final class Percent {
 		String[] items = uri.split("/", -1);
 		for (int i = 0; i < items.length; i++) {
 			String item = items[i].replace("+", "%2B");
-			item = Query.encode(item, charset);
+			item = Query.recode(item, charset);
 			items[i] = item.replace("+", "%20");
 		}
 		return items;
