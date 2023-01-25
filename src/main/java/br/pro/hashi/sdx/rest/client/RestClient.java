@@ -612,7 +612,11 @@ public final class RestClient {
 			if (value == null) {
 				throw new NullPointerException("Query value cannot be null");
 			}
-			queries.add(new Entry(encode(name), encode(value.toString())));
+			String valueString = value.toString();
+			if (valueString == null) {
+				throw new NullPointerException("Query value string cannot be null");
+			}
+			queries.add(new Entry(encode(name), encode(valueString)));
 			return this;
 		}
 
@@ -669,6 +673,9 @@ public final class RestClient {
 				throw new NullPointerException("Header value cannot be null");
 			}
 			String valueString = value.toString();
+			if (valueString == null) {
+				throw new NullPointerException("Header value string cannot be null");
+			}
 			if (!encoder.canEncode(valueString)) {
 				throw new IllegalArgumentException("Header value string must be in US-ASCII");
 			}
@@ -1033,7 +1040,7 @@ public final class RestClient {
 
 			for (Entry entry : queries) {
 				String name = entry.name();
-				Object value = entry.value();
+				String value = entry.valueString();
 				if (value == null) {
 					joiner.add(name);
 				} else {
@@ -1060,7 +1067,7 @@ public final class RestClient {
 		void addHeaders(Request request) {
 			request.headers((fields) -> {
 				for (Entry entry : headers) {
-					fields.add(entry.name(), entry.value().toString());
+					fields.add(entry.name(), entry.valueString());
 				}
 			});
 		}
@@ -1150,10 +1157,10 @@ public final class RestClient {
 			return new RestResponse(facade, status, fields, contentType, stream);
 		}
 
+		record Entry(String name, String valueString) {
+		}
+
 		record Task(Consumer<OutputStream> consumer, OutputStream stream) {
 		}
-	}
-
-	record Entry(String name, Object value) {
 	}
 }

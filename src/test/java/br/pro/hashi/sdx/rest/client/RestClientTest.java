@@ -344,9 +344,9 @@ class RestClientTest {
 		p = newProxy();
 		assertSame(p, p.q("name"));
 		assertEquals(1, p.getQueries().size());
-		RestClient.Entry entry = p.getQueries().get(0);
+		RestClient.Proxy.Entry entry = p.getQueries().get(0);
 		assertEquals("name", entry.name());
-		assertNull(entry.value());
+		assertNull(entry.valueString());
 	}
 
 	@Test
@@ -354,9 +354,9 @@ class RestClientTest {
 		p = newProxy();
 		assertSame(p, p.q("?=& %3F%3D%26%20+"));
 		assertEquals(1, p.getQueries().size());
-		RestClient.Entry entry = p.getQueries().get(0);
+		RestClient.Proxy.Entry entry = p.getQueries().get(0);
 		assertEquals("%3F%3D%26+%253F%253D%2526%2520%2B", entry.name());
-		assertNull(entry.value());
+		assertNull(entry.valueString());
 	}
 
 	@Test
@@ -373,9 +373,9 @@ class RestClientTest {
 		p = newProxy();
 		assertSame(p, p.q("name", 0));
 		assertEquals(1, p.getQueries().size());
-		RestClient.Entry entry = p.getQueries().get(0);
+		RestClient.Proxy.Entry entry = p.getQueries().get(0);
 		assertEquals("name", entry.name());
-		assertEquals("0", entry.value());
+		assertEquals("0", entry.valueString());
 	}
 
 	@Test
@@ -383,9 +383,9 @@ class RestClientTest {
 		p = newProxy();
 		assertSame(p, p.q("?=& %3F%3D%26%20+", "%3F%3D%26%20+?=& "));
 		assertEquals(1, p.getQueries().size());
-		RestClient.Entry entry = p.getQueries().get(0);
+		RestClient.Proxy.Entry entry = p.getQueries().get(0);
 		assertEquals("%3F%3D%26+%253F%253D%2526%2520%2B", entry.name());
-		assertEquals("%253F%253D%2526%2520%2B%3F%3D%26+", entry.value());
+		assertEquals("%253F%253D%2526%2520%2B%3F%3D%26+", entry.valueString());
 	}
 
 	@Test
@@ -408,13 +408,28 @@ class RestClientTest {
 	}
 
 	@Test
+	void proxyDoesNotAddQueryWithValueIfValueStringIsNull() {
+		p = newProxy();
+		Object value = new Object() {
+			@Override
+			public String toString() {
+				return null;
+			}
+		};
+		assertThrows(NullPointerException.class, () -> {
+			p.q("name", value);
+		});
+		assertTrue(p.getQueries().isEmpty());
+	}
+
+	@Test
 	void proxyAddsHeader() {
 		p = newProxy();
 		assertSame(p, p.h("name", 0));
 		assertEquals(1, p.getHeaders().size());
-		RestClient.Entry entry = p.getHeaders().get(0);
+		RestClient.Proxy.Entry entry = p.getHeaders().get(0);
 		assertEquals("name", entry.name());
-		assertEquals("0", entry.value());
+		assertEquals("0", entry.valueString());
 	}
 
 	@Test
@@ -452,6 +467,21 @@ class RestClientTest {
 		p = newProxy();
 		assertThrows(NullPointerException.class, () -> {
 			p.h("name", null);
+		});
+		assertTrue(p.getHeaders().isEmpty());
+	}
+
+	@Test
+	void proxyDoesNotAddHeaderIfValueStringIsNull() {
+		p = newProxy();
+		Object value = new Object() {
+			@Override
+			public String toString() {
+				return null;
+			}
+		};
+		assertThrows(NullPointerException.class, () -> {
+			p.h("name", value);
 		});
 		assertTrue(p.getHeaders().isEmpty());
 	}
