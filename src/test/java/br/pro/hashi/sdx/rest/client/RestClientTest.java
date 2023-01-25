@@ -51,14 +51,14 @@ class RestClientTest {
 
 	@Test
 	void builds() {
-		try (MockedConstruction<RestClientBuilder> construction = mockBuilder()) {
+		try (MockedConstruction<RestClientBuilder> construction = mockBuilderConstruction()) {
 			assertSame(c, RestClient.to("http://a"));
 			RestClientBuilder builder = construction.constructed().get(0);
 			verify(builder).build("http://a");
 		}
 	}
 
-	private MockedConstruction<RestClientBuilder> mockBuilder() {
+	private MockedConstruction<RestClientBuilder> mockBuilderConstruction() {
 		c = mock(RestClient.class);
 		return mockConstruction(RestClientBuilder.class, (mock, context) -> {
 			when(mock.build(any())).thenReturn(c);

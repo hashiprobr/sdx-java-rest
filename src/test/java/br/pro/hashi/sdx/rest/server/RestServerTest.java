@@ -15,14 +15,14 @@ class RestServerTest {
 
 	@Test
 	void builds() {
-		try (MockedConstruction<RestServerBuilder> construction = mockBuilder()) {
+		try (MockedConstruction<RestServerBuilder> construction = mockBuilderConstruction()) {
 			assertSame(s, RestServer.from("package"));
 			RestServerBuilder builder = construction.constructed().get(0);
 			verify(builder).build("package");
 		}
 	}
 
-	private MockedConstruction<RestServerBuilder> mockBuilder() {
+	private MockedConstruction<RestServerBuilder> mockBuilderConstruction() {
 		s = mock(RestServer.class);
 		return mockConstruction(RestServerBuilder.class, (mock, context) -> {
 			when(mock.build(any())).thenReturn(s);
