@@ -1004,20 +1004,20 @@ public final class RestClient {
 			Request request = jettyClient.newRequest(url).method(method);
 			addHeaders(request);
 			List<Task> tasks = addBodiesAndGetTasks(request);
-			return send(request, tasks, timeout);
+			return send(request, tasks);
 		}
 
 		String withQueries(String uri) {
-			String[] items;
 			StringJoiner joiner = new StringJoiner("&");
 
+			String[] items;
 			int index = uri.indexOf('?');
 			if (index == -1) {
-				items = splitAndEncode(Percent.stripEndingSlashes(uri));
+				items = splitAndEncode(uri);
 			} else {
 				String prefix = uri.substring(0, index);
 				String suffix = uri.substring(index + 1);
-				items = splitAndEncode(Percent.stripEndingSlashes(prefix));
+				items = splitAndEncode(prefix);
 
 				for (String item : suffix.split("&", -1)) {
 					index = item.indexOf('=');
@@ -1042,9 +1042,6 @@ public final class RestClient {
 			}
 
 			uri = String.join("/", items);
-			if (uri.length() == 1) {
-				uri = "";
-			}
 			if (joiner.length() > 0) {
 				uri = "%s?%s".formatted(uri, joiner.toString());
 			}
@@ -1052,6 +1049,7 @@ public final class RestClient {
 		}
 
 		private String[] splitAndEncode(String uri) {
+			uri = Percent.stripEndingSlashes(uri);
 			return Percent.splitAndEncode(uri, urlCharset);
 		}
 
@@ -1122,7 +1120,7 @@ public final class RestClient {
 			return content;
 		}
 
-		RestResponse send(Request request, List<Task> tasks, int timeout) {
+		RestResponse send(Request request, List<Task> tasks) {
 			if (!jettyClient.isRunning()) {
 				start();
 			}

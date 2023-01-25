@@ -207,7 +207,7 @@ class RestClientTest {
 	}
 
 	@Test
-	void forwardsPostWithBodyToProxy() {
+	void forwardsPostToProxyWithBody() {
 		try (MockedConstruction<RestClient.Proxy> construction = mockConstruction(RestClient.Proxy.class)) {
 			c = newRestClient();
 			Object body = new Object();
@@ -218,7 +218,7 @@ class RestClientTest {
 	}
 
 	@Test
-	void forwardsPostWithBodyAndHintToProxy() {
+	void forwardsPostToProxyWithBodyAndHint() {
 		try (MockedConstruction<RestClient.Proxy> construction = mockConstruction(RestClient.Proxy.class)) {
 			c = newRestClient();
 			Object body = new Object();
@@ -240,7 +240,7 @@ class RestClientTest {
 	}
 
 	@Test
-	void forwardsPutWithBodyToProxy() {
+	void forwardsPutToProxyWithBody() {
 		try (MockedConstruction<RestClient.Proxy> construction = mockConstruction(RestClient.Proxy.class)) {
 			c = newRestClient();
 			Object body = new Object();
@@ -251,7 +251,7 @@ class RestClientTest {
 	}
 
 	@Test
-	void forwardsPutWithBodyAndHintToProxy() {
+	void forwardsPutToProxyWithBodyAndHint() {
 		try (MockedConstruction<RestClient.Proxy> construction = mockConstruction(RestClient.Proxy.class)) {
 			c = newRestClient();
 			Object body = new Object();
@@ -273,7 +273,7 @@ class RestClientTest {
 	}
 
 	@Test
-	void forwardsPatchWithBodyToProxy() {
+	void forwardsPatchToProxyWithBody() {
 		try (MockedConstruction<RestClient.Proxy> construction = mockConstruction(RestClient.Proxy.class)) {
 			c = newRestClient();
 			Object body = new Object();
@@ -284,7 +284,7 @@ class RestClientTest {
 	}
 
 	@Test
-	void forwardsPatchWithBodyAndHintToProxy() {
+	void forwardsPatchToProxyWithBodyAndHint() {
 		try (MockedConstruction<RestClient.Proxy> construction = mockConstruction(RestClient.Proxy.class)) {
 			c = newRestClient();
 			Object body = new Object();
@@ -381,11 +381,11 @@ class RestClientTest {
 	@Test
 	void proxyAddsEncodedQueryWithValue() {
 		p = newProxy();
-		assertSame(p, p.q("?=& %3F%3D%26%20+", "?=& %3F%3D%26%20+"));
+		assertSame(p, p.q("?=& %3F%3D%26%20+", "%3F%3D%26%20+?=& "));
 		assertEquals(1, p.getQueries().size());
 		RestClient.Entry entry = p.getQueries().get(0);
 		assertEquals("%3F%3D%26+%253F%253D%2526%2520%2B", entry.name());
-		assertEquals("%3F%3D%26+%253F%253D%2526%2520%2B", entry.value());
+		assertEquals("%253F%253D%2526%2520%2B%3F%3D%26+", entry.value());
 	}
 
 	@Test
@@ -438,10 +438,29 @@ class RestClientTest {
 	}
 
 	@Test
+	void proxyDoesNotAddHeaderIfNameNotInUSASCII() {
+		p = newProxy();
+		Object value = new Object();
+		assertThrows(IllegalArgumentException.class, () -> {
+			p.h("spéçíál", value);
+		});
+		assertTrue(p.getHeaders().isEmpty());
+	}
+
+	@Test
 	void proxyDoesNotAddHeaderIfValueIsNull() {
 		p = newProxy();
 		assertThrows(NullPointerException.class, () -> {
 			p.h("name", null);
+		});
+		assertTrue(p.getHeaders().isEmpty());
+	}
+
+	@Test
+	void proxyDoesNotAddHeaderIfValueStringNotInUSASCII() {
+		p = newProxy();
+		assertThrows(IllegalArgumentException.class, () -> {
+			p.h("name", "spéçíál");
 		});
 		assertTrue(p.getHeaders().isEmpty());
 	}
@@ -604,32 +623,32 @@ class RestClientTest {
 	@Test
 	void proxyDoesNotRequestIfMethodIsNull() {
 		p = spyNewProxy();
-		doReturn(response).when(p).doRequest("OPTIONS", "/");
 		assertThrows(NullPointerException.class, () -> {
 			p.request(null, "/");
 		});
+		verify(p, times(0)).doRequest(any(), any());
 	}
 
 	@Test
 	void proxyDoesNotRequestIfMethodIsBlank() {
 		p = spyNewProxy();
-		doReturn(response).when(p).doRequest("OPTIONS", "/");
 		assertThrows(IllegalArgumentException.class, () -> {
 			p.request(" \t\n", "/");
 		});
+		verify(p, times(0)).doRequest(any(), any());
 	}
 
 	@Test
 	void proxyDoesRequest() {
 		p = spyNewProxy();
-		doReturn("?b").when(p).withQueries("/");
+		doReturn("/?x").when(p).withQueries("/");
 		Request request = mock(Request.class);
-		when(jettyClient.newRequest("http://a?b")).thenReturn(request);
+		when(jettyClient.newRequest("http://a/?x")).thenReturn(request);
 		when(request.method("OPTIONS")).thenReturn(request);
 		doNothing().when(p).addHeaders(request);
 		List<Task> tasks = new ArrayList<>();
 		doReturn(tasks).when(p).addBodiesAndGetTasks(request);
-		doReturn(response).when(p).send(eq(request), eq(tasks), any(Integer.class));
+		doReturn(response).when(p).send(eq(request), eq(tasks));
 		assertSame(response, p.doRequest("OPTIONS", "/"));
 	}
 
@@ -639,6 +658,8 @@ class RestClientTest {
 		assertThrows(NullPointerException.class, () -> {
 			p.doRequest("OPTIONS", null);
 		});
+		verify(p, times(0)).withQueries(any());
+		verify(jettyClient, times(0)).newRequest(any(String.class));
 	}
 
 	@Test
@@ -647,6 +668,8 @@ class RestClientTest {
 		assertThrows(IllegalArgumentException.class, () -> {
 			p.doRequest("OPTIONS", " \t\n");
 		});
+		verify(p, times(0)).withQueries(any());
+		verify(jettyClient, times(0)).newRequest(any(String.class));
 	}
 
 	@Test
@@ -655,71 +678,116 @@ class RestClientTest {
 		assertThrows(IllegalArgumentException.class, () -> {
 			p.doRequest("OPTIONS", "a");
 		});
+		verify(p, times(0)).withQueries(any());
+		verify(jettyClient, times(0)).newRequest(any(String.class));
 	}
 
 	@ParameterizedTest
 	@CsvSource({
-			"'',                                                   /",
-			"'',                                                   /?",
-			"'',                                                   ///",
-			"'',                                                   ///?",
-			"?%2F,                                                 /?/",
-			"?%2F%3F%2F,                                           /?/?/",
-			"?%2F,                                                 ///?/",
-			"?%2F%3F%2F,                                           ///?/?/",
-			"/abc,                                                 /abc?",
-			"/abc,                                                 /abc/",
-			"/abc,                                                 /abc/?",
-			"/abc,                                                 /abc///",
-			"/abc,                                                 /abc///?",
-			"/abc?%2F,                                             /abc?/",
-			"/abc?%2F%3F%2F,                                       /abc?/?/",
-			"/abc?%2F,                                             /abc/?/",
-			"/abc?%2F%3F%2F,                                       /abc/?/?/",
-			"/abc?%2F,                                             /abc///?/",
-			"/abc?%2F%3F%2F,                                       /abc///?/?/",
-			"/aaa/bbb/ccc,                                         /aaa/bbb/ccc?",
-			"/aaa/bbb/ccc,                                         /aaa/bbb/ccc/",
-			"/aaa/bbb/ccc,                                         /aaa/bbb/ccc/?",
-			"/aaa/bbb/ccc,                                         /aaa/bbb/ccc///",
-			"/aaa/bbb/ccc,                                         /aaa/bbb/ccc///?",
-			"/aaa/bbb/ccc?%2F,                                     /aaa/bbb/ccc?/",
-			"/aaa/bbb/ccc?%2F%3F%2F,                               /aaa/bbb/ccc?/?/",
-			"/aaa/bbb/ccc?%2F,                                     /aaa/bbb/ccc/?/",
-			"/aaa/bbb/ccc?%2F%3F%2F,                               /aaa/bbb/ccc/?/?/",
-			"/aaa/bbb/ccc?%2F,                                     /aaa/bbb/ccc///?/",
-			"/aaa/bbb/ccc?%2F%3F%2F,                               /aaa/bbb/ccc///?/?/",
-			"/%3F%3D%26%20%3D%26%20?%3F=&+%3F%3D%26++,             /%3F=& %3D%26%20??=& %3F%3D%26%20+",
-			"/%3F%26%3D%20%3D%26%20?%3F&=+%3F%3D%26++,             /%3F&= %3D%26%20??&= %3F%3D%26%20+",
-			"/%3F%3D%3D%3D%26%20%3D%26%20?%3F=%3D%3D&+%3F%3D%26++, /%3F===& %3D%26%20??===& %3F%3D%26%20+",
-			"/%3F%26%3D%3D%3D%20%3D%26%20?%3F&=%3D%3D+%3F%3D%26++, /%3F&=== %3D%26%20??&=== %3F%3D%26%20+",
-			"/abc?x,                                               /abc?x",
-			"/abc?x&y,                                             /abc?x&y",
-			"/abc?x&y&z,                                           /abc?x&y&z",
-			"/abc?x&y&z=2.3,                                       /abc?x&y&z=2.3",
-			"/abc?x&y=1,                                           /abc?x&y=1",
-			"/abc?x&y=1&z,                                         /abc?x&y=1&z",
-			"/abc?x&y=1&z=2.3,                                     /abc?x&y=1&z=2.3",
-			"/abc?x=k,                                             /abc?x=k",
-			"/abc?x=k&y,                                           /abc?x=k&y",
-			"/abc?x=k&y&z,                                         /abc?x=k&y&z",
-			"/abc?x=k&y&z=2.3,                                     /abc?x=k&y&z=2.3",
-			"/abc?x=k&y=1,                                         /abc?x=k&y=1",
-			"/abc?x=k&y=1&z,                                       /abc?x=k&y=1&z",
-			"/abc?x=k&y=1&z=2.3,                                   /abc?x=k&y=1&z=2.3",
-	})
-	void proxyWithoutQueries(String expected, String uri) {
+			"/,                /",
+			"/,                /?",
+			"/?%2F,            /?/",
+			"/?%2F%2F%2F,      /?///",
+			"/,                ///",
+			"/,                ///?",
+			"/?%2F,            ///?/",
+			"/?%2F%2F%2F,      ///?///",
+			"/a,               /a/",
+			"/a,               /a/?",
+			"/a?%2F,           /a/?/",
+			"/a?%2F%2F%2F,     /a/?///",
+			"/a,               /a///",
+			"/a,               /a///?",
+			"/a?%2F,           /a///?/",
+			"/a?%2F%2F%2F,     /a///?///",
+			"/abc,             /abc/",
+			"/abc,             /abc/?",
+			"/abc?%2F,         /abc/?/",
+			"/abc?%2F%2F%2F,   /abc/?///",
+			"/abc,             /abc///",
+			"/abc,             /abc///?",
+			"/abc?%2F,         /abc///?/",
+			"/abc?%2F%2F%2F,   /abc///?///",
+			"/a/b/c,           /a/b/c/",
+			"/a/b/c,           /a/b/c/?",
+			"/a/b/c?%2F,       /a/b/c/?/",
+			"/a/b/c?%2F%2F%2F, /a/b/c/?///",
+			"/a/b/c,           /a/b/c///",
+			"/a/b/c,           /a/b/c///?",
+			"/a/b/c?%2F,       /a/b/c///?/",
+			"/a/b/c?%2F%2F%2F, /a/b/c///?///" })
+	void proxyStripsEndingSlashesBeforeQuestionMark(String expected, String uri) {
 		p = spyNewProxy();
 		assertEquals(expected, p.withQueries(uri));
 	}
 
 	@ParameterizedTest
 	@CsvSource({
-			"/abc?y,     /abc",
-			"/abc?x&y,   /abc?x",
-			"/abc?x=k&y, /abc?x=k",
-	})
-	void proxyWithOneQuery(String expected, String uri) {
+			"/?&,              /?&",
+			"/?&&&,            /?&&&",
+			"/?x&y,            /?x&y",
+			"/?x&y&z,          /?x&y&z",
+			"/%26,             /&",
+			"/%26,             /&?",
+			"/%26?&,           /&?&",
+			"/%26?&&&,         /&?&&&",
+			"/%26?x&y,         /&?x&y",
+			"/%26?x&y&z,       /&?x&y&z",
+			"/%26%26%26,       /&&&",
+			"/%26%26%26,       /&&&?",
+			"/%26%26%26?&,     /&&&?&",
+			"/%26%26%26?&&&,   /&&&?&&&",
+			"/%26%26%26?x&y,   /&&&?x&y",
+			"/%26%26%26?x&y&z, /&&&?x&y&z",
+			"/a%26b%26c,       /a&b&c",
+			"/a%26b%26c,       /a&b&c?",
+			"/a%26b%26c?&,     /a&b&c?&",
+			"/a%26b%26c?&&&,   /a&b&c?&&&",
+			"/a%26b%26c?x&y,   /a&b&c?x&y",
+			"/a%26b%26c?x&y&z, /a&b&c?x&y&z" })
+	void proxyEncodesAmpersandBeforeQuestionMark(String expected, String uri) {
+		p = spyNewProxy();
+		assertEquals(expected, p.withQueries(uri));
+	}
+
+	@ParameterizedTest
+	@CsvSource({
+			"/?=,            /?=",
+			"/?=%3D%3D,      /?===",
+			"/?x=y,          /?x=y",
+			"/?x=y%3Dz,      /?x=y=z",
+			"/%3D,           /=",
+			"/%3D,           /=?",
+			"/%3D?=,         /=?=",
+			"/%3D?=%3D%3D,   /=?===",
+			"/%3D?x=y,       /=?x=y",
+			"/%3D?x=y%3Dz,   /=?x=y=z",
+			"/a%3Db,         /a=b",
+			"/a%3Db,         /a=b?",
+			"/a%3Db?=,       /a=b?=",
+			"/a%3Db?=%3D%3D, /a=b?===",
+			"/a%3Db?x=y,     /a=b?x=y",
+			"/a%3Db?x=y%3Dz, /a=b?x=y=z" })
+	void proxyEncodesEqualsSignBeforeQuestionMarkOrAfterFirstOccurence(String expected, String uri) {
+		p = spyNewProxy();
+		assertEquals(expected, p.withQueries(uri));
+	}
+
+	@Test
+	void proxyPercentEncodesBeforeQuestionMarkAndQueryEncodesAfterQuestionMark() {
+		p = spyNewProxy();
+		assertEquals("/%2B%20%26%3D%3F%20%26%3D?%2F++%26%3D%3F+&=%3F", p.withQueries("/+%20%26%3D%3F &=?/+%20%26%3D%3F &=?"));
+	}
+
+	@ParameterizedTest
+	@CsvSource({
+			"/?y,      /",
+			"/?x&y,    /?x",
+			"/?x=s&y,  /?x=s",
+			"/a?y,     /a",
+			"/a?x&y,   /a?x",
+			"/a?x=s&y, /a?x=s" })
+	void proxyAddsOneQuery(String expected, String uri) {
 		p = spyNewProxy();
 		p.withQuery("y");
 		assertEquals(expected, p.withQueries(uri));
@@ -727,11 +795,13 @@ class RestClientTest {
 
 	@ParameterizedTest
 	@CsvSource({
-			"/abc?y&z,     /abc",
-			"/abc?x&y&z,   /abc?x",
-			"/abc?x=k&y&z, /abc?x=k",
-	})
-	void proxyWithOneQueryAndOneQuery(String expected, String uri) {
+			"/?y&z,      /",
+			"/?x&y&z,    /?x",
+			"/?x=s&y&z,  /?x=s",
+			"/a?y&z,     /a",
+			"/a?x&y&z,   /a?x",
+			"/a?x=s&y&z, /a?x=s" })
+	void proxyAddsTwoQueries(String expected, String uri) {
 		p = spyNewProxy();
 		p.withQuery("y");
 		p.withQuery("z");
@@ -740,11 +810,13 @@ class RestClientTest {
 
 	@ParameterizedTest
 	@CsvSource({
-			"/abc?y&z=2.3,     /abc",
-			"/abc?x&y&z=2.3,   /abc?x",
-			"/abc?x=k&y&z=2.3, /abc?x=k",
-	})
-	void proxyWithOneQueryAndOneQueryWithValue(String expected, String uri) {
+			"/?y&z=2.3,      /",
+			"/?x&y&z=2.3,    /?x",
+			"/?x=s&y&z=2.3,  /?x=s",
+			"/a?y&z=2.3,     /a",
+			"/a?x&y&z=2.3,   /a?x",
+			"/a?x=s&y&z=2.3, /a?x=s" })
+	void proxyAddsOneQueryAndOneQueryWithValue(String expected, String uri) {
 		p = spyNewProxy();
 		p.withQuery("y");
 		p.withQuery("z", 2.3);
@@ -753,11 +825,13 @@ class RestClientTest {
 
 	@ParameterizedTest
 	@CsvSource({
-			"/abc?y=1,     /abc",
-			"/abc?x&y=1,   /abc?x",
-			"/abc?x=k&y=1, /abc?x=k",
-	})
-	void proxyWithOneQueryWithValue(String expected, String uri) {
+			"/?y=1,      /",
+			"/?x&y=1,    /?x",
+			"/?x=s&y=1,  /?x=s",
+			"/a?y=1,     /a",
+			"/a?x&y=1,   /a?x",
+			"/a?x=s&y=1, /a?x=s" })
+	void proxyAddsOneQueryWithValue(String expected, String uri) {
 		p = spyNewProxy();
 		p.withQuery("y", 1);
 		assertEquals(expected, p.withQueries(uri));
@@ -765,11 +839,13 @@ class RestClientTest {
 
 	@ParameterizedTest
 	@CsvSource({
-			"/abc?y=1&z,     /abc",
-			"/abc?x&y=1&z,   /abc?x",
-			"/abc?x=k&y=1&z, /abc?x=k",
-	})
-	void proxyWithOneQueryWithValueAndOneQuery(String expected, String uri) {
+			"/?y=1&z,      /",
+			"/?x&y=1&z,    /?x",
+			"/?x=s&y=1&z,  /?x=s",
+			"/a?y=1&z,     /a",
+			"/a?x&y=1&z,   /a?x",
+			"/a?x=s&y=1&z, /a?x=s" })
+	void proxyAddsOneQueryWithValueAndOneQuery(String expected, String uri) {
 		p = spyNewProxy();
 		p.withQuery("y", 1);
 		p.withQuery("z");
@@ -778,11 +854,13 @@ class RestClientTest {
 
 	@ParameterizedTest
 	@CsvSource({
-			"/abc?y=1&z=2.3,     /abc",
-			"/abc?x&y=1&z=2.3,   /abc?x",
-			"/abc?x=k&y=1&z=2.3, /abc?x=k",
-	})
-	void proxyWithOneQueryWithValueAndOneQueryWithValue(String expected, String uri) {
+			"/?y=1&z=2.3,      /",
+			"/?x&y=1&z=2.3,    /?x",
+			"/?x=s&y=1&z=2.3,  /?x=s",
+			"/a?y=1&z=2.3,     /a",
+			"/a?x&y=1&z=2.3,   /a?x",
+			"/a?x=s&y=1&z=2.3, /a?x=s" })
+	void proxyAddsTwoQueriesWithValue(String expected, String uri) {
 		p = spyNewProxy();
 		p.withQuery("y", 1);
 		p.withQuery("z", 2.3);
