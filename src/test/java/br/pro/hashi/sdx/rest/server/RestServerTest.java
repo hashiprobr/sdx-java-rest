@@ -1,7 +1,6 @@
 package br.pro.hashi.sdx.rest.server;
 
 import static org.junit.jupiter.api.Assertions.assertSame;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockConstruction;
 import static org.mockito.Mockito.verify;
@@ -25,7 +24,7 @@ class RestServerTest {
 	private MockedConstruction<RestServerBuilder> mockBuilderConstruction() {
 		s = mock(RestServer.class);
 		return mockConstruction(RestServerBuilder.class, (mock, context) -> {
-			when(mock.build(any())).thenReturn(s);
+			when(mock.build("package")).thenReturn(s);
 		});
 	}
 }

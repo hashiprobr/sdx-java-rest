@@ -20,6 +20,7 @@ import java.util.function.Consumer;
 
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.api.Request;
+import org.eclipse.jetty.client.api.Request.Content;
 import org.eclipse.jetty.client.api.Response;
 import org.eclipse.jetty.client.util.InputStreamResponseListener;
 import org.eclipse.jetty.client.util.MultiPartRequestContent;
@@ -510,7 +511,7 @@ public final class RestClient {
 		private final CharsetEncoder encoder;
 		private final List<Entry> queries;
 		private final List<Entry> headers;
-		private final List<Body> bodies;
+		private final List<RestBody> bodies;
 		private int timeout;
 
 		Proxy() {
@@ -529,7 +530,7 @@ public final class RestClient {
 			return headers;
 		}
 
-		List<Body> getBodies() {
+		List<RestBody> getBodies() {
 			return bodies;
 		}
 
@@ -725,10 +726,10 @@ public final class RestClient {
 		 * @return this proxy, for chaining
 		 */
 		public Proxy withBody(Object body) {
-			if (body instanceof Body) {
-				bodies.add((Body) body);
+			if (body instanceof RestBody) {
+				bodies.add((RestBody) body);
 			} else {
-				bodies.add(new Body(body));
+				bodies.add(new RestBody(body));
 			}
 			return this;
 		}
@@ -751,10 +752,10 @@ public final class RestClient {
 		 * @throws NullPointerException if the type hint is null
 		 */
 		public <T> Proxy withBody(T body, Hint<T> hint) {
-			if (body instanceof Body) {
-				bodies.add((Body) body);
+			if (body instanceof RestBody) {
+				bodies.add((RestBody) body);
 			} else {
-				bodies.add(new Body(body, hint));
+				bodies.add(new RestBody(body, hint));
 			}
 			return this;
 		}
@@ -1076,11 +1077,11 @@ public final class RestClient {
 			List<Task> tasks = new ArrayList<>();
 			if (!bodies.isEmpty()) {
 				if (bodies.size() == 1) {
-					Body body = bodies.get(0);
+					RestBody body = bodies.get(0);
 					request.body(addTaskAndGetContent(tasks, body));
 				} else {
 					try (MultiPartRequestContent content = new MultiPartRequestContent()) {
-						for (Body body : bodies) {
+						for (RestBody body : bodies) {
 							content.addFieldPart(body.getName(), addTaskAndGetContent(tasks, body), null);
 						}
 						request.body(content);
@@ -1090,7 +1091,7 @@ public final class RestClient {
 			return tasks;
 		}
 
-		private Request.Content addTaskAndGetContent(List<Task> tasks, Body body) {
+		Content addTaskAndGetContent(List<Task> tasks, RestBody body) {
 			Object actual = body.getActual();
 			Type type = body.getType();
 			String contentType = body.getContentType();
@@ -1102,21 +1103,21 @@ public final class RestClient {
 				contentType = facade.cleanForAssembling(contentType, actual);
 				Assembler assembler = facade.getAssembler(contentType);
 				consumer = (stream) -> {
-					assembler.write(body, type, stream);
+					assembler.write(actual, type, stream);
 				};
 			} else {
 				contentType = facade.cleanForSerializing(contentType, actual);
 				Serializer serializer = facade.getSerializer(contentType);
 				consumer = (stream) -> {
 					OutputStreamWriter writer = new OutputStreamWriter(stream, charset);
-					serializer.write(body, type, writer);
+					serializer.write(actual, type, writer);
 				};
 				contentType = "%s;charset=%s".formatted(contentType, charset.name());
 			}
+
 			if (base64) {
 				contentType = "%s;base64".formatted(contentType);
 			}
-
 			OutputStreamRequestContent content = new OutputStreamRequestContent(contentType);
 			OutputStream stream = content.getOutputStream();
 			if (base64) {
@@ -1135,8 +1136,9 @@ public final class RestClient {
 			request.send(listener);
 
 			for (Task task : tasks) {
+				Consumer<OutputStream> consumer = task.consumer();
 				try (OutputStream stream = task.stream()) {
-					task.consumer.accept(stream);
+					consumer.accept(stream);
 				} catch (IOException exception) {
 					throw new UncheckedIOException(exception);
 				}

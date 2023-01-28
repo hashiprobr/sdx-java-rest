@@ -7,45 +7,65 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
+import static org.mockito.ArgumentMatchers.same;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockConstruction;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
+import java.io.ByteArrayOutputStream;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.api.Request;
+import org.eclipse.jetty.client.api.Request.Content;
+import org.eclipse.jetty.client.util.MultiPartRequestContent;
+import org.eclipse.jetty.http.HttpFields;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.MockedConstruction;
+import org.mockito.MockedStatic;
 
+import br.pro.hashi.sdx.rest.client.RestClient.Proxy;
+import br.pro.hashi.sdx.rest.client.RestClient.Proxy.Entry;
 import br.pro.hashi.sdx.rest.client.RestClient.Proxy.Task;
 import br.pro.hashi.sdx.rest.client.exception.ClientException;
 import br.pro.hashi.sdx.rest.coding.Coding;
+import br.pro.hashi.sdx.rest.coding.Media;
+import br.pro.hashi.sdx.rest.transform.Assembler;
 import br.pro.hashi.sdx.rest.transform.Hint;
+import br.pro.hashi.sdx.rest.transform.Serializer;
 import br.pro.hashi.sdx.rest.transform.facade.Facade;
 
 class RestClientTest {
 	private Facade facade;
 	private HttpClient jettyClient;
+	private Request request;
 	private RestResponse response;
 	private RestClient c;
-	private RestClient.Proxy p;
+	private Proxy p;
 
 	@BeforeEach
 	void setUp() {
 		facade = mock(Facade.class);
 		jettyClient = mock(HttpClient.class);
+		request = mock(Request.class);
 		response = mock(RestResponse.class);
 	}
 
@@ -61,7 +81,7 @@ class RestClientTest {
 	private MockedConstruction<RestClientBuilder> mockBuilderConstruction() {
 		c = mock(RestClient.class);
 		return mockConstruction(RestClientBuilder.class, (mock, context) -> {
-			when(mock.build(any())).thenReturn(c);
+			when(mock.build("http://a")).thenReturn(c);
 		});
 	}
 
@@ -123,7 +143,7 @@ class RestClientTest {
 
 	@Test
 	void forwardsWithQueryToProxy() {
-		try (MockedConstruction<RestClient.Proxy> construction = mockConstruction(RestClient.Proxy.class)) {
+		try (MockedConstruction<Proxy> construction = mockConstruction(Proxy.class)) {
 			c = newRestClient();
 			c.q("name");
 			p = construction.constructed().get(0);
@@ -133,7 +153,7 @@ class RestClientTest {
 
 	@Test
 	void forwardsWithQueryToProxyWithValue() {
-		try (MockedConstruction<RestClient.Proxy> construction = mockConstruction(RestClient.Proxy.class)) {
+		try (MockedConstruction<Proxy> construction = mockConstruction(Proxy.class)) {
 			c = newRestClient();
 			Object value = new Object();
 			c.q("name", value);
@@ -144,7 +164,7 @@ class RestClientTest {
 
 	@Test
 	void forwardsWithHeaderToProxy() {
-		try (MockedConstruction<RestClient.Proxy> construction = mockConstruction(RestClient.Proxy.class)) {
+		try (MockedConstruction<Proxy> construction = mockConstruction(Proxy.class)) {
 			c = newRestClient();
 			Object value = new Object();
 			c.h("name", value);
@@ -155,7 +175,7 @@ class RestClientTest {
 
 	@Test
 	void forwardsWithBodyToProxy() {
-		try (MockedConstruction<RestClient.Proxy> construction = mockConstruction(RestClient.Proxy.class)) {
+		try (MockedConstruction<Proxy> construction = mockConstruction(Proxy.class)) {
 			c = newRestClient();
 			Object body = new Object();
 			c.b(body);
@@ -166,7 +186,7 @@ class RestClientTest {
 
 	@Test
 	void forwardsWithBodyToProxyWithHint() {
-		try (MockedConstruction<RestClient.Proxy> construction = mockConstruction(RestClient.Proxy.class)) {
+		try (MockedConstruction<Proxy> construction = mockConstruction(Proxy.class)) {
 			c = newRestClient();
 			Object body = new Object();
 			Hint<Object> hint = new Hint<Object>() {};
@@ -178,7 +198,7 @@ class RestClientTest {
 
 	@Test
 	void forwardsWithTimeoutToProxy() {
-		try (MockedConstruction<RestClient.Proxy> construction = mockConstruction(RestClient.Proxy.class)) {
+		try (MockedConstruction<Proxy> construction = mockConstruction(Proxy.class)) {
 			c = newRestClient();
 			c.t(1);
 			p = construction.constructed().get(0);
@@ -188,7 +208,7 @@ class RestClientTest {
 
 	@Test
 	void forwardsGetToProxy() {
-		try (MockedConstruction<RestClient.Proxy> construction = mockConstruction(RestClient.Proxy.class)) {
+		try (MockedConstruction<Proxy> construction = mockConstruction(Proxy.class)) {
 			c = newRestClient();
 			c.get("/");
 			p = construction.constructed().get(0);
@@ -198,7 +218,7 @@ class RestClientTest {
 
 	@Test
 	void forwardsPostToProxy() {
-		try (MockedConstruction<RestClient.Proxy> construction = mockConstruction(RestClient.Proxy.class)) {
+		try (MockedConstruction<Proxy> construction = mockConstruction(Proxy.class)) {
 			c = newRestClient();
 			c.post("/");
 			p = construction.constructed().get(0);
@@ -208,7 +228,7 @@ class RestClientTest {
 
 	@Test
 	void forwardsPostToProxyWithBody() {
-		try (MockedConstruction<RestClient.Proxy> construction = mockConstruction(RestClient.Proxy.class)) {
+		try (MockedConstruction<Proxy> construction = mockConstruction(Proxy.class)) {
 			c = newRestClient();
 			Object body = new Object();
 			c.post("/", body);
@@ -219,7 +239,7 @@ class RestClientTest {
 
 	@Test
 	void forwardsPostToProxyWithBodyAndHint() {
-		try (MockedConstruction<RestClient.Proxy> construction = mockConstruction(RestClient.Proxy.class)) {
+		try (MockedConstruction<Proxy> construction = mockConstruction(Proxy.class)) {
 			c = newRestClient();
 			Object body = new Object();
 			Hint<Object> hint = new Hint<Object>() {};
@@ -231,7 +251,7 @@ class RestClientTest {
 
 	@Test
 	void forwardsPutToProxy() {
-		try (MockedConstruction<RestClient.Proxy> construction = mockConstruction(RestClient.Proxy.class)) {
+		try (MockedConstruction<Proxy> construction = mockConstruction(Proxy.class)) {
 			c = newRestClient();
 			c.put("/");
 			p = construction.constructed().get(0);
@@ -241,7 +261,7 @@ class RestClientTest {
 
 	@Test
 	void forwardsPutToProxyWithBody() {
-		try (MockedConstruction<RestClient.Proxy> construction = mockConstruction(RestClient.Proxy.class)) {
+		try (MockedConstruction<Proxy> construction = mockConstruction(Proxy.class)) {
 			c = newRestClient();
 			Object body = new Object();
 			c.put("/", body);
@@ -252,7 +272,7 @@ class RestClientTest {
 
 	@Test
 	void forwardsPutToProxyWithBodyAndHint() {
-		try (MockedConstruction<RestClient.Proxy> construction = mockConstruction(RestClient.Proxy.class)) {
+		try (MockedConstruction<Proxy> construction = mockConstruction(Proxy.class)) {
 			c = newRestClient();
 			Object body = new Object();
 			Hint<Object> hint = new Hint<Object>() {};
@@ -264,7 +284,7 @@ class RestClientTest {
 
 	@Test
 	void forwardsPatchToProxy() {
-		try (MockedConstruction<RestClient.Proxy> construction = mockConstruction(RestClient.Proxy.class)) {
+		try (MockedConstruction<Proxy> construction = mockConstruction(Proxy.class)) {
 			c = newRestClient();
 			c.patch("/");
 			p = construction.constructed().get(0);
@@ -274,7 +294,7 @@ class RestClientTest {
 
 	@Test
 	void forwardsPatchToProxyWithBody() {
-		try (MockedConstruction<RestClient.Proxy> construction = mockConstruction(RestClient.Proxy.class)) {
+		try (MockedConstruction<Proxy> construction = mockConstruction(Proxy.class)) {
 			c = newRestClient();
 			Object body = new Object();
 			c.patch("/", body);
@@ -285,7 +305,7 @@ class RestClientTest {
 
 	@Test
 	void forwardsPatchToProxyWithBodyAndHint() {
-		try (MockedConstruction<RestClient.Proxy> construction = mockConstruction(RestClient.Proxy.class)) {
+		try (MockedConstruction<Proxy> construction = mockConstruction(Proxy.class)) {
 			c = newRestClient();
 			Object body = new Object();
 			Hint<Object> hint = new Hint<Object>() {};
@@ -297,7 +317,7 @@ class RestClientTest {
 
 	@Test
 	void forwardsDeleteToProxy() {
-		try (MockedConstruction<RestClient.Proxy> construction = mockConstruction(RestClient.Proxy.class)) {
+		try (MockedConstruction<Proxy> construction = mockConstruction(Proxy.class)) {
 			c = newRestClient();
 			c.delete("/");
 			p = construction.constructed().get(0);
@@ -307,7 +327,7 @@ class RestClientTest {
 
 	@Test
 	void forwardsRequestToProxy() {
-		try (MockedConstruction<RestClient.Proxy> construction = mockConstruction(RestClient.Proxy.class)) {
+		try (MockedConstruction<Proxy> construction = mockConstruction(Proxy.class)) {
 			c = newRestClient();
 			c.request("options", "/");
 			p = construction.constructed().get(0);
@@ -344,7 +364,7 @@ class RestClientTest {
 		p = newProxy();
 		assertSame(p, p.q("name"));
 		assertEquals(1, p.getQueries().size());
-		RestClient.Proxy.Entry entry = p.getQueries().get(0);
+		Entry entry = p.getQueries().get(0);
 		assertEquals("name", entry.name());
 		assertNull(entry.valueString());
 	}
@@ -354,7 +374,7 @@ class RestClientTest {
 		p = newProxy();
 		assertSame(p, p.q("?=& %3F%3D%26%20+"));
 		assertEquals(1, p.getQueries().size());
-		RestClient.Proxy.Entry entry = p.getQueries().get(0);
+		Entry entry = p.getQueries().get(0);
 		assertEquals("%3F%3D%26+%253F%253D%2526%2520%2B", entry.name());
 		assertNull(entry.valueString());
 	}
@@ -373,7 +393,7 @@ class RestClientTest {
 		p = newProxy();
 		assertSame(p, p.q("name", 0));
 		assertEquals(1, p.getQueries().size());
-		RestClient.Proxy.Entry entry = p.getQueries().get(0);
+		Entry entry = p.getQueries().get(0);
 		assertEquals("name", entry.name());
 		assertEquals("0", entry.valueString());
 	}
@@ -383,7 +403,7 @@ class RestClientTest {
 		p = newProxy();
 		assertSame(p, p.q("?=& %3F%3D%26%20+", "%3F%3D%26%20+?=& "));
 		assertEquals(1, p.getQueries().size());
-		RestClient.Proxy.Entry entry = p.getQueries().get(0);
+		Entry entry = p.getQueries().get(0);
 		assertEquals("%3F%3D%26+%253F%253D%2526%2520%2B", entry.name());
 		assertEquals("%253F%253D%2526%2520%2B%3F%3D%26+", entry.valueString());
 	}
@@ -427,7 +447,7 @@ class RestClientTest {
 		p = newProxy();
 		assertSame(p, p.h("name", 0));
 		assertEquals(1, p.getHeaders().size());
-		RestClient.Proxy.Entry entry = p.getHeaders().get(0);
+		Entry entry = p.getHeaders().get(0);
 		assertEquals("name", entry.name());
 		assertEquals("0", entry.valueString());
 	}
@@ -500,7 +520,7 @@ class RestClientTest {
 		p = newProxy();
 		Object body = new Object();
 		assertSame(p, p.b(body));
-		List<Body> bodies = p.getBodies();
+		List<RestBody> bodies = p.getBodies();
 		assertEquals(1, bodies.size());
 		assertSame(body, bodies.get(0).getActual());
 	}
@@ -510,7 +530,7 @@ class RestClientTest {
 		p = newProxy();
 		Object body = new Object();
 		assertSame(p, p.b(body, new Hint<Object>() {}));
-		List<Body> bodies = p.getBodies();
+		List<RestBody> bodies = p.getBodies();
 		assertEquals(1, bodies.size());
 		assertSame(body, bodies.get(0).getActual());
 	}
@@ -519,8 +539,8 @@ class RestClientTest {
 	void proxyAddsWrappedBody() {
 		p = newProxy();
 		Object actual = new Object();
-		assertSame(p, p.b(new Body(actual)));
-		List<Body> bodies = p.getBodies();
+		assertSame(p, p.b(new RestBody(actual)));
+		List<RestBody> bodies = p.getBodies();
 		assertEquals(1, bodies.size());
 		assertSame(actual, bodies.get(0).getActual());
 	}
@@ -529,8 +549,8 @@ class RestClientTest {
 	void proxyAddsWrappedBodyWithHint() {
 		p = newProxy();
 		Object actual = new Object();
-		assertSame(p, p.b(new Body(actual), new Hint<Body>() {}));
-		List<Body> bodies = p.getBodies();
+		assertSame(p, p.b(new RestBody(actual), new Hint<RestBody>() {}));
+		List<RestBody> bodies = p.getBodies();
 		assertEquals(1, bodies.size());
 		assertSame(actual, bodies.get(0).getActual());
 	}
@@ -672,13 +692,12 @@ class RestClientTest {
 	void proxyDoesRequest() {
 		p = spyNewProxy();
 		doReturn("/?x").when(p).withQueries("/");
-		Request request = mock(Request.class);
 		when(jettyClient.newRequest("http://a/?x")).thenReturn(request);
 		when(request.method("OPTIONS")).thenReturn(request);
 		doNothing().when(p).addHeaders(request);
 		List<Task> tasks = new ArrayList<>();
 		doReturn(tasks).when(p).addBodiesAndGetTasks(request);
-		doReturn(response).when(p).send(eq(request), eq(tasks));
+		doReturn(response).when(p).send(same(request), same(tasks));
 		assertSame(response, p.doRequest("OPTIONS", "/"));
 	}
 
@@ -689,7 +708,7 @@ class RestClientTest {
 			p.doRequest("OPTIONS", null);
 		});
 		verify(p, times(0)).withQueries(any());
-		verify(jettyClient, times(0)).newRequest(any(String.class));
+		verify(jettyClient, times(0)).newRequest((String) any());
 	}
 
 	@Test
@@ -699,7 +718,7 @@ class RestClientTest {
 			p.doRequest("OPTIONS", " \t\n");
 		});
 		verify(p, times(0)).withQueries(any());
-		verify(jettyClient, times(0)).newRequest(any(String.class));
+		verify(jettyClient, times(0)).newRequest((String) any());
 	}
 
 	@Test
@@ -709,7 +728,7 @@ class RestClientTest {
 			p.doRequest("OPTIONS", "a");
 		});
 		verify(p, times(0)).withQueries(any());
-		verify(jettyClient, times(0)).newRequest(any(String.class));
+		verify(jettyClient, times(0)).newRequest((String) any());
 	}
 
 	@ParameterizedTest
@@ -747,7 +766,7 @@ class RestClientTest {
 			"/a/b/c?%2F,       /a/b/c///?/",
 			"/a/b/c?%2F%2F%2F, /a/b/c///?///" })
 	void proxyStripsEndingSlashesBeforeQuestionMark(String expected, String uri) {
-		p = spyNewProxy();
+		p = newProxy();
 		assertEquals(expected, p.withQueries(uri));
 	}
 
@@ -776,7 +795,7 @@ class RestClientTest {
 			"/a%26b%26c?x&y,   /a&b&c?x&y",
 			"/a%26b%26c?x&y&z, /a&b&c?x&y&z" })
 	void proxyEncodesAmpersandBeforeQuestionMark(String expected, String uri) {
-		p = spyNewProxy();
+		p = newProxy();
 		assertEquals(expected, p.withQueries(uri));
 	}
 
@@ -799,13 +818,13 @@ class RestClientTest {
 			"/a%3Db?x=y,     /a=b?x=y",
 			"/a%3Db?x=y%3Dz, /a=b?x=y=z" })
 	void proxyEncodesEqualsSignBeforeQuestionMarkOrAfterFirstOccurence(String expected, String uri) {
-		p = spyNewProxy();
+		p = newProxy();
 		assertEquals(expected, p.withQueries(uri));
 	}
 
 	@Test
 	void proxyPercentEncodesBeforeQuestionMarkAndQueryEncodesAfterQuestionMark() {
-		p = spyNewProxy();
+		p = newProxy();
 		assertEquals("/%2B%20%26%3D%3F%20%26%3D?%2F++%26%3D%3F+&=%3F", p.withQueries("/+%20%26%3D%3F &=?/+%20%26%3D%3F &=?"));
 	}
 
@@ -818,7 +837,7 @@ class RestClientTest {
 			"/a?x&y,   /a?x",
 			"/a?x=s&y, /a?x=s" })
 	void proxyAddsOneQuery(String expected, String uri) {
-		p = spyNewProxy();
+		p = newProxy();
 		p.withQuery("y");
 		assertEquals(expected, p.withQueries(uri));
 	}
@@ -832,7 +851,7 @@ class RestClientTest {
 			"/a?x&y&z,   /a?x",
 			"/a?x=s&y&z, /a?x=s" })
 	void proxyAddsTwoQueries(String expected, String uri) {
-		p = spyNewProxy();
+		p = newProxy();
 		p.withQuery("y");
 		p.withQuery("z");
 		assertEquals(expected, p.withQueries(uri));
@@ -847,7 +866,7 @@ class RestClientTest {
 			"/a?x&y&z=2.3,   /a?x",
 			"/a?x=s&y&z=2.3, /a?x=s" })
 	void proxyAddsOneQueryAndOneQueryWithValue(String expected, String uri) {
-		p = spyNewProxy();
+		p = newProxy();
 		p.withQuery("y");
 		p.withQuery("z", 2.3);
 		assertEquals(expected, p.withQueries(uri));
@@ -862,7 +881,7 @@ class RestClientTest {
 			"/a?x&y=1,   /a?x",
 			"/a?x=s&y=1, /a?x=s" })
 	void proxyAddsOneQueryWithValue(String expected, String uri) {
-		p = spyNewProxy();
+		p = newProxy();
 		p.withQuery("y", 1);
 		assertEquals(expected, p.withQueries(uri));
 	}
@@ -876,7 +895,7 @@ class RestClientTest {
 			"/a?x&y=1&z,   /a?x",
 			"/a?x=s&y=1&z, /a?x=s" })
 	void proxyAddsOneQueryWithValueAndOneQuery(String expected, String uri) {
-		p = spyNewProxy();
+		p = newProxy();
 		p.withQuery("y", 1);
 		p.withQuery("z");
 		assertEquals(expected, p.withQueries(uri));
@@ -891,17 +910,180 @@ class RestClientTest {
 			"/a?x&y=1&z=2.3,   /a?x",
 			"/a?x=s&y=1&z=2.3, /a?x=s" })
 	void proxyAddsTwoQueriesWithValue(String expected, String uri) {
-		p = spyNewProxy();
+		p = newProxy();
 		p.withQuery("y", 1);
 		p.withQuery("z", 2.3);
 		assertEquals(expected, p.withQueries(uri));
 	}
 
-	private RestClient.Proxy spyNewProxy() {
+	@Test
+	void proxyAddsHeaders() {
+		p = newProxy();
+		p.withHeader("x", "s");
+		p.withHeader("y", 1);
+		p.withHeader("z", 2.3);
+		HttpFields.Mutable fields = mock(HttpFields.Mutable.class);
+		doAnswer((invocation) -> {
+			Consumer<HttpFields> consumer = invocation.getArgument(0);
+			consumer.accept(fields);
+			return null;
+		}).when(request).headers(any());
+		p.addHeaders(request);
+		verify(fields).add("x", "s");
+		verify(fields).add("y", "1");
+		verify(fields).add("z", "2.3");
+		verifyNoMoreInteractions(fields);
+	}
+
+	@Test
+	void proxyAddsZeroBodiesAndGetsZeroTasks() {
+		p = spyNewProxy();
+		mockContent();
+		List<Task> tasks = p.addBodiesAndGetTasks(request);
+		verify(request, times(0)).body(any());
+		assertTrue(tasks.isEmpty());
+	}
+
+	@Test
+	void proxyAddsOneBodyAndGetsOneTask() {
+		try (MockedConstruction<MultiPartRequestContent> construction = mockConstruction(MultiPartRequestContent.class)) {
+			p = spyNewProxy();
+			p.withBody(new Object());
+			Content content = mockContent();
+			List<Task> tasks = p.addBodiesAndGetTasks(request);
+			assertTrue(construction.constructed().isEmpty());
+			verify(request).body(content);
+			assertEquals(1, tasks.size());
+		}
+	}
+
+	@Test
+	void proxyAddsTwoBodiesAndGetsTwoTasks() {
+		try (MockedConstruction<MultiPartRequestContent> construction = mockConstruction(MultiPartRequestContent.class)) {
+			p = spyNewProxy();
+			p.withBody(new RestBody(new Object()).withName("one"));
+			p.withBody(new RestBody(new Object()).withName("two"));
+			Content content = mockContent();
+			List<Task> tasks = p.addBodiesAndGetTasks(request);
+			MultiPartRequestContent multipartContent = construction.constructed().get(0);
+			verify(multipartContent).addFieldPart(eq("one"), same(content), isNull());
+			verify(multipartContent).addFieldPart(eq("two"), same(content), isNull());
+			verify(multipartContent).close();
+			verifyNoMoreInteractions(multipartContent);
+			verify(request).body(multipartContent);
+			assertEquals(2, tasks.size());
+		}
+	}
+
+	private Content mockContent() {
+		Content content = mock(Content.class);
+		doAnswer((invocation) -> {
+			List<Task> tasks = invocation.getArgument(0);
+			tasks.add(mock(Task.class));
+			return content;
+		}).when(p).addTaskAndGetContent(any(), any());
+		return content;
+	}
+
+	@Test
+	void proxyAddsTaskAndGetsContentInUSASCII() {
+		List<Task> tasks = new ArrayList<>();
+		RestBody body = new RestBody(new Object()).in(StandardCharsets.US_ASCII);
+		Content content = mockContent(tasks, body, "ASCII");
+		assertEquals("type/subtype;charset=US-ASCII", content.getContentType());
+	}
+
+	@Test
+	void proxyAddsTaskAndGetsContentInISO88591() {
+		List<Task> tasks = new ArrayList<>();
+		RestBody body = new RestBody(new Object()).in(StandardCharsets.ISO_8859_1);
+		Content content = mockContent(tasks, body, "ISO8859_1");
+		assertEquals("type/subtype;charset=ISO-8859-1", content.getContentType());
+	}
+
+	@Test
+	void proxyAddsTaskAndGetsContentInUTF8() {
+		List<Task> tasks = new ArrayList<>();
+		RestBody body = new RestBody(new Object()).in(StandardCharsets.UTF_8);
+		Content content = mockContent(tasks, body, "UTF8");
+		assertEquals("type/subtype;charset=UTF-8", content.getContentType());
+	}
+
+	@Test
+	void proxyAddsTaskAndGetsContentInBase64() {
+		try (MockedStatic<Media> media = mockStatic(Media.class)) {
+			List<Task> tasks = new ArrayList<>();
+			RestBody body = new RestBody(new Object()).inBase64();
+			OutputStream stream = new ByteArrayOutputStream();
+			media.when(() -> Media.encode(any())).thenReturn(stream);
+			Content content = mockContent(tasks, body, "UTF8");
+			assertSame(stream, tasks.get(0).stream());
+			assertEquals("type/subtype;charset=UTF-8;base64", content.getContentType());
+		}
+	}
+
+	private Content mockContent(List<Task> tasks, RestBody body, String encoding) {
+		p = spyNewProxy();
+		Object actual = body.getActual();
+		Serializer serializer = mock(Serializer.class);
+		when(facade.isBinary(eq(Object.class))).thenReturn(false);
+		when(facade.cleanForSerializing(isNull(), same(actual))).thenReturn("type/subtype");
+		when(facade.getSerializer("type/subtype")).thenReturn(serializer);
+		Content content = p.addTaskAndGetContent(tasks, body);
+		assertEquals(1, tasks.size());
+		Task task = tasks.get(0);
+		doAnswer((invocation) -> {
+			OutputStreamWriter writer = invocation.getArgument(2);
+			assertEquals(encoding, writer.getEncoding());
+			return null;
+		}).when(serializer).write(same(actual), eq(Object.class), any());
+		task.consumer().accept(task.stream());
+		verify(serializer).write(same(actual), eq(Object.class), any());
+		return content;
+	}
+
+	@Test
+	void proxyAddsTaskAndGetsBinaryContent() {
+		List<Task> tasks = new ArrayList<>();
+		RestBody body = new RestBody(new Object());
+		Content content = mockContent(tasks, body);
+		assertEquals("type/subtype", content.getContentType());
+	}
+
+	@Test
+	void proxyAddsTaskAndGetsBinaryContentInBase64() {
+		try (MockedStatic<Media> media = mockStatic(Media.class)) {
+			List<Task> tasks = new ArrayList<>();
+			RestBody body = new RestBody(new Object()).inBase64();
+			OutputStream stream = new ByteArrayOutputStream();
+			media.when(() -> Media.encode(any())).thenReturn(stream);
+			Content content = mockContent(tasks, body);
+			assertSame(stream, tasks.get(0).stream());
+			assertEquals("type/subtype;base64", content.getContentType());
+		}
+	}
+
+	private Content mockContent(List<Task> tasks, RestBody body) {
+		p = spyNewProxy();
+		Object actual = body.getActual();
+		Assembler assembler = mock(Assembler.class);
+		when(facade.isBinary(eq(Object.class))).thenReturn(true);
+		when(facade.cleanForAssembling(isNull(), same(actual))).thenReturn("type/subtype");
+		when(facade.getAssembler("type/subtype")).thenReturn(assembler);
+		Content content = p.addTaskAndGetContent(tasks, body);
+		assertEquals(1, tasks.size());
+		Task task = tasks.get(0);
+		OutputStream stream = task.stream();
+		task.consumer().accept(stream);
+		verify(assembler).write(same(actual), eq(Object.class), same(stream));
+		return content;
+	}
+
+	private Proxy spyNewProxy() {
 		return spy(newProxy());
 	}
 
-	private RestClient.Proxy newProxy() {
+	private Proxy newProxy() {
 		return newRestClient().new Proxy();
 	}
 

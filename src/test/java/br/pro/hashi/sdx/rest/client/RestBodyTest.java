@@ -18,9 +18,9 @@ import br.pro.hashi.sdx.rest.coding.Coding;
 import br.pro.hashi.sdx.rest.coding.Media;
 import br.pro.hashi.sdx.rest.transform.Hint;
 
-class BodyTest {
+class RestBodyTest {
 	private Object actual;
-	private Body b;
+	private RestBody b;
 
 	@BeforeEach
 	void setUp() {
@@ -41,14 +41,14 @@ class BodyTest {
 
 	@Test
 	void initializesTypeWithHint() {
-		b = new Body(actual, new Hint<Object>() {});
+		b = new RestBody(actual, new Hint<Object>() {});
 		assertEquals(Object.class, b.getType());
 	}
 
 	@Test
 	void doesNotInitializeTypeWithHint() {
 		assertThrows(NullPointerException.class, () -> {
-			new Body(actual, null);
+			new RestBody(actual, null);
 		});
 	}
 
@@ -144,7 +144,7 @@ class BodyTest {
 		assertTrue(b.isBase64());
 	}
 
-	private Body newBody() {
-		return new Body(actual);
+	private RestBody newBody() {
+		return new RestBody(actual);
 	}
 }

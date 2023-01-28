@@ -10,7 +10,7 @@ import br.pro.hashi.sdx.rest.transform.Hint;
 /**
  * Wrapper for customizing a body via a fluent interface.
  */
-public class Body {
+public class RestBody {
 	private static Type getType(Hint<?> hint) {
 		if (hint == null) {
 			throw new NullPointerException("Hint cannot be null");
@@ -37,7 +37,7 @@ public class Body {
 	 * 
 	 * @param actual the actual body
 	 */
-	public Body(Object actual) {
+	public RestBody(Object actual) {
 		this(actual, actual.getClass());
 	}
 
@@ -54,11 +54,11 @@ public class Body {
 	 * @param hint   the type hint
 	 * @throws NullPointerException if the type hint is null
 	 */
-	public <T> Body(T actual, Hint<T> hint) {
+	public <T> RestBody(T actual, Hint<T> hint) {
 		this(actual, getType(hint));
 	}
 
-	private Body(Object actual, Type type) {
+	private RestBody(Object actual, Type type) {
 		this.actual = actual;
 		this.type = type;
 		this.name = null;
@@ -97,7 +97,7 @@ public class Body {
 	 * @param name the name
 	 * @return this body, for chaining
 	 */
-	public final Body withName(String name) {
+	public final RestBody withName(String name) {
 		this.name = name;
 		return this;
 	}
@@ -111,7 +111,7 @@ public class Body {
 	 * @throws IllegalArgumentException if the content type is blank
 	 * @hidden
 	 */
-	public final Body as(String contentType) {
+	public final RestBody as(String contentType) {
 		return asContentType(contentType);
 	}
 
@@ -128,7 +128,7 @@ public class Body {
 	 * @throws NullPointerException     if the content type is null
 	 * @throws IllegalArgumentException if the content type is blank
 	 */
-	public final Body asContentType(String contentType) {
+	public final RestBody asContentType(String contentType) {
 		if (contentType == null) {
 			throw new NullPointerException("Content type cannot be null");
 		}
@@ -148,7 +148,7 @@ public class Body {
 	 * @throws NullPointerException if the charset is null
 	 * @hidden
 	 */
-	public final Body in(Charset charset) {
+	public final RestBody in(Charset charset) {
 		return inCharset(charset);
 	}
 
@@ -164,7 +164,7 @@ public class Body {
 	 * @return this body, for chaining
 	 * @throws NullPointerException if the charset is null
 	 */
-	public final Body inCharset(Charset charset) {
+	public final RestBody inCharset(Charset charset) {
 		if (charset == null) {
 			throw new NullPointerException("Charset cannot be null");
 		}
@@ -177,7 +177,7 @@ public class Body {
 	 * 
 	 * @return this body, for chaining
 	 */
-	public final Body inBase64() {
+	public final RestBody inBase64() {
 		this.base64 = true;
 		return this;
 	}
