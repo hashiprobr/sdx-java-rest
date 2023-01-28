@@ -1004,7 +1004,7 @@ class RestClientTest {
 	void proxyAddsTaskAndGetsContentInBase64() {
 		try (MockedConstruction<OutputStreamRequestContent> construction = mockContentConstruction()) {
 			List<Task> tasks = new ArrayList<>();
-			RestBody body = new RestBody(SPECIAL_BODY).inBase64();
+			RestBody body = new RestBody(SPECIAL_BODY).in(StandardCharsets.UTF_8).inBase64();
 			OutputStreamRequestContent content = (OutputStreamRequestContent) mockContent(tasks, body);
 			assertEquals("type/subtype;charset=UTF-8;base64", content.getContentType());
 			byte[] bytes = ((ByteArrayOutputStream) content.getOutputStream()).toByteArray();
