@@ -991,9 +991,8 @@ class RestClientTest {
 	@Test
 	void proxyAddsTaskAndGetsContent() {
 		try (MockedConstruction<OutputStreamRequestContent> construction = mockContentConstruction()) {
-			List<Task> tasks = new ArrayList<>();
 			RestBody body = new RestBody(SPECIAL_BODY).in(StandardCharsets.ISO_8859_1);
-			OutputStreamRequestContent content = (OutputStreamRequestContent) mockContent(tasks, body);
+			OutputStreamRequestContent content = (OutputStreamRequestContent) mockContent(body);
 			assertEquals("type/subtype;charset=ISO-8859-1", content.getContentType());
 			byte[] bytes = ((ByteArrayOutputStream) content.getOutputStream()).toByteArray();
 			assertEquals(SPECIAL_BODY, new String(bytes, StandardCharsets.ISO_8859_1));
@@ -1003,17 +1002,17 @@ class RestClientTest {
 	@Test
 	void proxyAddsTaskAndGetsContentInBase64() {
 		try (MockedConstruction<OutputStreamRequestContent> construction = mockContentConstruction()) {
-			List<Task> tasks = new ArrayList<>();
 			RestBody body = new RestBody(SPECIAL_BODY).in(StandardCharsets.UTF_8).inBase64();
-			OutputStreamRequestContent content = (OutputStreamRequestContent) mockContent(tasks, body);
+			OutputStreamRequestContent content = (OutputStreamRequestContent) mockContent(body);
 			assertEquals("type/subtype;charset=UTF-8;base64", content.getContentType());
 			byte[] bytes = ((ByteArrayOutputStream) content.getOutputStream()).toByteArray();
 			assertEquals(SPECIAL_BODY, new String(Base64.getDecoder().decode(bytes), StandardCharsets.UTF_8));
 		}
 	}
 
-	private Content mockContent(List<Task> tasks, RestBody body) {
+	private Content mockContent(RestBody body) {
 		p = newProxy();
+		List<Task> tasks = new ArrayList<>();
 		Object actual = body.getActual();
 		Serializer serializer = mock(Serializer.class);
 		when(facade.isBinary(String.class)).thenReturn(false);
@@ -1036,9 +1035,8 @@ class RestClientTest {
 	@Test
 	void proxyAddsTaskAndGetsBinaryContent() {
 		try (MockedConstruction<OutputStreamRequestContent> construction = mockContentConstruction()) {
-			List<Task> tasks = new ArrayList<>();
 			RestBody body = new RestBody(USASCII_BODY);
-			OutputStreamRequestContent content = (OutputStreamRequestContent) mockBinaryContent(tasks, body);
+			OutputStreamRequestContent content = (OutputStreamRequestContent) mockBinaryContent(body);
 			assertEquals("type/subtype", content.getContentType());
 			byte[] bytes = ((ByteArrayOutputStream) content.getOutputStream()).toByteArray();
 			assertEquals(USASCII_BODY, new String(bytes, StandardCharsets.US_ASCII));
@@ -1048,17 +1046,17 @@ class RestClientTest {
 	@Test
 	void proxyAddsTaskAndGetsBinaryContentInBase64() {
 		try (MockedConstruction<OutputStreamRequestContent> construction = mockContentConstruction()) {
-			List<Task> tasks = new ArrayList<>();
 			RestBody body = new RestBody(USASCII_BODY).inBase64();
-			OutputStreamRequestContent content = (OutputStreamRequestContent) mockBinaryContent(tasks, body);
+			OutputStreamRequestContent content = (OutputStreamRequestContent) mockBinaryContent(body);
 			assertEquals("type/subtype;base64", content.getContentType());
 			byte[] bytes = ((ByteArrayOutputStream) content.getOutputStream()).toByteArray();
 			assertEquals(USASCII_BODY, new String(Base64.getDecoder().decode(bytes), StandardCharsets.US_ASCII));
 		}
 	}
 
-	private Content mockBinaryContent(List<Task> tasks, RestBody body) {
+	private Content mockBinaryContent(RestBody body) {
 		p = newProxy();
+		List<Task> tasks = new ArrayList<>();
 		Object actual = body.getActual();
 		Assembler assembler = mock(Assembler.class);
 		when(facade.isBinary(String.class)).thenReturn(true);
