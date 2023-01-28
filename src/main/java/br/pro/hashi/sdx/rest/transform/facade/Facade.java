@@ -99,7 +99,7 @@ public class Facade {
 		return contentType;
 	}
 
-	public String cleanForDisassembling(String contentType, Class<?> type) {
+	public String cleanForDisassembling(String contentType, Type type) {
 		if (contentType == null) {
 			if (type.equals(byte[].class) || type.equals(InputStream.class)) {
 				contentType = OCTET_TYPE;
@@ -127,7 +127,7 @@ public class Facade {
 		return contentType;
 	}
 
-	public String cleanForDeserializing(String contentType, Class<?> type) {
+	public String cleanForDeserializing(String contentType, Type type) {
 		if (contentType == null) {
 			if (type.equals(String.class) || type.equals(Reader.class)) {
 				contentType = PLAIN_TYPE;
