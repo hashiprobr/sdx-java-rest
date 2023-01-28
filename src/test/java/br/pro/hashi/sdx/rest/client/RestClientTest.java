@@ -7,7 +7,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doNothing;
@@ -15,7 +14,6 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockConstruction;
-import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -24,9 +22,10 @@ import static org.mockito.Mockito.when;
 
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -34,26 +33,28 @@ import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.api.Request;
 import org.eclipse.jetty.client.api.Request.Content;
 import org.eclipse.jetty.client.util.MultiPartRequestContent;
+import org.eclipse.jetty.client.util.OutputStreamRequestContent;
 import org.eclipse.jetty.http.HttpFields;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.MockedConstruction;
-import org.mockito.MockedStatic;
 
 import br.pro.hashi.sdx.rest.client.RestClient.Proxy;
 import br.pro.hashi.sdx.rest.client.RestClient.Proxy.Entry;
 import br.pro.hashi.sdx.rest.client.RestClient.Proxy.Task;
 import br.pro.hashi.sdx.rest.client.exception.ClientException;
 import br.pro.hashi.sdx.rest.coding.Coding;
-import br.pro.hashi.sdx.rest.coding.Media;
 import br.pro.hashi.sdx.rest.transform.Assembler;
 import br.pro.hashi.sdx.rest.transform.Hint;
 import br.pro.hashi.sdx.rest.transform.Serializer;
 import br.pro.hashi.sdx.rest.transform.facade.Facade;
 
 class RestClientTest {
+	private static final String USASCII_BODY = "special";
+	private static final String SPECIAL_BODY = "spéçíál";
+
 	private Facade facade;
 	private HttpClient jettyClient;
 	private Request request;
@@ -938,7 +939,7 @@ class RestClientTest {
 	@Test
 	void proxyAddsZeroBodiesAndGetsZeroTasks() {
 		p = spyNewProxy();
-		mockContent();
+		mockContents();
 		List<Task> tasks = p.addBodiesAndGetTasks(request);
 		verify(request, times(0)).body(any());
 		assertTrue(tasks.isEmpty());
@@ -949,10 +950,10 @@ class RestClientTest {
 		try (MockedConstruction<MultiPartRequestContent> construction = mockConstruction(MultiPartRequestContent.class)) {
 			p = spyNewProxy();
 			p.withBody(new Object());
-			Content content = mockContent();
+			List<Content> contents = mockContents();
 			List<Task> tasks = p.addBodiesAndGetTasks(request);
 			assertTrue(construction.constructed().isEmpty());
-			verify(request).body(content);
+			verify(request).body(contents.get(0));
 			assertEquals(1, tasks.size());
 		}
 	}
@@ -963,120 +964,125 @@ class RestClientTest {
 			p = spyNewProxy();
 			p.withBody(new RestBody(new Object()).withName("one"));
 			p.withBody(new RestBody(new Object()).withName("two"));
-			Content content = mockContent();
+			List<Content> contents = mockContents();
 			List<Task> tasks = p.addBodiesAndGetTasks(request);
-			MultiPartRequestContent multipartContent = construction.constructed().get(0);
-			verify(multipartContent).addFieldPart(eq("one"), same(content), isNull());
-			verify(multipartContent).addFieldPart(eq("two"), same(content), isNull());
-			verify(multipartContent).close();
-			verifyNoMoreInteractions(multipartContent);
-			verify(request).body(multipartContent);
+			MultiPartRequestContent content = construction.constructed().get(0);
+			verify(content).addFieldPart("one", contents.get(0), null);
+			verify(content).addFieldPart("two", contents.get(1), null);
+			verify(content).close();
+			verifyNoMoreInteractions(content);
+			verify(request).body(content);
 			assertEquals(2, tasks.size());
 		}
 	}
 
-	private Content mockContent() {
-		Content content = mock(Content.class);
+	private List<Content> mockContents() {
+		List<Content> contents = new ArrayList<>();
 		doAnswer((invocation) -> {
 			List<Task> tasks = invocation.getArgument(0);
 			tasks.add(mock(Task.class));
+			Content content = mock(Content.class);
+			contents.add(content);
 			return content;
 		}).when(p).addTaskAndGetContent(any(), any());
-		return content;
+		return contents;
 	}
 
 	@Test
-	void proxyAddsTaskAndGetsContentInUSASCII() {
-		List<Task> tasks = new ArrayList<>();
-		RestBody body = new RestBody(new Object()).in(StandardCharsets.US_ASCII);
-		Content content = mockContent(tasks, body, "ASCII");
-		assertEquals("type/subtype;charset=US-ASCII", content.getContentType());
-	}
-
-	@Test
-	void proxyAddsTaskAndGetsContentInISO88591() {
-		List<Task> tasks = new ArrayList<>();
-		RestBody body = new RestBody(new Object()).in(StandardCharsets.ISO_8859_1);
-		Content content = mockContent(tasks, body, "ISO8859_1");
-		assertEquals("type/subtype;charset=ISO-8859-1", content.getContentType());
-	}
-
-	@Test
-	void proxyAddsTaskAndGetsContentInUTF8() {
-		List<Task> tasks = new ArrayList<>();
-		RestBody body = new RestBody(new Object()).in(StandardCharsets.UTF_8);
-		Content content = mockContent(tasks, body, "UTF8");
-		assertEquals("type/subtype;charset=UTF-8", content.getContentType());
+	void proxyAddsTaskAndGetsContent() {
+		try (MockedConstruction<OutputStreamRequestContent> construction = mockContentConstruction()) {
+			List<Task> tasks = new ArrayList<>();
+			RestBody body = new RestBody(SPECIAL_BODY).in(StandardCharsets.ISO_8859_1);
+			OutputStreamRequestContent content = (OutputStreamRequestContent) mockContent(tasks, body);
+			assertEquals("type/subtype;charset=ISO-8859-1", content.getContentType());
+			byte[] bytes = ((ByteArrayOutputStream) content.getOutputStream()).toByteArray();
+			assertEquals(SPECIAL_BODY, new String(bytes, StandardCharsets.ISO_8859_1));
+		}
 	}
 
 	@Test
 	void proxyAddsTaskAndGetsContentInBase64() {
-		try (MockedStatic<Media> media = mockStatic(Media.class)) {
+		try (MockedConstruction<OutputStreamRequestContent> construction = mockContentConstruction()) {
 			List<Task> tasks = new ArrayList<>();
-			RestBody body = new RestBody(new Object()).inBase64();
-			OutputStream stream = new ByteArrayOutputStream();
-			media.when(() -> Media.encode(any())).thenReturn(stream);
-			Content content = mockContent(tasks, body, "UTF8");
-			assertSame(stream, tasks.get(0).stream());
+			RestBody body = new RestBody(SPECIAL_BODY).inBase64();
+			OutputStreamRequestContent content = (OutputStreamRequestContent) mockContent(tasks, body);
 			assertEquals("type/subtype;charset=UTF-8;base64", content.getContentType());
+			byte[] bytes = ((ByteArrayOutputStream) content.getOutputStream()).toByteArray();
+			assertEquals(SPECIAL_BODY, new String(Base64.getDecoder().decode(bytes), StandardCharsets.UTF_8));
 		}
 	}
 
-	private Content mockContent(List<Task> tasks, RestBody body, String encoding) {
-		p = spyNewProxy();
+	private Content mockContent(List<Task> tasks, RestBody body) {
+		p = newProxy();
 		Object actual = body.getActual();
 		Serializer serializer = mock(Serializer.class);
-		when(facade.isBinary(eq(Object.class))).thenReturn(false);
-		when(facade.cleanForSerializing(isNull(), same(actual))).thenReturn("type/subtype");
+		when(facade.isBinary(String.class)).thenReturn(false);
+		when(facade.cleanForSerializing(null, actual)).thenReturn("type/subtype");
 		when(facade.getSerializer("type/subtype")).thenReturn(serializer);
 		Content content = p.addTaskAndGetContent(tasks, body);
 		assertEquals(1, tasks.size());
 		Task task = tasks.get(0);
 		doAnswer((invocation) -> {
-			OutputStreamWriter writer = invocation.getArgument(2);
-			assertEquals(encoding, writer.getEncoding());
+			String str = invocation.getArgument(0);
+			Writer writer = invocation.getArgument(2);
+			writer.write(str);
+			writer.close();
 			return null;
-		}).when(serializer).write(same(actual), eq(Object.class), any());
+		}).when(serializer).write(same(actual), eq(String.class), any());
 		task.consumer().accept(task.stream());
-		verify(serializer).write(same(actual), eq(Object.class), any());
 		return content;
 	}
 
 	@Test
 	void proxyAddsTaskAndGetsBinaryContent() {
-		List<Task> tasks = new ArrayList<>();
-		RestBody body = new RestBody(new Object());
-		Content content = mockContent(tasks, body);
-		assertEquals("type/subtype", content.getContentType());
+		try (MockedConstruction<OutputStreamRequestContent> construction = mockContentConstruction()) {
+			List<Task> tasks = new ArrayList<>();
+			RestBody body = new RestBody(USASCII_BODY);
+			OutputStreamRequestContent content = (OutputStreamRequestContent) mockBinaryContent(tasks, body);
+			assertEquals("type/subtype", content.getContentType());
+			byte[] bytes = ((ByteArrayOutputStream) content.getOutputStream()).toByteArray();
+			assertEquals(USASCII_BODY, new String(bytes, StandardCharsets.US_ASCII));
+		}
 	}
 
 	@Test
 	void proxyAddsTaskAndGetsBinaryContentInBase64() {
-		try (MockedStatic<Media> media = mockStatic(Media.class)) {
+		try (MockedConstruction<OutputStreamRequestContent> construction = mockContentConstruction()) {
 			List<Task> tasks = new ArrayList<>();
-			RestBody body = new RestBody(new Object()).inBase64();
-			OutputStream stream = new ByteArrayOutputStream();
-			media.when(() -> Media.encode(any())).thenReturn(stream);
-			Content content = mockContent(tasks, body);
-			assertSame(stream, tasks.get(0).stream());
+			RestBody body = new RestBody(USASCII_BODY).inBase64();
+			OutputStreamRequestContent content = (OutputStreamRequestContent) mockBinaryContent(tasks, body);
 			assertEquals("type/subtype;base64", content.getContentType());
+			byte[] bytes = ((ByteArrayOutputStream) content.getOutputStream()).toByteArray();
+			assertEquals(USASCII_BODY, new String(Base64.getDecoder().decode(bytes), StandardCharsets.US_ASCII));
 		}
 	}
 
-	private Content mockContent(List<Task> tasks, RestBody body) {
-		p = spyNewProxy();
+	private Content mockBinaryContent(List<Task> tasks, RestBody body) {
+		p = newProxy();
 		Object actual = body.getActual();
 		Assembler assembler = mock(Assembler.class);
-		when(facade.isBinary(eq(Object.class))).thenReturn(true);
-		when(facade.cleanForAssembling(isNull(), same(actual))).thenReturn("type/subtype");
+		when(facade.isBinary(String.class)).thenReturn(true);
+		when(facade.cleanForAssembling(null, actual)).thenReturn("type/subtype");
 		when(facade.getAssembler("type/subtype")).thenReturn(assembler);
 		Content content = p.addTaskAndGetContent(tasks, body);
 		assertEquals(1, tasks.size());
 		Task task = tasks.get(0);
-		OutputStream stream = task.stream();
-		task.consumer().accept(stream);
-		verify(assembler).write(same(actual), eq(Object.class), same(stream));
+		doAnswer((invocation) -> {
+			String str = invocation.getArgument(0);
+			OutputStream stream = invocation.getArgument(2);
+			stream.write(str.getBytes(StandardCharsets.US_ASCII));
+			stream.close();
+			return null;
+		}).when(assembler).write(same(actual), eq(String.class), any());
+		task.consumer().accept(task.stream());
 		return content;
+	}
+
+	private MockedConstruction<OutputStreamRequestContent> mockContentConstruction() {
+		return mockConstruction(OutputStreamRequestContent.class, (mock, context) -> {
+			when(mock.getContentType()).thenReturn((String) context.arguments().get(0));
+			when(mock.getOutputStream()).thenReturn(new ByteArrayOutputStream());
+		});
 	}
 
 	private Proxy spyNewProxy() {

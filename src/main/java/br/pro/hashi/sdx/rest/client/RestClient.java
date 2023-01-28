@@ -1147,11 +1147,14 @@ public final class RestClient {
 			Response response;
 			try {
 				response = listener.get(timeout, TimeUnit.SECONDS);
-			} catch (ExecutionException | TimeoutException exception) {
+			} catch (ExecutionException exception) {
+				throw new ServerException(exception.getCause());
+			} catch (TimeoutException exception) {
 				throw new ServerException(exception);
 			} catch (InterruptedException exception) {
 				throw new AssertionError(exception);
 			}
+
 			int status = response.getStatus();
 			HttpFields fields = response.getHeaders();
 			String contentType = fields.get("Content-Type");
