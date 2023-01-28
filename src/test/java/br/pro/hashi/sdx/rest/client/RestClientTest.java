@@ -21,17 +21,25 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.UncheckedIOException;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.function.Consumer;
 
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.api.Request;
 import org.eclipse.jetty.client.api.Request.Content;
+import org.eclipse.jetty.client.api.Response;
+import org.eclipse.jetty.client.util.InputStreamResponseListener;
 import org.eclipse.jetty.client.util.MultiPartRequestContent;
 import org.eclipse.jetty.client.util.OutputStreamRequestContent;
 import org.eclipse.jetty.http.HttpFields;
@@ -46,6 +54,7 @@ import br.pro.hashi.sdx.rest.client.RestClient.Proxy.Entry;
 import br.pro.hashi.sdx.rest.client.RestClient.Proxy.Task;
 import br.pro.hashi.sdx.rest.client.exception.ClientException;
 import br.pro.hashi.sdx.rest.coding.Coding;
+import br.pro.hashi.sdx.rest.server.exception.ServerException;
 import br.pro.hashi.sdx.rest.transform.Assembler;
 import br.pro.hashi.sdx.rest.transform.Hint;
 import br.pro.hashi.sdx.rest.transform.Serializer;
@@ -58,7 +67,7 @@ class RestClientTest {
 	private Facade facade;
 	private HttpClient jettyClient;
 	private Request request;
-	private RestResponse response;
+	private Response response;
 	private RestClient c;
 	private Proxy p;
 
@@ -67,7 +76,7 @@ class RestClientTest {
 		facade = mock(Facade.class);
 		jettyClient = mock(HttpClient.class);
 		request = mock(Request.class);
-		response = mock(RestResponse.class);
+		response = mock(Response.class);
 	}
 
 	@Test
@@ -575,23 +584,26 @@ class RestClientTest {
 	@Test
 	void proxyGets() {
 		p = spyNewProxy();
-		doReturn(response).when(p).doRequest("GET", "/");
-		assertSame(response, p.get("/"));
+		RestResponse restResponse = mock(RestResponse.class);
+		doReturn(restResponse).when(p).doRequest("GET", "/");
+		assertSame(restResponse, p.get("/"));
 	}
 
 	@Test
 	void proxyPosts() {
 		p = spyNewProxy();
-		doReturn(response).when(p).doRequest("POST", "/");
-		assertSame(response, p.post("/"));
+		RestResponse restResponse = mock(RestResponse.class);
+		doReturn(restResponse).when(p).doRequest("POST", "/");
+		assertSame(restResponse, p.post("/"));
 	}
 
 	@Test
 	void proxyPostsWithBody() {
 		p = spyNewProxy();
 		Object body = new Object();
-		doReturn(response).when(p).doRequest("POST", "/");
-		assertSame(response, p.post("/", body));
+		RestResponse restResponse = mock(RestResponse.class);
+		doReturn(restResponse).when(p).doRequest("POST", "/");
+		assertSame(restResponse, p.post("/", body));
 		verify(p).withBody(body);
 	}
 
@@ -600,24 +612,27 @@ class RestClientTest {
 		p = spyNewProxy();
 		Object body = new Object();
 		Hint<Object> hint = new Hint<Object>() {};
-		doReturn(response).when(p).doRequest("POST", "/");
-		assertSame(response, p.post("/", body, hint));
+		RestResponse restResponse = mock(RestResponse.class);
+		doReturn(restResponse).when(p).doRequest("POST", "/");
+		assertSame(restResponse, p.post("/", body, hint));
 		verify(p).withBody(body, hint);
 	}
 
 	@Test
 	void proxyPuts() {
 		p = spyNewProxy();
-		doReturn(response).when(p).doRequest("PUT", "/");
-		assertSame(response, p.put("/"));
+		RestResponse restResponse = mock(RestResponse.class);
+		doReturn(restResponse).when(p).doRequest("PUT", "/");
+		assertSame(restResponse, p.put("/"));
 	}
 
 	@Test
 	void proxyPutsWithBody() {
 		p = spyNewProxy();
 		Object body = new Object();
-		doReturn(response).when(p).doRequest("PUT", "/");
-		assertSame(response, p.put("/", body));
+		RestResponse restResponse = mock(RestResponse.class);
+		doReturn(restResponse).when(p).doRequest("PUT", "/");
+		assertSame(restResponse, p.put("/", body));
 		verify(p).withBody(body);
 	}
 
@@ -626,24 +641,27 @@ class RestClientTest {
 		p = spyNewProxy();
 		Object body = new Object();
 		Hint<Object> hint = new Hint<Object>() {};
-		doReturn(response).when(p).doRequest("PUT", "/");
-		assertSame(response, p.put("/", body, hint));
+		RestResponse restResponse = mock(RestResponse.class);
+		doReturn(restResponse).when(p).doRequest("PUT", "/");
+		assertSame(restResponse, p.put("/", body, hint));
 		verify(p).withBody(body, hint);
 	}
 
 	@Test
 	void proxyPatches() {
 		p = spyNewProxy();
-		doReturn(response).when(p).doRequest("PATCH", "/");
-		assertSame(response, p.patch("/"));
+		RestResponse restResponse = mock(RestResponse.class);
+		doReturn(restResponse).when(p).doRequest("PATCH", "/");
+		assertSame(restResponse, p.patch("/"));
 	}
 
 	@Test
 	void proxyPatchesWithBody() {
 		p = spyNewProxy();
 		Object body = new Object();
-		doReturn(response).when(p).doRequest("PATCH", "/");
-		assertSame(response, p.patch("/", body));
+		RestResponse restResponse = mock(RestResponse.class);
+		doReturn(restResponse).when(p).doRequest("PATCH", "/");
+		assertSame(restResponse, p.patch("/", body));
 		verify(p).withBody(body);
 	}
 
@@ -652,23 +670,26 @@ class RestClientTest {
 		p = spyNewProxy();
 		Object body = new Object();
 		Hint<Object> hint = new Hint<Object>() {};
-		doReturn(response).when(p).doRequest("PATCH", "/");
-		assertSame(response, p.patch("/", body, hint));
+		RestResponse restResponse = mock(RestResponse.class);
+		doReturn(restResponse).when(p).doRequest("PATCH", "/");
+		assertSame(restResponse, p.patch("/", body, hint));
 		verify(p).withBody(body, hint);
 	}
 
 	@Test
 	void proxyDeletes() {
 		p = spyNewProxy();
-		doReturn(response).when(p).doRequest("DELETE", "/");
-		assertSame(response, p.delete("/"));
+		RestResponse restResponse = mock(RestResponse.class);
+		doReturn(restResponse).when(p).doRequest("DELETE", "/");
+		assertSame(restResponse, p.delete("/"));
 	}
 
 	@Test
 	void proxyRequests() {
 		p = spyNewProxy();
-		doReturn(response).when(p).doRequest("OPTIONS", "/");
-		assertSame(response, p.request("options", "/"));
+		RestResponse restResponse = mock(RestResponse.class);
+		doReturn(restResponse).when(p).doRequest("OPTIONS", "/");
+		assertSame(restResponse, p.request("options", "/"));
 	}
 
 	@Test
@@ -696,10 +717,11 @@ class RestClientTest {
 		when(jettyClient.newRequest("http://a/?x")).thenReturn(request);
 		when(request.method("OPTIONS")).thenReturn(request);
 		doNothing().when(p).addHeaders(request);
-		List<Task> tasks = new ArrayList<>();
+		List<Task> tasks = List.of();
 		doReturn(tasks).when(p).addBodiesAndGetTasks(request);
-		doReturn(response).when(p).send(same(request), same(tasks));
-		assertSame(response, p.doRequest("OPTIONS", "/"));
+		RestResponse restResponse = mock(RestResponse.class);
+		doReturn(restResponse).when(p).send(same(request), same(tasks));
+		assertSame(restResponse, p.doRequest("OPTIONS", "/"));
 	}
 
 	@Test
@@ -1080,6 +1102,104 @@ class RestClientTest {
 		return mockConstruction(OutputStreamRequestContent.class, (mock, context) -> {
 			when(mock.getContentType()).thenReturn((String) context.arguments().get(0));
 			when(mock.getOutputStream()).thenReturn(new ByteArrayOutputStream());
+		});
+	}
+
+	@Test
+	void proxySends() {
+		try (MockedConstruction<InputStreamResponseListener> construction = mockListenerConstruction()) {
+			p = newProxy();
+			Consumer<OutputStream> consumer = (stream) -> {
+				try {
+					stream.write(USASCII_BODY.getBytes(StandardCharsets.US_ASCII));
+					stream.close();
+				} catch (IOException exception) {
+					throw new AssertionError(exception);
+				}
+			};
+			ByteArrayOutputStream stream = new ByteArrayOutputStream();
+			List<Task> tasks = List.of(new Task(consumer, stream));
+			HttpFields fields = mock(HttpFields.class);
+			when(fields.get("Content-Type")).thenReturn("type/subtype");
+			when(response.getStatus()).thenReturn(600);
+			when(response.getHeaders()).thenReturn(fields);
+			RestResponse restResponse = p.send(request, tasks);
+			InputStreamResponseListener listener = construction.constructed().get(0);
+			verify(request).send(listener);
+			assertEquals(USASCII_BODY, new String(stream.toByteArray(), StandardCharsets.US_ASCII));
+			assertEquals(600, restResponse.getStatus());
+			assertEquals(fields, restResponse.getFields());
+			assertEquals("type/subtype", restResponse.getContentType());
+			assertEquals(listener.getInputStream(), restResponse.getStream());
+		}
+	}
+
+	private MockedConstruction<InputStreamResponseListener> mockListenerConstruction() {
+		return mockConstruction(InputStreamResponseListener.class, (mock, context) -> {
+			when(mock.get(0, TimeUnit.SECONDS)).thenReturn(response);
+			when(mock.getInputStream()).thenReturn(InputStream.nullInputStream());
+		});
+	}
+
+	@Test
+	void proxyDoesNotSendIfCloseThrows() throws IOException {
+		try (MockedConstruction<InputStreamResponseListener> construction = mockConstruction(InputStreamResponseListener.class)) {
+			p = newProxy();
+			Consumer<OutputStream> consumer = (stream) -> {};
+			OutputStream stream = spy(OutputStream.nullOutputStream());
+			IOException cause = new IOException();
+			doThrow(cause).when(stream).close();
+			List<Task> tasks = List.of(new Task(consumer, stream));
+			Exception exception = assertThrows(UncheckedIOException.class, () -> {
+				p.send(request, tasks);
+			});
+			assertSame(cause, exception.getCause());
+		}
+	}
+
+	@Test
+	void proxyDoesNotSendIfListenerThrowsExecutionException() {
+		Throwable cause = new Throwable();
+		Exception exception = new ExecutionException(cause);
+		try (MockedConstruction<InputStreamResponseListener> construction = mockListenerConstruction(exception)) {
+			p = newProxy();
+			List<Task> tasks = List.of();
+			exception = assertThrows(ServerException.class, () -> {
+				p.send(request, tasks);
+			});
+			assertSame(cause, exception.getCause());
+		}
+	}
+
+	@Test
+	void proxyDoesNotSendIfListenerThrowsTimeoutException() {
+		TimeoutException cause = new TimeoutException();
+		try (MockedConstruction<InputStreamResponseListener> construction = mockListenerConstruction(cause)) {
+			p = newProxy();
+			List<Task> tasks = List.of();
+			Exception exception = assertThrows(ServerException.class, () -> {
+				p.send(request, tasks);
+			});
+			assertSame(cause, exception.getCause());
+		}
+	}
+
+	@Test
+	void proxyDoesNotSendIfListenerThrowsInterruptedException() {
+		InterruptedException cause = new InterruptedException();
+		try (MockedConstruction<InputStreamResponseListener> construction = mockListenerConstruction(cause)) {
+			p = newProxy();
+			List<Task> tasks = List.of();
+			Error error = assertThrows(AssertionError.class, () -> {
+				p.send(request, tasks);
+			});
+			assertSame(cause, error.getCause());
+		}
+	}
+
+	private MockedConstruction<InputStreamResponseListener> mockListenerConstruction(Exception exception) {
+		return mockConstruction(InputStreamResponseListener.class, (mock, context) -> {
+			when(mock.get(0, TimeUnit.SECONDS)).thenThrow(exception);
 		});
 	}
 

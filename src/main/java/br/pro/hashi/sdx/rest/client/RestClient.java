@@ -1129,9 +1129,8 @@ public final class RestClient {
 		}
 
 		RestResponse send(Request request, List<Task> tasks) {
-			if (!jettyClient.isRunning()) {
-				start();
-			}
+			start();
+
 			InputStreamResponseListener listener = new InputStreamResponseListener();
 			request.send(listener);
 

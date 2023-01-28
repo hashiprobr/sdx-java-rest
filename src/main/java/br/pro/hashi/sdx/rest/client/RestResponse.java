@@ -33,6 +33,14 @@ public class RestResponse {
 		this.available = true;
 	}
 
+	HttpFields getFields() {
+		return fields;
+	}
+
+	InputStream getStream() {
+		return stream;
+	}
+
 	private void validate() {
 		if (!available) {
 			throw new RuntimeException("Stream is not available");
