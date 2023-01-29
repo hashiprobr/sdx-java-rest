@@ -18,7 +18,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.MockedConstruction;
 
 import br.pro.hashi.sdx.rest.coding.Coding;
-import br.pro.hashi.sdx.rest.fields.Cache;
+import br.pro.hashi.sdx.rest.reflection.Cache;
 import br.pro.hashi.sdx.rest.transform.Assembler;
 import br.pro.hashi.sdx.rest.transform.Deserializer;
 import br.pro.hashi.sdx.rest.transform.Disassembler;

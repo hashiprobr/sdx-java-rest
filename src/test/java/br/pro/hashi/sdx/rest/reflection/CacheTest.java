@@ -1,10 +1,10 @@
-package br.pro.hashi.sdx.rest.fields;
+package br.pro.hashi.sdx.rest.reflection;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -13,14 +13,14 @@ import java.util.function.Function;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import br.pro.hashi.sdx.rest.fields.exception.FieldsException;
-import br.pro.hashi.sdx.rest.fields.mock.WithInvalidInputType;
-import br.pro.hashi.sdx.rest.fields.mock.WithInvalidMethod;
-import br.pro.hashi.sdx.rest.fields.mock.WithInvalidOutputType;
-import br.pro.hashi.sdx.rest.fields.mock.WithMethod;
-import br.pro.hashi.sdx.rest.fields.mock.WithNonPublicMethod;
-import br.pro.hashi.sdx.rest.fields.mock.WithNonStaticMethod;
-import br.pro.hashi.sdx.rest.fields.mock.WithoutMethod;
+import br.pro.hashi.sdx.rest.reflection.exception.ReflectionException;
+import br.pro.hashi.sdx.rest.reflection.mock.WithInvalidInputType;
+import br.pro.hashi.sdx.rest.reflection.mock.WithInvalidMethod;
+import br.pro.hashi.sdx.rest.reflection.mock.WithInvalidOutputType;
+import br.pro.hashi.sdx.rest.reflection.mock.WithMethod;
+import br.pro.hashi.sdx.rest.reflection.mock.WithNonPublicMethod;
+import br.pro.hashi.sdx.rest.reflection.mock.WithNonStaticMethod;
+import br.pro.hashi.sdx.rest.reflection.mock.WithoutMethod;
 
 class CacheTest {
 	private final static double DELTA = 0.000001;
@@ -36,55 +36,55 @@ class CacheTest {
 
 	@Test
 	void initializesWithBoolean() {
-		assertFalse(c.get(boolean.class).apply("false"));
+		assertTrue(c.get(boolean.class).apply("true"));
 		assertEquals(size, c.size());
 	}
 
 	@Test
 	void initializesWithByte() {
-		assertEquals((byte) 0, c.get(byte.class).apply("0"));
+		assertEquals((byte) 1, c.get(byte.class).apply("1"));
 		assertEquals(size, c.size());
 	}
 
 	@Test
 	void initializesWithShort() {
-		assertEquals((short) 0, c.get(short.class).apply("0"));
+		assertEquals((short) 123, c.get(short.class).apply("123"));
 		assertEquals(size, c.size());
 	}
 
 	@Test
 	void initializesWithInt() {
-		assertEquals(0, c.get(int.class).apply("0"));
+		assertEquals(1234, c.get(int.class).apply("1234"));
 		assertEquals(size, c.size());
 	}
 
 	@Test
 	void initializesWithLong() {
-		assertEquals(0, c.get(long.class).apply("0"));
+		assertEquals(12345, c.get(long.class).apply("12345"));
 		assertEquals(size, c.size());
 	}
 
 	@Test
 	void initializesWithFloat() {
-		assertEquals(0.0, c.get(float.class).apply("0.0"), DELTA);
+		assertEquals(1.2, c.get(float.class).apply("1.2"), DELTA);
 		assertEquals(size, c.size());
 	}
 
 	@Test
 	void initializesWithDouble() {
-		assertEquals(0.0, c.get(double.class).apply("0.0"), DELTA);
+		assertEquals(12.34, c.get(double.class).apply("12.34"), DELTA);
 		assertEquals(size, c.size());
 	}
 
 	@Test
 	void initializesWithBigInteger() {
-		assertEquals(BigInteger.valueOf(0), c.get(BigInteger.class).apply("0"));
+		assertEquals(BigInteger.valueOf(123456), c.get(BigInteger.class).apply("123456"));
 		assertEquals(size, c.size());
 	}
 
 	@Test
 	void initializesWithBigDecimal() {
-		assertEquals(BigDecimal.valueOf(0.0), c.get(BigDecimal.class).apply("0.0"));
+		assertEquals(BigDecimal.valueOf(123.456), c.get(BigDecimal.class).apply("123.456"));
 		assertEquals(size, c.size());
 	}
 
@@ -105,7 +105,7 @@ class CacheTest {
 
 	@Test
 	void doesNotGetWithoutMethod() {
-		assertThrows(FieldsException.class, () -> {
+		assertThrows(ReflectionException.class, () -> {
 			c.get(WithoutMethod.class);
 		});
 		assertEquals(size, c.size());
@@ -113,7 +113,7 @@ class CacheTest {
 
 	@Test
 	void doesNotGetWithInvalidInputType() {
-		assertThrows(FieldsException.class, () -> {
+		assertThrows(ReflectionException.class, () -> {
 			c.get(WithInvalidInputType.class);
 		});
 		assertEquals(size, c.size());
@@ -121,7 +121,7 @@ class CacheTest {
 
 	@Test
 	void doesNotGetWithInvalidOutputType() {
-		assertThrows(FieldsException.class, () -> {
+		assertThrows(ReflectionException.class, () -> {
 			c.get(WithInvalidOutputType.class);
 		});
 		assertEquals(size, c.size());
@@ -129,7 +129,7 @@ class CacheTest {
 
 	@Test
 	void doesNotGetWithNonPublicMethod() {
-		assertThrows(FieldsException.class, () -> {
+		assertThrows(ReflectionException.class, () -> {
 			c.get(WithNonPublicMethod.class);
 		});
 		assertEquals(size, c.size());
@@ -137,7 +137,7 @@ class CacheTest {
 
 	@Test
 	void doesNotGetWithNonStaticMethod() {
-		assertThrows(FieldsException.class, () -> {
+		assertThrows(ReflectionException.class, () -> {
 			c.get(WithNonStaticMethod.class);
 		});
 		assertEquals(size, c.size());
@@ -146,7 +146,7 @@ class CacheTest {
 	@Test
 	void doesNotInvokeWithInvalidMethod() {
 		Function<String, WithInvalidMethod> function = c.get(WithInvalidMethod.class);
-		assertThrows(FieldsException.class, () -> {
+		assertThrows(ReflectionException.class, () -> {
 			function.apply("");
 		});
 		assertEquals(size + 1, c.size());

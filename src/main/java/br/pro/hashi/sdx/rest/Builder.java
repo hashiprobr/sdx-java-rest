@@ -8,7 +8,7 @@ import java.util.Locale;
 
 import br.pro.hashi.sdx.rest.client.RestClientBuilder;
 import br.pro.hashi.sdx.rest.coding.Coding;
-import br.pro.hashi.sdx.rest.fields.Cache;
+import br.pro.hashi.sdx.rest.reflection.Cache;
 import br.pro.hashi.sdx.rest.server.RestServerBuilder;
 import br.pro.hashi.sdx.rest.transform.Assembler;
 import br.pro.hashi.sdx.rest.transform.Deserializer;

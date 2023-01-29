@@ -1,4 +1,4 @@
-package br.pro.hashi.sdx.rest.fields;
+package br.pro.hashi.sdx.rest.reflection;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -9,7 +9,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
-import br.pro.hashi.sdx.rest.fields.exception.FieldsException;
+import br.pro.hashi.sdx.rest.reflection.exception.ReflectionException;
 
 public class Cache {
 	private final Map<Class<?>, Function<String, ?>> functions;
@@ -40,14 +40,14 @@ public class Cache {
 			try {
 				method = type.getDeclaredMethod("valueOf", String.class);
 			} catch (NoSuchMethodException exception) {
-				throw new FieldsException("Type must have a valueOf(String) method");
+				throw new ReflectionException("Type must have a valueOf(String) method");
 			}
 			if (!method.getReturnType().equals(type)) {
-				throw new FieldsException("Type valueOf method must return an object of the type");
+				throw new ReflectionException("Type valueOf method must return an object of the type");
 			}
 			int modifiers = method.getModifiers();
 			if (!(Modifier.isPublic(modifiers) && Modifier.isStatic(modifiers))) {
-				throw new FieldsException("Type valueOf method must be public and static");
+				throw new ReflectionException("Type valueOf method must be public and static");
 			}
 			function = (valueString) -> {
 				return invoke(method, valueString);
@@ -63,7 +63,7 @@ public class Cache {
 		try {
 			value = (T) method.invoke(null, valueString);
 		} catch (InvocationTargetException | IllegalAccessException exception) {
-			throw new FieldsException(exception);
+			throw new ReflectionException(exception);
 		}
 		return value;
 	}

@@ -1,8 +1,10 @@
-package br.pro.hashi.sdx.rest.fields;
+package br.pro.hashi.sdx.rest;
 
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
+
+import br.pro.hashi.sdx.rest.reflection.Cache;
 
 public abstract class Fields {
 	private final Cache cache;
@@ -11,11 +13,11 @@ public abstract class Fields {
 		this.cache = cache;
 	}
 
-	public List<String> getList(String name, String regex) {
-		return getList(name, regex, String.class);
+	public List<String> split(String name, String regex) {
+		return split(name, regex, String.class);
 	}
 
-	public <T> List<T> getList(String name, String regex, Class<T> type) {
+	public <T> List<T> split(String name, String regex, Class<T> type) {
 		return map(Stream.of(require(name).split(regex)), type);
 	}
 
@@ -24,11 +26,11 @@ public abstract class Fields {
 	}
 
 	public <T> T require(String name, Class<T> type) {
-		T value = get(name, type);
-		if (value == null) {
+		String valueString = doGet(name);
+		if (valueString == null) {
 			throw new IllegalArgumentException("Name '%s' does not exist".formatted(name));
 		}
-		return value;
+		return cache.get(type).apply(valueString);
 	}
 
 	public List<String> getList(String name) {
@@ -44,7 +46,7 @@ public abstract class Fields {
 	}
 
 	public String get(String name) {
-		return get(name, String.class, null);
+		return get(name, String.class);
 	}
 
 	public String get(String name, String defaultValue) {
@@ -70,5 +72,5 @@ public abstract class Fields {
 
 	protected abstract String doGet(String name);
 
-	protected abstract Set<String> names();
+	public abstract Set<String> names();
 }

@@ -18,7 +18,7 @@ import org.eclipse.jetty.util.ssl.SslContextFactory;
 
 import br.pro.hashi.sdx.rest.Builder;
 import br.pro.hashi.sdx.rest.coding.Percent;
-import br.pro.hashi.sdx.rest.fields.Cache;
+import br.pro.hashi.sdx.rest.reflection.Cache;
 import br.pro.hashi.sdx.rest.transform.facade.Facade;
 
 /**

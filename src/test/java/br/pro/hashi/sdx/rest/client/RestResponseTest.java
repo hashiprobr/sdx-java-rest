@@ -9,7 +9,7 @@ import org.eclipse.jetty.http.HttpFields;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import br.pro.hashi.sdx.rest.fields.Cache;
+import br.pro.hashi.sdx.rest.reflection.Cache;
 import br.pro.hashi.sdx.rest.transform.facade.Facade;
 
 class RestResponseTest {

@@ -54,7 +54,7 @@ import br.pro.hashi.sdx.rest.client.RestClient.Proxy.Entry;
 import br.pro.hashi.sdx.rest.client.RestClient.Proxy.Task;
 import br.pro.hashi.sdx.rest.client.exception.ClientException;
 import br.pro.hashi.sdx.rest.coding.Coding;
-import br.pro.hashi.sdx.rest.fields.Cache;
+import br.pro.hashi.sdx.rest.reflection.Cache;
 import br.pro.hashi.sdx.rest.server.exception.ServerException;
 import br.pro.hashi.sdx.rest.transform.Assembler;
 import br.pro.hashi.sdx.rest.transform.Hint;

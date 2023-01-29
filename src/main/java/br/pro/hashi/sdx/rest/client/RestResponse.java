@@ -9,10 +9,10 @@ import java.util.stream.Stream;
 
 import org.eclipse.jetty.http.HttpFields;
 
+import br.pro.hashi.sdx.rest.Fields;
 import br.pro.hashi.sdx.rest.client.exception.ClientException;
 import br.pro.hashi.sdx.rest.coding.Media;
-import br.pro.hashi.sdx.rest.fields.Cache;
-import br.pro.hashi.sdx.rest.fields.Fields;
+import br.pro.hashi.sdx.rest.reflection.Cache;
 import br.pro.hashi.sdx.rest.transform.Deserializer;
 import br.pro.hashi.sdx.rest.transform.Disassembler;
 import br.pro.hashi.sdx.rest.transform.Hint;
@@ -49,12 +49,12 @@ public class RestResponse {
 		return status;
 	}
 
-	public List<String> getHeaders(String name, String regex) {
-		return headers.getList(name, regex);
+	public List<String> splitHeader(String name, String regex) {
+		return headers.split(name, regex);
 	}
 
-	public <T> List<T> getHeaders(String name, String regex, Class<T> type) {
-		return headers.getList(name, regex, type);
+	public <T> List<T> splitHeader(String name, String regex, Class<T> type) {
+		return headers.split(name, regex, type);
 	}
 
 	public String requireHeader(String name) {
@@ -65,11 +65,11 @@ public class RestResponse {
 		return headers.require(name, type);
 	}
 
-	public List<String> getHeaders(String name) {
+	public List<String> getHeaderList(String name) {
 		return headers.getList(name);
 	}
 
-	public <T> List<T> getHeaders(String name, Class<T> type) {
+	public <T> List<T> getHeaderList(String name, Class<T> type) {
 		return headers.getList(name, type);
 	}
 
@@ -160,7 +160,7 @@ public class RestResponse {
 		}
 
 		@Override
-		protected Set<String> names() {
+		public Set<String> names() {
 			return fields.getFieldNamesCollection();
 		}
 	}
