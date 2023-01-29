@@ -18,6 +18,7 @@ import org.eclipse.jetty.util.ssl.SslContextFactory;
 
 import br.pro.hashi.sdx.rest.Builder;
 import br.pro.hashi.sdx.rest.coding.Percent;
+import br.pro.hashi.sdx.rest.fields.Cache;
 import br.pro.hashi.sdx.rest.transform.facade.Facade;
 
 /**
@@ -31,6 +32,10 @@ public non-sealed class RestClientBuilder extends Builder<RestClientBuilder> {
 	 */
 	public RestClientBuilder() {
 		this.factory = null;
+	}
+
+	Cache getCache() {
+		return cache;
 	}
 
 	Facade getFacade() {
@@ -204,7 +209,7 @@ public non-sealed class RestClientBuilder extends Builder<RestClientBuilder> {
 			client.getContentDecoderFactories().add(new GZIPContentDecoder.Factory());
 		}
 		client.setFollowRedirects(redirection);
-		return new RestClient(facade, client, urlCharset, locale, none, urlPrefix);
+		return new RestClient(cache, facade, client, urlCharset, locale, none, urlPrefix);
 	}
 
 	/**

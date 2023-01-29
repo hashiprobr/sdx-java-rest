@@ -8,6 +8,7 @@ import java.util.Locale;
 
 import br.pro.hashi.sdx.rest.client.RestClientBuilder;
 import br.pro.hashi.sdx.rest.coding.Coding;
+import br.pro.hashi.sdx.rest.fields.Cache;
 import br.pro.hashi.sdx.rest.server.RestServerBuilder;
 import br.pro.hashi.sdx.rest.transform.Assembler;
 import br.pro.hashi.sdx.rest.transform.Deserializer;
@@ -22,6 +23,13 @@ import br.pro.hashi.sdx.rest.transform.facade.Facade;
  * @param <T> the subclass
  */
 public sealed abstract class Builder<T extends Builder<T>> permits RestClientBuilder, RestServerBuilder {
+	/**
+	 * Internal member.
+	 * 
+	 * @hidden
+	 */
+	protected final Cache cache;
+
 	/**
 	 * Internal member.
 	 * 
@@ -70,6 +78,7 @@ public sealed abstract class Builder<T extends Builder<T>> permits RestClientBui
 	 * @hidden
 	 */
 	protected Builder() {
+		this.cache = new Cache();
 		this.facade = new Facade();
 		this.urlCharset = StandardCharsets.UTF_8;
 		this.locale = Coding.LOCALE;

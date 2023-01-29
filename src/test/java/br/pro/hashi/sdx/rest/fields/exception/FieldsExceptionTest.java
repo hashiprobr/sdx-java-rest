@@ -1,4 +1,4 @@
-package br.pro.hashi.sdx.rest.client.exception;
+package br.pro.hashi.sdx.rest.fields.exception;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -6,12 +6,12 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 
 import org.junit.jupiter.api.Test;
 
-class ClientExceptionTest {
-	private ClientException e;
+class FieldsExceptionTest {
+	private FieldsException e;
 
 	@Test
 	void constructsWithMessage() {
-		e = new ClientException("message");
+		e = new FieldsException("message");
 		assertEquals("message", e.getMessage());
 		assertNull(e.getCause());
 	}
@@ -19,7 +19,7 @@ class ClientExceptionTest {
 	@Test
 	void constructsWithCause() {
 		Throwable cause = new Throwable();
-		e = new ClientException(cause);
+		e = new FieldsException(cause);
 		assertEquals(cause.toString(), e.getMessage());
 		assertSame(cause, e.getCause());
 	}

@@ -33,6 +33,7 @@ import br.pro.hashi.sdx.rest.client.exception.ClientException;
 import br.pro.hashi.sdx.rest.coding.Media;
 import br.pro.hashi.sdx.rest.coding.Percent;
 import br.pro.hashi.sdx.rest.coding.Query;
+import br.pro.hashi.sdx.rest.fields.Cache;
 import br.pro.hashi.sdx.rest.server.exception.ServerException;
 import br.pro.hashi.sdx.rest.transform.Assembler;
 import br.pro.hashi.sdx.rest.transform.Hint;
@@ -63,6 +64,7 @@ public final class RestClient {
 	}
 
 	private final Logger logger;
+	private final Cache cache;
 	private final Facade facade;
 	private final HttpClient jettyClient;
 	private final Charset urlCharset;
@@ -70,14 +72,19 @@ public final class RestClient {
 	private final String none;
 	private final String urlPrefix;
 
-	RestClient(Facade facade, HttpClient jettyClient, Charset urlCharset, Locale locale, String none, String urlPrefix) {
+	RestClient(Cache cache, Facade facade, HttpClient jettyClient, Charset urlCharset, Locale locale, String none, String urlPrefix) {
 		this.logger = LoggerFactory.getLogger(RestClient.class);
+		this.cache = cache;
 		this.facade = facade;
 		this.jettyClient = jettyClient;
 		this.urlCharset = urlCharset;
 		this.locale = locale;
 		this.none = none;
 		this.urlPrefix = urlPrefix;
+	}
+
+	Cache getCache() {
+		return cache;
 	}
 
 	Facade getFacade() {
@@ -1158,7 +1165,7 @@ public final class RestClient {
 			HttpFields fields = response.getHeaders();
 			String contentType = fields.get("Content-Type");
 			InputStream stream = listener.getInputStream();
-			return new RestResponse(facade, status, fields, contentType, stream);
+			return new RestResponse(cache, facade, status, fields, contentType, stream);
 		}
 
 		record Entry(String name, String valueString) {

@@ -3,38 +3,42 @@ package br.pro.hashi.sdx.rest.client;
 import java.io.InputStream;
 import java.io.Reader;
 import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Stream;
 
 import org.eclipse.jetty.http.HttpFields;
 
 import br.pro.hashi.sdx.rest.client.exception.ClientException;
 import br.pro.hashi.sdx.rest.coding.Media;
+import br.pro.hashi.sdx.rest.fields.Cache;
+import br.pro.hashi.sdx.rest.fields.Fields;
 import br.pro.hashi.sdx.rest.transform.Deserializer;
 import br.pro.hashi.sdx.rest.transform.Disassembler;
 import br.pro.hashi.sdx.rest.transform.Hint;
 import br.pro.hashi.sdx.rest.transform.facade.Facade;
 
 public class RestResponse {
+	private final Cache cache;
 	private final Facade facade;
 	private final int status;
-	private final HttpFields fields;
+	private final Headers headers;
 	private final String contentType;
 	private InputStream stream;
 	private boolean available;
 
-	RestResponse(Facade facade, int status, HttpFields fields, String contentType, InputStream stream) {
+	RestResponse(Cache cache, Facade facade, int status, HttpFields fields, String contentType, InputStream stream) {
+		this.cache = cache;
 		this.facade = facade;
 		this.status = status;
-		this.fields = fields;
+		this.headers = new Headers(fields);
 		this.contentType = contentType;
 		this.stream = stream;
 		this.available = true;
 	}
 
 	HttpFields getFields() {
-		return fields;
+		return headers.fields;
 	}
 
 	InputStream getStream() {
@@ -45,32 +49,48 @@ public class RestResponse {
 		return status;
 	}
 
-	public List<String> getHeaderNames() {
-		List<String> names = new ArrayList<>();
-		Enumeration<String> enumeration = fields.getFieldNames();
-		while (enumeration.hasMoreElements()) {
-			names.add(enumeration.nextElement());
-		}
-		return names;
+	public List<String> getHeaders(String name, String regex) {
+		return headers.getList(name, regex);
+	}
+
+	public <T> List<T> getHeaders(String name, String regex, Class<T> type) {
+		return headers.getList(name, regex, type);
+	}
+
+	public String requireHeader(String name) {
+		return headers.require(name);
+	}
+
+	public <T> T requireHeader(String name, Class<T> type) {
+		return headers.require(name, type);
 	}
 
 	public List<String> getHeaders(String name) {
-		if (name == null) {
-			throw new IllegalArgumentException("Header name cannot be null");
-		}
-		name = name.strip();
-		if (name.isEmpty()) {
-			throw new IllegalArgumentException("Header name cannot be blank");
-		}
-		return fields.getValuesList(name);
+		return headers.getList(name);
+	}
+
+	public <T> List<T> getHeaders(String name, Class<T> type) {
+		return headers.getList(name, type);
 	}
 
 	public String getHeader(String name) {
-		List<String> values = getHeaders(name);
-		if (values.isEmpty()) {
-			return null;
-		}
-		return values.get(0);
+		return headers.get(name);
+	}
+
+	public String getHeader(String name, String defaultValue) {
+		return headers.get(name, defaultValue);
+	}
+
+	public <T> T getHeader(String name, Class<T> type) {
+		return headers.get(name, type);
+	}
+
+	public <T> T getHeader(String name, Class<T> type, T defaultValue) {
+		return headers.get(name, type, defaultValue);
+	}
+
+	public Set<String> headerNames() {
+		return headers.names();
 	}
 
 	public String getContentType() {
@@ -100,10 +120,12 @@ public class RestResponse {
 	}
 
 	private <T> T getBodyAs(Type type, String contentType) {
-		if (!available) {
-			throw new ClientException("Stream is not available");
+		synchronized (this) {
+			if (!available) {
+				throw new ClientException("Stream is not available");
+			}
+			available = false;
 		}
-		available = false;
 		T body;
 		stream = Media.decode(stream, contentType);
 		if (facade.isBinary(type)) {
@@ -117,5 +139,29 @@ public class RestResponse {
 			body = deserializer.read(reader, type);
 		}
 		return body;
+	}
+
+	private class Headers extends Fields {
+		private HttpFields fields;
+
+		private Headers(HttpFields fields) {
+			super(cache);
+			this.fields = fields;
+		}
+
+		@Override
+		protected Stream<String> doStream(String name) {
+			return fields.getValuesList(name).stream();
+		}
+
+		@Override
+		protected String doGet(String name) {
+			return fields.get(name);
+		}
+
+		@Override
+		protected Set<String> names() {
+			return fields.getFieldNamesCollection();
+		}
 	}
 }

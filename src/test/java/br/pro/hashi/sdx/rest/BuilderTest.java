@@ -18,6 +18,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.MockedConstruction;
 
 import br.pro.hashi.sdx.rest.coding.Coding;
+import br.pro.hashi.sdx.rest.fields.Cache;
 import br.pro.hashi.sdx.rest.transform.Assembler;
 import br.pro.hashi.sdx.rest.transform.Deserializer;
 import br.pro.hashi.sdx.rest.transform.Disassembler;
@@ -26,20 +27,30 @@ import br.pro.hashi.sdx.rest.transform.Serializer;
 import br.pro.hashi.sdx.rest.transform.facade.Facade;
 
 public abstract class BuilderTest {
-	private MockedConstruction<Facade> construction;
+	private MockedConstruction<Cache> cacheConstruction;
+	private MockedConstruction<Facade> facadeConstruction;
 	private Builder<?> b;
+	private Cache cache;
 	private Facade facade;
 
 	@BeforeEach
 	void setUp() {
-		construction = mockConstruction(Facade.class);
+		cacheConstruction = mockConstruction(Cache.class);
+		facadeConstruction = mockConstruction(Facade.class);
 		b = newInstance();
-		facade = construction.constructed().get(0);
+		cache = cacheConstruction.constructed().get(0);
+		facade = facadeConstruction.constructed().get(0);
 	}
 
 	@AfterEach
 	void tearDown() {
-		construction.close();
+		facadeConstruction.close();
+		cacheConstruction.close();
+	}
+
+	@Test
+	void initializesWithCache() {
+		assertEquals(cache, b.cache);
 	}
 
 	@Test

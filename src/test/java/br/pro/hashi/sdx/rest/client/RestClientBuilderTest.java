@@ -91,6 +91,7 @@ class RestClientBuilderTest extends BuilderTest {
 	@Test
 	void builds() {
 		RestClient client = b.build("http://a");
+		assertSame(b.getCache(), client.getCache());
 		assertSame(b.getFacade(), client.getFacade());
 		assertEquals(StandardCharsets.UTF_8, client.getUrlCharset());
 		assertNull(client.getNone());
