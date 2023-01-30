@@ -71,7 +71,7 @@ public sealed abstract class Fields permits Headers, Queries {
 		if (regex.isEmpty()) {
 			throw new IllegalArgumentException("Separator cannot be empty");
 		}
-		return map(Stream.of(require(name).split(regex)), type);
+		return map(Stream.of(require(name).split(regex, -1)), type);
 	}
 
 	/**
