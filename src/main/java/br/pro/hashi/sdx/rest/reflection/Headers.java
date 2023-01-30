@@ -17,17 +17,15 @@ public final class Headers extends Fields {
 		this.fields = fields;
 	}
 
-	public HttpFields getHttpFields() {
-		return fields;
-	}
-
 	@Override
-	protected Stream<String> doStream(String name) {
+	protected Stream<String> getStream(String name) {
+		name = clean(name);
 		return fields.getValuesList(name).stream();
 	}
 
 	@Override
 	protected String doGet(String name) {
+		name = clean(name);
 		return fields.get(name);
 	}
 
@@ -39,5 +37,13 @@ public final class Headers extends Fields {
 	@Override
 	public Set<String> names() {
 		return fields.getFieldNamesCollection();
+	}
+
+	private String clean(String name) {
+		name = name.strip();
+		if (name.isEmpty()) {
+			throw new IllegalArgumentException("Name cannot be blank");
+		}
+		return name;
 	}
 }

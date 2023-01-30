@@ -55,6 +55,7 @@ import br.pro.hashi.sdx.rest.client.RestClient.Proxy.Task;
 import br.pro.hashi.sdx.rest.client.exception.ClientException;
 import br.pro.hashi.sdx.rest.coding.Coding;
 import br.pro.hashi.sdx.rest.reflection.Cache;
+import br.pro.hashi.sdx.rest.reflection.Headers;
 import br.pro.hashi.sdx.rest.server.exception.ServerException;
 import br.pro.hashi.sdx.rest.transform.Assembler;
 import br.pro.hashi.sdx.rest.transform.Hint;
@@ -1110,7 +1111,9 @@ class RestClientTest {
 
 	@Test
 	void proxySends() {
-		try (MockedConstruction<InputStreamResponseListener> construction = mockListenerConstruction()) {
+		try (
+				MockedConstruction<InputStreamResponseListener> listenerConstruction = mockListenerConstruction();
+				MockedConstruction<Headers> headersConstruction = mockConstruction(Headers.class)) {
 			p = newProxy();
 			Consumer<OutputStream> consumer = (stream) -> {
 				try {
@@ -1127,11 +1130,13 @@ class RestClientTest {
 			when(response.getStatus()).thenReturn(600);
 			when(response.getHeaders()).thenReturn(fields);
 			RestResponse restResponse = p.send(request, tasks);
-			InputStreamResponseListener listener = construction.constructed().get(0);
+			InputStreamResponseListener listener = listenerConstruction.constructed().get(0);
+			Headers headers = headersConstruction.constructed().get(0);
 			verify(request).send(listener);
 			assertEquals(USASCII_BODY, new String(stream.toByteArray(), StandardCharsets.US_ASCII));
+			assertSame(p.getEnclosing().getFacade(), restResponse.getFacade());
 			assertEquals(600, restResponse.getStatus());
-			assertEquals(fields, restResponse.getFields());
+			assertEquals(headers, restResponse.getHeaders());
 			assertEquals("type/subtype", restResponse.getContentType());
 			assertEquals(listener.getInputStream(), restResponse.getStream());
 		}

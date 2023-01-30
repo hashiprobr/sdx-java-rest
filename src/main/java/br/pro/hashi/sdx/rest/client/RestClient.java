@@ -34,6 +34,7 @@ import br.pro.hashi.sdx.rest.coding.Media;
 import br.pro.hashi.sdx.rest.coding.Percent;
 import br.pro.hashi.sdx.rest.coding.Query;
 import br.pro.hashi.sdx.rest.reflection.Cache;
+import br.pro.hashi.sdx.rest.reflection.Headers;
 import br.pro.hashi.sdx.rest.server.exception.ServerException;
 import br.pro.hashi.sdx.rest.transform.Assembler;
 import br.pro.hashi.sdx.rest.transform.Hint;
@@ -527,6 +528,10 @@ public final class RestClient {
 			this.headers = new ArrayList<>();
 			this.bodies = new ArrayList<>();
 			this.timeout = 0;
+		}
+
+		RestClient getEnclosing() {
+			return RestClient.this;
 		}
 
 		List<Entry> getQueries() {
@@ -1163,9 +1168,10 @@ public final class RestClient {
 
 			int status = response.getStatus();
 			HttpFields fields = response.getHeaders();
+			Headers headers = new Headers(cache, fields);
 			String contentType = fields.get("Content-Type");
 			InputStream stream = listener.getInputStream();
-			return new RestResponse(cache, facade, status, fields, contentType, stream);
+			return new RestResponse(facade, status, headers, contentType, stream);
 		}
 
 		record Entry(String name, String valueString) {

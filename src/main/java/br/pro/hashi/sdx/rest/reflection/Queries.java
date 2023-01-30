@@ -11,13 +11,13 @@ public final class Queries extends Fields {
 	private final Cache cache;
 	private final Map<String, String[]> map;
 
-	protected Queries(Cache cache, Map<String, String[]> map) {
+	public Queries(Cache cache, Map<String, String[]> map) {
 		this.cache = cache;
 		this.map = map;
 	}
 
 	@Override
-	protected Stream<String> doStream(String name) {
+	protected Stream<String> getStream(String name) {
 		String[] valueStrings = map.get(name);
 		if (valueStrings == null) {
 			return Stream.of();

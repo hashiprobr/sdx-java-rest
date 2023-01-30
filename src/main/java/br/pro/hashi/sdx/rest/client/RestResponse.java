@@ -6,11 +6,8 @@ import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Set;
 
-import org.eclipse.jetty.http.HttpFields;
-
 import br.pro.hashi.sdx.rest.client.exception.ClientException;
 import br.pro.hashi.sdx.rest.coding.Media;
-import br.pro.hashi.sdx.rest.reflection.Cache;
 import br.pro.hashi.sdx.rest.reflection.Headers;
 import br.pro.hashi.sdx.rest.transform.Deserializer;
 import br.pro.hashi.sdx.rest.transform.Disassembler;
@@ -25,17 +22,21 @@ public class RestResponse {
 	private InputStream stream;
 	private boolean available;
 
-	RestResponse(Cache cache, Facade facade, int status, HttpFields fields, String contentType, InputStream stream) {
+	RestResponse(Facade facade, int status, Headers headers, String contentType, InputStream stream) {
 		this.facade = facade;
 		this.status = status;
-		this.headers = new Headers(cache, fields);
+		this.headers = headers;
 		this.contentType = contentType;
 		this.stream = stream;
 		this.available = true;
 	}
 
-	HttpFields getFields() {
-		return headers.getHttpFields();
+	Facade getFacade() {
+		return facade;
+	}
+
+	Headers getHeaders() {
+		return headers;
 	}
 
 	InputStream getStream() {
