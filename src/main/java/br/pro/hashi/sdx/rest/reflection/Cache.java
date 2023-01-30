@@ -28,8 +28,8 @@ public class Cache {
 				String.class, (valueString) -> valueString));
 	}
 
-	int size() {
-		return functions.size();
+	Map<Class<?>, Function<String, ?>> getFunctions() {
+		return functions;
 	}
 
 	@SuppressWarnings("unchecked")

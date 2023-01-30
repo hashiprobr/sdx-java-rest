@@ -5,21 +5,19 @@ import java.io.Reader;
 import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Stream;
 
 import org.eclipse.jetty.http.HttpFields;
 
-import br.pro.hashi.sdx.rest.Fields;
 import br.pro.hashi.sdx.rest.client.exception.ClientException;
 import br.pro.hashi.sdx.rest.coding.Media;
 import br.pro.hashi.sdx.rest.reflection.Cache;
+import br.pro.hashi.sdx.rest.reflection.Headers;
 import br.pro.hashi.sdx.rest.transform.Deserializer;
 import br.pro.hashi.sdx.rest.transform.Disassembler;
 import br.pro.hashi.sdx.rest.transform.Hint;
 import br.pro.hashi.sdx.rest.transform.facade.Facade;
 
 public class RestResponse {
-	private final Cache cache;
 	private final Facade facade;
 	private final int status;
 	private final Headers headers;
@@ -28,17 +26,16 @@ public class RestResponse {
 	private boolean available;
 
 	RestResponse(Cache cache, Facade facade, int status, HttpFields fields, String contentType, InputStream stream) {
-		this.cache = cache;
 		this.facade = facade;
 		this.status = status;
-		this.headers = new Headers(fields);
+		this.headers = new Headers(cache, fields);
 		this.contentType = contentType;
 		this.stream = stream;
 		this.available = true;
 	}
 
 	HttpFields getFields() {
-		return headers.fields;
+		return headers.getHttpFields();
 	}
 
 	InputStream getStream() {
@@ -139,29 +136,5 @@ public class RestResponse {
 			body = deserializer.read(reader, type);
 		}
 		return body;
-	}
-
-	private class Headers extends Fields {
-		private HttpFields fields;
-
-		private Headers(HttpFields fields) {
-			super(cache);
-			this.fields = fields;
-		}
-
-		@Override
-		protected Stream<String> doStream(String name) {
-			return fields.getValuesList(name).stream();
-		}
-
-		@Override
-		protected String doGet(String name) {
-			return fields.get(name);
-		}
-
-		@Override
-		public Set<String> names() {
-			return fields.getFieldNamesCollection();
-		}
 	}
 }

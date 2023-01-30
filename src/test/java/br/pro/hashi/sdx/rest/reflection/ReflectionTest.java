@@ -18,53 +18,53 @@ import org.mockito.MockedConstruction;
 import org.reflections.Reflections;
 
 import br.pro.hashi.sdx.rest.reflection.exception.ReflectionException;
-import br.pro.hashi.sdx.rest.reflection.mock.AbstractChild;
-import br.pro.hashi.sdx.rest.reflection.mock.Child;
-import br.pro.hashi.sdx.rest.reflection.mock.ChildWithBoth;
-import br.pro.hashi.sdx.rest.reflection.mock.ChildWithLeft;
-import br.pro.hashi.sdx.rest.reflection.mock.ChildWithNeither;
-import br.pro.hashi.sdx.rest.reflection.mock.ChildWithRight;
-import br.pro.hashi.sdx.rest.reflection.mock.FinalChildWithBoth;
-import br.pro.hashi.sdx.rest.reflection.mock.FinalChildWithLeft;
-import br.pro.hashi.sdx.rest.reflection.mock.FinalChildWithNeither;
-import br.pro.hashi.sdx.rest.reflection.mock.FinalChildWithRight;
-import br.pro.hashi.sdx.rest.reflection.mock.FinalImplementationWithBoth;
-import br.pro.hashi.sdx.rest.reflection.mock.FinalImplementationWithDiamond;
-import br.pro.hashi.sdx.rest.reflection.mock.FinalImplementationWithLeft;
-import br.pro.hashi.sdx.rest.reflection.mock.FinalImplementationWithNeither;
-import br.pro.hashi.sdx.rest.reflection.mock.FinalImplementationWithRight;
-import br.pro.hashi.sdx.rest.reflection.mock.FinalMixedWithBoth;
-import br.pro.hashi.sdx.rest.reflection.mock.FinalMixedWithLeft;
-import br.pro.hashi.sdx.rest.reflection.mock.FinalMixedWithNeither;
-import br.pro.hashi.sdx.rest.reflection.mock.FinalMixedWithRight;
-import br.pro.hashi.sdx.rest.reflection.mock.GenericInterface;
-import br.pro.hashi.sdx.rest.reflection.mock.GenericParent;
-import br.pro.hashi.sdx.rest.reflection.mock.ImplementationWithBoth;
-import br.pro.hashi.sdx.rest.reflection.mock.ImplementationWithDiamond;
-import br.pro.hashi.sdx.rest.reflection.mock.ImplementationWithLeft;
-import br.pro.hashi.sdx.rest.reflection.mock.ImplementationWithNeither;
-import br.pro.hashi.sdx.rest.reflection.mock.ImplementationWithRight;
-import br.pro.hashi.sdx.rest.reflection.mock.MixedWithBoth;
-import br.pro.hashi.sdx.rest.reflection.mock.MixedWithLeft;
-import br.pro.hashi.sdx.rest.reflection.mock.MixedWithNeither;
-import br.pro.hashi.sdx.rest.reflection.mock.MixedWithRight;
-import br.pro.hashi.sdx.rest.reflection.mock.Parent;
-import br.pro.hashi.sdx.rest.reflection.mock.PartialGenericInterface;
-import br.pro.hashi.sdx.rest.reflection.mock.PartialGenericParent;
-import br.pro.hashi.sdx.rest.reflection.mock.WithInvalidNoArgsConstructor;
-import br.pro.hashi.sdx.rest.reflection.mock.WithPackageNoArgsConstructor;
-import br.pro.hashi.sdx.rest.reflection.mock.WithPrivateNoArgsConstructor;
-import br.pro.hashi.sdx.rest.reflection.mock.WithProtectedNoArgsConstructor;
-import br.pro.hashi.sdx.rest.reflection.mock.WithPublicNoArgsConstructor;
-import br.pro.hashi.sdx.rest.reflection.mock.WithoutNoArgsConstructor;
+import br.pro.hashi.sdx.rest.reflection.mock.concrete.AbstractChild;
+import br.pro.hashi.sdx.rest.reflection.mock.concrete.Child;
+import br.pro.hashi.sdx.rest.reflection.mock.concrete.Parent;
+import br.pro.hashi.sdx.rest.reflection.mock.noargs.WithInvalidConstructor;
+import br.pro.hashi.sdx.rest.reflection.mock.noargs.WithPackageConstructor;
+import br.pro.hashi.sdx.rest.reflection.mock.noargs.WithPrivateConstructor;
+import br.pro.hashi.sdx.rest.reflection.mock.noargs.WithProtectedConstructor;
+import br.pro.hashi.sdx.rest.reflection.mock.noargs.WithPublicConstructor;
+import br.pro.hashi.sdx.rest.reflection.mock.noargs.WithoutConstructor;
+import br.pro.hashi.sdx.rest.reflection.mock.specific.ChildWithBoth;
+import br.pro.hashi.sdx.rest.reflection.mock.specific.ChildWithLeft;
+import br.pro.hashi.sdx.rest.reflection.mock.specific.ChildWithNeither;
+import br.pro.hashi.sdx.rest.reflection.mock.specific.ChildWithRight;
+import br.pro.hashi.sdx.rest.reflection.mock.specific.FinalChildWithBoth;
+import br.pro.hashi.sdx.rest.reflection.mock.specific.FinalChildWithLeft;
+import br.pro.hashi.sdx.rest.reflection.mock.specific.FinalChildWithNeither;
+import br.pro.hashi.sdx.rest.reflection.mock.specific.FinalChildWithRight;
+import br.pro.hashi.sdx.rest.reflection.mock.specific.FinalImplementationWithBoth;
+import br.pro.hashi.sdx.rest.reflection.mock.specific.FinalImplementationWithDiamond;
+import br.pro.hashi.sdx.rest.reflection.mock.specific.FinalImplementationWithLeft;
+import br.pro.hashi.sdx.rest.reflection.mock.specific.FinalImplementationWithNeither;
+import br.pro.hashi.sdx.rest.reflection.mock.specific.FinalImplementationWithRight;
+import br.pro.hashi.sdx.rest.reflection.mock.specific.FinalMixedWithBoth;
+import br.pro.hashi.sdx.rest.reflection.mock.specific.FinalMixedWithLeft;
+import br.pro.hashi.sdx.rest.reflection.mock.specific.FinalMixedWithNeither;
+import br.pro.hashi.sdx.rest.reflection.mock.specific.FinalMixedWithRight;
+import br.pro.hashi.sdx.rest.reflection.mock.specific.GenericInterface;
+import br.pro.hashi.sdx.rest.reflection.mock.specific.GenericParent;
+import br.pro.hashi.sdx.rest.reflection.mock.specific.ImplementationWithBoth;
+import br.pro.hashi.sdx.rest.reflection.mock.specific.ImplementationWithDiamond;
+import br.pro.hashi.sdx.rest.reflection.mock.specific.ImplementationWithLeft;
+import br.pro.hashi.sdx.rest.reflection.mock.specific.ImplementationWithNeither;
+import br.pro.hashi.sdx.rest.reflection.mock.specific.ImplementationWithRight;
+import br.pro.hashi.sdx.rest.reflection.mock.specific.MixedWithBoth;
+import br.pro.hashi.sdx.rest.reflection.mock.specific.MixedWithLeft;
+import br.pro.hashi.sdx.rest.reflection.mock.specific.MixedWithNeither;
+import br.pro.hashi.sdx.rest.reflection.mock.specific.MixedWithRight;
+import br.pro.hashi.sdx.rest.reflection.mock.specific.PartialGenericInterface;
+import br.pro.hashi.sdx.rest.reflection.mock.specific.PartialGenericParent;
 
 class ReflectionTest {
 	@ParameterizedTest
 	@ValueSource(classes = {
-			WithPublicNoArgsConstructor.class,
-			WithProtectedNoArgsConstructor.class,
-			WithPackageNoArgsConstructor.class,
-			WithPrivateNoArgsConstructor.class })
+			WithPublicConstructor.class,
+			WithProtectedConstructor.class,
+			WithPackageConstructor.class,
+			WithPrivateConstructor.class })
 	void getsAndCallsNoArgsConstructor(Class<?> type) {
 		Constructor<?> constructor = assertDoesNotThrow(() -> {
 			return Reflection.getNoArgsConstructor(type);
@@ -77,14 +77,14 @@ class ReflectionTest {
 	@Test
 	void doesNotGetNoArgsConstructor() {
 		assertThrows(ReflectionException.class, () -> {
-			Reflection.getNoArgsConstructor(WithoutNoArgsConstructor.class);
+			Reflection.getNoArgsConstructor(WithoutConstructor.class);
 		});
 	}
 
 	@Test
 	void doesNotCallNoArgsConstructor() {
 		Constructor<?> constructor = assertDoesNotThrow(() -> {
-			return Reflection.getNoArgsConstructor(WithInvalidNoArgsConstructor.class);
+			return Reflection.getNoArgsConstructor(WithInvalidConstructor.class);
 		});
 		assertThrows(ReflectionException.class, () -> {
 			Reflection.newNoArgsInstance(constructor);

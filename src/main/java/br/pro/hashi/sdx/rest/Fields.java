@@ -2,15 +2,14 @@ package br.pro.hashi.sdx.rest;
 
 import java.util.List;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
-import br.pro.hashi.sdx.rest.reflection.Cache;
+import br.pro.hashi.sdx.rest.reflection.Headers;
+import br.pro.hashi.sdx.rest.reflection.Queries;
 
-public abstract class Fields {
-	private final Cache cache;
-
-	protected Fields(Cache cache) {
-		this.cache = cache;
+public sealed abstract class Fields permits Headers, Queries {
+	protected Fields() {
 	}
 
 	public List<String> split(String name, String regex) {
@@ -30,7 +29,7 @@ public abstract class Fields {
 		if (valueString == null) {
 			throw new IllegalArgumentException("Name '%s' does not exist".formatted(name));
 		}
-		return cache.get(type).apply(valueString);
+		return function(type).apply(valueString);
 	}
 
 	public List<String> getList(String name) {
@@ -42,7 +41,7 @@ public abstract class Fields {
 	}
 
 	private <T> List<T> map(Stream<String> stream, Class<T> type) {
-		return stream.map(cache.get(type)).toList();
+		return stream.map(function(type)).toList();
 	}
 
 	public String get(String name) {
@@ -59,18 +58,17 @@ public abstract class Fields {
 
 	public <T> T get(String name, Class<T> type, T defaultValue) {
 		String valueString = doGet(name);
-		T value;
 		if (valueString == null) {
-			value = defaultValue;
-		} else {
-			value = cache.get(type).apply(valueString);
+			return defaultValue;
 		}
-		return value;
+		return function(type).apply(valueString);
 	}
 
 	protected abstract Stream<String> doStream(String name);
 
 	protected abstract String doGet(String name);
+
+	protected abstract <T> Function<String, T> function(Class<T> type);
 
 	public abstract Set<String> names();
 }
