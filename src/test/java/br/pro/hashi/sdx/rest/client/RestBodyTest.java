@@ -79,8 +79,17 @@ class RestBodyTest {
 	@Test
 	void setsName() {
 		b = newBody();
-		assertSame(b, b.withName("name"));
+		b.setName("name");
 		assertEquals("name", b.getName());
+	}
+
+	@Test
+	void doesNotSetName() {
+		b = newBody();
+		assertThrows(NullPointerException.class, () -> {
+			b.setName(null);
+		});
+		assertNull(b.getName());
 	}
 
 	@Test

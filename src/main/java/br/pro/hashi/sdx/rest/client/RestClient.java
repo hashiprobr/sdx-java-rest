@@ -722,8 +722,37 @@ public final class RestClient {
 		}
 
 		/**
+		 * Alias for {@link #withBody(String, Object)}.
+		 * 
+		 * @param name the name
+		 * @param body the body
+		 * @return this proxy, for chaining
+		 * @throws NullPointerException if the name is null
+		 * @hidden
+		 */
+		public Proxy b(String name, Object body) {
+			return withBody(name, body);
+		}
+
+		/**
+		 * Alias for {@code withBody(String, T, Hint<T>)}.
+		 * 
+		 * @param <T>  the type of the body
+		 * @param name the name
+		 * @param body the body
+		 * @param hint the type hint
+		 * @return this proxy, for chaining
+		 * @throws NullPointerException if the name is null or the type hint is null
+		 * @hidden
+		 */
+		public <T> Proxy b(String name, T body, Hint<T> hint) {
+			return withBody(name, body, hint);
+		}
+
+		/**
 		 * <p>
-		 * Adds a body to the request.
+		 * Adds a body to the request. If it is a multipart request, the part
+		 * corresponding to the body has no name.
 		 * </p>
 		 * <p>
 		 * This method calls {@code body.getClass()} to obtain the body type. Since
@@ -738,17 +767,15 @@ public final class RestClient {
 		 * @return this proxy, for chaining
 		 */
 		public Proxy withBody(Object body) {
-			if (body instanceof RestBody) {
-				bodies.add((RestBody) body);
-			} else {
-				bodies.add(new RestBody(body));
-			}
+			RestBody restBody = wrap(body);
+			bodies.add(restBody);
 			return this;
 		}
 
 		/**
 		 * <p>
-		 * Adds a body with hinted type to the request.
+		 * Adds a body with hinted type to the request. If it is a multipart request,
+		 * the part corresponding to the body has no name.
 		 * </p>
 		 * <p>
 		 * Call this method if the body type is generic.
@@ -764,12 +791,82 @@ public final class RestClient {
 		 * @throws NullPointerException if the type hint is null
 		 */
 		public <T> Proxy withBody(T body, Hint<T> hint) {
-			if (body instanceof RestBody) {
-				bodies.add((RestBody) body);
-			} else {
-				bodies.add(new RestBody(body, hint));
-			}
+			RestBody restBody = wrap(body, hint);
+			bodies.add(restBody);
 			return this;
+		}
+
+		/**
+		 * <p>
+		 * Adds a named body to the request. If it is not a multipart request, the name
+		 * is ignored.
+		 * </p>
+		 * <p>
+		 * This method calls {@code body.getClass()} to obtain the body type. Since
+		 * {@code body.getClass()} loses generic information due to type erasure, do not
+		 * call it if the type is generic. Call {@code withBody(String, T, Hint<T>)}
+		 * instead.
+		 * </p>
+		 * <p>
+		 * The alias {@link #b(String, Object)} is available for short chaining.
+		 * </p>
+		 * 
+		 * @param name the name
+		 * @param body the body
+		 * @return this proxy, for chaining
+		 * @throws NullPointerException if the name is null
+		 */
+		public Proxy withBody(String name, Object body) {
+			RestBody restBody = wrap(body);
+			restBody.setName(name);
+			bodies.add(restBody);
+			return this;
+		}
+
+		/**
+		 * <p>
+		 * Adds a named body with hinted type to the request. If it is not a multipart
+		 * request, the name is ignored.
+		 * </p>
+		 * <p>
+		 * Call this method if the body type is generic.
+		 * </p>
+		 * <p>
+		 * The alias {@code b(String, T, Hint<T>)} is available for short chaining.
+		 * </p>
+		 * 
+		 * @param <T>  the type of the body
+		 * @param name the name
+		 * @param body the body
+		 * @param hint the type hint
+		 * @return this proxy, for chaining
+		 * @throws NullPointerException if the name is null or type hint is null
+		 */
+		public <T> Proxy withBody(String name, T body, Hint<T> hint) {
+			RestBody restBody = wrap(body, hint);
+			restBody.setName(name);
+			bodies.add(restBody);
+			return this;
+		}
+
+		private RestBody wrap(Object body) {
+			RestBody restBody;
+			if (body instanceof RestBody) {
+				restBody = (RestBody) body;
+			} else {
+				restBody = new RestBody(body);
+			}
+			return restBody;
+		}
+
+		private <T> RestBody wrap(T body, Hint<T> hint) {
+			RestBody restBody;
+			if (body instanceof RestBody) {
+				restBody = (RestBody) body;
+			} else {
+				restBody = new RestBody(body, hint);
+			}
+			return restBody;
 		}
 
 		/**
@@ -826,7 +923,8 @@ public final class RestClient {
 
 		/**
 		 * <p>
-		 * Sends a POST request to a specified URI.
+		 * Sends a POST request to a specified URI. If it is a multipart POST, the part
+		 * corresponding to the body has no name.
 		 * </p>
 		 * <p>
 		 * This method calls {@code body.getClass()} to obtain the body type. Since
@@ -847,7 +945,8 @@ public final class RestClient {
 
 		/**
 		 * <p>
-		 * Sends a POST request with hinted type to a specified URI.
+		 * Sends a POST request with hinted type to a specified URI. If it is a
+		 * multipart POST, the part corresponding to the body has no name.
 		 * </p>
 		 * <p>
 		 * Call this method if the body type is generic.
@@ -880,7 +979,8 @@ public final class RestClient {
 
 		/**
 		 * <p>
-		 * Sends a PUT request to a specified URI.
+		 * Sends a PUT request to a specified URI. If it is a multipart PUT, the part
+		 * corresponding to the body has no name.
 		 * </p>
 		 * <p>
 		 * This method calls {@code body.getClass()} to obtain the body type. Since
@@ -900,7 +1000,8 @@ public final class RestClient {
 
 		/**
 		 * <p>
-		 * Sends a PUT request with hinted type to a specified URI.
+		 * Sends a PUT request with hinted type to a specified URI. If it is a multipart
+		 * PUT, the part corresponding to the body has no name.
 		 * </p>
 		 * <p>
 		 * Call this method if the body type is generic.
@@ -933,7 +1034,8 @@ public final class RestClient {
 
 		/**
 		 * <p>
-		 * Sends a PATCH request to a specified URI.
+		 * Sends a PATCH request to a specified URI. If it is a multipart PATCH, the
+		 * part corresponding to the body has no name.
 		 * </p>
 		 * <p>
 		 * This method calls {@code body.getClass()} to obtain the body type. Since
@@ -954,7 +1056,8 @@ public final class RestClient {
 
 		/**
 		 * <p>
-		 * Sends a PATCH request with hinted type to a specified URI.
+		 * Sends a PATCH request with hinted type to a specified URI. If it is a
+		 * multipart PATCH, the part corresponding to the body has no name.
 		 * </p>
 		 * <p>
 		 * Call this method if the body type is generic.

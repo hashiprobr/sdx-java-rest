@@ -79,6 +79,13 @@ public class RestBody {
 		return name;
 	}
 
+	void setName(String name) {
+		if (name == null) {
+			throw new NullPointerException("Name cannot be null");
+		}
+		this.name = name;
+	}
+
 	String getContentType() {
 		return contentType;
 	}
@@ -89,17 +96,6 @@ public class RestBody {
 
 	boolean isBase64() {
 		return base64;
-	}
-
-	/**
-	 * Sets the name of this body for a multipart request.
-	 * 
-	 * @param name the name
-	 * @return this body, for chaining
-	 */
-	public final RestBody withName(String name) {
-		this.name = name;
-		return this;
 	}
 
 	/**

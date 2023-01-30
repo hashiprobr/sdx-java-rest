@@ -979,8 +979,8 @@ class RestClientTest {
 	void proxyAddsTwoBodiesAndGetsTwoTasks() {
 		try (MockedConstruction<MultiPartRequestContent> construction = mockConstruction(MultiPartRequestContent.class)) {
 			p = spyNewProxy();
-			p.withBody(new RestBody(new Object()).withName("one"));
-			p.withBody(new RestBody(new Object()).withName("two"));
+			p.b("one", new Object());
+			p.b("two", new Object(), new Hint<Object>() {});
 			List<Content> contents = mockContents();
 			List<Task> tasks = p.addBodiesAndGetTasks(request);
 			MultiPartRequestContent content = construction.constructed().get(0);
