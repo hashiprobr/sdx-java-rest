@@ -368,9 +368,9 @@ class RestClientTest {
 	}
 
 	@Test
-	void proxyInitializesWithoutTimeout() {
+	void proxyInitializesWithDefaultTimeout() {
 		p = newProxy();
-		assertEquals(0, p.getTimeout());
+		assertEquals(RestClient.TIMEOUT, p.getTimeout());
 	}
 
 	@Test
@@ -572,16 +572,7 @@ class RestClientTest {
 	@Test
 	void proxySetsTimeout() {
 		p = newProxy();
-		assertSame(p, p.t(1));
-		assertEquals(1, p.getTimeout());
-	}
-
-	@Test
-	void proxyDoesNotSetTimeout() {
-		p = newProxy();
-		assertThrows(IllegalArgumentException.class, () -> {
-			p.t(-1);
-		});
+		assertSame(p, p.t(0));
 		assertEquals(0, p.getTimeout());
 	}
 
@@ -1144,7 +1135,7 @@ class RestClientTest {
 
 	private MockedConstruction<InputStreamResponseListener> mockListenerConstruction() {
 		return mockConstruction(InputStreamResponseListener.class, (mock, context) -> {
-			when(mock.get(0, TimeUnit.SECONDS)).thenReturn(response);
+			when(mock.get(RestClient.TIMEOUT, TimeUnit.SECONDS)).thenReturn(response);
 			when(mock.getInputStream()).thenReturn(InputStream.nullInputStream());
 		});
 	}
@@ -1207,7 +1198,7 @@ class RestClientTest {
 
 	private MockedConstruction<InputStreamResponseListener> mockListenerConstruction(Exception exception) {
 		return mockConstruction(InputStreamResponseListener.class, (mock, context) -> {
-			when(mock.get(0, TimeUnit.SECONDS)).thenThrow(exception);
+			when(mock.get(RestClient.TIMEOUT, TimeUnit.SECONDS)).thenThrow(exception);
 		});
 	}
 

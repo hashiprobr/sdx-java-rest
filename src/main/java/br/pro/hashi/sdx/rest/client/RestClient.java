@@ -45,6 +45,8 @@ import br.pro.hashi.sdx.rest.transform.facade.Facade;
  * Main object for sending REST requests.
  */
 public final class RestClient {
+	static final int TIMEOUT = 30;
+
 	/**
 	 * Instantiates a default REST client using a specified URL prefix.
 	 * 
@@ -316,7 +318,6 @@ public final class RestClient {
 	 * 
 	 * @param timeout the timeout, in seconds
 	 * @return this proxy, for chaining
-	 * @throws IllegalArgumentException if the timeout is not positive
 	 * @hidden
 	 */
 	public Proxy t(int timeout) {
@@ -334,7 +335,6 @@ public final class RestClient {
 	 * 
 	 * @param timeout the timeout, in seconds
 	 * @return this proxy, for chaining
-	 * @throws IllegalArgumentException if the timeout is not positive
 	 */
 	public Proxy withTimeout(int timeout) {
 		return new Proxy().withTimeout(timeout);
@@ -527,7 +527,7 @@ public final class RestClient {
 			this.queries = new ArrayList<>();
 			this.headers = new ArrayList<>();
 			this.bodies = new ArrayList<>();
-			this.timeout = 0;
+			this.timeout = TIMEOUT;
 		}
 
 		RestClient getEnclosing() {
@@ -777,7 +777,6 @@ public final class RestClient {
 		 * 
 		 * @param timeout the timeout, in seconds
 		 * @return this proxy, for chaining
-		 * @throws IllegalArgumentException if the timeout is not positive
 		 * @hidden
 		 */
 		public Proxy t(int timeout) {
@@ -794,12 +793,8 @@ public final class RestClient {
 		 * 
 		 * @param timeout the timeout, in seconds
 		 * @return this proxy, for chaining
-		 * @throws IllegalArgumentException if the timeout is not positive
 		 */
 		public Proxy withTimeout(int timeout) {
-			if (timeout < 1) {
-				throw new IllegalArgumentException("Timeout must be positive");
-			}
 			this.timeout = timeout;
 			return this;
 		}
