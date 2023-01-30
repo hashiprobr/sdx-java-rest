@@ -33,8 +33,9 @@ public sealed abstract class Fields permits Headers, Queries {
 	 * @param name  the name
 	 * @param regex the separator
 	 * @return a list with the items
-	 * @throws NullPointerException     if the name is null
-	 * @throws IllegalArgumentException if the name is invalid or not available
+	 * @throws NullPointerException     if the name is null or the separator is null
+	 * @throws IllegalArgumentException if the name is invalid or not available or
+	 *                                  the separator is empty
 	 */
 	public List<String> split(String name, String regex) {
 		return split(name, regex, String.class);
