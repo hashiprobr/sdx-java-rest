@@ -3,9 +3,8 @@ package br.pro.hashi.sdx.rest.client;
 import java.io.InputStream;
 import java.io.Reader;
 import java.lang.reflect.Type;
-import java.util.List;
-import java.util.Set;
 
+import br.pro.hashi.sdx.rest.Fields;
 import br.pro.hashi.sdx.rest.client.exception.ClientException;
 import br.pro.hashi.sdx.rest.coding.Media;
 import br.pro.hashi.sdx.rest.reflection.Headers;
@@ -14,6 +13,9 @@ import br.pro.hashi.sdx.rest.transform.Disassembler;
 import br.pro.hashi.sdx.rest.transform.Hint;
 import br.pro.hashi.sdx.rest.transform.facade.Facade;
 
+/**
+ * Represents the response to a REST request.
+ */
 public class RestResponse {
 	private final Facade facade;
 	private final int status;
@@ -35,89 +37,113 @@ public class RestResponse {
 		return facade;
 	}
 
-	Headers getHeaders() {
-		return headers;
-	}
-
 	InputStream getStream() {
 		return stream;
 	}
 
+	/**
+	 * Obtains the status code of the response.
+	 * 
+	 * @return the code
+	 */
 	public int getStatus() {
 		return status;
 	}
 
-	public List<String> splitHeader(String name, String regex) {
-		return headers.split(name, regex);
+	/**
+	 * Obtains the headers of the response.
+	 * 
+	 * @return the headers
+	 */
+	public Fields getHeaders() {
+		return headers;
 	}
 
-	public <T> List<T> splitHeader(String name, String regex, Class<T> type) {
-		return headers.split(name, regex, type);
-	}
-
-	public String requireHeader(String name) {
-		return headers.require(name);
-	}
-
-	public <T> T requireHeader(String name, Class<T> type) {
-		return headers.require(name, type);
-	}
-
-	public List<String> getHeaderList(String name) {
-		return headers.getList(name);
-	}
-
-	public <T> List<T> getHeaderList(String name, Class<T> type) {
-		return headers.getList(name, type);
-	}
-
-	public String getHeader(String name) {
-		return headers.get(name);
-	}
-
-	public String getHeader(String name, String defaultValue) {
-		return headers.get(name, defaultValue);
-	}
-
-	public <T> T getHeader(String name, Class<T> type) {
-		return headers.get(name, type);
-	}
-
-	public <T> T getHeader(String name, Class<T> type, T defaultValue) {
-		return headers.get(name, type, defaultValue);
-	}
-
-	public Set<String> headerNames() {
-		return headers.names();
-	}
-
+	/**
+	 * Obtains the content type of the response, with parameters if they are
+	 * present.
+	 * 
+	 * @return the content type
+	 */
 	public String getContentType() {
 		return contentType;
 	}
 
-	public <T> T getBodyAs(Class<T> type) {
-		return getBodyAs(type, contentType);
+	/**
+	 * <p>
+	 * Obtains the body as an object of a specified type.
+	 * </p>
+	 * <p>
+	 * This method considers the content type sent by the server.
+	 * </p>
+	 * 
+	 * @param <T>  the type of the body
+	 * @param type an object representing {@code T}
+	 * @return the body
+	 */
+	public <T> T getBody(Class<T> type) {
+		return getBody(type, contentType);
 	}
 
-	public <T> T getBodyAs(Hint<T> hint) {
-		return getBodyAs(hint, contentType);
+	/**
+	 * <p>
+	 * Obtains the body as an object of a hinted type.
+	 * </p>
+	 * <p>
+	 * This method considers the content type sent by the server.
+	 * </p>
+	 * 
+	 * @param <T>  the type of the body
+	 * @param hint a hint representing {@code T}
+	 * @return the body
+	 */
+	public <T> T getBody(Hint<T> hint) {
+		return getBody(hint, contentType);
 	}
 
-	public <T> T getBodyAs(Class<T> type, String contentType) {
+	/**
+	 * <p>
+	 * Obtains the body as an object of a specified type, transforming from a
+	 * specified content type, with parameters if they are present.
+	 * </p>
+	 * <p>
+	 * This method ignores the content type sent by the server.
+	 * </p>
+	 * 
+	 * @param <T>         the type of the body
+	 * @param type        an object representing {@code T}
+	 * @param contentType the content type
+	 * @return the body
+	 */
+	public <T> T getBody(Class<T> type, String contentType) {
 		if (type == null) {
 			throw new NullPointerException("Type cannot be null");
 		}
-		return getBodyAs((Type) type, contentType);
+		return getBody((Type) type, contentType);
 	}
 
-	public <T> T getBodyAs(Hint<T> hint, String contentType) {
+	/**
+	 * <p>
+	 * Obtains the body as an object of a hinted type, transforming from a specified
+	 * content type, with parameters if they are present.
+	 * </p>
+	 * <p>
+	 * This method ignores the content type sent by the server.
+	 * </p>
+	 * 
+	 * @param <T>         the type of the body
+	 * @param hint        a hint representing {@code T}
+	 * @param contentType the content type
+	 * @return the body
+	 */
+	public <T> T getBody(Hint<T> hint, String contentType) {
 		if (hint == null) {
 			throw new NullPointerException("Hint cannot be null");
 		}
-		return getBodyAs(hint.getType(), contentType);
+		return getBody(hint.getType(), contentType);
 	}
 
-	private <T> T getBodyAs(Type type, String contentType) {
+	private <T> T getBody(Type type, String contentType) {
 		synchronized (this) {
 			if (!available) {
 				throw new ClientException("Stream is not available");
