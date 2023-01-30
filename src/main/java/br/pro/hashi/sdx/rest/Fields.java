@@ -58,10 +58,18 @@ public sealed abstract class Fields permits Headers, Queries {
 	 * @param regex the separator
 	 * @param type  an object representing {@code T}
 	 * @return a list with the items
-	 * @throws NullPointerException     if the name is null or the type is null
-	 * @throws IllegalArgumentException if the name is invalid or not available
+	 * @throws NullPointerException     if the name is null, the separator is null,
+	 *                                  or the type is null
+	 * @throws IllegalArgumentException if the name is invalid or not available or
+	 *                                  the separator is empty
 	 */
 	public <T> List<T> split(String name, String regex, Class<T> type) {
+		if (regex == null) {
+			throw new NullPointerException("Separator cannot be null");
+		}
+		if (regex.isEmpty()) {
+			throw new IllegalArgumentException("Separator cannot be empty");
+		}
 		return map(Stream.of(require(name).split(regex)), type);
 	}
 

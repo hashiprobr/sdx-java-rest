@@ -459,7 +459,7 @@ class RestClientTest {
 	@Test
 	void proxyAddsHeader() {
 		p = newProxy();
-		assertSame(p, p.h("name", 0));
+		assertSame(p, p.h(" \t\nname \t\n", 0));
 		assertEquals(1, p.getHeaders().size());
 		Entry entry = p.getHeaders().get(0);
 		assertEquals("name", entry.name());
@@ -693,7 +693,7 @@ class RestClientTest {
 		p = spyNewProxy();
 		RestResponse restResponse = mock(RestResponse.class);
 		doReturn(restResponse).when(p).doRequest("OPTIONS", "/");
-		assertSame(restResponse, p.request("options", "/"));
+		assertSame(restResponse, p.request(" \t\noptions \t\n", "/"));
 	}
 
 	@Test
@@ -725,7 +725,7 @@ class RestClientTest {
 		doReturn(tasks).when(p).addBodiesAndGetTasks(request);
 		RestResponse restResponse = mock(RestResponse.class);
 		doReturn(restResponse).when(p).send(same(request), same(tasks));
-		assertSame(restResponse, p.doRequest("OPTIONS", "/"));
+		assertSame(restResponse, p.doRequest("OPTIONS", " \t\n/ \t\n"));
 	}
 
 	@Test
