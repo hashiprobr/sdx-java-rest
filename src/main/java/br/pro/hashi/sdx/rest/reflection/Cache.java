@@ -45,12 +45,11 @@ public class Cache {
 			if (!method.getReturnType().equals(type)) {
 				throw new ReflectionException("Type valueOf method must return an object of the type");
 			}
-			int modifiers = method.getModifiers();
-			if (!(Modifier.isPublic(modifiers) && Modifier.isStatic(modifiers))) {
-				throw new ReflectionException("Type valueOf method must be public and static");
+			if (!Modifier.isStatic(method.getModifiers())) {
+				throw new ReflectionException("Type valueOf method must be static");
 			}
 			function = (valueString) -> {
-				return invoke(method, valueString);
+				return call(method, valueString);
 			};
 			functions.put(type, function);
 		}
@@ -58,12 +57,14 @@ public class Cache {
 	}
 
 	@SuppressWarnings("unchecked")
-	private <T> T invoke(Method method, String valueString) {
+	private <T> T call(Method method, String valueString) {
 		T value;
 		try {
 			value = (T) method.invoke(null, valueString);
-		} catch (InvocationTargetException | IllegalAccessException exception) {
-			throw new ReflectionException(exception);
+		} catch (InvocationTargetException exception) {
+			throw new ReflectionException(exception.getCause());
+		} catch (IllegalAccessException exception) {
+			throw new ReflectionException("Type valueOf method must be public");
 		}
 		return value;
 	}

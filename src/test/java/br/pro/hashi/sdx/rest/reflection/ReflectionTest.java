@@ -7,6 +7,7 @@ import static org.mockito.Mockito.mockConstruction;
 import static org.mockito.Mockito.when;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -21,6 +22,7 @@ import br.pro.hashi.sdx.rest.reflection.exception.ReflectionException;
 import br.pro.hashi.sdx.rest.reflection.mock.concrete.AbstractChild;
 import br.pro.hashi.sdx.rest.reflection.mock.concrete.Child;
 import br.pro.hashi.sdx.rest.reflection.mock.concrete.Parent;
+import br.pro.hashi.sdx.rest.reflection.mock.noargs.WithAbstractConstructor;
 import br.pro.hashi.sdx.rest.reflection.mock.noargs.WithInvalidConstructor;
 import br.pro.hashi.sdx.rest.reflection.mock.noargs.WithPackageConstructor;
 import br.pro.hashi.sdx.rest.reflection.mock.noargs.WithPrivateConstructor;
@@ -82,9 +84,19 @@ class ReflectionTest {
 	}
 
 	@Test
-	void doesNotCallNoArgsConstructor() {
-		Constructor<?> constructor = assertDoesNotThrow(() -> {
+	void doesNotCallNoArgsConstructorIfThrows() {
+		Constructor<WithInvalidConstructor> constructor = assertDoesNotThrow(() -> {
 			return Reflection.getNoArgsConstructor(WithInvalidConstructor.class);
+		});
+		assertThrows(ReflectionException.class, () -> {
+			Reflection.newNoArgsInstance(constructor);
+		});
+	}
+
+	@Test
+	void doesNotCallNoArgsConstructorIfReflectionThrows() throws InvocationTargetException, IllegalAccessException, InstantiationException {
+		Constructor<WithAbstractConstructor> constructor = assertDoesNotThrow(() -> {
+			return Reflection.getNoArgsConstructor(WithAbstractConstructor.class);
 		});
 		assertThrows(ReflectionException.class, () -> {
 			Reflection.newNoArgsInstance(constructor);

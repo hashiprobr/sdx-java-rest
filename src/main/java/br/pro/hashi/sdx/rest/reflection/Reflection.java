@@ -35,7 +35,9 @@ public final class Reflection {
 		T instance;
 		try {
 			instance = constructor.newInstance();
-		} catch (InvocationTargetException | IllegalAccessException | InstantiationException exception) {
+		} catch (InvocationTargetException exception) {
+			throw new ReflectionException(exception.getCause());
+		} catch (IllegalAccessException | InstantiationException exception) {
 			throw new ReflectionException(exception);
 		}
 		return instance;
