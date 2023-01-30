@@ -153,11 +153,13 @@ public class RestResponse {
 		T body;
 		stream = Media.decode(stream, contentType);
 		if (facade.isBinary(type)) {
+			contentType = Media.strip(contentType);
 			contentType = facade.cleanForDisassembling(contentType, type);
 			Disassembler disassembler = facade.getDisassembler(contentType);
 			body = disassembler.read(stream, type);
 		} else {
 			Reader reader = Media.reader(stream, contentType);
+			contentType = Media.strip(contentType);
 			contentType = facade.cleanForDeserializing(contentType, type);
 			Deserializer deserializer = facade.getDeserializer(contentType);
 			body = deserializer.read(reader, type);

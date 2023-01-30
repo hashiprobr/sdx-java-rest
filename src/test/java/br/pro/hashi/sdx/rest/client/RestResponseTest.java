@@ -5,14 +5,17 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 
 import java.io.InputStream;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.MockedStatic;
 
 import br.pro.hashi.sdx.rest.client.exception.ClientException;
+import br.pro.hashi.sdx.rest.coding.Media;
 import br.pro.hashi.sdx.rest.reflection.Headers;
 import br.pro.hashi.sdx.rest.transform.Deserializer;
 import br.pro.hashi.sdx.rest.transform.Disassembler;
@@ -33,20 +36,24 @@ class RestResponseTest {
 
 	@Test
 	void getsBody() {
-		Object body = mockBody();
-		assertSame(body, r.getBody(Object.class));
-		assertThrows(ClientException.class, () -> {
-			r.getBody(Object.class);
-		});
+		try (MockedStatic<Media> media = mockMedia()) {
+			Object body = mockBody();
+			assertSame(body, r.getBody(Object.class));
+			assertThrows(ClientException.class, () -> {
+				r.getBody(Object.class);
+			});
+		}
 	}
 
 	@Test
 	void getsBodyWithHint() {
-		Object body = mockBody();
-		assertSame(body, r.getBody(new Hint<Object>() {}));
-		assertThrows(ClientException.class, () -> {
-			r.getBody(new Hint<Object>() {});
-		});
+		try (MockedStatic<Media> media = mockMedia()) {
+			Object body = mockBody();
+			assertSame(body, r.getBody(new Hint<Object>() {}));
+			assertThrows(ClientException.class, () -> {
+				r.getBody(new Hint<Object>() {});
+			});
+		}
 	}
 
 	private Object mockBody() {
@@ -75,20 +82,24 @@ class RestResponseTest {
 
 	@Test
 	void getsBinaryBody() {
-		Object body = mockBinaryBody();
-		assertSame(body, r.getBody(Object.class));
-		assertThrows(ClientException.class, () -> {
-			r.getBody(Object.class);
-		});
+		try (MockedStatic<Media> media = mockMedia()) {
+			Object body = mockBinaryBody();
+			assertSame(body, r.getBody(Object.class));
+			assertThrows(ClientException.class, () -> {
+				r.getBody(Object.class);
+			});
+		}
 	}
 
 	@Test
 	void getsBinaryBodyWithHint() {
-		Object body = mockBinaryBody();
-		assertSame(body, r.getBody(new Hint<Object>() {}));
-		assertThrows(ClientException.class, () -> {
-			r.getBody(new Hint<Object>() {});
-		});
+		try (MockedStatic<Media> media = mockMedia()) {
+			Object body = mockBinaryBody();
+			assertSame(body, r.getBody(new Hint<Object>() {}));
+			assertThrows(ClientException.class, () -> {
+				r.getBody(new Hint<Object>() {});
+			});
+		}
 	}
 
 	private Object mockBinaryBody() {
@@ -99,5 +110,11 @@ class RestResponseTest {
 		when(facade.cleanForDisassembling(null, Object.class)).thenReturn("type/subtype");
 		when(facade.getDisassembler("type/subtype")).thenReturn(disassembler);
 		return body;
+	}
+
+	private MockedStatic<Media> mockMedia() {
+		MockedStatic<Media> media = mockStatic(Media.class);
+		media.when(() -> Media.strip("type/subtype")).thenReturn("type/subtype");
+		return media;
 	}
 }
