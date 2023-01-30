@@ -113,7 +113,7 @@ public class RestBody {
 
 	/**
 	 * <p>
-	 * Sets the content type for this body.
+	 * Sets the content type for this body. Parameters are ignored.
 	 * </p>
 	 * <p>
 	 * The alias {@link #as(String)} is available for short chaining.
