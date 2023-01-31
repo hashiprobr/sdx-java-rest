@@ -35,7 +35,6 @@ import br.pro.hashi.sdx.rest.coding.Percent;
 import br.pro.hashi.sdx.rest.coding.Query;
 import br.pro.hashi.sdx.rest.reflection.Cache;
 import br.pro.hashi.sdx.rest.reflection.Headers;
-import br.pro.hashi.sdx.rest.server.exception.ServerException;
 import br.pro.hashi.sdx.rest.transform.Assembler;
 import br.pro.hashi.sdx.rest.transform.Serializer;
 import br.pro.hashi.sdx.rest.transform.facade.Facade;
@@ -563,7 +562,8 @@ public final class RestClient {
 		 * @return this proxy, for chaining
 		 * @throws NullPointerException     if the header name is null or the header
 		 *                                  value is null
-		 * @throws IllegalArgumentException if the header name is blank
+		 * @throws IllegalArgumentException if the header name is invalid or the header
+		 *                                  value is invalid
 		 * @hidden
 		 */
 		public Proxy h(String name, Object value) {
@@ -587,7 +587,8 @@ public final class RestClient {
 		 * @return this proxy, for chaining
 		 * @throws NullPointerException     if the header name is null or the header
 		 *                                  value is null
-		 * @throws IllegalArgumentException if the header name is blank
+		 * @throws IllegalArgumentException if the header name is invalid or the header
+		 *                                  value is invalid
 		 */
 		public Proxy withHeader(String name, Object value) {
 			if (name == null) {
@@ -1004,9 +1005,9 @@ public final class RestClient {
 			try {
 				response = listener.get(timeout, TimeUnit.SECONDS);
 			} catch (ExecutionException exception) {
-				throw new ServerException(exception.getCause());
+				throw new ClientException(exception.getCause());
 			} catch (TimeoutException exception) {
-				throw new ServerException(exception);
+				throw new ClientException(exception);
 			} catch (InterruptedException exception) {
 				throw new AssertionError(exception);
 			}

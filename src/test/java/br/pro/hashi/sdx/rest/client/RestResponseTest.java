@@ -12,6 +12,9 @@ import java.io.Reader;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.MockedStatic;
 
 import br.pro.hashi.sdx.rest.client.exception.ClientException;
@@ -23,24 +26,20 @@ import br.pro.hashi.sdx.rest.transform.Hint;
 import br.pro.hashi.sdx.rest.transform.facade.Facade;
 
 class RestResponseTest {
+	private static final String CONTENT_TYPE = "type/subtype";
+
 	private Facade facade;
 	private Headers headers;
 	private InputStream stream;
-	private Reader reader;
-	private RestResponse r;
 	private MockedStatic<Media> media;
+	private RestResponse r;
 
 	@BeforeEach
 	void setUp() {
 		facade = mock(Facade.class);
 		headers = mock(Headers.class);
 		stream = InputStream.nullInputStream();
-		reader = mock(Reader.class);
-		r = new RestResponse(facade, 600, headers, null, stream);
 		media = mockStatic(Media.class);
-		media.when(() -> Media.decode(stream, null)).thenReturn(stream);
-		media.when(() -> Media.reader(stream, null)).thenReturn(reader);
-		media.when(() -> Media.strip(null)).thenReturn("type/subtype");
 	}
 
 	@AfterEach
@@ -48,36 +47,46 @@ class RestResponseTest {
 		media.close();
 	}
 
-	@Test
-	void getsBody() {
-		Object body = mockBody();
+	@ParameterizedTest
+	@NullSource
+	@ValueSource(strings = { CONTENT_TYPE })
+	void getsBody(String contentType) {
+		Object body = mockBody(contentType);
 		assertSame(body, r.getBody(Object.class));
 		assertThrows(ClientException.class, () -> {
 			r.getBody(Object.class);
 		});
 	}
 
-	@Test
-	void getsBodyWithHint() {
-		Object body = mockBody();
+	@ParameterizedTest
+	@NullSource
+	@ValueSource(strings = { CONTENT_TYPE })
+	void getsBodyWithHint(String contentType) {
+		Object body = mockBody(contentType);
 		assertSame(body, r.getBody(new Hint<Object>() {}));
 		assertThrows(ClientException.class, () -> {
 			r.getBody(new Hint<Object>() {});
 		});
 	}
 
-	private Object mockBody() {
+	private Object mockBody(String contentType) {
+		Reader reader = mock(Reader.class);
+		media.when(() -> Media.decode(stream, contentType)).thenReturn(stream);
+		media.when(() -> Media.reader(stream, contentType)).thenReturn(reader);
+		media.when(() -> Media.strip(contentType)).thenReturn(null);
+		r = newRestResponse(contentType);
 		Object body = new Object();
 		Deserializer deserializer = mock(Deserializer.class);
 		when(deserializer.read(reader, Object.class)).thenReturn(body);
 		when(facade.isBinary(Object.class)).thenReturn(false);
-		when(facade.cleanForDeserializing("type/subtype", Object.class)).thenReturn("type/subtype");
-		when(facade.getDeserializer("type/subtype")).thenReturn(deserializer);
+		when(facade.cleanForDeserializing(null, Object.class)).thenReturn(CONTENT_TYPE);
+		when(facade.getDeserializer(CONTENT_TYPE)).thenReturn(deserializer);
 		return body;
 	}
 
 	@Test
 	void doesNotGetBody() {
+		r = newRestResponse();
 		assertThrows(NullPointerException.class, () -> {
 			r.getBody((Class<?>) null);
 		});
@@ -85,36 +94,52 @@ class RestResponseTest {
 
 	@Test
 	void doesNotGetBodyWithHint() {
+		r = newRestResponse();
 		assertThrows(NullPointerException.class, () -> {
 			r.getBody((Hint<?>) null);
 		});
 	}
 
-	@Test
-	void getsBinaryBody() {
-		Object body = mockBinaryBody();
+	@ParameterizedTest
+	@NullSource
+	@ValueSource(strings = { CONTENT_TYPE })
+	void getsBinaryBody(String contentType) {
+		Object body = mockBinaryBody(contentType);
 		assertSame(body, r.getBody(Object.class));
 		assertThrows(ClientException.class, () -> {
 			r.getBody(Object.class);
 		});
 	}
 
-	@Test
-	void getsBinaryBodyWithHint() {
-		Object body = mockBinaryBody();
+	@ParameterizedTest
+	@NullSource
+	@ValueSource(strings = { CONTENT_TYPE })
+	void getsBinaryBodyWithHint(String contentType) {
+		Object body = mockBinaryBody(contentType);
 		assertSame(body, r.getBody(new Hint<Object>() {}));
 		assertThrows(ClientException.class, () -> {
 			r.getBody(new Hint<Object>() {});
 		});
 	}
 
-	private Object mockBinaryBody() {
+	private Object mockBinaryBody(String contentType) {
+		media.when(() -> Media.decode(stream, contentType)).thenReturn(stream);
+		media.when(() -> Media.strip(contentType)).thenReturn(null);
+		r = newRestResponse(contentType);
 		Object body = new Object();
 		Disassembler disassembler = mock(Disassembler.class);
 		when(disassembler.read(stream, Object.class)).thenReturn(body);
 		when(facade.isBinary(Object.class)).thenReturn(true);
-		when(facade.cleanForDisassembling("type/subtype", Object.class)).thenReturn("type/subtype");
-		when(facade.getDisassembler("type/subtype")).thenReturn(disassembler);
+		when(facade.cleanForDisassembling(null, Object.class)).thenReturn(CONTENT_TYPE);
+		when(facade.getDisassembler(CONTENT_TYPE)).thenReturn(disassembler);
 		return body;
+	}
+
+	private RestResponse newRestResponse() {
+		return newRestResponse(null);
+	}
+
+	private RestResponse newRestResponse(String contentType) {
+		return new RestResponse(facade, 600, headers, contentType, stream);
 	}
 }

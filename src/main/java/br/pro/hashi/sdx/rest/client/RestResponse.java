@@ -74,12 +74,19 @@ public class RestResponse {
 	 * Obtains the body as an object of a specified type.
 	 * </p>
 	 * <p>
+	 * Since {@link Class} objects lose generic information due to type erasure, do
+	 * not call this method if the type is generic. Call {@code getBody(Hint<T>)}
+	 * instead.
+	 * </p>
+	 * <p>
 	 * This method considers the content type sent by the server.
 	 * </p>
 	 * 
 	 * @param <T>  the type of the body
 	 * @param type an object representing {@code T}
 	 * @return the body
+	 * @throws NullPointerException if the type object is null
+	 * @throws ClientException      if the stream is not available
 	 */
 	public <T> T getBody(Class<T> type) {
 		return getBody(type, contentType);
@@ -90,12 +97,17 @@ public class RestResponse {
 	 * Obtains the body as an object of a hinted type.
 	 * </p>
 	 * <p>
+	 * Call this method if the type is generic.
+	 * </p>
+	 * <p>
 	 * This method considers the content type sent by the server.
 	 * </p>
 	 * 
 	 * @param <T>  the type of the body
 	 * @param hint a hint representing {@code T}
 	 * @return the body
+	 * @throws NullPointerException if the type hint is null
+	 * @throws ClientException      if the stream is not available
 	 */
 	public <T> T getBody(Hint<T> hint) {
 		return getBody(hint, contentType);
@@ -107,6 +119,11 @@ public class RestResponse {
 	 * specified content type, with parameters if they are present.
 	 * </p>
 	 * <p>
+	 * Since {@link Class} objects lose generic information due to type erasure, do
+	 * not call this method if the type is generic. Call
+	 * {@code getBody(Hint<T>, String)} instead.
+	 * </p>
+	 * <p>
 	 * This method ignores the content type sent by the server.
 	 * </p>
 	 * 
@@ -114,6 +131,8 @@ public class RestResponse {
 	 * @param type        an object representing {@code T}
 	 * @param contentType the content type
 	 * @return the body
+	 * @throws NullPointerException if the type object is null
+	 * @throws ClientException      if the stream is not available
 	 */
 	public <T> T getBody(Class<T> type, String contentType) {
 		if (type == null) {
@@ -128,6 +147,9 @@ public class RestResponse {
 	 * content type, with parameters if they are present.
 	 * </p>
 	 * <p>
+	 * Call this method if the type is generic.
+	 * </p>
+	 * <p>
 	 * This method ignores the content type sent by the server.
 	 * </p>
 	 * 
@@ -135,6 +157,8 @@ public class RestResponse {
 	 * @param hint        a hint representing {@code T}
 	 * @param contentType the content type
 	 * @return the body
+	 * @throws NullPointerException if the type hint is null
+	 * @throws ClientException      if the stream is not available
 	 */
 	public <T> T getBody(Hint<T> hint, String contentType) {
 		if (hint == null) {
@@ -153,17 +177,24 @@ public class RestResponse {
 		T body;
 		stream = Media.decode(stream, contentType);
 		if (facade.isBinary(type)) {
-			contentType = Media.strip(contentType);
+			contentType = strip(contentType);
 			contentType = facade.cleanForDisassembling(contentType, type);
 			Disassembler disassembler = facade.getDisassembler(contentType);
 			body = disassembler.read(stream, type);
 		} else {
 			Reader reader = Media.reader(stream, contentType);
-			contentType = Media.strip(contentType);
+			contentType = strip(contentType);
 			contentType = facade.cleanForDeserializing(contentType, type);
 			Deserializer deserializer = facade.getDeserializer(contentType);
 			body = deserializer.read(reader, type);
 		}
 		return body;
+	}
+
+	private String strip(String contentType) {
+		if (contentType != null) {
+			contentType = Media.strip(contentType);
+		}
+		return contentType;
 	}
 }

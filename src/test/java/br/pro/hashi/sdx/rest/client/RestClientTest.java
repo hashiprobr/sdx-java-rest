@@ -56,7 +56,6 @@ import br.pro.hashi.sdx.rest.client.exception.ClientException;
 import br.pro.hashi.sdx.rest.coding.Coding;
 import br.pro.hashi.sdx.rest.reflection.Cache;
 import br.pro.hashi.sdx.rest.reflection.Headers;
-import br.pro.hashi.sdx.rest.server.exception.ServerException;
 import br.pro.hashi.sdx.rest.transform.Assembler;
 import br.pro.hashi.sdx.rest.transform.Serializer;
 import br.pro.hashi.sdx.rest.transform.facade.Facade;
@@ -1065,7 +1064,7 @@ class RestClientTest {
 		try (MockedConstruction<InputStreamResponseListener> construction = mockListenerConstruction(exception)) {
 			p = newProxy();
 			List<Task> tasks = List.of();
-			exception = assertThrows(ServerException.class, () -> {
+			exception = assertThrows(ClientException.class, () -> {
 				p.send(request, tasks);
 			});
 			assertSame(cause, exception.getCause());
@@ -1078,7 +1077,7 @@ class RestClientTest {
 		try (MockedConstruction<InputStreamResponseListener> construction = mockListenerConstruction(cause)) {
 			p = newProxy();
 			List<Task> tasks = List.of();
-			Exception exception = assertThrows(ServerException.class, () -> {
+			Exception exception = assertThrows(ClientException.class, () -> {
 				p.send(request, tasks);
 			});
 			assertSame(cause, exception.getCause());

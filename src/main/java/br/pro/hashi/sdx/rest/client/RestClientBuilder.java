@@ -85,6 +85,8 @@ public non-sealed class RestClientBuilder extends Builder<RestClientBuilder> {
 	 * 
 	 * @param urlPrefix the URL prefix
 	 * @return the {@link RestClient}
+	 * @throws NullPointerException     if the URL prefix is null
+	 * @throws IllegalArgumentException if the URL prefix is invalid
 	 */
 	public final RestClient build(String urlPrefix) {
 		urlPrefix = encode(urlPrefix);
@@ -110,6 +112,8 @@ public non-sealed class RestClientBuilder extends Builder<RestClientBuilder> {
 	 * 
 	 * @param urlPrefix the URL prefix
 	 * @return the {@link RestClient}
+	 * @throws NullPointerException     if the URL prefix is null
+	 * @throws IllegalArgumentException if the URL prefix is invalid
 	 */
 	public final RestClient build1(String urlPrefix) {
 		urlPrefix = encode(urlPrefix);
@@ -135,6 +139,8 @@ public non-sealed class RestClientBuilder extends Builder<RestClientBuilder> {
 	 * 
 	 * @param urlPrefix the URL prefix
 	 * @return the {@link RestClient}
+	 * @throws NullPointerException     if the URL prefix is null
+	 * @throws IllegalArgumentException if the URL prefix is invalid
 	 */
 	public final RestClient build2(String urlPrefix) {
 		urlPrefix = encode(urlPrefix);
@@ -161,6 +167,8 @@ public non-sealed class RestClientBuilder extends Builder<RestClientBuilder> {
 	 * 
 	 * @param urlPrefix the URL prefix
 	 * @return the {@link RestClient}
+	 * @throws NullPointerException     if the URL prefix is null
+	 * @throws IllegalArgumentException if the URL prefix is invalid
 	 */
 	public final RestClient build3(String urlPrefix) {
 		urlPrefix = encode(urlPrefix);

@@ -18,7 +18,7 @@ import br.pro.hashi.sdx.rest.transform.Serializer;
 import br.pro.hashi.sdx.rest.transform.facade.Facade;
 
 /**
- * Base class for {@link RestClientBuilder} and {@link RestServerBuilder}.
+ * Base class for configuring and building REST clients and servers.
  * 
  * @param <T> the subclass
  */
