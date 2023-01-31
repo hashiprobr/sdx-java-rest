@@ -94,7 +94,6 @@ class RestClientBuilderTest extends BuilderTest {
 		assertSame(b.getCache(), client.getCache());
 		assertSame(b.getFacade(), client.getFacade());
 		assertEquals(StandardCharsets.UTF_8, client.getUrlCharset());
-		assertNull(client.getNone());
 		assertEquals("http://a", client.getUrlPrefix());
 		HttpClient jettyClient = client.getJettyClient();
 		assertInstanceOf(HttpCookieStore.Empty.class, jettyClient.getCookieStore());
@@ -114,13 +113,6 @@ class RestClientBuilderTest extends BuilderTest {
 		b.withUrlCharset(StandardCharsets.ISO_8859_1);
 		RestClient client = b.build("http://a");
 		assertEquals(StandardCharsets.ISO_8859_1, client.getUrlCharset());
-	}
-
-	@Test
-	void buildsWithNullBody() {
-		b.withNullBody();
-		RestClient client = b.build("http://a");
-		assertEquals("", client.getNone());
 	}
 
 	@Test

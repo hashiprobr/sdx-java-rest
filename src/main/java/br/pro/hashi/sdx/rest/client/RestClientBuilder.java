@@ -208,7 +208,7 @@ public non-sealed class RestClientBuilder extends Builder<RestClientBuilder> {
 			client.getContentDecoderFactories().add(new GZIPContentDecoder.Factory());
 		}
 		client.setFollowRedirects(redirection);
-		return new RestClient(cache, facade, client, urlCharset, locale, none, urlPrefix);
+		return new RestClient(cache, facade, client, urlCharset, locale, urlPrefix);
 	}
 
 	/**

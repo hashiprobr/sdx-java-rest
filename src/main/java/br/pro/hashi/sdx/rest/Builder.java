@@ -56,13 +56,6 @@ public sealed abstract class Builder<T extends Builder<T>> permits RestClientBui
 	 * 
 	 * @hidden
 	 */
-	protected String none;
-
-	/**
-	 * Internal member.
-	 * 
-	 * @hidden
-	 */
 	protected boolean redirection;
 
 	/**
@@ -82,7 +75,6 @@ public sealed abstract class Builder<T extends Builder<T>> permits RestClientBui
 		this.facade = new Facade();
 		this.urlCharset = StandardCharsets.UTF_8;
 		this.locale = Coding.LOCALE;
-		this.none = null;
 		this.redirection = false;
 		this.compression = true;
 	}
@@ -300,23 +292,6 @@ public sealed abstract class Builder<T extends Builder<T>> permits RestClientBui
 			throw new NullPointerException("Locale cannot be null");
 		}
 		this.locale = locale;
-		return self();
-	}
-
-	/**
-	 * <p>
-	 * Establishes that {@code null} is a valid body that should be serialized or
-	 * assembled and {@code ""} is an empty body.
-	 * </p>
-	 * <p>
-	 * The default behavior is considering {@code ""} as a valid body that should be
-	 * serialized or assembled and {@code null} as an empty body.
-	 * </p>
-	 * 
-	 * @return this builder, for chaining
-	 */
-	public final T withNullBody() {
-		this.none = "";
 		return self();
 	}
 

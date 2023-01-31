@@ -80,6 +80,7 @@ class RestClientTest {
 		jettyClient = mock(HttpClient.class);
 		request = mock(Request.class);
 		response = mock(Response.class);
+		c = new RestClient(cache, facade, jettyClient, StandardCharsets.UTF_8, Coding.LOCALE, "http://a");
 	}
 
 	@Test
@@ -100,7 +101,6 @@ class RestClientTest {
 
 	@Test
 	void starts() throws Exception {
-		c = newRestClient();
 		when(jettyClient.isRunning()).thenReturn(false);
 		c.start();
 		verify(jettyClient).start();
@@ -108,7 +108,6 @@ class RestClientTest {
 
 	@Test
 	void doesNotStartIfJettyClientAlreadyStarted() throws Exception {
-		c = newRestClient();
 		when(jettyClient.isRunning()).thenReturn(true);
 		c.start();
 		verify(jettyClient, times(0)).start();
@@ -116,7 +115,6 @@ class RestClientTest {
 
 	@Test
 	void doesNotStartIfJettyClientThrowsException() throws Exception {
-		c = newRestClient();
 		when(jettyClient.isRunning()).thenReturn(false);
 		Throwable cause = new Exception();
 		doThrow(cause).when(jettyClient).start();
@@ -128,7 +126,6 @@ class RestClientTest {
 
 	@Test
 	void stops() throws Exception {
-		c = newRestClient();
 		when(jettyClient.isRunning()).thenReturn(true);
 		c.stop();
 		verify(jettyClient).stop();
@@ -136,7 +133,6 @@ class RestClientTest {
 
 	@Test
 	void doesNotStopIfJettyClientAlreadyStopped() throws Exception {
-		c = newRestClient();
 		when(jettyClient.isRunning()).thenReturn(false);
 		c.stop();
 		verify(jettyClient, times(0)).stop();
@@ -144,7 +140,6 @@ class RestClientTest {
 
 	@Test
 	void doesNotStopIfJettyClientThrowsException() throws Exception {
-		c = newRestClient();
 		when(jettyClient.isRunning()).thenReturn(true);
 		Throwable cause = new Exception();
 		doThrow(cause).when(jettyClient).stop();
@@ -157,7 +152,6 @@ class RestClientTest {
 	@Test
 	void forwardsWithQueryToProxy() {
 		try (MockedConstruction<Proxy> construction = mockConstruction(Proxy.class)) {
-			c = newRestClient();
 			c.q("name");
 			p = construction.constructed().get(0);
 			verify(p).withQuery("name");
@@ -167,7 +161,6 @@ class RestClientTest {
 	@Test
 	void forwardsWithQueryToProxyWithValue() {
 		try (MockedConstruction<Proxy> construction = mockConstruction(Proxy.class)) {
-			c = newRestClient();
 			Object value = new Object();
 			c.q("name", value);
 			p = construction.constructed().get(0);
@@ -178,7 +171,6 @@ class RestClientTest {
 	@Test
 	void forwardsWithHeaderToProxy() {
 		try (MockedConstruction<Proxy> construction = mockConstruction(Proxy.class)) {
-			c = newRestClient();
 			Object value = new Object();
 			c.h("name", value);
 			p = construction.constructed().get(0);
@@ -189,7 +181,6 @@ class RestClientTest {
 	@Test
 	void forwardsWithBodyToProxy() {
 		try (MockedConstruction<Proxy> construction = mockConstruction(Proxy.class)) {
-			c = newRestClient();
 			Object body = new Object();
 			c.b(body);
 			p = construction.constructed().get(0);
@@ -200,17 +191,15 @@ class RestClientTest {
 	@Test
 	void forwardsWithTimeoutToProxy() {
 		try (MockedConstruction<Proxy> construction = mockConstruction(Proxy.class)) {
-			c = newRestClient();
-			c.t(1);
+			c.t(0);
 			p = construction.constructed().get(0);
-			verify(p).withTimeout(1);
+			verify(p).withTimeout(0);
 		}
 	}
 
 	@Test
 	void forwardsGetToProxy() {
 		try (MockedConstruction<Proxy> construction = mockConstruction(Proxy.class)) {
-			c = newRestClient();
 			c.get("/");
 			p = construction.constructed().get(0);
 			verify(p).get("/");
@@ -220,7 +209,6 @@ class RestClientTest {
 	@Test
 	void forwardsPostToProxy() {
 		try (MockedConstruction<Proxy> construction = mockConstruction(Proxy.class)) {
-			c = newRestClient();
 			c.post("/");
 			p = construction.constructed().get(0);
 			verify(p).post("/");
@@ -230,7 +218,6 @@ class RestClientTest {
 	@Test
 	void forwardsPostToProxyWithBody() {
 		try (MockedConstruction<Proxy> construction = mockConstruction(Proxy.class)) {
-			c = newRestClient();
 			Object body = new Object();
 			c.post("/", body);
 			p = construction.constructed().get(0);
@@ -241,7 +228,6 @@ class RestClientTest {
 	@Test
 	void forwardsPutToProxy() {
 		try (MockedConstruction<Proxy> construction = mockConstruction(Proxy.class)) {
-			c = newRestClient();
 			c.put("/");
 			p = construction.constructed().get(0);
 			verify(p).put("/");
@@ -251,7 +237,6 @@ class RestClientTest {
 	@Test
 	void forwardsPutToProxyWithBody() {
 		try (MockedConstruction<Proxy> construction = mockConstruction(Proxy.class)) {
-			c = newRestClient();
 			Object body = new Object();
 			c.put("/", body);
 			p = construction.constructed().get(0);
@@ -262,7 +247,6 @@ class RestClientTest {
 	@Test
 	void forwardsPatchToProxy() {
 		try (MockedConstruction<Proxy> construction = mockConstruction(Proxy.class)) {
-			c = newRestClient();
 			c.patch("/");
 			p = construction.constructed().get(0);
 			verify(p).patch("/");
@@ -272,7 +256,6 @@ class RestClientTest {
 	@Test
 	void forwardsPatchToProxyWithBody() {
 		try (MockedConstruction<Proxy> construction = mockConstruction(Proxy.class)) {
-			c = newRestClient();
 			Object body = new Object();
 			c.patch("/", body);
 			p = construction.constructed().get(0);
@@ -283,7 +266,6 @@ class RestClientTest {
 	@Test
 	void forwardsDeleteToProxy() {
 		try (MockedConstruction<Proxy> construction = mockConstruction(Proxy.class)) {
-			c = newRestClient();
 			c.delete("/");
 			p = construction.constructed().get(0);
 			verify(p).delete("/");
@@ -293,7 +275,6 @@ class RestClientTest {
 	@Test
 	void forwardsRequestToProxy() {
 		try (MockedConstruction<Proxy> construction = mockConstruction(Proxy.class)) {
-			c = newRestClient();
 			c.request("options", "/");
 			p = construction.constructed().get(0);
 			verify(p).request("options", "/");
@@ -1128,14 +1109,6 @@ class RestClientTest {
 	}
 
 	private Proxy newProxy() {
-		return newRestClient().new Proxy();
-	}
-
-	private RestClient newRestClient() {
-		return newRestClient(null);
-	}
-
-	private RestClient newRestClient(String none) {
-		return new RestClient(cache, facade, jettyClient, StandardCharsets.UTF_8, Coding.LOCALE, none, "http://a");
+		return c.new Proxy();
 	}
 }

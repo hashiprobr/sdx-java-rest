@@ -71,17 +71,15 @@ public final class RestClient {
 	private final HttpClient jettyClient;
 	private final Charset urlCharset;
 	private final Locale locale;
-	private final String none;
 	private final String urlPrefix;
 
-	RestClient(Cache cache, Facade facade, HttpClient jettyClient, Charset urlCharset, Locale locale, String none, String urlPrefix) {
+	RestClient(Cache cache, Facade facade, HttpClient jettyClient, Charset urlCharset, Locale locale, String urlPrefix) {
 		this.logger = LoggerFactory.getLogger(RestClient.class);
 		this.cache = cache;
 		this.facade = facade;
 		this.jettyClient = jettyClient;
 		this.urlCharset = urlCharset;
 		this.locale = locale;
-		this.none = none;
 		this.urlPrefix = urlPrefix;
 	}
 
@@ -95,10 +93,6 @@ public final class RestClient {
 
 	Charset getUrlCharset() {
 		return urlCharset;
-	}
-
-	String getNone() {
-		return none;
 	}
 
 	String getUrlPrefix() {

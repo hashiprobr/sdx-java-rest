@@ -69,11 +69,6 @@ public abstract class BuilderTest {
 	}
 
 	@Test
-	void initializesWithNull() {
-		assertEquals(null, b.none);
-	}
-
-	@Test
 	void initializesWithoutRedirection() {
 		assertFalse(b.redirection);
 	}
@@ -173,12 +168,6 @@ public abstract class BuilderTest {
 			b.withLocale(null);
 		});
 		assertEquals(Coding.LOCALE, b.locale);
-	}
-
-	@Test
-	void setsNullBody() {
-		assertSame(b, b.withNullBody());
-		assertEquals("", b.none);
 	}
 
 	@Test
