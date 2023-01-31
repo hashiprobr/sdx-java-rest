@@ -80,9 +80,6 @@ public class RestBody {
 	}
 
 	void setName(String name) {
-		if (name == null) {
-			throw new NullPointerException("Name cannot be null");
-		}
 		this.name = name;
 	}
 

@@ -58,7 +58,6 @@ import br.pro.hashi.sdx.rest.reflection.Cache;
 import br.pro.hashi.sdx.rest.reflection.Headers;
 import br.pro.hashi.sdx.rest.server.exception.ServerException;
 import br.pro.hashi.sdx.rest.transform.Assembler;
-import br.pro.hashi.sdx.rest.transform.Hint;
 import br.pro.hashi.sdx.rest.transform.Serializer;
 import br.pro.hashi.sdx.rest.transform.facade.Facade;
 
@@ -199,18 +198,6 @@ class RestClientTest {
 	}
 
 	@Test
-	void forwardsWithBodyToProxyWithHint() {
-		try (MockedConstruction<Proxy> construction = mockConstruction(Proxy.class)) {
-			c = newRestClient();
-			Object body = new Object();
-			Hint<Object> hint = new Hint<Object>() {};
-			c.b(body, hint);
-			p = construction.constructed().get(0);
-			verify(p).withBody(body, hint);
-		}
-	}
-
-	@Test
 	void forwardsWithTimeoutToProxy() {
 		try (MockedConstruction<Proxy> construction = mockConstruction(Proxy.class)) {
 			c = newRestClient();
@@ -252,18 +239,6 @@ class RestClientTest {
 	}
 
 	@Test
-	void forwardsPostToProxyWithBodyAndHint() {
-		try (MockedConstruction<Proxy> construction = mockConstruction(Proxy.class)) {
-			c = newRestClient();
-			Object body = new Object();
-			Hint<Object> hint = new Hint<Object>() {};
-			c.post("/", body, hint);
-			p = construction.constructed().get(0);
-			verify(p).post("/", body, hint);
-		}
-	}
-
-	@Test
 	void forwardsPutToProxy() {
 		try (MockedConstruction<Proxy> construction = mockConstruction(Proxy.class)) {
 			c = newRestClient();
@@ -285,18 +260,6 @@ class RestClientTest {
 	}
 
 	@Test
-	void forwardsPutToProxyWithBodyAndHint() {
-		try (MockedConstruction<Proxy> construction = mockConstruction(Proxy.class)) {
-			c = newRestClient();
-			Object body = new Object();
-			Hint<Object> hint = new Hint<Object>() {};
-			c.put("/", body, hint);
-			p = construction.constructed().get(0);
-			verify(p).put("/", body, hint);
-		}
-	}
-
-	@Test
 	void forwardsPatchToProxy() {
 		try (MockedConstruction<Proxy> construction = mockConstruction(Proxy.class)) {
 			c = newRestClient();
@@ -314,18 +277,6 @@ class RestClientTest {
 			c.patch("/", body);
 			p = construction.constructed().get(0);
 			verify(p).patch("/", body);
-		}
-	}
-
-	@Test
-	void forwardsPatchToProxyWithBodyAndHint() {
-		try (MockedConstruction<Proxy> construction = mockConstruction(Proxy.class)) {
-			c = newRestClient();
-			Object body = new Object();
-			Hint<Object> hint = new Hint<Object>() {};
-			c.patch("/", body, hint);
-			p = construction.constructed().get(0);
-			verify(p).patch("/", body, hint);
 		}
 	}
 
@@ -540,16 +491,6 @@ class RestClientTest {
 	}
 
 	@Test
-	void proxyAddsBodyWithHint() {
-		p = newProxy();
-		Object body = new Object();
-		assertSame(p, p.b(body, new Hint<Object>() {}));
-		List<RestBody> bodies = p.getBodies();
-		assertEquals(1, bodies.size());
-		assertSame(body, bodies.get(0).getActual());
-	}
-
-	@Test
 	void proxyAddsWrappedBody() {
 		p = newProxy();
 		Object actual = new Object();
@@ -560,13 +501,23 @@ class RestClientTest {
 	}
 
 	@Test
-	void proxyAddsWrappedBodyWithHint() {
+	void proxyDoesNotAddBodyIfNameIsNull() {
 		p = newProxy();
-		Object actual = new Object();
-		assertSame(p, p.b(new RestBody(actual), new Hint<RestBody>() {}));
-		List<RestBody> bodies = p.getBodies();
-		assertEquals(1, bodies.size());
-		assertSame(actual, bodies.get(0).getActual());
+		Object body = new Object();
+		assertThrows(NullPointerException.class, () -> {
+			p.b(null, body);
+		});
+		assertTrue(p.getBodies().isEmpty());
+	}
+
+	@Test
+	void proxyDoesNotAddBodyIfNameIsEmpty() {
+		p = newProxy();
+		Object body = new Object();
+		assertThrows(IllegalArgumentException.class, () -> {
+			p.b("", body);
+		});
+		assertTrue(p.getBodies().isEmpty());
 	}
 
 	@Test
@@ -603,17 +554,6 @@ class RestClientTest {
 	}
 
 	@Test
-	void proxyPostsWithBodyAndHint() {
-		p = spyNewProxy();
-		Object body = new Object();
-		Hint<Object> hint = new Hint<Object>() {};
-		RestResponse restResponse = mock(RestResponse.class);
-		doReturn(restResponse).when(p).doRequest("POST", "/");
-		assertSame(restResponse, p.post("/", body, hint));
-		verify(p).withBody(body, hint);
-	}
-
-	@Test
 	void proxyPuts() {
 		p = spyNewProxy();
 		RestResponse restResponse = mock(RestResponse.class);
@@ -632,17 +572,6 @@ class RestClientTest {
 	}
 
 	@Test
-	void proxyPutsWithBodyAndHint() {
-		p = spyNewProxy();
-		Object body = new Object();
-		Hint<Object> hint = new Hint<Object>() {};
-		RestResponse restResponse = mock(RestResponse.class);
-		doReturn(restResponse).when(p).doRequest("PUT", "/");
-		assertSame(restResponse, p.put("/", body, hint));
-		verify(p).withBody(body, hint);
-	}
-
-	@Test
 	void proxyPatches() {
 		p = spyNewProxy();
 		RestResponse restResponse = mock(RestResponse.class);
@@ -658,17 +587,6 @@ class RestClientTest {
 		doReturn(restResponse).when(p).doRequest("PATCH", "/");
 		assertSame(restResponse, p.patch("/", body));
 		verify(p).withBody(body);
-	}
-
-	@Test
-	void proxyPatchesWithBodyAndHint() {
-		p = spyNewProxy();
-		Object body = new Object();
-		Hint<Object> hint = new Hint<Object>() {};
-		RestResponse restResponse = mock(RestResponse.class);
-		doReturn(restResponse).when(p).doRequest("PATCH", "/");
-		assertSame(restResponse, p.patch("/", body, hint));
-		verify(p).withBody(body, hint);
 	}
 
 	@Test
@@ -980,7 +898,7 @@ class RestClientTest {
 		try (MockedConstruction<MultiPartRequestContent> construction = mockConstruction(MultiPartRequestContent.class)) {
 			p = spyNewProxy();
 			p.b("one", new Object());
-			p.b("two", new Object(), new Hint<Object>() {});
+			p.b("two", new Object());
 			List<Content> contents = mockContents();
 			List<Task> tasks = p.addBodiesAndGetTasks(request);
 			MultiPartRequestContent content = construction.constructed().get(0);

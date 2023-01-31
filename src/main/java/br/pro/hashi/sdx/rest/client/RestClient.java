@@ -37,7 +37,6 @@ import br.pro.hashi.sdx.rest.reflection.Cache;
 import br.pro.hashi.sdx.rest.reflection.Headers;
 import br.pro.hashi.sdx.rest.server.exception.ServerException;
 import br.pro.hashi.sdx.rest.transform.Assembler;
-import br.pro.hashi.sdx.rest.transform.Hint;
 import br.pro.hashi.sdx.rest.transform.Serializer;
 import br.pro.hashi.sdx.rest.transform.facade.Facade;
 
@@ -265,20 +264,6 @@ public final class RestClient {
 	}
 
 	/**
-	 * Alias for {@code withBody(T, Hint<T>)}.
-	 * 
-	 * @param <T>  the type of the body
-	 * @param body the body
-	 * @param hint the type hint
-	 * @return the proxy, for chaining
-	 * @throws NullPointerException if the type hint is null
-	 * @hidden
-	 */
-	public <T> Proxy b(T body, Hint<T> hint) {
-		return withBody(body, hint);
-	}
-
-	/**
 	 * <p>
 	 * Convenience method that instantiates a {@link RestClient.Proxy} and calls
 	 * {@link RestClient.Proxy#withBody(Object)}.
@@ -292,25 +277,6 @@ public final class RestClient {
 	 */
 	public Proxy withBody(Object body) {
 		return new Proxy().withBody(body);
-	}
-
-	/**
-	 * <p>
-	 * Convenience method that instantiates a {@link RestClient.Proxy} and calls
-	 * {@code RestClient.Proxy.withBody(T, Hint<T>)}.
-	 * </p>
-	 * <p>
-	 * The alias {@code b(T, Hint<T>)} is available for short chaining.
-	 * </p>
-	 * 
-	 * @param <T>  the type of the body
-	 * @param body the body
-	 * @param hint the type hint
-	 * @return the proxy, for chaining
-	 * @throws NullPointerException if the type hint is null
-	 */
-	public <T> Proxy withBody(T body, Hint<T> hint) {
-		return new Proxy().withBody(body, hint);
 	}
 
 	/**
@@ -383,22 +349,6 @@ public final class RestClient {
 
 	/**
 	 * Convenience method that instantiates a {@link RestClient.Proxy} and calls
-	 * {@code RestClient.Proxy.post(String, T, Hint<T>)}.
-	 * 
-	 * @param <T>  the type of the object
-	 * @param uri  the URI
-	 * @param body the body
-	 * @param hint the type hint
-	 * @return the response
-	 * @throws NullPointerException     if the URI is null or the type hint is null
-	 * @throws IllegalArgumentException if the URI is invalid
-	 */
-	public <T> RestResponse post(String uri, T body, Hint<T> hint) {
-		return new Proxy().post(uri, body, hint);
-	}
-
-	/**
-	 * Convenience method that instantiates a {@link RestClient.Proxy} and calls
 	 * {@link RestClient.Proxy#put(String)}.
 	 * 
 	 * @param uri the URI
@@ -427,22 +377,6 @@ public final class RestClient {
 
 	/**
 	 * Convenience method that instantiates a {@link RestClient.Proxy} and calls
-	 * {@code RestClient.Proxy.put(String, T, Hint<T>)}.
-	 * 
-	 * @param <T>  the type of the object
-	 * @param uri  the URI
-	 * @param body the body
-	 * @param hint the type hint
-	 * @return the response
-	 * @throws NullPointerException     if the URI is null or the type hint is null
-	 * @throws IllegalArgumentException if the URI is invalid
-	 */
-	public <T> RestResponse put(String uri, T body, Hint<T> hint) {
-		return new Proxy().put(uri, body, hint);
-	}
-
-	/**
-	 * Convenience method that instantiates a {@link RestClient.Proxy} and calls
 	 * {@link RestClient.Proxy#patch(String)}.
 	 * 
 	 * @param uri the URI
@@ -467,22 +401,6 @@ public final class RestClient {
 	 */
 	public RestResponse patch(String uri, Object body) {
 		return new Proxy().patch(uri, body);
-	}
-
-	/**
-	 * Convenience method that instantiates a {@link RestClient.Proxy} and calls
-	 * {@code RestClient.Proxy.patch(String, T, Hint<T>)}.
-	 * 
-	 * @param <T>  the type of the object
-	 * @param uri  the URI
-	 * @param body the body
-	 * @param hint the type hint
-	 * @return the response
-	 * @throws NullPointerException     if the URI is null or the type hint is null
-	 * @throws IllegalArgumentException if the URI is invalid
-	 */
-	public <T> RestResponse patch(String uri, T body, Hint<T> hint) {
-		return new Proxy().patch(uri, body, hint);
 	}
 
 	/**
@@ -708,26 +626,13 @@ public final class RestClient {
 		}
 
 		/**
-		 * Alias for {@code withBody(T, Hint<T>)}.
-		 * 
-		 * @param <T>  the type of the body
-		 * @param body the body
-		 * @param hint the type hint
-		 * @return this proxy, for chaining
-		 * @throws NullPointerException if the type hint is null
-		 * @hidden
-		 */
-		public <T> Proxy b(T body, Hint<T> hint) {
-			return withBody(body, hint);
-		}
-
-		/**
 		 * Alias for {@link #withBody(String, Object)}.
 		 * 
 		 * @param name the name
 		 * @param body the body
 		 * @return this proxy, for chaining
-		 * @throws NullPointerException if the name is null
+		 * @throws NullPointerException     if the name is null
+		 * @throws IllegalArgumentException if the name is empty
 		 * @hidden
 		 */
 		public Proxy b(String name, Object body) {
@@ -735,29 +640,9 @@ public final class RestClient {
 		}
 
 		/**
-		 * Alias for {@code withBody(String, T, Hint<T>)}.
-		 * 
-		 * @param <T>  the type of the body
-		 * @param name the name
-		 * @param body the body
-		 * @param hint the type hint
-		 * @return this proxy, for chaining
-		 * @throws NullPointerException if the name is null or the type hint is null
-		 * @hidden
-		 */
-		public <T> Proxy b(String name, T body, Hint<T> hint) {
-			return withBody(name, body, hint);
-		}
-
-		/**
 		 * <p>
 		 * Adds a body to the request. If it is a multipart request, the part
-		 * corresponding to the body has no name.
-		 * </p>
-		 * <p>
-		 * This method calls {@code body.getClass()} to obtain the body type. Since
-		 * {@code body.getClass()} loses generic information due to type erasure, do not
-		 * call it if the type is generic. Call {@code withBody(T, Hint<T>)} instead.
+		 * corresponding to the body has an empty name.
 		 * </p>
 		 * <p>
 		 * The alias {@link #b(Object)} is available for short chaining.
@@ -774,38 +659,8 @@ public final class RestClient {
 
 		/**
 		 * <p>
-		 * Adds a body with hinted type to the request. If it is a multipart request,
-		 * the part corresponding to the body has no name.
-		 * </p>
-		 * <p>
-		 * Call this method if the body type is generic.
-		 * </p>
-		 * <p>
-		 * The alias {@code b(T, Hint<T>)} is available for short chaining.
-		 * </p>
-		 * 
-		 * @param <T>  the type of the body
-		 * @param body the body
-		 * @param hint the type hint
-		 * @return this proxy, for chaining
-		 * @throws NullPointerException if the type hint is null
-		 */
-		public <T> Proxy withBody(T body, Hint<T> hint) {
-			RestBody restBody = wrap(body, hint);
-			bodies.add(restBody);
-			return this;
-		}
-
-		/**
-		 * <p>
 		 * Adds a named body to the request. If it is not a multipart request, the name
 		 * is ignored.
-		 * </p>
-		 * <p>
-		 * This method calls {@code body.getClass()} to obtain the body type. Since
-		 * {@code body.getClass()} loses generic information due to type erasure, do not
-		 * call it if the type is generic. Call {@code withBody(String, T, Hint<T>)}
-		 * instead.
 		 * </p>
 		 * <p>
 		 * The alias {@link #b(String, Object)} is available for short chaining.
@@ -814,36 +669,17 @@ public final class RestClient {
 		 * @param name the name
 		 * @param body the body
 		 * @return this proxy, for chaining
-		 * @throws NullPointerException if the name is null
+		 * @throws NullPointerException     if the name is null
+		 * @throws IllegalArgumentException if the name is empty
 		 */
 		public Proxy withBody(String name, Object body) {
+			if (name == null) {
+				throw new NullPointerException("Name cannot be null");
+			}
+			if (name.isEmpty()) {
+				throw new IllegalArgumentException("Name cannot be empty");
+			}
 			RestBody restBody = wrap(body);
-			restBody.setName(name);
-			bodies.add(restBody);
-			return this;
-		}
-
-		/**
-		 * <p>
-		 * Adds a named body with hinted type to the request. If it is not a multipart
-		 * request, the name is ignored.
-		 * </p>
-		 * <p>
-		 * Call this method if the body type is generic.
-		 * </p>
-		 * <p>
-		 * The alias {@code b(String, T, Hint<T>)} is available for short chaining.
-		 * </p>
-		 * 
-		 * @param <T>  the type of the body
-		 * @param name the name
-		 * @param body the body
-		 * @param hint the type hint
-		 * @return this proxy, for chaining
-		 * @throws NullPointerException if the name is null or type hint is null
-		 */
-		public <T> Proxy withBody(String name, T body, Hint<T> hint) {
-			RestBody restBody = wrap(body, hint);
 			restBody.setName(name);
 			bodies.add(restBody);
 			return this;
@@ -855,16 +691,6 @@ public final class RestClient {
 				restBody = (RestBody) body;
 			} else {
 				restBody = new RestBody(body);
-			}
-			return restBody;
-		}
-
-		private <T> RestBody wrap(T body, Hint<T> hint) {
-			RestBody restBody;
-			if (body instanceof RestBody) {
-				restBody = (RestBody) body;
-			} else {
-				restBody = new RestBody(body, hint);
 			}
 			return restBody;
 		}
@@ -924,13 +750,7 @@ public final class RestClient {
 		/**
 		 * <p>
 		 * Sends a POST request to a specified URI. If it is a multipart POST, the part
-		 * corresponding to the body has no name.
-		 * </p>
-		 * <p>
-		 * This method calls {@code body.getClass()} to obtain the body type. Since
-		 * {@code body.getClass()} loses generic information due to type erasure, do not
-		 * call it if the type is generic. Call {@code post(String, T, Hint<T>)}
-		 * instead.
+		 * corresponding to the body has an empty name.
 		 * </p>
 		 * 
 		 * @param uri  the URI
@@ -941,27 +761,6 @@ public final class RestClient {
 		 */
 		public RestResponse post(String uri, Object body) {
 			return withBody(body).doRequest("POST", uri);
-		}
-
-		/**
-		 * <p>
-		 * Sends a POST request with hinted type to a specified URI. If it is a
-		 * multipart POST, the part corresponding to the body has no name.
-		 * </p>
-		 * <p>
-		 * Call this method if the body type is generic.
-		 * </p>
-		 * 
-		 * @param <T>  the type of the object
-		 * @param uri  the URI
-		 * @param body the body
-		 * @param hint the type hint
-		 * @return the response
-		 * @throws NullPointerException     if the URI is null or the type hint is null
-		 * @throws IllegalArgumentException if the URI is invalid
-		 */
-		public <T> RestResponse post(String uri, T body, Hint<T> hint) {
-			return withBody(body, hint).doRequest("POST", uri);
 		}
 
 		/**
@@ -980,12 +779,7 @@ public final class RestClient {
 		/**
 		 * <p>
 		 * Sends a PUT request to a specified URI. If it is a multipart PUT, the part
-		 * corresponding to the body has no name.
-		 * </p>
-		 * <p>
-		 * This method calls {@code body.getClass()} to obtain the body type. Since
-		 * {@code body.getClass()} loses generic information due to type erasure, do not
-		 * call it if the type is generic. Call {@code put(String, T, Hint<T>)} instead.
+		 * corresponding to the body has an empty name.
 		 * </p>
 		 * 
 		 * @param uri  the URI
@@ -996,27 +790,6 @@ public final class RestClient {
 		 */
 		public RestResponse put(String uri, Object body) {
 			return withBody(body).doRequest("PUT", uri);
-		}
-
-		/**
-		 * <p>
-		 * Sends a PUT request with hinted type to a specified URI. If it is a multipart
-		 * PUT, the part corresponding to the body has no name.
-		 * </p>
-		 * <p>
-		 * Call this method if the body type is generic.
-		 * </p>
-		 * 
-		 * @param <T>  the type of the object
-		 * @param uri  the URI
-		 * @param body the body
-		 * @param hint the type hint
-		 * @return the response
-		 * @throws NullPointerException     if the URI is null or the type hint is null
-		 * @throws IllegalArgumentException if the URI is invalid
-		 */
-		public <T> RestResponse put(String uri, T body, Hint<T> hint) {
-			return withBody(body, hint).doRequest("PUT", uri);
 		}
 
 		/**
@@ -1035,13 +808,7 @@ public final class RestClient {
 		/**
 		 * <p>
 		 * Sends a PATCH request to a specified URI. If it is a multipart PATCH, the
-		 * part corresponding to the body has no name.
-		 * </p>
-		 * <p>
-		 * This method calls {@code body.getClass()} to obtain the body type. Since
-		 * {@code body.getClass()} loses generic information due to type erasure, do not
-		 * call it if the type is generic. Call {@code patch(String, T, Hint<T>)}
-		 * instead.
+		 * part corresponding to the body has an empty name.
 		 * </p>
 		 * 
 		 * @param uri  the URI
@@ -1052,27 +819,6 @@ public final class RestClient {
 		 */
 		public RestResponse patch(String uri, Object body) {
 			return withBody(body).doRequest("PATCH", uri);
-		}
-
-		/**
-		 * <p>
-		 * Sends a PATCH request with hinted type to a specified URI. If it is a
-		 * multipart PATCH, the part corresponding to the body has no name.
-		 * </p>
-		 * <p>
-		 * Call this method if the body type is generic.
-		 * </p>
-		 * 
-		 * @param <T>  the type of the object
-		 * @param uri  the URI
-		 * @param body the body
-		 * @param hint the type hint
-		 * @return the response
-		 * @throws NullPointerException     if the URI is null or the type hint is null
-		 * @throws IllegalArgumentException if the URI is invalid
-		 */
-		public <T> RestResponse patch(String uri, T body, Hint<T> hint) {
-			return withBody(body, hint).doRequest("PATCH", uri);
 		}
 
 		/**

@@ -84,15 +84,6 @@ class RestBodyTest {
 	}
 
 	@Test
-	void doesNotSetName() {
-		b = newBody();
-		assertThrows(NullPointerException.class, () -> {
-			b.setName(null);
-		});
-		assertEquals("", b.getName());
-	}
-
-	@Test
 	void setsContentType() {
 		try (MockedStatic<Media> media = mockStatic(Media.class)) {
 			b = newBody();
