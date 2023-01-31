@@ -55,7 +55,7 @@ class RestBodyTest {
 	@Test
 	void initializesWithoutName() {
 		b = newBody();
-		assertNull(b.getName());
+		assertEquals("", b.getName());
 	}
 
 	@Test
@@ -89,7 +89,7 @@ class RestBodyTest {
 		assertThrows(NullPointerException.class, () -> {
 			b.setName(null);
 		});
-		assertNull(b.getName());
+		assertEquals("", b.getName());
 	}
 
 	@Test

@@ -61,7 +61,7 @@ public class RestBody {
 	private RestBody(Object actual, Type type) {
 		this.actual = actual;
 		this.type = type;
-		this.name = null;
+		this.name = "";
 		this.contentType = null;
 		this.charset = Coding.CHARSET;
 		this.base64 = false;
