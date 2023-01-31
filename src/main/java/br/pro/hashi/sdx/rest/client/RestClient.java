@@ -708,7 +708,7 @@ public final class RestClient {
 
 		/**
 		 * <p>
-		 * Sets the timeout of the request.
+		 * Sets the timeout of the request. Default is {@value RestClient#TIMEOUT}.
 		 * </p>
 		 * <p>
 		 * The alias {@link #t(int)} is available for short chaining.

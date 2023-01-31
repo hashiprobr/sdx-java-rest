@@ -260,13 +260,8 @@ public sealed abstract class Builder<T extends Builder<T>> permits RestClientBui
 	}
 
 	/**
-	 * <p>
 	 * Sets the charset that should be used when percent-encoding or
-	 * percent-decoding an URL.
-	 * </p>
-	 * <p>
-	 * The default value is {@link StandardCharsets#UTF_8}.
-	 * </p>
+	 * percent-decoding an URL. Default is {@link StandardCharsets#UTF_8}.
 	 * 
 	 * @param urlCharset the charset
 	 * @return this builder, for chaining
