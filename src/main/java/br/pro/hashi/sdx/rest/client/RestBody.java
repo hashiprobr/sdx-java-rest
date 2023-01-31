@@ -147,7 +147,8 @@ public class RestBody {
 
 	/**
 	 * <p>
-	 * Sets the charset for this body.
+	 * Sets the charset for this body. It is ignored if the type is considered
+	 * binary.
 	 * </p>
 	 * <p>
 	 * The alias {@link #in(Charset)} is available for short chaining.

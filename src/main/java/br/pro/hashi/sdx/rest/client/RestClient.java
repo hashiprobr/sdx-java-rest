@@ -431,7 +431,13 @@ public final class RestClient {
 	}
 
 	/**
+	 * <p>
 	 * Represents a request configuration.
+	 * </p>
+	 * <p>
+	 * Sending a request consumes the bodies but preserves everything else for
+	 * reuse.
+	 * </p>
 	 */
 	public final class Proxy {
 		private final CharsetEncoder encoder;
@@ -867,7 +873,7 @@ public final class RestClient {
 			String url = "%s%s".formatted(urlPrefix, withQueries(uri));
 			Request request = jettyClient.newRequest(url).method(method);
 			addHeaders(request);
-			List<Task> tasks = addBodiesAndGetTasks(request);
+			List<Task> tasks = consumeBodiesAndGetTasks(request);
 			return send(request, tasks);
 		}
 
@@ -929,7 +935,7 @@ public final class RestClient {
 			});
 		}
 
-		List<Task> addBodiesAndGetTasks(Request request) {
+		List<Task> consumeBodiesAndGetTasks(Request request) {
 			List<Task> tasks = new ArrayList<>();
 			if (!bodies.isEmpty()) {
 				if (bodies.size() == 1) {
@@ -943,6 +949,7 @@ public final class RestClient {
 						request.body(content);
 					}
 				}
+				bodies.clear();
 			}
 			return tasks;
 		}

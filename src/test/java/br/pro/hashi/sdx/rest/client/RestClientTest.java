@@ -631,7 +631,7 @@ class RestClientTest {
 		when(request.method("OPTIONS")).thenReturn(request);
 		doNothing().when(p).addHeaders(request);
 		List<Task> tasks = List.of();
-		doReturn(tasks).when(p).addBodiesAndGetTasks(request);
+		doReturn(tasks).when(p).consumeBodiesAndGetTasks(request);
 		RestResponse restResponse = mock(RestResponse.class);
 		doReturn(restResponse).when(p).send(same(request), same(tasks));
 		assertSame(restResponse, p.doRequest("OPTIONS", " \t\n/ \t\n"));
@@ -872,21 +872,23 @@ class RestClientTest {
 	}
 
 	@Test
-	void proxyAddsZeroBodiesAndGetsZeroTasks() {
+	void proxyConsumesZeroBodiesAndGetsZeroTasks() {
 		p = spyNewProxy();
 		mockContents();
-		List<Task> tasks = p.addBodiesAndGetTasks(request);
+		List<Task> tasks = p.consumeBodiesAndGetTasks(request);
+		assertTrue(p.getBodies().isEmpty());
 		verify(request, times(0)).body(any());
 		assertTrue(tasks.isEmpty());
 	}
 
 	@Test
-	void proxyAddsOneBodyAndGetsOneTask() {
+	void proxyConsumesOneBodyAndGetsOneTask() {
 		try (MockedConstruction<MultiPartRequestContent> construction = mockConstruction(MultiPartRequestContent.class)) {
 			p = spyNewProxy();
 			p.withBody(new Object());
 			List<Content> contents = mockContents();
-			List<Task> tasks = p.addBodiesAndGetTasks(request);
+			List<Task> tasks = p.consumeBodiesAndGetTasks(request);
+			assertTrue(p.getBodies().isEmpty());
 			assertTrue(construction.constructed().isEmpty());
 			verify(request).body(contents.get(0));
 			assertEquals(1, tasks.size());
@@ -894,13 +896,14 @@ class RestClientTest {
 	}
 
 	@Test
-	void proxyAddsTwoBodiesAndGetsTwoTasks() {
+	void proxyConsumesTwoBodiesAndGetsTwoTasks() {
 		try (MockedConstruction<MultiPartRequestContent> construction = mockConstruction(MultiPartRequestContent.class)) {
 			p = spyNewProxy();
 			p.b("one", new Object());
 			p.b("two", new Object());
 			List<Content> contents = mockContents();
-			List<Task> tasks = p.addBodiesAndGetTasks(request);
+			List<Task> tasks = p.consumeBodiesAndGetTasks(request);
+			assertTrue(p.getBodies().isEmpty());
 			MultiPartRequestContent content = construction.constructed().get(0);
 			verify(content).addFieldPart("one", contents.get(0), null);
 			verify(content).addFieldPart("two", contents.get(1), null);
