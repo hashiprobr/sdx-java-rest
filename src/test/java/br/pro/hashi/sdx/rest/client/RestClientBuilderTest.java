@@ -215,19 +215,20 @@ class RestClientBuilderTest extends BuilderTest {
 	}
 
 	@Test
+	void buildsWithHttp3() {
+		RestClient client = b.build3("http://a");
+		HttpClient jettyClient = client.getJettyClient();
+		assertNull(jettyClient.getSslContextFactory());
+		assertInstanceOf(HttpClientTransportOverHTTP3.class, jettyClient.getTransport());
+	}
+
+	@Test
 	void buildsWithHttps3() {
 		b.withTrustStore("path", "password");
 		RestClient client = b.build3("http://a");
 		HttpClient jettyClient = client.getJettyClient();
 		assertSame(b.getFactory(), jettyClient.getSslContextFactory());
 		assertInstanceOf(HttpClientTransportOverHTTP3.class, jettyClient.getTransport());
-	}
-
-	@Test
-	void doesNotBuildWithHttp3() {
-		assertThrows(IllegalArgumentException.class, () -> {
-			b.build3("http://a");
-		});
 	}
 
 	@Test

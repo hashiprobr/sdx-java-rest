@@ -164,12 +164,11 @@ public non-sealed class RestClientBuilder extends Builder<RestClientBuilder> {
 	 */
 	public final RestClient build3(String urlPrefix) {
 		urlPrefix = encode(urlPrefix);
-		if (factory == null) {
-			throw new IllegalArgumentException("HTTP/3 client must have a keytool truststore");
-		}
 		HTTP3Client client3 = new HTTP3Client();
-		ClientConnector connector = client3.getClientConnector();
-		connector.setSslContextFactory(factory);
+		if (factory != null) {
+			ClientConnector connector = client3.getClientConnector();
+			connector.setSslContextFactory(factory);
+		}
 		HttpClientTransport transport = new HttpClientTransportOverHTTP3(client3);
 		HttpClient client = new HttpClient(transport);
 		return build(client, urlPrefix);
