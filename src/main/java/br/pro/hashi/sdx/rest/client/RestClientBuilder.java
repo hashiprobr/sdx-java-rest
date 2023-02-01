@@ -117,16 +117,13 @@ public non-sealed class RestClientBuilder extends Builder<RestClientBuilder> {
 	 */
 	public final RestClient build1(String urlPrefix) {
 		urlPrefix = encode(urlPrefix);
-		HttpClient client1;
-		if (factory == null) {
-			client1 = new HttpClient();
-		} else {
-			ClientConnector connector = new ClientConnector();
+		ClientConnector connector = new ClientConnector();
+		if (factory != null) {
 			connector.setSslContextFactory(factory);
-			HttpClientTransport transport = new HttpClientTransportOverHTTP(connector);
-			client1 = new HttpClient(transport);
 		}
-		return build(client1, urlPrefix);
+		HttpClientTransport transport = new HttpClientTransportOverHTTP(connector);
+		HttpClient client = new HttpClient(transport);
+		return build(client, urlPrefix);
 	}
 
 	/**
@@ -144,14 +141,11 @@ public non-sealed class RestClientBuilder extends Builder<RestClientBuilder> {
 	 */
 	public final RestClient build2(String urlPrefix) {
 		urlPrefix = encode(urlPrefix);
-		HTTP2Client client2;
-		if (factory == null) {
-			client2 = new HTTP2Client();
-		} else {
-			ClientConnector connector = new ClientConnector();
+		ClientConnector connector = new ClientConnector();
+		if (factory != null) {
 			connector.setSslContextFactory(factory);
-			client2 = new HTTP2Client(connector);
 		}
+		HTTP2Client client2 = new HTTP2Client(connector);
 		HttpClientTransport transport = new HttpClientTransportOverHTTP2(client2);
 		HttpClient client = new HttpClient(transport);
 		return build(client, urlPrefix);

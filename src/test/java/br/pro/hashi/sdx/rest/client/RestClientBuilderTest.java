@@ -183,7 +183,7 @@ class RestClientBuilderTest extends BuilderTest {
 	@Test
 	void buildsWithHttps1() {
 		b.withTrustStore("path", "password");
-		RestClient client = b.build1("http://a");
+		RestClient client = b.build1("https://a");
 		HttpClient jettyClient = client.getJettyClient();
 		assertSame(b.getFactory(), jettyClient.getSslContextFactory());
 		assertInstanceOf(HttpClientTransportOverHTTP.class, jettyClient.getTransport());
@@ -200,7 +200,7 @@ class RestClientBuilderTest extends BuilderTest {
 	@Test
 	void buildsWithHttps2() {
 		b.withTrustStore("path", "password");
-		RestClient client = b.build2("http://a");
+		RestClient client = b.build2("https://a");
 		HttpClient jettyClient = client.getJettyClient();
 		assertSame(b.getFactory(), jettyClient.getSslContextFactory());
 		assertInstanceOf(HttpClientTransportOverHTTP2.class, jettyClient.getTransport());
@@ -217,7 +217,7 @@ class RestClientBuilderTest extends BuilderTest {
 	@Test
 	void buildsWithHttps3() {
 		b.withTrustStore("path", "password");
-		RestClient client = b.build3("http://a");
+		RestClient client = b.build3("https://a");
 		HttpClient jettyClient = client.getJettyClient();
 		assertSame(b.getFactory(), jettyClient.getSslContextFactory());
 		assertInstanceOf(HttpClientTransportOverHTTP3.class, jettyClient.getTransport());
