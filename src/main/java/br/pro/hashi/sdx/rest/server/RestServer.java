@@ -1,6 +1,10 @@
 package br.pro.hashi.sdx.rest.server;
 
-import br.pro.hashi.sdx.rest.transform.facade.Facade;
+import org.eclipse.jetty.server.Server;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import br.pro.hashi.sdx.rest.server.exception.ServerException;
 
 /**
  * Main object for receiving REST requests.
@@ -26,13 +30,61 @@ public final class RestServer {
 		return new RestServerBuilder();
 	}
 
-	private final Facade facade;
+	private final Logger logger;
+	private final Server jettyServer;
 
-	RestServer(Facade facade) {
-		this.facade = facade;
+	RestServer(Server jettyServer) {
+		this.logger = LoggerFactory.getLogger(RestServer.class);
+		this.jettyServer = jettyServer;
 	}
 
-	Facade getFacade() {
-		return facade;
+	/**
+	 * <p>
+	 * Obtains the Jetty Server used internally by this server.
+	 * </p>
+	 * <p>
+	 * Call this method if you want to override the default configuration.
+	 * </p>
+	 * 
+	 * @return the internal server
+	 */
+	public Server getJettyServer() {
+		return jettyServer;
+	}
+
+	/**
+	 * Starts this server.
+	 * 
+	 * @throws ServerException if the Jetty Server cannot be started
+	 */
+	public void start() {
+		if (jettyServer.isRunning()) {
+			return;
+		}
+		logger.info("Starting REST server...");
+		try {
+			jettyServer.start();
+		} catch (Exception exception) {
+			throw new ServerException(exception);
+		}
+		logger.info("REST server started");
+	}
+
+	/**
+	 * Stops this server.
+	 * 
+	 * @throws ServerException if the Jetty Server cannot be stopped
+	 */
+	public void stop() {
+		if (!jettyServer.isRunning()) {
+			return;
+		}
+		logger.info("Stopping REST server...");
+		try {
+			jettyServer.stop();
+		} catch (Exception exception) {
+			throw new ServerException(exception);
+		}
+		logger.info("REST server stopped");
 	}
 }

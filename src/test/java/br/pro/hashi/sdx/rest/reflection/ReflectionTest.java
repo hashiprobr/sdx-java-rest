@@ -84,7 +84,7 @@ class ReflectionTest {
 	}
 
 	@Test
-	void doesNotCallNoArgsConstructorIfThrows() {
+	void doesNotCallNoArgsConstructorIfConstructorThrows() {
 		Constructor<WithInvalidConstructor> constructor = assertDoesNotThrow(() -> {
 			return Reflection.getNoArgsConstructor(WithInvalidConstructor.class);
 		});
@@ -94,7 +94,15 @@ class ReflectionTest {
 	}
 
 	@Test
-	void doesNotCallNoArgsConstructorIfReflectionThrows() throws InvocationTargetException, IllegalAccessException, InstantiationException {
+	void doesNotCallNoArgsConstructorIfConstructorIsInaccessible() throws NoSuchMethodException {
+		Constructor<WithPrivateConstructor> constructor = WithPrivateConstructor.class.getDeclaredConstructor();
+		assertThrows(ReflectionException.class, () -> {
+			Reflection.newNoArgsInstance(constructor);
+		});
+	}
+
+	@Test
+	void doesNotCallNoArgsConstructorIfConstructorIsAbstract() throws InvocationTargetException, IllegalAccessException, InstantiationException {
 		Constructor<WithAbstractConstructor> constructor = assertDoesNotThrow(() -> {
 			return Reflection.getNoArgsConstructor(WithAbstractConstructor.class);
 		});

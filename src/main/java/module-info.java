@@ -3,6 +3,7 @@
  */
 module br.pro.hashi.sdx.rest {
 	requires transitive org.eclipse.jetty.client;
+	requires transitive org.eclipse.jetty.server;
 
 	requires org.eclipse.jetty.http2.http.client.transport;
 	requires org.eclipse.jetty.http3.http.client.transport;

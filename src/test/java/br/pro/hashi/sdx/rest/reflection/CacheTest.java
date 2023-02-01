@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.function.Function;
@@ -105,7 +106,7 @@ class CacheTest {
 	@Test
 	void getsAndCalls() {
 		assertFalse(c.getFunctions().containsKey(WithMethod.class));
-		assertNotNull(c.get(WithMethod.class).apply("123456789"));
+		assertNotNull(c.get(WithMethod.class).apply(null));
 		assertTrue(c.getFunctions().containsKey(WithMethod.class));
 	}
 
@@ -137,6 +138,15 @@ class CacheTest {
 	}
 
 	@Test
+	void doesNotGetWithNonPublicMethod() {
+		assertFalse(c.getFunctions().containsKey(WithNonPublicMethod.class));
+		assertThrows(ReflectionException.class, () -> {
+			c.get(WithNonPublicMethod.class);
+		});
+		assertFalse(c.getFunctions().containsKey(WithNonPublicMethod.class));
+	}
+
+	@Test
 	void doesNotGetWithNonStaticMethod() {
 		assertFalse(c.getFunctions().containsKey(WithNonStaticMethod.class));
 		assertThrows(ReflectionException.class, () -> {
@@ -146,22 +156,20 @@ class CacheTest {
 	}
 
 	@Test
-	void doesNotCallIfThrows() {
+	void doesNotCallIfMethodThrows() {
 		assertFalse(c.getFunctions().containsKey(WithInvalidMethod.class));
 		Function<String, WithInvalidMethod> function = c.get(WithInvalidMethod.class);
 		assertTrue(c.getFunctions().containsKey(WithInvalidMethod.class));
 		assertThrows(ReflectionException.class, () -> {
-			function.apply("123456789");
+			function.apply(null);
 		});
 	}
 
 	@Test
-	void doesNotCallIfReflectionThrows() {
-		assertFalse(c.getFunctions().containsKey(WithNonPublicMethod.class));
-		Function<String, WithNonPublicMethod> function = c.get(WithNonPublicMethod.class);
-		assertTrue(c.getFunctions().containsKey(WithNonPublicMethod.class));
-		assertThrows(ReflectionException.class, () -> {
-			function.apply("123456789");
+	void doesNotCallIfMethodIsInaccessible() throws NoSuchMethodException {
+		Method method = WithNonPublicMethod.class.getDeclaredMethod("valueOf", String.class);
+		assertThrows(AssertionError.class, () -> {
+			c.call(method, null);
 		});
 	}
 }
