@@ -27,6 +27,10 @@ public final class Percent {
 	}
 
 	public static String[] splitAndDecode(String uri, Charset charset) {
+		uri = uri.substring(1);
+		if (uri.isEmpty()) {
+			return new String[] {};
+		}
 		String[] items = uri.split("/", -1);
 		for (int i = 0; i < items.length; i++) {
 			String item = items[i].replace("+", "%2B");

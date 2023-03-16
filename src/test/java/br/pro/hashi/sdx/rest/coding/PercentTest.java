@@ -157,57 +157,57 @@ class PercentTest {
 
 	@Test
 	void splitsAndDecodesSlash() {
-		assertArrayEquals(new String[] { "", "" }, splitAndDecode("/"));
+		assertArrayEquals(new String[] {}, splitAndDecode("/"));
 	}
 
 	@Test
 	void splitsAndDecodesPlus() {
-		assertArrayEquals(new String[] { "", "+" }, splitAndDecode("/+"));
+		assertArrayEquals(new String[] { "+" }, splitAndDecode("/+"));
 	}
 
 	@Test
 	void splitsAndDecodesOneItem() {
-		assertArrayEquals(new String[] { "", "0" }, splitAndDecode("/0"));
+		assertArrayEquals(new String[] { "0" }, splitAndDecode("/0"));
 	}
 
 	@Test
 	void splitsAndDecodesOneItemDoubled() {
-		assertArrayEquals(new String[] { "", "", "00" }, splitAndDecode("//00"));
+		assertArrayEquals(new String[] { "", "00" }, splitAndDecode("//00"));
 	}
 
 	@Test
 	void splitsAndDecodesOneItemTripled() {
-		assertArrayEquals(new String[] { "", "", "", "000" }, splitAndDecode("///000"));
+		assertArrayEquals(new String[] { "", "", "000" }, splitAndDecode("///000"));
 	}
 
 	@Test
 	void splitsAndDecodesTwoItems() {
-		assertArrayEquals(new String[] { "", "0", "1" }, splitAndDecode("/0/1"));
+		assertArrayEquals(new String[] { "0", "1" }, splitAndDecode("/0/1"));
 	}
 
 	@Test
 	void splitsAndDecodesTwoItemsDoubled() {
-		assertArrayEquals(new String[] { "", "", "00", "", "11" }, splitAndDecode("//00//11"));
+		assertArrayEquals(new String[] { "", "00", "", "11" }, splitAndDecode("//00//11"));
 	}
 
 	@Test
 	void splitsAndDecodesTwoItemsTripled() {
-		assertArrayEquals(new String[] { "", "", "", "000", "", "", "111" }, splitAndDecode("///000///111"));
+		assertArrayEquals(new String[] { "", "", "000", "", "", "111" }, splitAndDecode("///000///111"));
 	}
 
 	@Test
 	void splitsAndDecodesThreeItems() {
-		assertArrayEquals(new String[] { "", "0", "1", "2" }, splitAndDecode("/0/1/2"));
+		assertArrayEquals(new String[] { "0", "1", "2" }, splitAndDecode("/0/1/2"));
 	}
 
 	@Test
 	void splitsAndDecodesThreeItemsDoubled() {
-		assertArrayEquals(new String[] { "", "", "00", "", "11", "", "22" }, splitAndDecode("//00//11//22"));
+		assertArrayEquals(new String[] { "", "00", "", "11", "", "22" }, splitAndDecode("//00//11//22"));
 	}
 
 	@Test
 	void splitsAndDecodesThreeItemsTripled() {
-		assertArrayEquals(new String[] { "", "", "", "000", "", "", "111", "", "", "222" }, splitAndDecode("///000///111///222"));
+		assertArrayEquals(new String[] { "", "", "000", "", "", "111", "", "", "222" }, splitAndDecode("///000///111///222"));
 	}
 
 	private String[] splitAndDecode(String uri) {
