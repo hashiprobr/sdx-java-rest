@@ -29,13 +29,13 @@ class RestBodyTest {
 
 	@Test
 	void initializesActual() {
-		b = newBody();
+		b = newRestBody();
 		assertSame(actual, b.getActual());
 	}
 
 	@Test
 	void initializesType() {
-		b = newBody();
+		b = newRestBody();
 		assertEquals(Object.class, b.getType());
 	}
 
@@ -48,45 +48,32 @@ class RestBodyTest {
 	@Test
 	void doesNotInitializeTypeWithHint() {
 		assertThrows(NullPointerException.class, () -> {
-			new RestBody(actual, null);
+			new RestBody(actual, (Hint<Object>) null);
 		});
 	}
 
 	@Test
-	void initializesWithoutName() {
-		b = newBody();
-		assertEquals("", b.getName());
-	}
-
-	@Test
 	void initializesWithoutContentType() {
-		b = newBody();
+		b = newRestBody();
 		assertNull(b.getContentType());
 	}
 
 	@Test
 	void initializesWithDefaultCharset() {
-		b = newBody();
+		b = newRestBody();
 		assertEquals(Coding.CHARSET, b.getCharset());
 	}
 
 	@Test
 	void initializesWithoutBase64() {
-		b = newBody();
+		b = newRestBody();
 		assertFalse(b.isBase64());
-	}
-
-	@Test
-	void setsName() {
-		b = newBody();
-		b.setName("name");
-		assertEquals("name", b.getName());
 	}
 
 	@Test
 	void setsContentType() {
 		try (MockedStatic<Media> media = mockStatic(Media.class)) {
-			b = newBody();
+			b = newRestBody();
 			String contentType = "type/subtype";
 			media.when(() -> Media.strip(contentType)).thenReturn(contentType);
 			assertSame(b, b.as(contentType));
@@ -96,7 +83,7 @@ class RestBodyTest {
 
 	@Test
 	void doesNotSetContentTypeIfItIsNull() {
-		b = newBody();
+		b = newRestBody();
 		assertThrows(NullPointerException.class, () -> {
 			b.as(null);
 		});
@@ -106,7 +93,7 @@ class RestBodyTest {
 	@Test
 	void doesNotSetContentTypeIfStripReturnsNull() {
 		try (MockedStatic<Media> media = mockStatic(Media.class)) {
-			b = newBody();
+			b = newRestBody();
 			String contentType = "type/subtype";
 			media.when(() -> Media.strip(contentType)).thenReturn(null);
 			assertThrows(IllegalArgumentException.class, () -> {
@@ -118,7 +105,7 @@ class RestBodyTest {
 
 	@Test
 	void setsCharset() {
-		b = newBody();
+		b = newRestBody();
 		if (Coding.CHARSET.equals(StandardCharsets.UTF_8)) {
 			assertSame(b, b.in(StandardCharsets.ISO_8859_1));
 			assertEquals(StandardCharsets.ISO_8859_1, b.getCharset());
@@ -130,7 +117,7 @@ class RestBodyTest {
 
 	@Test
 	void doesNotSetCharset() {
-		b = newBody();
+		b = newRestBody();
 		assertThrows(NullPointerException.class, () -> {
 			b.in(null);
 		});
@@ -139,12 +126,12 @@ class RestBodyTest {
 
 	@Test
 	void setsBase64() {
-		b = newBody();
+		b = newRestBody();
 		assertSame(b, b.inBase64());
 		assertTrue(b.isBase64());
 	}
 
-	private RestBody newBody() {
+	private RestBody newRestBody() {
 		return new RestBody(actual);
 	}
 }

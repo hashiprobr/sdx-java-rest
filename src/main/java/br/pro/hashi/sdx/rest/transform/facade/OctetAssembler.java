@@ -7,7 +7,7 @@ import java.io.UncheckedIOException;
 import java.lang.reflect.Type;
 
 import br.pro.hashi.sdx.rest.transform.Assembler;
-import br.pro.hashi.sdx.rest.transform.exception.AssemblingException;
+import br.pro.hashi.sdx.rest.transform.facade.exception.SupportException;
 
 class OctetAssembler implements Assembler {
 	@Override
@@ -26,7 +26,7 @@ class OctetAssembler implements Assembler {
 				((InputStream) body).transferTo(stream);
 				return;
 			}
-			throw new AssemblingException("Body must be instance of byte[] or InputStream");
+			throw new SupportException("Body must be instance of byte[] or InputStream");
 		} catch (IOException exception) {
 			throw new UncheckedIOException(exception);
 		} finally {

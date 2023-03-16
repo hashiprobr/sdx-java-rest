@@ -49,8 +49,13 @@ public class Cache {
 			if (!(Modifier.isPublic(modifiers) && Modifier.isStatic(modifiers))) {
 				throw new ReflectionException("Type valueOf method must be public and static");
 			}
+			for (Class<?> exceptionType : method.getExceptionTypes()) {
+				if (!RuntimeException.class.isAssignableFrom(exceptionType)) {
+					throw new ReflectionException("Type valueOf method can only throw unchecked exceptions");
+				}
+			}
 			function = (valueString) -> {
-				return call(method, valueString);
+				return invoke(method, valueString);
 			};
 			functions.put(type, function);
 		}
@@ -58,12 +63,16 @@ public class Cache {
 	}
 
 	@SuppressWarnings("unchecked")
-	<T> T call(Method method, String valueString) {
+	<T> T invoke(Method method, String valueString) {
 		T value;
 		try {
 			value = (T) method.invoke(null, valueString);
 		} catch (InvocationTargetException exception) {
-			throw new ReflectionException(exception.getCause());
+			Throwable cause = exception.getCause();
+			if (cause instanceof RuntimeException) {
+				throw (RuntimeException) cause;
+			}
+			throw new AssertionError(cause);
 		} catch (IllegalAccessException exception) {
 			throw new AssertionError(exception);
 		}

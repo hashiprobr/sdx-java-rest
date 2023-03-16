@@ -5,7 +5,7 @@ import java.lang.reflect.Type;
 
 import br.pro.hashi.sdx.rest.coding.Media;
 import br.pro.hashi.sdx.rest.transform.Deserializer;
-import br.pro.hashi.sdx.rest.transform.exception.DeserializingException;
+import br.pro.hashi.sdx.rest.transform.facade.exception.SupportException;
 
 class PlainDeserializer implements Deserializer {
 	@SuppressWarnings("unchecked")
@@ -17,6 +17,6 @@ class PlainDeserializer implements Deserializer {
 		if (type.equals(Reader.class)) {
 			return (T) reader;
 		}
-		throw new DeserializingException("Type must be equal to String or Reader");
+		throw new SupportException("Type must be equal to String or Reader");
 	}
 }

@@ -8,10 +8,10 @@ import br.pro.hashi.sdx.rest.coding.Media;
 import br.pro.hashi.sdx.rest.transform.Hint;
 
 /**
- * Wrapper for customizing a body via a fluent interface.
+ * Wrapper for customizing a request body via a fluent interface.
  */
 public class RestBody {
-	private static Type getType(Hint<?> hint) {
+	static Type getType(Hint<?> hint) {
 		if (hint == null) {
 			throw new NullPointerException("Hint cannot be null");
 		}
@@ -20,7 +20,6 @@ public class RestBody {
 
 	private final Object actual;
 	private final Type type;
-	private String name;
 	private String contentType;
 	private Charset charset;
 	private boolean base64;
@@ -30,9 +29,10 @@ public class RestBody {
 	 * Constructs a wrapped body.
 	 * </p>
 	 * <p>
-	 * This constructor calls {@code body.getClass()} to obtain the body type. Since
-	 * {@code body.getClass()} loses generic information due to type erasure, do not
-	 * call it if the type is generic. Call {@code Body(T, Hint<T>)} instead.
+	 * This constructor calls {@code actual.getClass()} to obtain the body type.
+	 * Since {@code actual.getClass()} loses generic information due to type
+	 * erasure, do not call it if the type is generic. Call
+	 * {@code RestBody(T, Hint<T>)} instead.
 	 * </p>
 	 * 
 	 * @param actual the actual body
@@ -58,10 +58,9 @@ public class RestBody {
 		this(actual, getType(hint));
 	}
 
-	private RestBody(Object actual, Type type) {
+	RestBody(Object actual, Type type) {
 		this.actual = actual;
 		this.type = type;
-		this.name = "";
 		this.contentType = null;
 		this.charset = Coding.CHARSET;
 		this.base64 = false;
@@ -73,14 +72,6 @@ public class RestBody {
 
 	Type getType() {
 		return type;
-	}
-
-	String getName() {
-		return name;
-	}
-
-	void setName(String name) {
-		this.name = name;
 	}
 
 	String getContentType() {

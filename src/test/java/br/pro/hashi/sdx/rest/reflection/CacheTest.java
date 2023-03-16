@@ -15,12 +15,14 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import br.pro.hashi.sdx.rest.reflection.exception.ReflectionException;
+import br.pro.hashi.sdx.rest.reflection.mock.cache.WithCheckedException;
 import br.pro.hashi.sdx.rest.reflection.mock.cache.WithInvalidInputType;
 import br.pro.hashi.sdx.rest.reflection.mock.cache.WithInvalidMethod;
 import br.pro.hashi.sdx.rest.reflection.mock.cache.WithInvalidOutputType;
-import br.pro.hashi.sdx.rest.reflection.mock.cache.WithMethod;
 import br.pro.hashi.sdx.rest.reflection.mock.cache.WithNonPublicMethod;
 import br.pro.hashi.sdx.rest.reflection.mock.cache.WithNonStaticMethod;
+import br.pro.hashi.sdx.rest.reflection.mock.cache.WithUncheckedException;
+import br.pro.hashi.sdx.rest.reflection.mock.cache.WithValidMethod;
 import br.pro.hashi.sdx.rest.reflection.mock.cache.WithoutMethod;
 
 class CacheTest {
@@ -105,9 +107,16 @@ class CacheTest {
 
 	@Test
 	void getsAndCalls() {
-		assertFalse(c.getFunctions().containsKey(WithMethod.class));
-		assertNotNull(c.get(WithMethod.class).apply(null));
-		assertTrue(c.getFunctions().containsKey(WithMethod.class));
+		assertFalse(c.getFunctions().containsKey(WithValidMethod.class));
+		assertNotNull(c.get(WithValidMethod.class).apply(null));
+		assertTrue(c.getFunctions().containsKey(WithValidMethod.class));
+	}
+
+	@Test
+	void getsAndCallsWithUncheckedException() {
+		assertFalse(c.getFunctions().containsKey(WithUncheckedException.class));
+		assertNotNull(c.get(WithUncheckedException.class).apply(null));
+		assertTrue(c.getFunctions().containsKey(WithUncheckedException.class));
 	}
 
 	@Test
@@ -156,20 +165,43 @@ class CacheTest {
 	}
 
 	@Test
+	void doesNotGetWithCheckedException() {
+		assertFalse(c.getFunctions().containsKey(WithCheckedException.class));
+		assertThrows(ReflectionException.class, () -> {
+			c.get(WithCheckedException.class);
+		});
+		assertFalse(c.getFunctions().containsKey(WithCheckedException.class));
+	}
+
+	@Test
 	void doesNotCallIfMethodThrows() {
 		assertFalse(c.getFunctions().containsKey(WithInvalidMethod.class));
 		Function<String, WithInvalidMethod> function = c.get(WithInvalidMethod.class);
 		assertTrue(c.getFunctions().containsKey(WithInvalidMethod.class));
-		assertThrows(ReflectionException.class, () -> {
+		assertThrows(RuntimeException.class, () -> {
 			function.apply(null);
 		});
 	}
 
 	@Test
-	void doesNotCallIfMethodIsInaccessible() throws NoSuchMethodException {
-		Method method = WithNonPublicMethod.class.getDeclaredMethod("valueOf", String.class);
+	void doesNotInvokeIfMethodThrowsCheckedException() {
+		assertDoesNotInvoke(WithCheckedException.class);
+	}
+
+	@Test
+	void doesNotInvokeIfMethodIsInaccessible() {
+		assertDoesNotInvoke(WithNonPublicMethod.class);
+	}
+
+	private void assertDoesNotInvoke(Class<?> type) {
+		Method method;
+		try {
+			method = type.getDeclaredMethod("valueOf", String.class);
+		} catch (NoSuchMethodException exception) {
+			throw new AssertionError(exception);
+		}
 		assertThrows(AssertionError.class, () -> {
-			c.call(method, null);
+			c.invoke(method, null);
 		});
 	}
 }

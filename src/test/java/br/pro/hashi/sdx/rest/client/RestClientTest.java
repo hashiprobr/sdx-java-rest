@@ -14,6 +14,7 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockConstruction;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -29,6 +30,7 @@ import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -48,6 +50,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.MockedConstruction;
+import org.mockito.MockedStatic;
 
 import br.pro.hashi.sdx.rest.client.RestClient.Proxy;
 import br.pro.hashi.sdx.rest.client.RestClient.Proxy.Entry;
@@ -178,6 +181,16 @@ class RestClientTest {
 	}
 
 	@Test
+	void forwardsWithPartToProxy() {
+		try (MockedConstruction<Proxy> construction = mockConstruction(Proxy.class)) {
+			Object part = new Object();
+			c.p("name", part);
+			p = construction.constructed().get(0);
+			verify(p).withPart("name", part);
+		}
+	}
+
+	@Test
 	void forwardsWithBodyToProxy() {
 		try (MockedConstruction<Proxy> construction = mockConstruction(Proxy.class)) {
 			Object body = new Object();
@@ -293,9 +306,15 @@ class RestClientTest {
 	}
 
 	@Test
-	void proxyInitializesWithoutBodies() {
+	void proxyInitializesWithoutParts() {
 		p = newProxy();
-		assertTrue(p.getBodies().isEmpty());
+		assertTrue(p.getParts().isEmpty());
+	}
+
+	@Test
+	void proxyInitializesWithoutBody() {
+		p = newProxy();
+		assertNull(p.getBody());
 	}
 
 	@Test
@@ -461,43 +480,97 @@ class RestClientTest {
 	}
 
 	@Test
-	void proxyAddsBody() {
+	void proxyAddsPart() {
 		p = newProxy();
-		Object body = new Object();
-		assertSame(p, p.b(body));
-		List<RestBody> bodies = p.getBodies();
-		assertEquals(1, bodies.size());
-		assertSame(body, bodies.get(0).getActual());
+		Object actual = new Object();
+		assertSame(p, p.p("name", actual));
+		List<RestPart> parts = p.getParts();
+		assertEquals(1, parts.size());
+		RestPart part = parts.get(0);
+		assertEquals("name", part.getName());
+		assertSame(actual, part.getActual());
 	}
 
 	@Test
-	void proxyAddsWrappedBody() {
+	void proxyDoesNotAddPartIfAlreadyAddedBody() {
+		p = newProxy();
+		p.b(new Object());
+		Object actual = new Object();
+		assertThrows(IllegalArgumentException.class, () -> {
+			p.p("name", actual);
+		});
+		assertTrue(p.getParts().isEmpty());
+	}
+
+	@Test
+	void proxyDoesNotAddPartIfNameIsNull() {
+		p = newProxy();
+		Object actual = new Object();
+		assertThrows(NullPointerException.class, () -> {
+			p.p(null, actual);
+		});
+		assertTrue(p.getParts().isEmpty());
+	}
+
+	@Test
+	void proxyAddsWrappedPart() {
+		p = newProxy();
+		Object actual = new Object();
+		assertSame(p, p.p("name", new RestPart(actual)));
+		List<RestPart> parts = p.getParts();
+		assertEquals(1, parts.size());
+		RestPart part = parts.get(0);
+		assertEquals("name", part.getName());
+		assertSame(actual, part.getActual());
+	}
+
+	@Test
+	void proxyDoesNotAddWrappedPart() {
+		p = newProxy();
+		Object actual = new RestBody(new Object());
+		assertThrows(IllegalArgumentException.class, () -> {
+			p.p("name", actual);
+		});
+		assertTrue(p.getParts().isEmpty());
+	}
+
+	@Test
+	void proxySetsBody() {
+		p = newProxy();
+		Object actual = new Object();
+		assertSame(p, p.b(actual));
+		RestBody body = p.getBody();
+		assertSame(actual, body.getActual());
+	}
+
+	@Test
+	void proxyDoesNotSetBodyIfAlreadyAddedPart() {
+		p = newProxy();
+		p.p("name", new Object());
+		Object actual = new Object();
+		assertThrows(IllegalArgumentException.class, () -> {
+			p.b(actual);
+		});
+		assertNull(p.getBody());
+	}
+
+	@Test
+	void proxySetsWrappedBody() {
 		p = newProxy();
 		Object actual = new Object();
 		assertSame(p, p.b(new RestBody(actual)));
-		List<RestBody> bodies = p.getBodies();
-		assertEquals(1, bodies.size());
-		assertSame(actual, bodies.get(0).getActual());
+		RestBody body = p.getBody();
+		assertSame(actual, body.getActual());
 	}
 
 	@Test
-	void proxyDoesNotAddBodyIfNameIsNull() {
+	void proxyDoesNotSetWrappedBody() {
 		p = newProxy();
-		Object body = new Object();
-		assertThrows(NullPointerException.class, () -> {
-			p.b(null, body);
-		});
-		assertTrue(p.getBodies().isEmpty());
-	}
-
-	@Test
-	void proxyDoesNotAddBodyIfNameIsEmpty() {
-		p = newProxy();
-		Object body = new Object();
+		Object actual = new RestPart(new Object());
 		assertThrows(IllegalArgumentException.class, () -> {
-			p.b("", body);
+			p.b(actual);
 		});
-		assertTrue(p.getBodies().isEmpty());
+		assertNull(p.getBody());
 	}
 
 	@Test
@@ -611,7 +684,7 @@ class RestClientTest {
 		when(request.method("OPTIONS")).thenReturn(request);
 		doNothing().when(p).addHeaders(request);
 		List<Task> tasks = List.of();
-		doReturn(tasks).when(p).consumeBodiesAndGetTasks(request);
+		doReturn(tasks).when(p).consumeBodyAndGetTasks(request);
 		RestResponse restResponse = mock(RestResponse.class);
 		doReturn(restResponse).when(p).send(same(request), same(tasks));
 		assertSame(restResponse, p.doRequest("OPTIONS", " \t\n/ \t\n"));
@@ -852,23 +925,28 @@ class RestClientTest {
 	}
 
 	@Test
-	void proxyConsumesZeroBodiesAndGetsZeroTasks() {
-		p = spyNewProxy();
-		mockContents();
-		List<Task> tasks = p.consumeBodiesAndGetTasks(request);
-		assertTrue(p.getBodies().isEmpty());
-		verify(request, times(0)).body(any());
-		assertTrue(tasks.isEmpty());
+	void proxyConsumesNothingAndGetsNothing() {
+		try (MockedConstruction<MultiPartRequestContent> construction = mockConstruction(MultiPartRequestContent.class)) {
+			p = spyNewProxy();
+			mockContents();
+			List<Task> tasks = p.consumeBodyAndGetTasks(request);
+			assertNull(p.getBody());
+			assertTrue(p.getParts().isEmpty());
+			assertTrue(construction.constructed().isEmpty());
+			verify(request, times(0)).body(any());
+			assertTrue(tasks.isEmpty());
+		}
 	}
 
 	@Test
-	void proxyConsumesOneBodyAndGetsOneTask() {
+	void proxyConsumesBodyAndGetsOneTask() {
 		try (MockedConstruction<MultiPartRequestContent> construction = mockConstruction(MultiPartRequestContent.class)) {
 			p = spyNewProxy();
 			p.withBody(new Object());
 			List<Content> contents = mockContents();
-			List<Task> tasks = p.consumeBodiesAndGetTasks(request);
-			assertTrue(p.getBodies().isEmpty());
+			List<Task> tasks = p.consumeBodyAndGetTasks(request);
+			assertNull(p.getBody());
+			assertTrue(p.getParts().isEmpty());
 			assertTrue(construction.constructed().isEmpty());
 			verify(request).body(contents.get(0));
 			assertEquals(1, tasks.size());
@@ -876,17 +954,52 @@ class RestClientTest {
 	}
 
 	@Test
-	void proxyConsumesTwoBodiesAndGetsTwoTasks() {
-		try (MockedConstruction<MultiPartRequestContent> construction = mockConstruction(MultiPartRequestContent.class)) {
+	void proxyConsumesOnePartAndGetsOneTask() {
+		try (
+				MockedConstruction<MultiPartRequestContent> construction = mockConstruction(MultiPartRequestContent.class);
+				MockedStatic<HttpFields> fieldsStatic = mockStatic(HttpFields.class)) {
+			HttpFields.Mutable fields = mock(HttpFields.Mutable.class);
+			fieldsStatic.when(() -> HttpFields.build()).thenReturn(fields);
 			p = spyNewProxy();
-			p.b("one", new Object());
-			p.b("two", new Object());
+			p.withPart("name", new RestPart(new Object())
+					.withHeader("x", "s")
+					.withHeader("y", 1)
+					.withHeader("z", 2.3));
 			List<Content> contents = mockContents();
-			List<Task> tasks = p.consumeBodiesAndGetTasks(request);
-			assertTrue(p.getBodies().isEmpty());
+			List<Task> tasks = p.consumeBodyAndGetTasks(request);
+			assertNull(p.getBody());
+			assertTrue(p.getParts().isEmpty());
+			verify(fields).add("x", "s");
+			verify(fields).add("y", "1");
+			verify(fields).add("z", "2.3");
+			verifyNoMoreInteractions(fields);
 			MultiPartRequestContent content = construction.constructed().get(0);
-			verify(content).addFieldPart("one", contents.get(0), null);
-			verify(content).addFieldPart("two", contents.get(1), null);
+			verify(content).addFieldPart("name", contents.get(0), fields);
+			verify(content).close();
+			verifyNoMoreInteractions(content);
+			verify(request).body(content);
+			assertEquals(1, tasks.size());
+		}
+	}
+
+	@Test
+	void proxyConsumesTwoPartsAndGetsTwoTasks() {
+		try (
+				MockedConstruction<MultiPartRequestContent> construction = mockConstruction(MultiPartRequestContent.class);
+				MockedStatic<HttpFields> fieldsStatic = mockStatic(HttpFields.class)) {
+			List<HttpFields.Mutable> fields = List.of(mock(HttpFields.Mutable.class), mock(HttpFields.Mutable.class));
+			Iterator<HttpFields.Mutable> iterator = fields.iterator();
+			fieldsStatic.when(() -> HttpFields.build()).thenAnswer((invocation) -> iterator.next());
+			p = spyNewProxy();
+			p.p("name0", new Object());
+			p.p("name1", new Object());
+			List<Content> contents = mockContents();
+			List<Task> tasks = p.consumeBodyAndGetTasks(request);
+			assertNull(p.getBody());
+			assertTrue(p.getParts().isEmpty());
+			MultiPartRequestContent content = construction.constructed().get(0);
+			verify(content).addFieldPart("name0", contents.get(0), fields.get(0));
+			verify(content).addFieldPart("name1", contents.get(1), fields.get(1));
 			verify(content).close();
 			verifyNoMoreInteractions(content);
 			verify(request).body(content);

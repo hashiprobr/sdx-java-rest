@@ -31,6 +31,7 @@ import br.pro.hashi.sdx.rest.transform.Deserializer;
 import br.pro.hashi.sdx.rest.transform.Disassembler;
 import br.pro.hashi.sdx.rest.transform.Hint;
 import br.pro.hashi.sdx.rest.transform.Serializer;
+import br.pro.hashi.sdx.rest.transform.facade.exception.SupportException;
 
 class FacadeTest {
 	private MockedConstruction<OctetAssembler> assemblerConstruction;
@@ -113,14 +114,14 @@ class FacadeTest {
 
 	@Test
 	void initializesWithoutPNGAssembler() {
-		assertThrows(IllegalArgumentException.class, () -> {
+		assertThrows(SupportException.class, () -> {
 			f.getAssembler("image/png");
 		});
 	}
 
 	@Test
 	void initializesWithoutNullAssembler() {
-		assertThrows(IllegalArgumentException.class, () -> {
+		assertThrows(SupportException.class, () -> {
 			f.getAssembler(null);
 		});
 	}
@@ -132,14 +133,14 @@ class FacadeTest {
 
 	@Test
 	void initializesWithoutPNGDisassembler() {
-		assertThrows(IllegalArgumentException.class, () -> {
+		assertThrows(SupportException.class, () -> {
 			f.getDisassembler("image/png");
 		});
 	}
 
 	@Test
 	void initializesWithoutNullDisassembler() {
-		assertThrows(IllegalArgumentException.class, () -> {
+		assertThrows(SupportException.class, () -> {
 			f.getDisassembler(null);
 		});
 	}
@@ -151,14 +152,14 @@ class FacadeTest {
 
 	@Test
 	void initializesWithoutXMLSerializer() {
-		assertThrows(IllegalArgumentException.class, () -> {
+		assertThrows(SupportException.class, () -> {
 			f.getSerializer("application/xml");
 		});
 	}
 
 	@Test
 	void initializesWithoutNullSerializer() {
-		assertThrows(IllegalArgumentException.class, () -> {
+		assertThrows(SupportException.class, () -> {
 			f.getSerializer(null);
 		});
 	}
@@ -170,14 +171,14 @@ class FacadeTest {
 
 	@Test
 	void initializesWithoutXMLDeserializer() {
-		assertThrows(IllegalArgumentException.class, () -> {
+		assertThrows(SupportException.class, () -> {
 			f.getDeserializer("application/xml");
 		});
 	}
 
 	@Test
 	void initializesWithoutNullDeserializer() {
-		assertThrows(IllegalArgumentException.class, () -> {
+		assertThrows(SupportException.class, () -> {
 			f.getDeserializer(null);
 		});
 	}
@@ -369,7 +370,7 @@ class FacadeTest {
 		assertThrows(NullPointerException.class, () -> {
 			f.putAssembler(null, assembler);
 		});
-		assertThrows(IllegalArgumentException.class, () -> {
+		assertThrows(SupportException.class, () -> {
 			f.getAssembler(null);
 		});
 	}
@@ -383,7 +384,7 @@ class FacadeTest {
 			assertThrows(IllegalArgumentException.class, () -> {
 				f.putAssembler(contentType, assembler);
 			});
-			assertThrows(IllegalArgumentException.class, () -> {
+			assertThrows(SupportException.class, () -> {
 				f.getAssembler(contentType);
 			});
 		}
@@ -397,7 +398,7 @@ class FacadeTest {
 			assertThrows(NullPointerException.class, () -> {
 				f.putAssembler(contentType, null);
 			});
-			assertThrows(IllegalArgumentException.class, () -> {
+			assertThrows(SupportException.class, () -> {
 				f.getAssembler(contentType);
 			});
 		}
@@ -422,7 +423,7 @@ class FacadeTest {
 		assertThrows(NullPointerException.class, () -> {
 			f.putDisassembler(null, disassembler);
 		});
-		assertThrows(IllegalArgumentException.class, () -> {
+		assertThrows(SupportException.class, () -> {
 			f.getDisassembler(null);
 		});
 	}
@@ -436,7 +437,7 @@ class FacadeTest {
 			assertThrows(IllegalArgumentException.class, () -> {
 				f.putDisassembler(contentType, disassembler);
 			});
-			assertThrows(IllegalArgumentException.class, () -> {
+			assertThrows(SupportException.class, () -> {
 				f.getDisassembler(contentType);
 			});
 		}
@@ -450,7 +451,7 @@ class FacadeTest {
 			assertThrows(NullPointerException.class, () -> {
 				f.putDisassembler(contentType, null);
 			});
-			assertThrows(IllegalArgumentException.class, () -> {
+			assertThrows(SupportException.class, () -> {
 				f.getDisassembler(contentType);
 			});
 		}
@@ -475,7 +476,7 @@ class FacadeTest {
 		assertThrows(NullPointerException.class, () -> {
 			f.putSerializer(null, serializer);
 		});
-		assertThrows(IllegalArgumentException.class, () -> {
+		assertThrows(SupportException.class, () -> {
 			f.getSerializer(null);
 		});
 	}
@@ -489,7 +490,7 @@ class FacadeTest {
 			assertThrows(IllegalArgumentException.class, () -> {
 				f.putSerializer(contentType, serializer);
 			});
-			assertThrows(IllegalArgumentException.class, () -> {
+			assertThrows(SupportException.class, () -> {
 				f.getSerializer(contentType);
 			});
 		}
@@ -503,7 +504,7 @@ class FacadeTest {
 			assertThrows(NullPointerException.class, () -> {
 				f.putSerializer(contentType, null);
 			});
-			assertThrows(IllegalArgumentException.class, () -> {
+			assertThrows(SupportException.class, () -> {
 				f.getSerializer(contentType);
 			});
 		}
@@ -528,7 +529,7 @@ class FacadeTest {
 		assertThrows(NullPointerException.class, () -> {
 			f.putDeserializer(null, deserializer);
 		});
-		assertThrows(IllegalArgumentException.class, () -> {
+		assertThrows(SupportException.class, () -> {
 			f.getDeserializer(null);
 		});
 	}
@@ -542,7 +543,7 @@ class FacadeTest {
 			assertThrows(IllegalArgumentException.class, () -> {
 				f.putDeserializer(contentType, deserializer);
 			});
-			assertThrows(IllegalArgumentException.class, () -> {
+			assertThrows(SupportException.class, () -> {
 				f.getDeserializer(contentType);
 			});
 		}
@@ -556,7 +557,7 @@ class FacadeTest {
 			assertThrows(NullPointerException.class, () -> {
 				f.putDeserializer(contentType, null);
 			});
-			assertThrows(IllegalArgumentException.class, () -> {
+			assertThrows(SupportException.class, () -> {
 				f.getDeserializer(contentType);
 			});
 		}

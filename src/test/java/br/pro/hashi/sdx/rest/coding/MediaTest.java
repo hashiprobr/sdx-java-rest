@@ -287,30 +287,34 @@ class MediaTest {
 	}
 
 	@Test
-	void encodesZeroChars() throws IOException {
+	void encodesZeroChars() {
 		assertWrites("", "");
 	}
 
 	@Test
-	void encodesOneChar() throws IOException {
+	void encodesOneChar() {
 		assertWrites("MA==", "0");
 	}
 
 	@Test
-	void encodesTwoChars() throws IOException {
+	void encodesTwoChars() {
 		assertWrites("MDE=", "01");
 	}
 
 	@Test
-	void encodesThreeChars() throws IOException {
+	void encodesThreeChars() {
 		assertWrites("MDEy", "012");
 	}
 
-	private void assertWrites(String expected, String content) throws IOException {
+	private void assertWrites(String expected, String content) {
 		ByteArrayOutputStream stream = new ByteArrayOutputStream();
 		Writer writer = new OutputStreamWriter(Media.encode(stream), StandardCharsets.US_ASCII);
-		writer.write(content);
-		writer.close();
+		try {
+			writer.write(content);
+			writer.close();
+		} catch (IOException exception) {
+			throw new AssertionError(exception);
+		}
 		assertEquals(expected, new String(stream.toByteArray(), StandardCharsets.US_ASCII));
 	}
 }

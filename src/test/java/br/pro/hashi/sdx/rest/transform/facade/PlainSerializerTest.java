@@ -19,7 +19,7 @@ import org.junit.jupiter.api.Test;
 
 import br.pro.hashi.sdx.rest.transform.Hint;
 import br.pro.hashi.sdx.rest.transform.Serializer;
-import br.pro.hashi.sdx.rest.transform.exception.SerializingException;
+import br.pro.hashi.sdx.rest.transform.facade.exception.SupportException;
 
 class PlainSerializerTest {
 	private Serializer s;
@@ -85,7 +85,7 @@ class PlainSerializerTest {
 	void doesNotWriteIfBodyIsNeither() {
 		Object body = new Object();
 		Writer writer = new StringWriter();
-		assertThrows(SerializingException.class, () -> {
+		assertThrows(SupportException.class, () -> {
 			s.write(body, Object.class, writer);
 		});
 	}

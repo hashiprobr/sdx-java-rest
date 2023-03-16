@@ -20,7 +20,7 @@ import org.junit.jupiter.api.Test;
 
 import br.pro.hashi.sdx.rest.transform.Assembler;
 import br.pro.hashi.sdx.rest.transform.Hint;
-import br.pro.hashi.sdx.rest.transform.exception.AssemblingException;
+import br.pro.hashi.sdx.rest.transform.facade.exception.SupportException;
 
 class OctetAssemblerTest {
 	private Assembler a;
@@ -86,7 +86,7 @@ class OctetAssemblerTest {
 	void doesNotWriteIfBodyIsNeither() {
 		Object body = new Object();
 		ByteArrayOutputStream stream = new ByteArrayOutputStream();
-		assertThrows(AssemblingException.class, () -> {
+		assertThrows(SupportException.class, () -> {
 			a.write(body, Object.class, stream);
 		});
 	}

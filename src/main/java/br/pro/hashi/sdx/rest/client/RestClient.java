@@ -246,10 +246,47 @@ public final class RestClient {
 	}
 
 	/**
+	 * Alias for {@link #withPart(String, Object)}.
+	 * 
+	 * @param name the name
+	 * @param part the part
+	 * @return the proxy, for chaining
+	 * @throws NullPointerException     if the name is null
+	 * @throws IllegalArgumentException if already added a body or the part is
+	 *                                  instance of {@code RestBody}
+	 * @hidden
+	 */
+	public Proxy p(String name, Object part) {
+		return withPart(name, part);
+	}
+
+	/**
+	 * <p>
+	 * Convenience method that instantiates a {@link RestClient.Proxy} and calls
+	 * {@link RestClient.Proxy#withPart(String, Object)}.
+	 * </p>
+	 * <p>
+	 * The alias {@link #p(String, Object)} is available for short chaining.
+	 * </p>
+	 * 
+	 * @param name the name
+	 * @param part the part
+	 * @return the proxy, for chaining
+	 * @throws NullPointerException     if the name is null
+	 * @throws IllegalArgumentException if already added a body or the part is
+	 *                                  instance of {@code RestBody}
+	 */
+	public Proxy withPart(String name, Object part) {
+		return new Proxy().withPart(name, part);
+	}
+
+	/**
 	 * Alias for {@link #withBody(Object)}.
 	 * 
 	 * @param body the body
 	 * @return the proxy, for chaining
+	 * @throws IllegalArgumentException if already added a part or the body is
+	 *                                  instance of {@code RestPart}
 	 * @hidden
 	 */
 	public Proxy b(Object body) {
@@ -267,6 +304,8 @@ public final class RestClient {
 	 * 
 	 * @param body the body
 	 * @return the proxy, for chaining
+	 * @throws IllegalArgumentException if already added a part or the body is
+	 *                                  instance of {@code RestPart}
 	 */
 	public Proxy withBody(Object body) {
 		return new Proxy().withBody(body);
@@ -428,22 +467,23 @@ public final class RestClient {
 	 * Represents a request configuration.
 	 * </p>
 	 * <p>
-	 * Sending a request consumes the bodies but preserves everything else for
-	 * reuse.
+	 * Sending a request consumes the body but preserves everything else for reuse.
 	 * </p>
 	 */
 	public final class Proxy {
 		private final CharsetEncoder encoder;
 		private final List<Entry> queries;
 		private final List<Entry> headers;
-		private final List<RestBody> bodies;
+		private final List<RestPart> parts;
+		private RestBody body;
 		private int timeout;
 
 		Proxy() {
 			this.encoder = StandardCharsets.US_ASCII.newEncoder();
 			this.queries = new ArrayList<>();
 			this.headers = new ArrayList<>();
-			this.bodies = new ArrayList<>();
+			this.body = null;
+			this.parts = new ArrayList<>();
 			this.timeout = TIMEOUT;
 		}
 
@@ -459,8 +499,12 @@ public final class RestClient {
 			return headers;
 		}
 
-		List<RestBody> getBodies() {
-			return bodies;
+		List<RestPart> getParts() {
+			return parts;
+		}
+
+		RestBody getBody() {
+			return body;
 		}
 
 		int getTimeout() {
@@ -616,10 +660,64 @@ public final class RestClient {
 		}
 
 		/**
+		 * Alias for {@link #withPart(String, Object)}.
+		 * 
+		 * @param name the name
+		 * @param part the part
+		 * @return this proxy, for chaining
+		 * @throws NullPointerException     if the name is null
+		 * @throws IllegalArgumentException if already added a body or the part is
+		 *                                  instance of {@code RestBody}
+		 * @hidden
+		 */
+		public Proxy p(String name, Object part) {
+			return withPart(name, part);
+		}
+
+		/**
+		 * <p>
+		 * Adds a multipart body part to the request.
+		 * </p>
+		 * <p>
+		 * The alias {@link #p(String, Object)} is available for short chaining.
+		 * </p>
+		 * 
+		 * @param name the name
+		 * @param part the part
+		 * @return this proxy, for chaining
+		 * @throws NullPointerException     if the name is null
+		 * @throws IllegalArgumentException if already added a body or the part is
+		 *                                  instance of {@code RestBody}
+		 */
+		public Proxy withPart(String name, Object part) {
+			if (body != null) {
+				throw new IllegalArgumentException("Cannot add part if already added a body");
+			}
+			if (name == null) {
+				throw new NullPointerException("Name cannot be null");
+			}
+			RestPart restPart;
+			if (part instanceof RestPart) {
+				restPart = (RestPart) part;
+			} else {
+				if (part instanceof RestBody) {
+					throw new IllegalArgumentException("Part cannot be instance of RestBody");
+				} else {
+					restPart = new RestPart(part);
+				}
+			}
+			restPart.setName(name);
+			parts.add(restPart);
+			return this;
+		}
+
+		/**
 		 * Alias for {@link #withBody(Object)}.
 		 * 
 		 * @param body the body
 		 * @return this proxy, for chaining
+		 * @throws IllegalArgumentException if already added a part or the body is
+		 *                                  instance of {@code RestPart}
 		 * @hidden
 		 */
 		public Proxy b(Object body) {
@@ -627,23 +725,8 @@ public final class RestClient {
 		}
 
 		/**
-		 * Alias for {@link #withBody(String, Object)}.
-		 * 
-		 * @param name the name
-		 * @param body the body
-		 * @return this proxy, for chaining
-		 * @throws NullPointerException     if the name is null
-		 * @throws IllegalArgumentException if the name is empty
-		 * @hidden
-		 */
-		public Proxy b(String name, Object body) {
-			return withBody(name, body);
-		}
-
-		/**
 		 * <p>
-		 * Adds a body to the request. If it is a multipart request, the part
-		 * corresponding to the body has an empty name.
+		 * Adds a body to the request.
 		 * </p>
 		 * <p>
 		 * The alias {@link #b(Object)} is available for short chaining.
@@ -651,49 +734,25 @@ public final class RestClient {
 		 * 
 		 * @param body the body
 		 * @return this proxy, for chaining
+		 * @throws IllegalArgumentException if already added a part or the body is
+		 *                                  instance of {@code RestPart}
 		 */
 		public Proxy withBody(Object body) {
-			RestBody restBody = wrap(body);
-			bodies.add(restBody);
-			return this;
-		}
-
-		/**
-		 * <p>
-		 * Adds a named body to the request. If it is not a multipart request, the name
-		 * is ignored.
-		 * </p>
-		 * <p>
-		 * The alias {@link #b(String, Object)} is available for short chaining.
-		 * </p>
-		 * 
-		 * @param name the name
-		 * @param body the body
-		 * @return this proxy, for chaining
-		 * @throws NullPointerException     if the name is null
-		 * @throws IllegalArgumentException if the name is empty
-		 */
-		public Proxy withBody(String name, Object body) {
-			if (name == null) {
-				throw new NullPointerException("Name cannot be null");
+			if (parts.size() > 0) {
+				throw new IllegalArgumentException("Cannot add body if already added a part");
 			}
-			if (name.isEmpty()) {
-				throw new IllegalArgumentException("Name cannot be empty");
-			}
-			RestBody restBody = wrap(body);
-			restBody.setName(name);
-			bodies.add(restBody);
-			return this;
-		}
-
-		private RestBody wrap(Object body) {
 			RestBody restBody;
 			if (body instanceof RestBody) {
-				restBody = (RestBody) body;
+				if (body instanceof RestPart) {
+					throw new IllegalArgumentException("Body cannot be instance of RestPart");
+				} else {
+					restBody = (RestBody) body;
+				}
 			} else {
 				restBody = new RestBody(body);
 			}
-			return restBody;
+			this.body = restBody;
+			return this;
 		}
 
 		/**
@@ -749,10 +808,7 @@ public final class RestClient {
 		}
 
 		/**
-		 * <p>
-		 * Sends a POST request to a specified URI. If it is a multipart POST, the part
-		 * corresponding to the body has an empty name.
-		 * </p>
+		 * Sends a POST request to a specified URI.
 		 * 
 		 * @param uri  the URI
 		 * @param body the body
@@ -778,10 +834,7 @@ public final class RestClient {
 		}
 
 		/**
-		 * <p>
-		 * Sends a PUT request to a specified URI. If it is a multipart PUT, the part
-		 * corresponding to the body has an empty name.
-		 * </p>
+		 * Sends a PUT request to a specified URI.
 		 * 
 		 * @param uri  the URI
 		 * @param body the body
@@ -807,10 +860,7 @@ public final class RestClient {
 		}
 
 		/**
-		 * <p>
-		 * Sends a PATCH request to a specified URI. If it is a multipart PATCH, the
-		 * part corresponding to the body has an empty name.
-		 * </p>
+		 * Sends a PATCH request to a specified URI.
 		 * 
 		 * @param uri  the URI
 		 * @param body the body
@@ -868,7 +918,7 @@ public final class RestClient {
 			String url = "%s%s".formatted(urlPrefix, withQueries(uri));
 			Request request = jettyClient.newRequest(url).method(method);
 			addHeaders(request);
-			List<Task> tasks = consumeBodiesAndGetTasks(request);
+			List<Task> tasks = consumeBodyAndGetTasks(request);
 			return send(request, tasks);
 		}
 
@@ -930,21 +980,25 @@ public final class RestClient {
 			});
 		}
 
-		List<Task> consumeBodiesAndGetTasks(Request request) {
+		List<Task> consumeBodyAndGetTasks(Request request) {
 			List<Task> tasks = new ArrayList<>();
-			if (!bodies.isEmpty()) {
-				if (bodies.size() == 1) {
-					RestBody body = bodies.get(0);
-					request.body(addTaskAndGetContent(tasks, body));
-				} else {
+			if (body != null) {
+				request.body(addTaskAndGetContent(tasks, body));
+				body = null;
+			} else {
+				if (!parts.isEmpty()) {
 					try (MultiPartRequestContent content = new MultiPartRequestContent()) {
-						for (RestBody body : bodies) {
-							content.addFieldPart(body.getName(), addTaskAndGetContent(tasks, body), null);
+						for (RestPart part : parts) {
+							HttpFields.Mutable fields = HttpFields.build();
+							for (Entry entry : part.getHeaders()) {
+								fields.add(entry.name(), entry.valueString());
+							}
+							content.addFieldPart(part.getName(), addTaskAndGetContent(tasks, part), fields);
 						}
 						request.body(content);
 					}
+					parts.clear();
 				}
-				bodies.clear();
 			}
 			return tasks;
 		}

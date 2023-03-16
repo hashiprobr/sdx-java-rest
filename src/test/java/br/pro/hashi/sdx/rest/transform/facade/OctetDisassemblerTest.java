@@ -13,7 +13,7 @@ import org.junit.jupiter.api.Test;
 
 import br.pro.hashi.sdx.rest.transform.Disassembler;
 import br.pro.hashi.sdx.rest.transform.Hint;
-import br.pro.hashi.sdx.rest.transform.exception.DisassemblingException;
+import br.pro.hashi.sdx.rest.transform.facade.exception.SupportException;
 
 class OctetDisassemblerTest {
 	private InputStream stream;
@@ -47,14 +47,14 @@ class OctetDisassemblerTest {
 
 	@Test
 	void doesNotReadIfTypeByteArrayInputStream() {
-		assertThrows(DisassemblingException.class, () -> {
+		assertThrows(SupportException.class, () -> {
 			d.read(stream, ByteArrayInputStream.class);
 		});
 	}
 
 	@Test
 	void doesNotReadIfTypeByteArrayInputStreamWithHint() {
-		assertThrows(DisassemblingException.class, () -> {
+		assertThrows(SupportException.class, () -> {
 			d.read(stream, new Hint<ByteArrayInputStream>() {}.getType());
 		});
 	}

@@ -21,7 +21,7 @@ public class RestResponse {
 	private final int status;
 	private final Headers headers;
 	private final String contentType;
-	private InputStream stream;
+	private final InputStream stream;
 	private boolean available;
 
 	RestResponse(Facade facade, int status, Headers headers, String contentType, InputStream stream) {
@@ -175,7 +175,7 @@ public class RestResponse {
 			available = false;
 		}
 		T body;
-		stream = Media.decode(stream, contentType);
+		InputStream stream = Media.decode(this.stream, contentType);
 		if (facade.isBinary(type)) {
 			contentType = strip(contentType);
 			contentType = facade.cleanForDisassembling(contentType, type);

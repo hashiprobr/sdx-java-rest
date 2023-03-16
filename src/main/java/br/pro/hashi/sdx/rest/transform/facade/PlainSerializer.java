@@ -7,7 +7,7 @@ import java.io.Writer;
 import java.lang.reflect.Type;
 
 import br.pro.hashi.sdx.rest.transform.Serializer;
-import br.pro.hashi.sdx.rest.transform.exception.SerializingException;
+import br.pro.hashi.sdx.rest.transform.facade.exception.SupportException;
 
 class PlainSerializer implements Serializer {
 	@Override
@@ -26,7 +26,7 @@ class PlainSerializer implements Serializer {
 				((Reader) body).transferTo(writer);
 				return;
 			}
-			throw new SerializingException("Body must be instance of String or Reader");
+			throw new SupportException("Body must be instance of String or Reader");
 		} catch (IOException exception) {
 			throw new UncheckedIOException(exception);
 		} finally {

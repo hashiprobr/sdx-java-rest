@@ -7,7 +7,6 @@ import static org.mockito.Mockito.mockConstruction;
 import static org.mockito.Mockito.when;
 
 import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -94,15 +93,20 @@ class ReflectionTest {
 	}
 
 	@Test
-	void doesNotCallNoArgsConstructorIfConstructorIsInaccessible() throws NoSuchMethodException {
-		Constructor<WithPrivateConstructor> constructor = WithPrivateConstructor.class.getDeclaredConstructor();
+	void doesNotCallNoArgsConstructorIfConstructorIsInaccessible() {
+		Constructor<WithPrivateConstructor> constructor;
+		try {
+			constructor = WithPrivateConstructor.class.getDeclaredConstructor();
+		} catch (NoSuchMethodException exception) {
+			throw new AssertionError(exception);
+		}
 		assertThrows(ReflectionException.class, () -> {
 			Reflection.newNoArgsInstance(constructor);
 		});
 	}
 
 	@Test
-	void doesNotCallNoArgsConstructorIfConstructorIsAbstract() throws InvocationTargetException, IllegalAccessException, InstantiationException {
+	void doesNotCallNoArgsConstructorIfConstructorIsAbstract() {
 		Constructor<WithAbstractConstructor> constructor = assertDoesNotThrow(() -> {
 			return Reflection.getNoArgsConstructor(WithAbstractConstructor.class);
 		});
