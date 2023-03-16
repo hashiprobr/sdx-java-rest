@@ -198,8 +198,8 @@ public non-sealed class RestClientBuilder extends Builder<RestClientBuilder> {
 			if (index == 0) {
 				throw new IllegalArgumentException("URL prefix authority cannot be empty");
 			}
-			String[] items = Percent.splitAndEncode(path.substring(index + 1), urlCharset);
-			path = "%s/%s".formatted(path.substring(0, index), String.join("/", items));
+			String uri = Percent.recode(path.substring(index + 1), urlCharset);
+			path = "%s/%s".formatted(path.substring(0, index), uri);
 		}
 		return "%s%s".formatted(schema, path);
 	}

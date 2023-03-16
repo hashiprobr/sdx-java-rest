@@ -16,14 +16,14 @@ public final class Percent {
 		return uri;
 	}
 
-	public static String[] splitAndEncode(String uri, Charset charset) {
+	public static String recode(String uri, Charset charset) {
 		String[] items = uri.split("/", -1);
 		for (int i = 0; i < items.length; i++) {
 			String item = items[i].replace("+", "%2B");
 			item = Query.recode(item, charset);
 			items[i] = item.replace("+", "%20");
 		}
-		return items;
+		return String.join("/", items);
 	}
 
 	public static String[] splitAndDecode(String uri, Charset charset) {

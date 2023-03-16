@@ -92,67 +92,67 @@ class PercentTest {
 	}
 
 	@Test
-	void splitsAndEncodesSlash() {
-		assertArrayEquals(new String[] { "", "" }, splitAndEncode("/"));
+	void recodesSlash() {
+		assertEquals("/", recode("/"));
 	}
 
 	@Test
-	void splitsAndEncodesPlus() {
-		assertArrayEquals(new String[] { "", "%2B" }, splitAndEncode("/+"));
+	void recodesPlus() {
+		assertEquals("/%2B", recode("/+"));
 	}
 
 	@Test
-	void splitsAndEncodesSpace() {
-		assertArrayEquals(new String[] { "", "%20" }, splitAndEncode("/ "));
+	void recodesSpace() {
+		assertEquals("/%20", recode("/ "));
 	}
 
 	@Test
-	void splitsAndEncodesOneItem() {
-		assertArrayEquals(new String[] { "", "0" }, splitAndEncode("/0"));
+	void recodesOneItem() {
+		assertEquals("/0", recode("/0"));
 	}
 
 	@Test
-	void splitsAndEncodesOneItemDoubled() {
-		assertArrayEquals(new String[] { "", "", "00" }, splitAndEncode("//00"));
+	void recodesOneItemDoubled() {
+		assertEquals("//00", recode("//00"));
 	}
 
 	@Test
-	void splitsAndEncodesOneItemTripled() {
-		assertArrayEquals(new String[] { "", "", "", "000" }, splitAndEncode("///000"));
+	void recodesOneItemTripled() {
+		assertEquals("///000", recode("///000"));
 	}
 
 	@Test
-	void splitsAndEncodesTwoItems() {
-		assertArrayEquals(new String[] { "", "0", "1" }, splitAndEncode("/0/1"));
+	void recodesTwoItems() {
+		assertEquals("/0/1", recode("/0/1"));
 	}
 
 	@Test
-	void splitsAndEncodesTwoItemsDoubled() {
-		assertArrayEquals(new String[] { "", "", "00", "", "11" }, splitAndEncode("//00//11"));
+	void recodesTwoItemsDoubled() {
+		assertEquals("//00//11", recode("//00//11"));
 	}
 
 	@Test
-	void splitsAndEncodesTwoItemsTripled() {
-		assertArrayEquals(new String[] { "", "", "", "000", "", "", "111" }, splitAndEncode("///000///111"));
+	void recodesTwoItemsTripled() {
+		assertEquals("///000///111", recode("///000///111"));
 	}
 
 	@Test
-	void splitsAndEncodesThreeItems() {
-		assertArrayEquals(new String[] { "", "0", "1", "2" }, splitAndEncode("/0/1/2"));
+	void recodesThreeItems() {
+		assertEquals("/0/1/2", recode("/0/1/2"));
 	}
 
 	@Test
-	void splitsAndEncodesThreeItemsDoubled() {
-		assertArrayEquals(new String[] { "", "", "00", "", "11", "", "22" }, splitAndEncode("//00//11//22"));
+	void recodesThreeItemsDoubled() {
+		assertEquals("//00//11//22", recode("//00//11//22"));
 	}
 
 	@Test
-	void splitsAndEncodesThreeItemsTripled() {
-		assertArrayEquals(new String[] { "", "", "", "000", "", "", "111", "", "", "222" }, splitAndEncode("///000///111///222"));
+	void recodesThreeItemsTripled() {
+		assertEquals("///000///111///222", recode("///000///111///222"));
 	}
 
-	private String[] splitAndEncode(String uri) {
-		return Percent.splitAndEncode(uri, StandardCharsets.UTF_8);
+	private String recode(String uri) {
+		return Percent.recode(uri, StandardCharsets.UTF_8);
 	}
 
 	@Test

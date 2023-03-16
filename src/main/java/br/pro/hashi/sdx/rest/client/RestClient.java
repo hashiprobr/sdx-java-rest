@@ -925,14 +925,13 @@ public final class RestClient {
 		String withQueries(String uri) {
 			StringJoiner joiner = new StringJoiner("&");
 
-			String[] items;
 			int index = uri.indexOf('?');
 			if (index == -1) {
-				items = splitAndEncode(uri);
+				uri = stripAndEncode(uri);
 			} else {
 				String prefix = uri.substring(0, index);
 				String suffix = uri.substring(index + 1);
-				items = splitAndEncode(prefix);
+				uri = stripAndEncode(prefix);
 
 				for (String item : suffix.split("&", -1)) {
 					index = item.indexOf('=');
@@ -956,16 +955,15 @@ public final class RestClient {
 				}
 			}
 
-			uri = String.join("/", items);
 			if (joiner.length() > 0) {
 				uri = "%s?%s".formatted(uri, joiner.toString());
 			}
 			return uri;
 		}
 
-		private String[] splitAndEncode(String uri) {
+		private String stripAndEncode(String uri) {
 			uri = Percent.stripEndingSlashes(uri);
-			return Percent.splitAndEncode(uri, urlCharset);
+			return Percent.recode(uri, urlCharset);
 		}
 
 		private String recode(String item) {
