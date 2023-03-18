@@ -22,13 +22,11 @@ import br.pro.hashi.sdx.rest.server.exception.ResponseException;
 public class Tree {
 	private final Cache cache;
 	private final Locale locale;
-	private final Map<Class<? extends RestResource>, String[]> itemMap;
 	private final Node root;
 
-	public Tree(Cache cache, Locale locale, Map<Class<? extends RestResource>, String[]> itemMap) {
+	public Tree(Cache cache, Locale locale) {
 		this.cache = cache;
 		this.locale = locale;
-		this.itemMap = itemMap;
 		this.root = new Node();
 	}
 
@@ -48,7 +46,7 @@ public class Tree {
 		return node;
 	}
 
-	public void putNodesAndEndpoints(Class<? extends RestResource> type, String typeName) {
+	public void putNodesAndEndpoints(Class<? extends RestResource> type, String typeName, Map<Class<? extends RestResource>, String[]> itemMap) {
 		Node node = root;
 		int distance = 0;
 
@@ -72,11 +70,19 @@ public class Tree {
 		for (Method method : type.getMethods()) {
 			if (RestResource.class.isAssignableFrom(method.getDeclaringClass()) && !Modifier.isStatic(method.getModifiers())) {
 				String methodName = method.getName();
-				Endpoint endpoint = new Endpoint(cache, distance, typeName, method, methodName);
+				Endpoint endpoint = new Endpoint(cache, distance, type, typeName, method, methodName);
 				methodName = methodName.toUpperCase(locale);
 				node = subRoot;
 				for (int i = 0; i < endpoint.getReach(); i++) {
 					node = node.requireChild(null);
+				}
+				Endpoint existing = node.getEndpoint(methodName);
+				if (existing != null) {
+					Class<? extends RestResource> existingType = existing.getResourceType();
+					if (type.equals(existingType)) {
+						throw new ReflectionException("%s has multiple %s endpoints in the same path".formatted(typeName, methodName));
+					}
+					throw new ReflectionException("%s and %s have %s endpoints in the same path".formatted(typeName, existingType.getName(), methodName));
 				}
 				node.putEndpoint(methodName, endpoint);
 			}
@@ -100,7 +106,7 @@ public class Tree {
 	}
 
 	Nested getAnnotation(Class<?> type, String typeName) {
-		Nested first = null;
+		Nested existing = null;
 		while (!type.equals(RestResource.class)) {
 			Queue<Class<?>> queue = new LinkedList<>();
 			queue.add(type);
@@ -108,10 +114,10 @@ public class Tree {
 				Class<?> node = queue.remove();
 				Nested annotation = node.getDeclaredAnnotation(Nested.class);
 				if (annotation != null) {
-					if (first != null) {
+					if (existing != null) {
 						throw new ReflectionException("Multiple nesting detected in class %s".formatted(typeName));
 					}
-					first = annotation;
+					existing = annotation;
 				}
 				for (Class<?> child : node.getInterfaces()) {
 					queue.add(child);
@@ -119,6 +125,6 @@ public class Tree {
 			}
 			type = type.getSuperclass();
 		}
-		return first;
+		return existing;
 	}
 }

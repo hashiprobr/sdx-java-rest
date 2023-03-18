@@ -31,6 +31,7 @@ import br.pro.hashi.sdx.rest.transform.facade.exception.SupportException;
 public class Endpoint {
 	private static final Pattern PATTERN = Pattern.compile("[A-Za-z]+");
 
+	private final Class<? extends RestResource> resourceType;
 	private final Method method;
 	private final Type returnType;
 	private final ItemParameter[] itemParameters;
@@ -39,7 +40,7 @@ public class Endpoint {
 	private final Object[] arguments;
 	private final int reach;
 
-	Endpoint(Cache cache, int distance, String typeName, Method method, String methodName) {
+	Endpoint(Cache cache, int distance, Class<? extends RestResource> resourceType, String typeName, Method method, String methodName) {
 		Matcher matcher = PATTERN.matcher(methodName);
 		methodName = "%s.%s".formatted(typeName, methodName);
 		if (!matcher.matches()) {
@@ -99,6 +100,7 @@ public class Endpoint {
 			throw new ReflectionException("Method %s must have at least %d parameters that are neither part or body".formatted(methodName, distance));
 		}
 
+		this.resourceType = resourceType;
 		this.method = method;
 		this.returnType = method.getGenericReturnType();
 		this.itemParameters = itemList.toArray(new ItemParameter[itemList.size()]);
@@ -130,6 +132,10 @@ public class Endpoint {
 
 	int getReach() {
 		return reach;
+	}
+
+	public Class<? extends RestResource> getResourceType() {
+		return resourceType;
 	}
 
 	public Type getReturnType() {

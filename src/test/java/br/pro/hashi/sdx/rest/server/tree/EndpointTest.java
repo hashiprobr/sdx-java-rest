@@ -27,6 +27,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 
 import br.pro.hashi.sdx.rest.reflection.Cache;
 import br.pro.hashi.sdx.rest.reflection.exception.ReflectionException;
+import br.pro.hashi.sdx.rest.server.RestResource;
 import br.pro.hashi.sdx.rest.server.exception.BadRequestException;
 import br.pro.hashi.sdx.rest.server.exception.ResponseException;
 import br.pro.hashi.sdx.rest.server.tree.Endpoint.DataParameter;
@@ -58,6 +59,7 @@ class EndpointTest {
 	@Test
 	void constructsWithNothing() {
 		e = newEndpoint(0, "withNothing");
+		assertEquals(Signatures.class, e.getResourceType());
 		assertEquals(void.class, e.getReturnType());
 		assertEquals(0, e.getItemParameters().length);
 		assertTrue(e.getPartParameters().isEmpty());
@@ -77,6 +79,7 @@ class EndpointTest {
 	@Test
 	void constructsWithReturn() {
 		e = newEndpoint(0, "withReturn");
+		assertEquals(Signatures.class, e.getResourceType());
 		assertEquals(boolean.class, e.getReturnType());
 		assertEquals(0, e.getItemParameters().length);
 		assertTrue(e.getPartParameters().isEmpty());
@@ -97,6 +100,7 @@ class EndpointTest {
 	@ValueSource(ints = { 0, 1 })
 	void constructsWithOneItem(int distance) {
 		e = newEndpoint(distance, "withOneItem", int.class);
+		assertEquals(Signatures.class, e.getResourceType());
 		assertEquals(void.class, e.getReturnType());
 		ItemParameter[] itemParameters = e.getItemParameters();
 		assertEquals(1, itemParameters.length);
@@ -118,6 +122,7 @@ class EndpointTest {
 	@ValueSource(ints = { 0, 1, 2 })
 	void constructsWithTwoItems(int distance) {
 		e = newEndpoint(distance, "withTwoItems", int.class, double.class);
+		assertEquals(Signatures.class, e.getResourceType());
 		assertEquals(void.class, e.getReturnType());
 		ItemParameter[] itemParameters = e.getItemParameters();
 		assertEquals(2, itemParameters.length);
@@ -133,6 +138,7 @@ class EndpointTest {
 	@ValueSource(ints = { 0, 1 })
 	void constructsWithOneItemAndOnePart(int distance) {
 		e = newEndpoint(distance, "withOneItemAndOnePart", int.class, Object.class);
+		assertEquals(Signatures.class, e.getResourceType());
 		assertEquals(void.class, e.getReturnType());
 		ItemParameter[] itemParameters = e.getItemParameters();
 		assertEquals(1, itemParameters.length);
@@ -158,6 +164,7 @@ class EndpointTest {
 	@ValueSource(ints = { 0, 1 })
 	void constructsWithOneItemAndOneBody(int distance) {
 		e = newEndpoint(distance, "withOneItemAndOneBody", int.class, Object.class);
+		assertEquals(Signatures.class, e.getResourceType());
 		assertEquals(void.class, e.getReturnType());
 		ItemParameter[] itemParameters = e.getItemParameters();
 		assertEquals(1, itemParameters.length);
@@ -178,6 +185,7 @@ class EndpointTest {
 	@Test
 	void constructsWithOnePart() {
 		e = newEndpoint(0, "withOnePart", Object.class);
+		assertEquals(Signatures.class, e.getResourceType());
 		assertEquals(void.class, e.getReturnType());
 		assertEquals(0, e.getItemParameters().length);
 		Map<String, DataParameter[]> partParameters = e.getPartParameters();
@@ -202,6 +210,7 @@ class EndpointTest {
 	@ValueSource(ints = { 0, 1 })
 	void constructsWithOnePartAndOneItem(int distance) {
 		e = newEndpoint(distance, "withOnePartAndOneItem", Object.class, int.class);
+		assertEquals(Signatures.class, e.getResourceType());
 		assertEquals(void.class, e.getReturnType());
 		ItemParameter[] itemParameters = e.getItemParameters();
 		assertEquals(1, itemParameters.length);
@@ -226,6 +235,7 @@ class EndpointTest {
 	@Test
 	void constructsWithTwoPartsAndOneName() {
 		e = newEndpoint(0, "withTwoPartsAndOneName", Object.class, String.class);
+		assertEquals(Signatures.class, e.getResourceType());
 		assertEquals(void.class, e.getReturnType());
 		assertEquals(0, e.getItemParameters().length);
 		Map<String, DataParameter[]> partParameters = e.getPartParameters();
@@ -250,6 +260,7 @@ class EndpointTest {
 	@Test
 	void constructsWithTwoPartsAndTwoNames() {
 		e = newEndpoint(0, "withTwoPartsAndTwoNames", Object.class, String.class);
+		assertEquals(Signatures.class, e.getResourceType());
 		assertEquals(void.class, e.getReturnType());
 		assertEquals(0, e.getItemParameters().length);
 		Map<String, DataParameter[]> partParameters = e.getPartParameters();
@@ -284,6 +295,7 @@ class EndpointTest {
 	@Test
 	void constructsWithOneBody() {
 		e = newEndpoint(0, "withOneBody", Object.class);
+		assertEquals(Signatures.class, e.getResourceType());
 		assertEquals(void.class, e.getReturnType());
 		assertEquals(0, e.getItemParameters().length);
 		assertTrue(e.getPartParameters().isEmpty());
@@ -304,6 +316,7 @@ class EndpointTest {
 	@ValueSource(ints = { 0, 1 })
 	void constructsWithOneBodyAndOneItem(int distance) {
 		e = newEndpoint(distance, "withOneBodyAndOneItem", Object.class, int.class);
+		assertEquals(Signatures.class, e.getResourceType());
 		assertEquals(void.class, e.getReturnType());
 		ItemParameter[] itemParameters = e.getItemParameters();
 		assertEquals(1, itemParameters.length);
@@ -341,6 +354,7 @@ class EndpointTest {
 	@ValueSource(ints = { 0, 1, 2 })
 	void constructsWithEverythingAndTwoParts(int distance) {
 		e = newEndpoint(distance, "withEverythingAndTwoParts", int.class, Object.class, double.class, String.class);
+		assertEquals(Signatures.class, e.getResourceType());
 		assertEquals(boolean.class, e.getReturnType());
 		ItemParameter[] itemParameters = e.getItemParameters();
 		assertEquals(2, itemParameters.length);
@@ -363,6 +377,7 @@ class EndpointTest {
 	@ValueSource(ints = { 0, 1, 2 })
 	void constructsWithEverythingAndOneBody(int distance) {
 		e = newEndpoint(distance, "withEverythingAndOneBody", int.class, Object.class, double.class);
+		assertEquals(Signatures.class, e.getResourceType());
 		assertEquals(boolean.class, e.getReturnType());
 		ItemParameter[] itemParameters = e.getItemParameters();
 		assertEquals(2, itemParameters.length);
@@ -394,6 +409,7 @@ class EndpointTest {
 	@Test
 	void constructsWithGenericReturn() {
 		e = newEndpoint(0, "withGenericReturn");
+		assertEquals(Signatures.class, e.getResourceType());
 		assertEquals(new Hint<List<Boolean>>() {}.getType(), e.getReturnType());
 		assertEquals(0, e.getItemParameters().length);
 		assertTrue(e.getPartParameters().isEmpty());
@@ -420,6 +436,7 @@ class EndpointTest {
 	@Test
 	void constructsWithGenericPart() {
 		e = newEndpoint(0, "withGenericPart", List.class);
+		assertEquals(Signatures.class, e.getResourceType());
 		assertEquals(void.class, e.getReturnType());
 		assertEquals(0, e.getItemParameters().length);
 		Map<String, DataParameter[]> partParameters = e.getPartParameters();
@@ -443,6 +460,7 @@ class EndpointTest {
 	@Test
 	void constructsWithGenericBody() {
 		e = newEndpoint(0, "withGenericBody", List.class);
+		assertEquals(Signatures.class, e.getResourceType());
 		assertEquals(void.class, e.getReturnType());
 		assertEquals(0, e.getItemParameters().length);
 		assertTrue(e.getPartParameters().isEmpty());
@@ -462,6 +480,7 @@ class EndpointTest {
 	@Test
 	void constructsWithUncheckedException() {
 		e = newEndpoint(0, "withUncheckedException");
+		assertEquals(Signatures.class, e.getResourceType());
 		assertEquals(void.class, e.getReturnType());
 		assertEquals(0, e.getItemParameters().length);
 		assertTrue(e.getPartParameters().isEmpty());
@@ -1074,12 +1093,13 @@ class EndpointTest {
 	}
 
 	private Endpoint newEndpoint(int distance, String methodName, Class<?>... types) {
+		Class<? extends RestResource> subType = Signatures.class;
 		Method method;
 		try {
-			method = Signatures.class.getDeclaredMethod(methodName, types);
+			method = subType.getDeclaredMethod(methodName, types);
 		} catch (NoSuchMethodException exception) {
 			throw new AssertionError(exception);
 		}
-		return new Endpoint(cache, distance, Signatures.class.getName(), method, methodName);
+		return new Endpoint(cache, distance, subType, subType.getName(), method, methodName);
 	}
 }

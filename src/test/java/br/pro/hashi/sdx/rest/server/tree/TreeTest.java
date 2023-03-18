@@ -49,8 +49,10 @@ import br.pro.hashi.sdx.rest.server.tree.mock.cyclic.SecondOfTwo;
 import br.pro.hashi.sdx.rest.server.tree.mock.cyclic.SelfLoop;
 import br.pro.hashi.sdx.rest.server.tree.mock.cyclic.ThirdOfThree;
 import br.pro.hashi.sdx.rest.server.tree.mock.endpoint.ChildReaches;
+import br.pro.hashi.sdx.rest.server.tree.mock.endpoint.Multiple;
 import br.pro.hashi.sdx.rest.server.tree.mock.endpoint.NestedReaches;
 import br.pro.hashi.sdx.rest.server.tree.mock.endpoint.Reaches;
+import br.pro.hashi.sdx.rest.server.tree.mock.endpoint.SamePath;
 import br.pro.hashi.sdx.rest.server.tree.mock.multiple.*;
 import br.pro.hashi.sdx.rest.server.tree.mock.node.Enclosing;
 import br.pro.hashi.sdx.rest.server.tree.mock.node.One;
@@ -68,14 +70,15 @@ import br.pro.hashi.sdx.rest.server.tree.mock.node.ZeroInZero;
 
 class TreeTest {
 	private Cache cache;
-	private Map<Class<? extends RestResource>, String[]> itemMap;
 	private Tree t;
+	private Map<Class<? extends RestResource>, String[]> itemMap;
 	private List<String> itemList;
 	private List<Integer> distances;
 
 	@BeforeEach
 	void setUp() {
 		cache = mock(Cache.class);
+		t = new Tree(cache, Coding.LOCALE);
 		itemMap = new HashMap<>();
 		itemMap.put(Enclosing.class, new String[] { "a", "b" });
 		itemMap.put(Zero.class, new String[] { "a0", "b0" });
@@ -93,8 +96,8 @@ class TreeTest {
 		itemMap.put(Reaches.class, new String[] {});
 		itemMap.put(ChildReaches.class, new String[] {});
 		itemMap.put(NestedReaches.class, new String[] {});
-		t = new Tree(cache, Coding.LOCALE, itemMap);
-		distances = new ArrayList<>();
+		itemMap.put(Multiple.class, new String[] {});
+		itemMap.put(SamePath.class, new String[] {});
 	}
 
 	@Test
@@ -156,6 +159,7 @@ class TreeTest {
 		assertNull(node.getEndpoint("PUT"));
 		assertNull(node.getEndpoint("PATCH"));
 		assertNotNull(node.getEndpoint("DELETE"));
+		assertEquals(List.of("0", "1", "2"), itemList);
 	}
 
 	@Test
@@ -182,6 +186,23 @@ class TreeTest {
 		assertNotNull(node.getEndpoint("PATCH"));
 		assertNull(node.getEndpoint("DELETE"));
 		assertEquals(List.of("0", "1", "2"), itemList);
+	}
+
+	@Test
+	void doesNotPutEndpointsFromMultiple() {
+		Exception exception = assertThrows(ReflectionException.class, () -> {
+			putNode(Multiple.class);
+		});
+		assertEquals("br.pro.hashi.sdx.rest.server.tree.mock.endpoint.Multiple has multiple GET endpoints in the same path", exception.getMessage());
+	}
+
+	@Test
+	void doesNotPutEndpointsFromSamePath() {
+		putNode(NestedReaches.class);
+		Exception exception = assertThrows(ReflectionException.class, () -> {
+			putNode(SamePath.class);
+		});
+		assertEquals("br.pro.hashi.sdx.rest.server.tree.mock.endpoint.SamePath and br.pro.hashi.sdx.rest.server.tree.mock.endpoint.NestedReaches have POST endpoints in the same path", exception.getMessage());
 	}
 
 	@Test
@@ -404,13 +425,14 @@ class TreeTest {
 	}
 
 	private MockedConstruction<Endpoint> mockEndpointConstruction() {
+		distances = new ArrayList<>();
 		return mockConstruction(Endpoint.class, (mock, context) -> {
 			distances.add((int) context.arguments().get(1));
 		});
 	}
 
 	private void putNode(Class<? extends RestResource> type) {
-		t.putNodesAndEndpoints(type, type.getName());
+		t.putNodesAndEndpoints(type, type.getName(), itemMap);
 	}
 
 	private void assertDistance(int expected) {
@@ -522,7 +544,7 @@ class TreeTest {
 			NestedChildResourceWithInterface.class,
 			NestedChildResourceWithChildInterface.class,
 	})
-	void getsAnnotationFromResource(Class<? extends RestResource> type) {
+	void getsAnnotation(Class<? extends RestResource> type) {
 		assertNotNull(getAnnotation(type));
 	}
 
@@ -534,7 +556,7 @@ class TreeTest {
 			ChildResource.class,
 			ChildResourceWithInterface.class,
 			ChildResourceWithChildInterface.class })
-	void getsNullAnnotationFromResource(Class<? extends RestResource> type) {
+	void getsNullAnnotation(Class<? extends RestResource> type) {
 		assertNull(getAnnotation(type));
 	}
 
@@ -602,7 +624,7 @@ class TreeTest {
 			NestedChildResourceWithNestedChildInterfaceAndChildInterface.class,
 			NestedChildResourceWithNestedChildInterfaceAndNestedInterface.class,
 			NestedChildResourceWithNestedChildInterfaceAndChildNestedInterface.class })
-	void doesNotGetAnnotationFromResource(Class<? extends RestResource> type) {
+	void doesNotGetAnnotation(Class<? extends RestResource> type) {
 		assertThrows(ReflectionException.class, () -> {
 			getAnnotation(type);
 		});

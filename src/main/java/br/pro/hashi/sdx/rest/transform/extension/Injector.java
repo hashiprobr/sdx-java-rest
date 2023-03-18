@@ -53,8 +53,8 @@ public abstract class Injector {
 
 					@Override
 					public T next() {
-						Class<? extends T> subType = iterator.next();
-						Constructor<? extends T> constructor = Reflection.getNoArgsConstructor(subType);
+						Class<? extends T> converterType = iterator.next();
+						Constructor<? extends T> constructor = Reflection.getNoArgsConstructor(converterType);
 						return Reflection.newNoArgsInstance(constructor);
 					}
 				};
