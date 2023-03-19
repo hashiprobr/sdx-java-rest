@@ -125,14 +125,14 @@ public abstract class BuilderTest {
 
 	@Test
 	void setsFallbackByteType() {
-		String contentType = "fallback";
+		String contentType = "image/png";
 		assertSame(b, b.withFallbackByteType(contentType));
 		verify(facade).setFallbackByteType(contentType);
 	}
 
 	@Test
 	void setsFallbackTextType() {
-		String contentType = "fallback";
+		String contentType = "application/xml";
 		assertSame(b, b.withFallbackTextType(contentType));
 		verify(facade).setFallbackTextType(contentType);
 	}

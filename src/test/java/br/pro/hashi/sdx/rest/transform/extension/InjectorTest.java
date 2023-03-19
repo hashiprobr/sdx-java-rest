@@ -27,12 +27,13 @@ class InjectorTest {
 	@Test
 	void getsSubConverters() {
 		try (MockedStatic<Reflection> reflection = mockStatic(Reflection.class)) {
+			String packageName = "package";
 			Converter<?, ?> converter = new ConcreteConverter();
-			reflection.when(() -> Reflection.getConcreteSubTypes("package", Converter.class)).thenReturn(Set.of(ConcreteConverter.class));
+			reflection.when(() -> Reflection.getConcreteSubTypes(packageName, Converter.class)).thenReturn(Set.of(ConcreteConverter.class));
 			reflection.when(() -> Reflection.getNoArgsConstructor(ConcreteConverter.class)).thenReturn(null);
 			reflection.when(() -> Reflection.newNoArgsInstance(null)).thenReturn(converter);
 			List<Converter<?, ?>> subConverters = new ArrayList<>();
-			for (Converter<?, ?> subConverter : i.getSubConverters("package", Converter.class)) {
+			for (Converter<?, ?> subConverter : i.getSubConverters(packageName, Converter.class)) {
 				subConverters.add(subConverter);
 			}
 			assertEquals(1, subConverters.size());

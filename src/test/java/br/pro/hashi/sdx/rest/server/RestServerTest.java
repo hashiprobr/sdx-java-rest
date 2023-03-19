@@ -23,7 +23,7 @@ class RestServerTest {
 	@BeforeEach
 	void setUp() {
 		jettyServer = mock(Server.class);
-		s = new RestServer(jettyServer);
+		s = new RestServer(jettyServer, "http", 8080, 8443, 8843);
 	}
 
 	@Test

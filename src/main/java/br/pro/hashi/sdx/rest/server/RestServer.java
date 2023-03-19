@@ -32,10 +32,34 @@ public final class RestServer {
 
 	private final Logger logger;
 	private final Server jettyServer;
+	private final String scheme;
+	private final int clearPort;
+	private final int mainPort;
+	private final int altPort;
 
-	RestServer(Server jettyServer) {
+	RestServer(Server jettyServer, String scheme, int clearPort, int mainPort, int altPort) {
 		this.logger = LoggerFactory.getLogger(RestServer.class);
 		this.jettyServer = jettyServer;
+		this.scheme = scheme;
+		this.clearPort = clearPort;
+		this.mainPort = mainPort;
+		this.altPort = altPort;
+	}
+
+	String getScheme() {
+		return scheme;
+	}
+
+	int getClearPort() {
+		return clearPort;
+	}
+
+	int getMainPort() {
+		return mainPort;
+	}
+
+	int getAltPort() {
+		return altPort;
 	}
 
 	/**
