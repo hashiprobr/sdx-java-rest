@@ -52,7 +52,6 @@ public non-sealed class RestServerBuilder extends Builder<RestServerBuilder> {
 	private boolean http3;
 	private boolean http2;
 	private boolean cors;
-	private boolean logging;
 
 	/**
 	 * Constructs a new builder.
@@ -70,7 +69,6 @@ public non-sealed class RestServerBuilder extends Builder<RestServerBuilder> {
 		this.http3 = false;
 		this.http2 = true;
 		this.cors = true;
-		this.logging = true;
 	}
 
 	Cache getCache() {
@@ -123,10 +121,6 @@ public non-sealed class RestServerBuilder extends Builder<RestServerBuilder> {
 
 	boolean isCors() {
 		return cors;
-	}
-
-	boolean isLogging() {
-		return logging;
 	}
 
 	/**
@@ -282,16 +276,6 @@ public non-sealed class RestServerBuilder extends Builder<RestServerBuilder> {
 	}
 
 	/**
-	 * Disables logging.
-	 * 
-	 * @return this builder, for chaining
-	 */
-	public final RestServerBuilder withoutLogging() {
-		this.logging = false;
-		return self();
-	}
-
-	/**
 	 * Builds a server using the resources of a specified package.
 	 * 
 	 * @param packageName the package name
@@ -318,7 +302,7 @@ public non-sealed class RestServerBuilder extends Builder<RestServerBuilder> {
 
 		Server server = new Server();
 
-		AbstractHandler handler = new Handler(cache, facade, tree, formatter, constructors, element, gatewayTypes, urlCharset, cors, logging);
+		AbstractHandler handler = new Handler(cache, facade, tree, formatter, constructors, element, gatewayTypes, urlCharset, cors);
 		if (compression) {
 			GzipHandler gzipHandler = new GzipHandler();
 			gzipHandler.setHandler(handler);

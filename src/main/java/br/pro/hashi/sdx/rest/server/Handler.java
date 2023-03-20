@@ -27,9 +27,8 @@ class Handler extends AbstractHandler {
 	private final Set<Class<? extends RuntimeException>> gatewayTypes;
 	private final Charset urlCharset;
 	private final boolean cors;
-	private final boolean logging;
 
-	Handler(Cache cache, Facade facade, Tree tree, ErrorFormatter formatter, Map<Class<? extends RestResource>, Constructor<? extends RestResource>> constructors, MultipartConfigElement element, Set<Class<? extends RuntimeException>> gatewayTypes, Charset urlCharset, boolean cors, boolean logging) {
+	Handler(Cache cache, Facade facade, Tree tree, ErrorFormatter formatter, Map<Class<? extends RestResource>, Constructor<? extends RestResource>> constructors, MultipartConfigElement element, Set<Class<? extends RuntimeException>> gatewayTypes, Charset urlCharset, boolean cors) {
 		this.cache = cache;
 		this.facade = facade;
 		this.tree = tree;
@@ -39,7 +38,6 @@ class Handler extends AbstractHandler {
 		this.gatewayTypes = gatewayTypes;
 		this.urlCharset = urlCharset;
 		this.cors = cors;
-		this.logging = logging;
 	}
 
 	Cache getCache() {
@@ -72,10 +70,6 @@ class Handler extends AbstractHandler {
 
 	boolean isCors() {
 		return cors;
-	}
-
-	boolean isLogging() {
-		return logging;
 	}
 
 	@Override

@@ -121,11 +121,6 @@ class RestServerBuilderTest extends BuilderTest {
 	}
 
 	@Test
-	void initializesWithLogging() {
-		assertTrue(b.isLogging());
-	}
-
-	@Test
 	void addsGateway() {
 		assertSame(b, b.withGateway(RuntimeException.class));
 		assertEquals(Set.of(RuntimeException.class), b.getGatewayTypes());
@@ -264,12 +259,6 @@ class RestServerBuilderTest extends BuilderTest {
 	}
 
 	@Test
-	void setsLogging() {
-		assertSame(b, b.withoutLogging());
-		assertFalse(b.isLogging());
-	}
-
-	@Test
 	void builds() {
 		RestServer server = b.build(VALID_PACKAGE);
 		assertEquals("http", server.getScheme());
@@ -298,7 +287,6 @@ class RestServerBuilderTest extends BuilderTest {
 		assertSame(b.getFormatter(), handler.getFormatter());
 		assertSame(b.getElement(), handler.getElement());
 		assertTrue(handler.isCors());
-		assertTrue(handler.isLogging());
 		Tree tree = handler.getTree();
 		List<String> itemList = new ArrayList<>();
 		assertNotNull(tree.getNodeAndAddItems(new String[] { "b" }, itemList));
@@ -358,15 +346,6 @@ class RestServerBuilderTest extends BuilderTest {
 		GzipHandler gzipHandler = (GzipHandler) server.getJettyServer().getHandler();
 		Handler handler = (Handler) gzipHandler.getHandler();
 		assertFalse(handler.isCors());
-	}
-
-	@Test
-	void buildsWithoutLogging() {
-		b.withoutLogging();
-		RestServer server = b.build(VALID_PACKAGE);
-		GzipHandler gzipHandler = (GzipHandler) server.getJettyServer().getHandler();
-		Handler handler = (Handler) gzipHandler.getHandler();
-		assertFalse(handler.isLogging());
 	}
 
 	@Test
