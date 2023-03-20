@@ -5,12 +5,14 @@ package br.pro.hashi.sdx.rest.server;
  */
 public abstract class RestResource {
 	private final String base;
+	private final boolean nullBase;
 
 	/**
 	 * Stub.
 	 */
 	protected RestResource() {
-		this("/");
+		this.base = null;
+		this.nullBase = true;
 	}
 
 	/**
@@ -20,9 +22,14 @@ public abstract class RestResource {
 	 */
 	protected RestResource(String base) {
 		this.base = base;
+		this.nullBase = false;
 	}
 
 	String getBase() {
 		return base;
+	}
+
+	boolean isNullBase() {
+		return nullBase;
 	}
 }

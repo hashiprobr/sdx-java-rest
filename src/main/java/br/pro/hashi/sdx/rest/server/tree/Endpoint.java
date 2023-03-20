@@ -29,7 +29,7 @@ import br.pro.hashi.sdx.rest.transform.exception.DisassemblingException;
 import br.pro.hashi.sdx.rest.transform.facade.exception.SupportException;
 
 public class Endpoint {
-	private static final Pattern PATTERN = Pattern.compile("[A-Za-z]+");
+	private static final Pattern METHOD_PATTERN = Pattern.compile("[A-Za-z]+");
 
 	private final Class<? extends RestResource> resourceType;
 	private final Method method;
@@ -41,7 +41,7 @@ public class Endpoint {
 	private final int reach;
 
 	Endpoint(Cache cache, int distance, Class<? extends RestResource> resourceType, String typeName, Method method, String methodName) {
-		Matcher matcher = PATTERN.matcher(methodName);
+		Matcher matcher = METHOD_PATTERN.matcher(methodName);
 		methodName = "%s.%s".formatted(typeName, methodName);
 		if (!matcher.matches()) {
 			throw new ReflectionException("Method name %s must have only US-ASCII letters".formatted(methodName));

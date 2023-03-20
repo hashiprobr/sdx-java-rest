@@ -5,6 +5,9 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.StringJoiner;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.eclipse.jetty.alpn.server.ALPNServerConnectionFactory;
 import org.eclipse.jetty.http.HttpCompliance;
@@ -40,6 +43,8 @@ import jakarta.servlet.MultipartConfigElement;
  * Configures and builds objects of type {@link RestServer}.
  */
 public non-sealed class RestServerBuilder extends Builder<RestServerBuilder> {
+	private static final Pattern BASE_PATTERN = Pattern.compile("\\p{javaLowerCase}\\p{javaUpperCase}");
+
 	private final Logger logger;
 	private final Set<Class<? extends RuntimeException>> gatewayTypes;
 	private ErrorFormatter formatter;
@@ -380,14 +385,27 @@ public non-sealed class RestServerBuilder extends Builder<RestServerBuilder> {
 		RestResource resource = Reflection.newNoArgsInstance(constructor);
 		String base = resource.getBase();
 		if (base == null) {
-			throw new ResourceException(typeName, "Base cannot be null");
-		}
-		base = base.strip();
-		if (base.isEmpty()) {
-			throw new ResourceException(typeName, "Base cannot be blank");
-		}
-		if (!base.startsWith("/")) {
-			throw new ResourceException(typeName, "Base must start with /");
+			if (!resource.isNullBase()) {
+				throw new ResourceException(typeName, "Base cannot be null");
+			}
+			StringJoiner joiner = new StringJoiner("-", "/", "");
+			int start = typeName.lastIndexOf('.') + 1;
+			Matcher matcher = BASE_PATTERN.matcher(typeName);
+			while (matcher.find(start)) {
+				int end = matcher.end() - 1;
+				joiner.add(typeName.substring(start, end).toLowerCase(locale));
+				start = end;
+			}
+			joiner.add(typeName.substring(start).toLowerCase(locale));
+			base = joiner.toString();
+		} else {
+			base = base.strip();
+			if (base.isEmpty()) {
+				throw new ResourceException(typeName, "Base cannot be blank");
+			}
+			if (!base.startsWith("/")) {
+				throw new ResourceException(typeName, "Base must start with /");
+			}
 		}
 		base = Percent.stripEndingSlashes(base);
 		String urlSuffix;
