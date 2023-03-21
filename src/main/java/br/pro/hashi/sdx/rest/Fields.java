@@ -6,12 +6,13 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 
 import br.pro.hashi.sdx.rest.reflection.Headers;
+import br.pro.hashi.sdx.rest.reflection.PartHeaders;
 import br.pro.hashi.sdx.rest.reflection.Queries;
 
 /**
  * Base class for headers and queries.
  */
-public sealed abstract class Fields permits Headers, Queries {
+public sealed abstract class Fields permits PartHeaders, Headers, Queries {
 	/**
 	 * Internal member.
 	 * 

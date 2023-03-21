@@ -3,13 +3,13 @@ package br.pro.hashi.sdx.rest.server;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mockConstruction;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -40,10 +40,13 @@ import org.eclipse.jetty.server.handler.gzip.GzipHandler;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedConstruction;
+import org.mockito.MockedStatic;
 import org.reflections.Reflections;
 
 import br.pro.hashi.sdx.rest.Builder;
 import br.pro.hashi.sdx.rest.BuilderTest;
+import br.pro.hashi.sdx.rest.coding.Coding;
+import br.pro.hashi.sdx.rest.coding.Media;
 import br.pro.hashi.sdx.rest.server.exception.ResourceException;
 import br.pro.hashi.sdx.rest.server.mock.invalid.ResourceWithBlank;
 import br.pro.hashi.sdx.rest.server.mock.invalid.ResourceWithNull;
@@ -73,6 +76,21 @@ class RestServerBuilderTest extends BuilderTest {
 	@Test
 	void initializesWithConcreteFormatter() {
 		assertEquals(ConcreteFormatter.class, b.getFormatter().getClass());
+	}
+
+	@Test
+	void initializesWithoutContentType() {
+		assertNull(b.getContentType());
+	}
+
+	@Test
+	void initializesWithDefaultCharset() {
+		assertEquals(Coding.CHARSET, b.getCharset());
+	}
+
+	@Test
+	void initializesWithoutBase64() {
+		assertFalse(b.isBase64());
 	}
 
 	@Test
@@ -136,17 +154,91 @@ class RestServerBuilderTest extends BuilderTest {
 
 	@Test
 	void setsErrorFormatter() {
-		ErrorFormatter formatter = new ErrorFormatter() {};
+		ErrorFormatter formatter = new ErrorFormatter() {
+			@Override
+			public Object format(int status, String message) {
+				return null;
+			}
+		};
 		assertSame(b, b.withErrorFormatter(formatter));
-		assertNotEquals(ConcreteFormatter.class, b.getFormatter().getClass());
 	}
 
 	@Test
-	void doesNotSetErrorFormatter() {
+	void doesNotSetErrorFormatterIfItIsNull() {
 		assertThrows(NullPointerException.class, () -> {
 			b.withErrorFormatter(null);
 		});
 		assertEquals(ConcreteFormatter.class, b.getFormatter().getClass());
+	}
+
+	@Test
+	void doesNotSetErrorFormatterIfItIsBinary() {
+		ErrorFormatter formatter = new ErrorFormatter() {
+			@Override
+			public Object format(int status, String message) {
+				return null;
+			}
+		};
+		when(b.getFacade().isBinary(Object.class)).thenReturn(true);
+		assertThrows(IllegalArgumentException.class, () -> {
+			b.withErrorFormatter(formatter);
+		});
+		assertEquals(ConcreteFormatter.class, b.getFormatter().getClass());
+	}
+
+	@Test
+	void setsErrorContentType() {
+		try (MockedStatic<Media> media = mockStatic(Media.class)) {
+			String contentType = "type/subtype";
+			media.when(() -> Media.strip(contentType)).thenReturn(contentType);
+			assertSame(b, b.withErrorContentType(contentType));
+			assertEquals(contentType, b.getContentType());
+		}
+	}
+
+	@Test
+	void doesNotSetErrorContentTypeIfItIsNull() {
+		assertThrows(NullPointerException.class, () -> {
+			b.withErrorContentType(null);
+		});
+		assertNull(b.getContentType());
+	}
+
+	@Test
+	void doesNotSetErrorContentTypeIfStripReturnsNull() {
+		try (MockedStatic<Media> media = mockStatic(Media.class)) {
+			String contentType = "type/subtype";
+			media.when(() -> Media.strip(contentType)).thenReturn(null);
+			assertThrows(IllegalArgumentException.class, () -> {
+				b.withErrorContentType(contentType);
+			});
+			assertNull(b.getContentType());
+		}
+	}
+
+	@Test
+	void setsErrorCharset() {
+		if (Coding.CHARSET.equals(StandardCharsets.UTF_8)) {
+			assertSame(b, b.withErrorCharset(StandardCharsets.ISO_8859_1));
+			assertEquals(StandardCharsets.ISO_8859_1, b.getCharset());
+		} else {
+			assertSame(b, b.withErrorCharset(StandardCharsets.UTF_8));
+			assertEquals(StandardCharsets.UTF_8, b.getCharset());
+		}
+	}
+
+	@Test
+	void doesNotSetErrorCharset() {
+		assertThrows(NullPointerException.class, () -> {
+			b.withErrorCharset(null);
+		});
+		assertEquals(Coding.CHARSET, b.getCharset());
+	}
+
+	@Test
+	void setsErrorBase64() {
+		assertSame(b, b.withErrorInBase64());
+		assertTrue(b.isBase64());
 	}
 
 	@Test
@@ -278,6 +370,11 @@ class RestServerBuilderTest extends BuilderTest {
 		HTTP2CServerConnectionFactory h2c = (HTTP2CServerConnectionFactory) iterator.next();
 		assertSame(configuration, h2c.getHttpConfiguration());
 		assertFalse(iterator.hasNext());
+		ConcreteHandler errorHandler = (ConcreteHandler) jettyServer.getErrorHandler();
+		assertSame(b.getFormatter(), errorHandler.getFormatter());
+		assertNull(errorHandler.getContentType());
+		assertEquals(Coding.CHARSET, errorHandler.getCharset());
+		assertFalse(errorHandler.isBase64());
 		GzipHandler gzipHandler = (GzipHandler) jettyServer.getHandler();
 		Handler handler = (Handler) gzipHandler.getHandler();
 		assertSame(b.getCache(), handler.getCache());
@@ -330,6 +427,37 @@ class RestServerBuilderTest extends BuilderTest {
 		RestServer server = b.build(VALID_PACKAGE);
 		SecuredRedirectHandler redirectHandler = (SecuredRedirectHandler) server.getJettyServer().getHandler();
 		assertInstanceOf(Handler.class, redirectHandler.getHandler());
+	}
+
+	@Test
+	void buildsWithErrorContentType() {
+		b.withErrorContentType("type/subtype");
+		RestServer server = b.build(VALID_PACKAGE);
+		ConcreteHandler errorHandler = (ConcreteHandler) server.getJettyServer().getErrorHandler();
+		assertEquals("type/subtype", errorHandler.getContentType());
+	}
+
+	@Test
+	void buildsWithErrorCharset() {
+		if (Coding.CHARSET.equals(StandardCharsets.UTF_8)) {
+			b.withErrorCharset(StandardCharsets.ISO_8859_1);
+			RestServer server = b.build(VALID_PACKAGE);
+			ConcreteHandler errorHandler = (ConcreteHandler) server.getJettyServer().getErrorHandler();
+			assertEquals(StandardCharsets.ISO_8859_1, errorHandler.getCharset());
+		} else {
+			b.withErrorCharset(StandardCharsets.UTF_8);
+			RestServer server = b.build(VALID_PACKAGE);
+			ConcreteHandler errorHandler = (ConcreteHandler) server.getJettyServer().getErrorHandler();
+			assertEquals(StandardCharsets.UTF_8, errorHandler.getCharset());
+		}
+	}
+
+	@Test
+	void buildsWithErrorInBase64() {
+		b.withErrorInBase64();
+		RestServer server = b.build(VALID_PACKAGE);
+		ConcreteHandler errorHandler = (ConcreteHandler) server.getJettyServer().getErrorHandler();
+		assertTrue(errorHandler.isBase64());
 	}
 
 	@Test

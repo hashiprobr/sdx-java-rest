@@ -1,6 +1,7 @@
 package br.pro.hashi.sdx.rest.server;
 
 import java.lang.reflect.Constructor;
+import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -31,6 +32,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import br.pro.hashi.sdx.rest.Builder;
+import br.pro.hashi.sdx.rest.coding.Coding;
+import br.pro.hashi.sdx.rest.coding.Media;
 import br.pro.hashi.sdx.rest.coding.Percent;
 import br.pro.hashi.sdx.rest.reflection.Cache;
 import br.pro.hashi.sdx.rest.reflection.Reflection;
@@ -48,6 +51,9 @@ public non-sealed class RestServerBuilder extends Builder<RestServerBuilder> {
 	private final Logger logger;
 	private final Set<Class<? extends RuntimeException>> gatewayTypes;
 	private ErrorFormatter formatter;
+	private String contentType;
+	private Charset charset;
+	private boolean base64;
 	private SslContextFactory.Server factory;
 	private MultipartConfigElement element;
 	private UriCompliance compliance;
@@ -65,6 +71,9 @@ public non-sealed class RestServerBuilder extends Builder<RestServerBuilder> {
 		this.logger = LoggerFactory.getLogger(RestServerBuilder.class);
 		this.gatewayTypes = new HashSet<>();
 		this.formatter = new ConcreteFormatter();
+		this.contentType = null;
+		this.charset = Coding.CHARSET;
+		this.base64 = false;
 		this.factory = null;
 		this.element = new MultipartConfigElement("");
 		this.compliance = UriCompliance.RFC3986_UNAMBIGUOUS;
@@ -90,6 +99,18 @@ public non-sealed class RestServerBuilder extends Builder<RestServerBuilder> {
 
 	ErrorFormatter getFormatter() {
 		return formatter;
+	}
+
+	String getContentType() {
+		return contentType;
+	}
+
+	Charset getCharset() {
+		return charset;
+	}
+
+	boolean isBase64() {
+		return base64;
 	}
 
 	SslContextFactory.Server getFactory() {
@@ -148,13 +169,62 @@ public non-sealed class RestServerBuilder extends Builder<RestServerBuilder> {
 	 * 
 	 * @param formatter the error formatter
 	 * @return this builder, for chaining
-	 * @throws NullPointerException if the formatter is null
+	 * @throws NullPointerException     if the formatter is null
+	 * @throws IllegalArgumentException if the formatter is binary
 	 */
 	public final RestServerBuilder withErrorFormatter(ErrorFormatter formatter) {
 		if (formatter == null) {
 			throw new NullPointerException("Error formatter cannot be null");
 		}
+		if (facade.isBinary(formatter.getReturnType())) {
+			throw new IllegalArgumentException("Error formatter cannot be binary");
+		}
 		this.formatter = formatter;
+		return self();
+	}
+
+	/**
+	 * Sets the content type for error bodies. Parameters are ignored.
+	 * 
+	 * @param contentType the content type
+	 * @return this builder, for chaining
+	 * @throws NullPointerException     if the content type is null
+	 * @throws IllegalArgumentException if the content type is blank
+	 */
+	public final RestServerBuilder withErrorContentType(String contentType) {
+		if (contentType == null) {
+			throw new NullPointerException("Content type cannot be null");
+		}
+		contentType = Media.strip(contentType);
+		if (contentType == null) {
+			throw new IllegalArgumentException("Content type cannot be blank");
+		}
+		this.contentType = contentType;
+		return self();
+	}
+
+	/**
+	 * Sets the charset for error bodies.
+	 * 
+	 * @param charset the charset
+	 * @return this builder, for chaining
+	 * @throws NullPointerException if the charset is null
+	 */
+	public final RestServerBuilder withErrorCharset(Charset charset) {
+		if (charset == null) {
+			throw new NullPointerException("Charset cannot be null");
+		}
+		this.charset = charset;
+		return self();
+	}
+
+	/**
+	 * Encodes the error bodies in Base64 by default.
+	 * 
+	 * @return this builder, for chaining
+	 */
+	public final RestServerBuilder withErrorInBase64() {
+		this.base64 = true;
 		return self();
 	}
 
@@ -307,6 +377,9 @@ public non-sealed class RestServerBuilder extends Builder<RestServerBuilder> {
 
 		Server server = new Server();
 
+		ConcreteHandler errorHandler = new ConcreteHandler(facade, formatter, contentType, charset, base64);
+		server.setErrorHandler(errorHandler);
+
 		AbstractHandler handler = new Handler(cache, facade, tree, formatter, constructors, element, gatewayTypes, urlCharset, cors);
 		if (compression) {
 			GzipHandler gzipHandler = new GzipHandler();
@@ -319,9 +392,6 @@ public non-sealed class RestServerBuilder extends Builder<RestServerBuilder> {
 			handler = redirectHandler;
 		}
 		server.setHandler(handler);
-
-		ConcreteHandler errorHandler = new ConcreteHandler();
-		server.setErrorHandler(errorHandler);
 
 		String scheme;
 		int mainPort;

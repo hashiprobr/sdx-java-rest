@@ -5,16 +5,16 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 
 import org.junit.jupiter.api.Test;
 
-class BadRequestExceptionTest {
-	private BadRequestException e;
+class NotFoundExceptionTest {
+	private NotFoundException e;
 
 	@Test
 	void constructs() {
-		e = new BadRequestException("message");
+		e = new NotFoundException();
 		assertNull(e.getMessage());
 		assertNull(e.getCause());
-		assertEquals(400, e.getStatus());
-		assertEquals("message", e.getBody());
+		assertEquals(404, e.getStatus());
+		assertEquals("Endpoint not found", e.getBody());
 		assertEquals(String.class, e.getType());
 	}
 }

@@ -525,6 +525,15 @@ class EndpointTest {
 	}
 
 	@Test
+	void callsWithOneExtraBody() {
+		e = newEndpoint(0, "withNothing");
+		Object body = new Object();
+		assertNull(e.call(resource, List.of(), Map.of(), mockData(body)));
+		assertArrayEquals(new Object[] {}, e.getArguments());
+		verify(resource).withNothing();
+	}
+
+	@Test
 	void callsWithReturn() {
 		e = newEndpoint(0, "withReturn");
 		assertTrue((boolean) e.call(resource, List.of(), Map.of(), null));
@@ -541,13 +550,12 @@ class EndpointTest {
 	}
 
 	@Test
-	void doesNotCallWithOneItemAndOneExtraBody() {
+	void callsWithOneItemAndOneExtraBody() {
 		e = newEndpoint(0, "withOneItem", int.class);
 		Object body = new Object();
-		assertThrows(BadRequestException.class, () -> {
-			e.call(resource, List.of("1"), Map.of(), mockData(body));
-		});
+		assertNull(e.call(resource, List.of("1"), Map.of(), mockData(body)));
 		assertArrayEquals(new Object[] { null }, e.getArguments());
+		verify(resource).withOneItem(1);
 	}
 
 	@Test
@@ -568,13 +576,12 @@ class EndpointTest {
 	}
 
 	@Test
-	void doesNotCallWithTwoItemsAndOneExtraBody() {
+	void callsWithTwoItemsAndOneExtraBody() {
 		e = newEndpoint(0, "withTwoItems", int.class, double.class);
 		Object body = new Object();
-		assertThrows(BadRequestException.class, () -> {
-			e.call(resource, List.of("1", "2.3"), Map.of(), mockData(body));
-		});
+		assertNull(e.call(resource, List.of("1", "2.3"), Map.of(), mockData(body)));
 		assertArrayEquals(new Object[] { null, null }, e.getArguments());
+		verify(resource).withTwoItems(eq(1), eq(2.3, DELTA));
 	}
 
 	@Test

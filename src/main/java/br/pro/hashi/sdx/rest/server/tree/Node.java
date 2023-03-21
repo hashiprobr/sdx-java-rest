@@ -38,11 +38,11 @@ public class Node {
 		endpoints.put(methodName, endpoint);
 	}
 
-	public Endpoint getEndpoint(String methodName) {
-		return endpoints.get(methodName);
+	public Set<String> getMethodNames() {
+		return endpoints.keySet();
 	}
 
-	public Set<String> allowedMethods() {
-		return endpoints.keySet();
+	public Endpoint getEndpoint(String methodName) {
+		return endpoints.get(methodName);
 	}
 }

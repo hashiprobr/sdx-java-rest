@@ -1005,29 +1005,29 @@ public final class RestClient {
 			Object actual = body.getActual();
 			Type type = body.getType();
 			String contentType = body.getContentType();
-			Charset charset = body.getCharset();
 			boolean base64 = body.isBase64();
 
 			Consumer<OutputStream> consumer;
 			if (facade.isBinary(type)) {
 				contentType = facade.cleanForAssembling(contentType, actual);
 				Assembler assembler = facade.getAssembler(contentType);
-				consumer = (stream) -> {
-					assembler.write(actual, type, stream);
+				consumer = (output) -> {
+					assembler.write(actual, type, output);
 				};
 			} else {
 				contentType = facade.cleanForSerializing(contentType, actual);
 				Serializer serializer = facade.getSerializer(contentType);
-				consumer = (stream) -> {
-					OutputStreamWriter writer = new OutputStreamWriter(stream, charset);
+				Charset charset = body.getCharset();
+				consumer = (output) -> {
+					OutputStreamWriter writer = new OutputStreamWriter(output, charset);
 					serializer.write(actual, type, writer);
 				};
 				contentType = "%s;charset=%s".formatted(contentType, charset.name());
 			}
-
 			if (base64) {
 				contentType = "%s;base64".formatted(contentType);
 			}
+
 			OutputStreamRequestContent content = new OutputStreamRequestContent(contentType);
 			OutputStream stream = content.getOutputStream();
 			if (base64) {

@@ -26,7 +26,7 @@ import br.pro.hashi.sdx.rest.reflection.Cache;
 import br.pro.hashi.sdx.rest.reflection.exception.ReflectionException;
 import br.pro.hashi.sdx.rest.server.RestResource;
 import br.pro.hashi.sdx.rest.server.annotation.Nested;
-import br.pro.hashi.sdx.rest.server.exception.ResponseException;
+import br.pro.hashi.sdx.rest.server.exception.NotFoundException;
 import br.pro.hashi.sdx.rest.server.tree.mock.cyclic.Acyclic;
 import br.pro.hashi.sdx.rest.server.tree.mock.cyclic.AcyclicInAcyclic;
 import br.pro.hashi.sdx.rest.server.tree.mock.cyclic.AcyclicInAcyclicInAcyclic;
@@ -124,7 +124,7 @@ class TreeTest {
 		assertNotNull(node.getEndpoint("PATCH"));
 		assertNull(node.getEndpoint("DELETE"));
 		assertEquals(List.of("0", "1"), itemList);
-		assertThrows(ResponseException.class, () -> {
+		assertThrows(NotFoundException.class, () -> {
 			getNode(new String[] { "0", "1", "2" });
 		});
 	}

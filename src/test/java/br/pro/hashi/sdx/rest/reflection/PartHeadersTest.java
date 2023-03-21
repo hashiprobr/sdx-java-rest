@@ -2,32 +2,35 @@ package br.pro.hashi.sdx.rest.reflection;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.util.List;
 
-import org.eclipse.jetty.http.HttpFields;
 import org.junit.jupiter.api.Test;
 
 import br.pro.hashi.sdx.rest.Fields;
 import br.pro.hashi.sdx.rest.FieldsTest;
+import jakarta.servlet.http.Part;
 
-class HeadersTest extends FieldsTest {
-	private Headers h;
+class PartHeadersTest extends FieldsTest {
+	private PartHeaders h;
 
 	@Override
 	protected Fields newInstance() {
 		Cache cache = new Cache();
-		HttpFields.Mutable fields = HttpFields.build();
-		fields.add("x", "false");
-		fields.add("x", "true");
-		fields.add("y", "0");
-		fields.add("y", "1");
-		fields.add("z", "2.3");
-		fields.add("z", "4.5");
-		fields.add("xs", "false,true");
-		fields.add("ys", "0,1");
-		fields.add("zs", "2.3,4.5");
-		h = new Headers(cache, fields);
+		Part part = mock(Part.class);
+		when(part.getHeaderNames()).thenReturn(List.of("x", "y", "z", "xs", "ys", "zs"));
+		when(part.getHeaders("x")).thenReturn(List.of("false", "true"));
+		when(part.getHeaders("y")).thenReturn(List.of("0", "1"));
+		when(part.getHeaders("z")).thenReturn(List.of("2.3", "4.5"));
+		when(part.getHeader("x")).thenReturn("false");
+		when(part.getHeader("y")).thenReturn("0");
+		when(part.getHeader("z")).thenReturn("2.3");
+		when(part.getHeader("xs")).thenReturn("false,true");
+		when(part.getHeader("ys")).thenReturn("0,1");
+		when(part.getHeader("zs")).thenReturn("2.3,4.5");
+		h = new PartHeaders(cache, part);
 		return h;
 	}
 

@@ -30,7 +30,7 @@ class NodeTest {
 		assertTrue(n.getEndpoints().isEmpty());
 		assertNull(n.getEndpoint("GET"));
 		assertNull(n.getEndpoint("POST"));
-		assertTrue(n.allowedMethods().isEmpty());
+		assertTrue(n.getMethodNames().isEmpty());
 	}
 
 	@Test
@@ -48,11 +48,11 @@ class NodeTest {
 		n.putEndpoint("GET", getEndpoint);
 		assertEquals(1, n.getEndpoints().size());
 		assertSame(getEndpoint, n.getEndpoint("GET"));
-		assertEquals(Set.of("GET"), n.allowedMethods());
+		assertEquals(Set.of("GET"), n.getMethodNames());
 		Endpoint postEndpoint = mock(Endpoint.class);
 		n.putEndpoint("POST", postEndpoint);
 		assertEquals(2, n.getEndpoints().size());
 		assertSame(postEndpoint, n.getEndpoint("POST"));
-		assertEquals(Set.of("GET", "POST"), n.allowedMethods());
+		assertEquals(Set.of("GET", "POST"), n.getMethodNames());
 	}
 }

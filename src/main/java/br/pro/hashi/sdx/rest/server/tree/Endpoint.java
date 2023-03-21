@@ -157,11 +157,7 @@ public class Endpoint {
 				if (!partMap.isEmpty()) {
 					throw new BadRequestException("Endpoint does not expect a multipart body");
 				}
-				if (bodyParameter == null) {
-					if (body != null) {
-						throw new BadRequestException("Endpoint does not expect a body");
-					}
-				} else {
+				if (bodyParameter != null) {
 					if (body == null) {
 						throw new BadRequestException("Endpoint expects a body");
 					}

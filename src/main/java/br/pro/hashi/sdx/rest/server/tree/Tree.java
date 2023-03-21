@@ -11,13 +11,11 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.Stack;
 
-import org.eclipse.jetty.http.HttpStatus;
-
 import br.pro.hashi.sdx.rest.reflection.Cache;
 import br.pro.hashi.sdx.rest.reflection.exception.ReflectionException;
 import br.pro.hashi.sdx.rest.server.RestResource;
 import br.pro.hashi.sdx.rest.server.annotation.Nested;
-import br.pro.hashi.sdx.rest.server.exception.ResponseException;
+import br.pro.hashi.sdx.rest.server.exception.NotFoundException;
 
 public class Tree {
 	private final Cache cache;
@@ -37,7 +35,7 @@ public class Tree {
 			if (child == null) {
 				child = node.getChild(null);
 				if (child == null) {
-					throw new ResponseException(HttpStatus.NOT_FOUND_404, "Resource not found");
+					throw new NotFoundException();
 				}
 				itemList.add(item);
 			}
