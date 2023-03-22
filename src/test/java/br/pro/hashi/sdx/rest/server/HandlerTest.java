@@ -112,6 +112,7 @@ class HandlerTest {
 		mockEndpoint();
 		mockContentType();
 		mockResourceType();
+		mockReturnType();
 		mockCall();
 		handle();
 	}
@@ -125,6 +126,7 @@ class HandlerTest {
 		mockEndpoint();
 		mockContentType();
 		mockResourceType();
+		mockReturnType();
 		mockCall();
 		handle(false, mockAnswer());
 		verify(response).addHeader("Access-Control-Allow-Origin", "*");
@@ -142,6 +144,7 @@ class HandlerTest {
 		mockEndpoint();
 		mockContentType();
 		mockResourceType();
+		mockReturnType();
 		mockCall();
 		handle();
 	}
@@ -155,6 +158,7 @@ class HandlerTest {
 		mockEndpoint();
 		mockContentType();
 		mockResourceType();
+		mockReturnType();
 		mockCall();
 		handle();
 	}
@@ -168,6 +172,7 @@ class HandlerTest {
 		mockEndpoint();
 		mockContentType();
 		mockResourceType();
+		mockReturnType();
 		mockCall();
 		handle();
 	}
@@ -181,6 +186,7 @@ class HandlerTest {
 		mockNullEndpoint();
 		mockContentType();
 		mockResourceType();
+		mockReturnType();
 		mockCall();
 		handle();
 	}
@@ -194,6 +200,7 @@ class HandlerTest {
 		mockNullEndpoint();
 		mockContentType();
 		mockResourceType();
+		mockReturnType();
 		mockCall();
 		handle();
 		verify(response).addHeader("Allow", "GET, POST");
@@ -212,6 +219,7 @@ class HandlerTest {
 		mockEndpoint();
 		when(request.getContentType()).thenReturn(null);
 		mockResourceType();
+		mockReturnType();
 		mockCall();
 		handle();
 	}
@@ -226,6 +234,7 @@ class HandlerTest {
 		mockMultipartContentType();
 		mockParts();
 		mockResourceType();
+		mockReturnType();
 		mockCall();
 		handle();
 	}
@@ -243,6 +252,7 @@ class HandlerTest {
 		parts.add(part);
 		mockParts();
 		mockResourceType();
+		mockReturnType();
 		mockCall();
 		handle();
 	}
@@ -263,6 +273,7 @@ class HandlerTest {
 		parts.add(part1);
 		mockParts();
 		mockResourceType();
+		mockReturnType();
 		mockCall();
 		handle();
 	}
@@ -283,6 +294,7 @@ class HandlerTest {
 		parts.add(namedPart);
 		mockParts();
 		mockResourceType();
+		mockReturnType();
 		mockCall();
 		handle();
 	}
@@ -300,6 +312,7 @@ class HandlerTest {
 		parts.add(namedPart);
 		mockParts();
 		mockResourceType();
+		mockReturnType();
 		mockCall();
 		handle();
 	}
@@ -320,6 +333,7 @@ class HandlerTest {
 		parts.add(part);
 		mockParts();
 		mockResourceType();
+		mockReturnType();
 		mockCall();
 		handle();
 	}
@@ -340,6 +354,7 @@ class HandlerTest {
 		parts.add(namedPart1);
 		mockParts();
 		mockResourceType();
+		mockReturnType();
 		mockCall();
 		handle();
 	}
@@ -366,6 +381,7 @@ class HandlerTest {
 			throw new AssertionError(exception);
 		}
 		mockResourceType();
+		mockReturnType();
 		mockCall();
 		handle();
 	}
@@ -383,6 +399,7 @@ class HandlerTest {
 		mockEndpoint();
 		mockContentType();
 		mockResourceType();
+		mockReturnType();
 		mockResponseException(new Object());
 		handle();
 	}
@@ -396,6 +413,7 @@ class HandlerTest {
 		mockEndpoint();
 		mockContentType();
 		mockResourceType();
+		mockReturnType();
 		mockResponseException("message");
 		handle();
 	}
@@ -414,6 +432,7 @@ class HandlerTest {
 		when(node.getEndpoint("HEAD")).thenReturn(endpoint);
 		mockContentType();
 		mockResourceType();
+		mockReturnType();
 		mockCall();
 		handle();
 	}
@@ -427,6 +446,7 @@ class HandlerTest {
 		when(node.getEndpoint("HEAD")).thenReturn(endpoint);
 		mockContentType();
 		mockResourceType();
+		mockReturnType();
 		mockCall();
 		handle((invocation) -> {
 			return false;
@@ -442,6 +462,7 @@ class HandlerTest {
 		mockEndpoint();
 		mockContentType();
 		mockResourceType();
+		mockReturnType();
 		mockException(ResourceException.class);
 		handle();
 	}
@@ -455,6 +476,7 @@ class HandlerTest {
 		mockEndpoint();
 		mockContentType();
 		mockResourceType();
+		mockReturnType();
 		mockException(RuntimeException.class);
 		handle();
 	}
@@ -468,6 +490,7 @@ class HandlerTest {
 		mockEndpoint();
 		mockContentType();
 		mockResourceType();
+		mockReturnType();
 		mockException(RuntimeException.class);
 		doThrow(IOException.class).when(response).sendError(500, null);
 		handle();
@@ -506,6 +529,14 @@ class HandlerTest {
 		doReturn(ResourceWithMethods.class).when(endpoint).getResourceType();
 	}
 
+	private void mockReturnType() {
+		mockReturnType(Object.class);
+	}
+
+	private void mockReturnType(Type type) {
+		when(endpoint.getReturnType()).thenReturn(type);
+	}
+
 	private void mockCall() {
 		when(endpoint.call(any(), eq(List.of()), eq(Map.of()), any())).thenReturn(new Object());
 	}
@@ -530,7 +561,7 @@ class HandlerTest {
 
 	private void handle(boolean cors, Answer<Boolean> answer) {
 		Handler h = spy(new Handler(cache, facade, tree, formatter, constructors, element, gatewayTypes, StandardCharsets.UTF_8, cors));
-		doAnswer(answer).when(h).write(same(response), same(endpoint), any(), any(), any(), any());
+		doAnswer(answer).when(h).write(same(response), any(), any(), any(), any());
 		h.handle("target", baseRequest, request, response);
 		verify(baseRequest).setHandled(true);
 	}
@@ -542,45 +573,6 @@ class HandlerTest {
 		mockWithoutBase64();
 		assertTrue(write());
 		verify(response).setContentType("type/subtype;charset=UTF-8");
-	}
-
-	@Test
-	void doesNotWriteVoid() {
-		mockWithoutNullBody();
-		mockCharset();
-		mockWithoutBase64();
-		assertFalse(writeNull(void.class));
-		verify(response, times(0)).setContentType("type/subtype;charset=UTF-8");
-	}
-
-	@Test
-	void doesNotWriteVoidWrapper() {
-		mockWithoutNullBody();
-		mockCharset();
-		mockWithoutBase64();
-		assertFalse(writeNull(Void.class));
-		verify(response, times(0)).setContentType("type/subtype;charset=UTF-8");
-	}
-
-	@Test
-	void doesNotWriteNull() {
-		mockWithoutNullBody();
-		mockCharset();
-		mockWithoutBase64();
-		assertFalse(writeNull());
-		verify(response, times(0)).setContentType("type/subtype;charset=UTF-8");
-	}
-
-	@Test
-	void doesNotWriteNullWithException() {
-		mockWithoutNullBody();
-		mockOutputException();
-		mockCharset();
-		mockWithoutBase64();
-		assertThrows(UncheckedIOException.class, () -> {
-			writeNull();
-		});
-		verify(response, times(0)).setContentType("type/subtype;charset=UTF-8");
 	}
 
 	@Test
@@ -602,22 +594,22 @@ class HandlerTest {
 	}
 
 	@Test
-	void writesChunked() {
+	void writesLarge() {
 		mockWithoutNullBody();
 		mockCharset();
 		mockWithoutBase64();
-		assertFalse(writeChunked());
+		assertFalse(writeLarge());
 		verify(response).setContentType("type/subtype;charset=UTF-8");
 	}
 
 	@Test
-	void writesChunkedWithException() {
+	void writesLargeWithException() {
 		mockWithoutNullBody();
 		mockCharset();
 		mockWithoutBase64();
 		mockResponseException();
 		assertThrows(UncheckedIOException.class, () -> {
-			writeChunked();
+			writeLarge();
 		});
 		verify(response).setContentType("type/subtype;charset=UTF-8");
 	}
@@ -627,14 +619,10 @@ class HandlerTest {
 	}
 
 	private boolean writeNull() {
-		return writeNull(String.class);
+		return writeWithWriter(null, String.class);
 	}
 
-	private boolean writeNull(Type type) {
-		return writeWithWriter(null, type);
-	}
-
-	private boolean writeChunked() {
+	private boolean writeLarge() {
 		return writeWithWriter(new StringReader(SPECIAL_BODY), Reader.class);
 	}
 
@@ -663,45 +651,6 @@ class HandlerTest {
 	}
 
 	@Test
-	void doesNotWriteBinaryVoid() {
-		mockWithoutNullBody();
-		mockCharset();
-		mockWithoutBase64();
-		assertFalse(writeNullBinary(void.class));
-		verify(response, times(0)).setContentType("type/subtype");
-	}
-
-	@Test
-	void doesNotWriteBinaryVoidWrapper() {
-		mockWithoutNullBody();
-		mockCharset();
-		mockWithoutBase64();
-		assertFalse(writeNullBinary(Void.class));
-		verify(response, times(0)).setContentType("type/subtype");
-	}
-
-	@Test
-	void doesNotWriteBinaryNull() {
-		mockWithoutNullBody();
-		mockCharset();
-		mockWithoutBase64();
-		assertFalse(writeNullBinary());
-		verify(response, times(0)).setContentType("type/subtype");
-	}
-
-	@Test
-	void doesNotWriteBinaryNullWithException() {
-		mockWithoutNullBody();
-		mockOutputException();
-		mockCharset();
-		mockWithoutBase64();
-		assertThrows(UncheckedIOException.class, () -> {
-			writeNull();
-		});
-		verify(response, times(0)).setContentType("type/subtype");
-	}
-
-	@Test
 	void writesBinaryNull() {
 		mockWithNullBody();
 		mockCharset();
@@ -720,22 +669,22 @@ class HandlerTest {
 	}
 
 	@Test
-	void writesBinaryChunked() {
+	void writesLargeBinary() {
 		mockWithoutNullBody();
 		mockCharset();
 		mockWithoutBase64();
-		assertFalse(writeBinaryChunked());
+		assertFalse(writeLargeBinary());
 		verify(response).setContentType("type/subtype");
 	}
 
 	@Test
-	void writesBinaryChunkedWithException() {
+	void writesLargeBinaryWithException() {
 		mockWithoutNullBody();
 		mockCharset();
 		mockWithoutBase64();
 		mockResponseException();
 		assertThrows(UncheckedIOException.class, () -> {
-			writeBinaryChunked();
+			writeLargeBinary();
 		});
 		verify(response).setContentType("type/subtype");
 	}
@@ -745,14 +694,10 @@ class HandlerTest {
 	}
 
 	private boolean writeNullBinary() {
-		return writeNullBinary(String.class);
+		return writeWithStream(null, String.class);
 	}
 
-	private boolean writeNullBinary(Type type) {
-		return writeWithStream(null, type);
-	}
-
-	private boolean writeBinaryChunked() {
+	private boolean writeLargeBinary() {
 		return writeWithStream(new ByteArrayInputStream(USASCII_BODY.getBytes(StandardCharsets.US_ASCII)), InputStream.class);
 	}
 
@@ -779,15 +724,6 @@ class HandlerTest {
 		when(resource.isNullBody()).thenReturn(true);
 	}
 
-	private void mockOutputException() {
-		output = mock(ByteArrayOutputStream.class);
-		try {
-			doThrow(IOException.class).when(output).close();
-		} catch (IOException exception) {
-			throw new AssertionError();
-		}
-	}
-
 	private void mockCharset() {
 		when(resource.getCharset()).thenReturn(StandardCharsets.UTF_8);
 	}
@@ -810,6 +746,6 @@ class HandlerTest {
 
 	private boolean write(Object actual, Type type) {
 		Handler h = new Handler(cache, facade, tree, formatter, constructors, element, gatewayTypes, StandardCharsets.UTF_8, false);
-		return h.write(response, endpoint, resource, actual, type, output);
+		return h.write(response, resource, actual, type, output);
 	}
 }

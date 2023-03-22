@@ -197,20 +197,33 @@ class Handler extends AbstractHandler {
 					returnType = exception.getType();
 				}
 			}
-			response.setStatus(status);
+
+			boolean hasContent = returnType.equals(void.class) || returnType.equals(Void.class) || (responseBody == null && !resource.isNullBody());
+			if (status == -1) {
+				if (hasContent) {
+					response.setStatus(HttpStatus.OK_200);
+				} else {
+					response.setStatus(HttpStatus.NO_CONTENT_204);
+				}
+			} else {
+				response.setStatus(status);
+			}
 
 			OutputStream responseStream = response.getOutputStream();
 			if (methodName.equals("HEAD")) {
 				CountOutputStream countStream = new CountOutputStream();
-				if (write(response, endpoint, resource, responseBody, returnType, countStream)) {
-					response.setContentLengthLong(countStream.getCount());
-				} else {
-					responseStream.close();
+				if (hasContent) {
+					if (write(response, resource, responseBody, returnType, countStream)) {
+						response.setContentLengthLong(countStream.getCount());
+					}
 				}
+				responseStream.close();
 			} else {
-				write(response, endpoint, resource, responseBody, returnType, responseStream);
+				write(response, resource, responseBody, returnType, responseStream);
 			}
-		} catch (MessageResponseException exception) {
+		} catch (
+
+		MessageResponseException exception) {
 			int status = exception.getStatus();
 			String message = exception.getBody();
 			sendError(response, status, message);
@@ -239,57 +252,60 @@ class Handler extends AbstractHandler {
 		}
 	}
 
-	boolean write(HttpServletResponse response, Endpoint endpoint, RestResource resource, Object actual, Type type, OutputStream stream) {
-		if (type.equals(void.class) || type.equals(Void.class) || (actual == null && !resource.isNullBody())) {
-			try {
-				stream.close();
-			} catch (IOException exception) {
-				throw new UncheckedIOException(exception);
-			}
-			return false;
-		}
-
+	boolean write(HttpServletResponse response, RestResource resource, Object actual, Type type, OutputStream stream) {
 		String contentType = resource.getContentType();
 		boolean base64 = resource.isBase64();
 
-		Consumer<OutputStream> consumer;
-		boolean chunked;
-		if (facade.isBinary(type)) {
-			contentType = facade.cleanForAssembling(contentType, actual);
-			Assembler assembler = facade.getAssembler(contentType);
-			consumer = (output) -> {
-				assembler.write(actual, type, output);
-			};
-			chunked = actual instanceof InputStream;
-		} else {
-			contentType = facade.cleanForSerializing(contentType, actual);
-			Serializer serializer = facade.getSerializer(contentType);
-			Charset charset = resource.getCharset();
-			consumer = (output) -> {
-				OutputStreamWriter writer = new OutputStreamWriter(output, charset);
-				serializer.write(actual, type, writer);
-			};
-			chunked = actual instanceof Reader;
-			contentType = "%s;charset=%s".formatted(contentType, charset.name());
-		}
-		if (base64) {
-			contentType = "%s;base64".formatted(contentType);
-		}
+		boolean writing;
+		boolean consuming = false;
+		try {
+			Consumer<OutputStream> consumer;
+			if (facade.isBinary(type)) {
+				contentType = facade.cleanForAssembling(contentType, actual);
+				Assembler assembler = facade.getAssembler(contentType);
+				consumer = (output) -> {
+					assembler.write(actual, type, output);
+				};
+				writing = actual instanceof InputStream;
+			} else {
+				contentType = facade.cleanForSerializing(contentType, actual);
+				Serializer serializer = facade.getSerializer(contentType);
+				Charset charset = resource.getCharset();
+				consumer = (output) -> {
+					OutputStreamWriter writer = new OutputStreamWriter(output, charset);
+					serializer.write(actual, type, writer);
+				};
+				writing = actual instanceof Reader;
+				contentType = "%s;charset=%s".formatted(contentType, charset.name());
+			}
+			if (base64) {
+				contentType = "%s;base64".formatted(contentType);
+			}
 
-		response.setContentType(contentType);
-		if (chunked) {
-			try {
-				response.flushBuffer();
-			} catch (IOException exception) {
-				throw new UncheckedIOException(exception);
+			response.setContentType(contentType);
+			if (writing) {
+				try {
+					response.flushBuffer();
+				} catch (IOException exception) {
+					throw new UncheckedIOException(exception);
+				}
+			}
+			if (base64) {
+				stream = Media.encode(stream);
+			}
+
+			consuming = true;
+			consumer.accept(stream);
+		} finally {
+			if (!consuming) {
+				try {
+					stream.close();
+				} catch (IOException exception) {
+					throw new UncheckedIOException(exception);
+				}
 			}
 		}
-		if (base64) {
-			stream = Media.encode(stream);
-		}
-
-		consumer.accept(stream);
-		return !chunked;
+		return !writing;
 	}
 
 	private void sendError(HttpServletResponse response, int status) {
