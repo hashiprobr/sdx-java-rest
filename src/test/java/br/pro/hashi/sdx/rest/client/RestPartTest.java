@@ -22,6 +22,18 @@ class RestPartTest {
 	}
 
 	@Test
+	void initializesActual() {
+		p = newRestPart();
+		assertSame(actual, p.getActual());
+	}
+
+	@Test
+	void initializesActualWithNull() {
+		p = new RestPart(null);
+		assertNull(p.getActual());
+	}
+
+	@Test
 	void initializesType() {
 		p = newRestPart();
 		assertEquals(Object.class, p.getType());
@@ -31,6 +43,38 @@ class RestPartTest {
 	void initializesTypeWithHint() {
 		p = new RestPart(actual, new Hint<Object>() {});
 		assertEquals(Object.class, p.getType());
+	}
+
+	@Test
+	void doesNotInitializeTypeWithHint() {
+		assertThrows(NullPointerException.class, () -> {
+			new RestPart(actual, (Hint<Object>) null);
+		});
+	}
+
+	@Test
+	void initializesTypeWithNull() {
+		p = new RestPart(null);
+		assertEquals(Object.class, p.getType());
+	}
+
+	@Test
+	void initializesTypeWithNullAndHint() {
+		p = new RestPart(null, new Hint<Object>() {});
+		assertEquals(Object.class, p.getType());
+	}
+
+	@Test
+	void doesNotInitializeTypeWithNullAndHint() {
+		assertThrows(NullPointerException.class, () -> {
+			new RestPart(null, (Hint<Object>) null);
+		});
+	}
+
+	@Test
+	void initializesWithoutHeaders() {
+		p = newRestPart();
+		assertTrue(p.getHeaders().isEmpty());
 	}
 
 	@Test

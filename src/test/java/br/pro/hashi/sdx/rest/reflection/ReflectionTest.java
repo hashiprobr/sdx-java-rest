@@ -93,13 +93,8 @@ class ReflectionTest {
 	}
 
 	@Test
-	void doesNotCallNoArgsConstructorIfConstructorIsInaccessible() {
-		Constructor<WithPrivateConstructor> constructor;
-		try {
-			constructor = WithPrivateConstructor.class.getDeclaredConstructor();
-		} catch (NoSuchMethodException exception) {
-			throw new AssertionError(exception);
-		}
+	void doesNotCallNoArgsConstructorIfConstructorIsInaccessible() throws NoSuchMethodException {
+		Constructor<WithPrivateConstructor> constructor = WithPrivateConstructor.class.getDeclaredConstructor();
 		assertThrows(ReflectionException.class, () -> {
 			Reflection.newNoArgsInstance(constructor);
 		});

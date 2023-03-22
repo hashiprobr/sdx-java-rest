@@ -115,7 +115,8 @@ class Handler extends AbstractHandler {
 			try {
 				items = Percent.splitAndDecode(uri, urlCharset);
 			} catch (IllegalArgumentException exception) {
-				throw new BadRequestException(exception.getMessage());
+				exception.printStackTrace();
+				throw new BadRequestException("URI could not be decoded");
 			}
 			List<String> itemList = new ArrayList<>();
 			Node node = tree.getNodeAndAddItems(items, itemList);
@@ -145,7 +146,8 @@ class Handler extends AbstractHandler {
 				try {
 					parts = request.getParts();
 				} catch (ServletException exception) {
-					throw new BadRequestException(exception.getMessage());
+					exception.printStackTrace();
+					throw new BadRequestException("Parts could not be parsed");
 				}
 				for (Part part : parts) {
 					String name = part.getName();
@@ -237,8 +239,8 @@ class Handler extends AbstractHandler {
 		}
 	}
 
-	private boolean write(HttpServletResponse response, Endpoint endpoint, RestResource resource, Object actual, Type type, OutputStream stream) {
-		if (actual == null && !resource.isNullBody()) {
+	boolean write(HttpServletResponse response, Endpoint endpoint, RestResource resource, Object actual, Type type, OutputStream stream) {
+		if (type.equals(void.class) || type.equals(Void.class) || (actual == null && !resource.isNullBody())) {
 			try {
 				stream.close();
 			} catch (IOException exception) {
@@ -299,37 +301,6 @@ class Handler extends AbstractHandler {
 			response.sendError(status, message);
 		} catch (IOException exception) {
 			throw new UncheckedIOException(exception);
-		}
-	}
-
-	private class CountOutputStream extends OutputStream {
-		private long count;
-
-		private CountOutputStream() {
-			this.count = 0;
-		}
-
-		private long getCount() {
-			return count;
-		}
-
-		@Override
-		public void write(int b) {
-			write(new byte[] { (byte) b });
-		}
-
-		@Override
-		public void write(byte[] b) {
-			write(b, 0, b.length);
-		}
-
-		@Override
-		public void write(byte[] b, int off, int len) {
-			int index = off + len;
-			if (index > b.length) {
-				throw new IndexOutOfBoundsException(index - 1);
-			}
-			count += len;
 		}
 	}
 }

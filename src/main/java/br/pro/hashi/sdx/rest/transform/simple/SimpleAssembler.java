@@ -57,7 +57,7 @@ public interface SimpleAssembler extends Assembler {
 	 * @throws AssemblingException if the object cannot be transformed
 	 */
 	default byte[] toBytes(Object body) {
-		return toBytes(body, body.getClass());
+		return toBytes(body, body == null ? Object.class : body.getClass());
 	}
 
 	/**

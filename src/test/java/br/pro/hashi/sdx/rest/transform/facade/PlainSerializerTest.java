@@ -91,6 +91,14 @@ class PlainSerializerTest {
 	}
 
 	@Test
+	void doesNotWriteIfBodyIsNull() {
+		Writer writer = new StringWriter();
+		assertThrows(SupportException.class, () -> {
+			s.write(null, writer);
+		});
+	}
+
+	@Test
 	void doesNotWriteIfBodyIsStringButWriteThrows() throws IOException {
 		String body = newString();
 		Writer writer = Writer.nullWriter();

@@ -11,7 +11,7 @@ class MessageResponseExceptionTest {
 	private MessageResponseException e;
 
 	@Test
-	void constructsWithClientError() {
+	void constructsWithClientStatus() {
 		e = new MessageResponseException(450, "message");
 		assertNull(e.getMessage());
 		assertNull(e.getCause());
@@ -21,7 +21,7 @@ class MessageResponseExceptionTest {
 	}
 
 	@Test
-	void constructsWithServerError() {
+	void constructsWithServerStatus() {
 		e = new MessageResponseException(550, "message");
 		assertNull(e.getMessage());
 		assertNull(e.getCause());

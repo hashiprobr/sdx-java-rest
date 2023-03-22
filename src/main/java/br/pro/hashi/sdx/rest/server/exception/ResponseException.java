@@ -12,7 +12,7 @@ public class ResponseException extends RuntimeException {
 	private final Type type;
 
 	public ResponseException(int status, Object body) {
-		this(status, body, body.getClass());
+		this(status, body, body == null ? Object.class : body.getClass());
 	}
 
 	public <T> ResponseException(int status, T body, Hint<T> hint) {

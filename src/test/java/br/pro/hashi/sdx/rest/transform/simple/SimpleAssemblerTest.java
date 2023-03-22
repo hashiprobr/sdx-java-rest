@@ -13,6 +13,7 @@ import java.io.OutputStream;
 import java.io.UncheckedIOException;
 import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
+import java.util.Objects;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -28,7 +29,7 @@ class SimpleAssemblerTest {
 		a = new SimpleAssembler() {
 			@Override
 			public byte[] toBytes(Object body, Type type) {
-				return body.toString().getBytes(StandardCharsets.US_ASCII);
+				return Objects.toString(body).getBytes(StandardCharsets.US_ASCII);
 			}
 		};
 		body = new Object() {
@@ -58,6 +59,24 @@ class SimpleAssemblerTest {
 	}
 
 	@Test
+	void writesWithNull() {
+		ByteArrayOutputStream stream = new ByteArrayOutputStream();
+		a.write(null, stream);
+		assertEqualsNull(stream);
+	}
+
+	@Test
+	void writesWithNullAndHint() {
+		ByteArrayOutputStream stream = new ByteArrayOutputStream();
+		a.write(null, new Hint<Object>() {}.getType(), stream);
+		assertEqualsNull(stream);
+	}
+
+	private void assertEqualsNull(ByteArrayOutputStream stream) {
+		assertEqualsNull(stream.toByteArray());
+	}
+
+	@Test
 	void returnsBytes() {
 		byte[] bytes = a.toBytes(body);
 		assertEqualsBody(bytes);
@@ -71,6 +90,22 @@ class SimpleAssemblerTest {
 
 	private void assertEqualsBody(byte[] bytes) {
 		assertEquals("body", new String(bytes, StandardCharsets.US_ASCII));
+	}
+
+	@Test
+	void returnsBytesWithNull() {
+		byte[] bytes = a.toBytes(null);
+		assertEqualsNull(bytes);
+	}
+
+	@Test
+	void returnsBytesWithNullAndHint() {
+		byte[] bytes = a.toBytes(null, new Hint<Object>() {}.getType());
+		assertEqualsNull(bytes);
+	}
+
+	private void assertEqualsNull(byte[] bytes) {
+		assertEquals("null", new String(bytes, StandardCharsets.US_ASCII));
 	}
 
 	@Test

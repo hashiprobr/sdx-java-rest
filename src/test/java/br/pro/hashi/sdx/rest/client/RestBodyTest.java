@@ -34,6 +34,12 @@ class RestBodyTest {
 	}
 
 	@Test
+	void initializesActualWithNull() {
+		b = new RestBody(null);
+		assertNull(b.getActual());
+	}
+
+	@Test
 	void initializesType() {
 		b = newRestBody();
 		assertEquals(Object.class, b.getType());
@@ -49,6 +55,25 @@ class RestBodyTest {
 	void doesNotInitializeTypeWithHint() {
 		assertThrows(NullPointerException.class, () -> {
 			new RestBody(actual, (Hint<Object>) null);
+		});
+	}
+
+	@Test
+	void initializesTypeWithNull() {
+		b = new RestBody(null);
+		assertEquals(Object.class, b.getType());
+	}
+
+	@Test
+	void initializesTypeWithNullAndHint() {
+		b = new RestBody(null, new Hint<Object>() {});
+		assertEquals(Object.class, b.getType());
+	}
+
+	@Test
+	void doesNotInitializeTypeWithNullAndHint() {
+		assertThrows(NullPointerException.class, () -> {
+			new RestBody(null, (Hint<Object>) null);
 		});
 	}
 

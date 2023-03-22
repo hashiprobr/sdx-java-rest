@@ -48,6 +48,7 @@ class NodeTest {
 		n.putEndpoint("GET", getEndpoint);
 		assertEquals(1, n.getEndpoints().size());
 		assertSame(getEndpoint, n.getEndpoint("GET"));
+		assertSame(getEndpoint, n.getEndpoint("HEAD"));
 		assertEquals(Set.of("GET"), n.getMethodNames());
 		Endpoint postEndpoint = mock(Endpoint.class);
 		n.putEndpoint("POST", postEndpoint);

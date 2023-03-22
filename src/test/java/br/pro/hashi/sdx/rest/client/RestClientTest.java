@@ -1046,19 +1046,19 @@ class RestClientTest {
 		List<Task> tasks = new ArrayList<>();
 		Object actual = body.getActual();
 		Serializer serializer = mock(Serializer.class);
-		when(facade.isBinary(String.class)).thenReturn(false);
-		when(facade.cleanForSerializing(null, actual)).thenReturn("type/subtype");
-		when(facade.getSerializer("type/subtype")).thenReturn(serializer);
-		Content content = p.addTaskAndGetContent(tasks, body);
-		assertEquals(1, tasks.size());
-		Task task = tasks.get(0);
 		doAnswer((invocation) -> {
 			String str = invocation.getArgument(0);
 			Writer writer = invocation.getArgument(2);
 			writer.write(str);
 			writer.close();
 			return null;
-		}).when(serializer).write(same(actual), eq(String.class), any());
+		}).when(serializer).write(eq(actual), eq(String.class), any());
+		when(facade.isBinary(String.class)).thenReturn(false);
+		when(facade.cleanForSerializing(null, actual)).thenReturn("type/subtype");
+		when(facade.getSerializer("type/subtype")).thenReturn(serializer);
+		Content content = p.addTaskAndGetContent(tasks, body);
+		assertEquals(1, tasks.size());
+		Task task = tasks.get(0);
 		task.consumer().accept(task.stream());
 		return content;
 	}
@@ -1090,19 +1090,19 @@ class RestClientTest {
 		List<Task> tasks = new ArrayList<>();
 		Object actual = body.getActual();
 		Assembler assembler = mock(Assembler.class);
-		when(facade.isBinary(String.class)).thenReturn(true);
-		when(facade.cleanForAssembling(null, actual)).thenReturn("type/subtype");
-		when(facade.getAssembler("type/subtype")).thenReturn(assembler);
-		Content content = p.addTaskAndGetContent(tasks, body);
-		assertEquals(1, tasks.size());
-		Task task = tasks.get(0);
 		doAnswer((invocation) -> {
 			String str = invocation.getArgument(0);
 			OutputStream stream = invocation.getArgument(2);
 			stream.write(str.getBytes(StandardCharsets.US_ASCII));
 			stream.close();
 			return null;
-		}).when(assembler).write(same(actual), eq(String.class), any());
+		}).when(assembler).write(eq(actual), eq(String.class), any());
+		when(facade.isBinary(String.class)).thenReturn(true);
+		when(facade.cleanForAssembling(null, actual)).thenReturn("type/subtype");
+		when(facade.getAssembler("type/subtype")).thenReturn(assembler);
+		Content content = p.addTaskAndGetContent(tasks, body);
+		assertEquals(1, tasks.size());
+		Task task = tasks.get(0);
 		task.consumer().accept(task.stream());
 		return content;
 	}

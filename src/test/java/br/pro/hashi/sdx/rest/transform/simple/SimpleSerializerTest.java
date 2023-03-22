@@ -12,6 +12,7 @@ import java.io.StringWriter;
 import java.io.UncheckedIOException;
 import java.io.Writer;
 import java.lang.reflect.Type;
+import java.util.Objects;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -27,7 +28,7 @@ class SimpleSerializerTest {
 		s = new SimpleSerializer() {
 			@Override
 			public String toString(Object body, Type type) {
-				return body.toString();
+				return Objects.toString(body);
 			}
 		};
 		body = new Object() {
@@ -57,6 +58,24 @@ class SimpleSerializerTest {
 	}
 
 	@Test
+	void writesWithNull() {
+		StringWriter writer = new StringWriter();
+		s.write(null, writer);
+		assertEqualsNull(writer);
+	}
+
+	@Test
+	void writesWithNullAndHint() {
+		StringWriter writer = new StringWriter();
+		s.write(null, new Hint<Object>() {}.getType(), writer);
+		assertEqualsNull(writer);
+	}
+
+	private void assertEqualsNull(StringWriter writer) {
+		assertEqualsNull(writer.toString());
+	}
+
+	@Test
 	void returnsString() {
 		String content = s.toString(body);
 		assertEqualsBody(content);
@@ -70,6 +89,22 @@ class SimpleSerializerTest {
 
 	private void assertEqualsBody(String content) {
 		assertEquals("body", content);
+	}
+
+	@Test
+	void returnsStringWithNull() {
+		String content = s.toString(null);
+		assertEqualsNull(content);
+	}
+
+	@Test
+	void returnsStringWithNullAndHint() {
+		String content = s.toString(null, new Hint<Object>() {}.getType());
+		assertEqualsNull(content);
+	}
+
+	private void assertEqualsNull(String content) {
+		assertEquals("null", content);
 	}
 
 	@Test

@@ -49,6 +49,7 @@ import br.pro.hashi.sdx.rest.server.tree.mock.cyclic.SecondOfTwo;
 import br.pro.hashi.sdx.rest.server.tree.mock.cyclic.SelfLoop;
 import br.pro.hashi.sdx.rest.server.tree.mock.cyclic.ThirdOfThree;
 import br.pro.hashi.sdx.rest.server.tree.mock.endpoint.ChildReaches;
+import br.pro.hashi.sdx.rest.server.tree.mock.endpoint.Head;
 import br.pro.hashi.sdx.rest.server.tree.mock.endpoint.Multiple;
 import br.pro.hashi.sdx.rest.server.tree.mock.endpoint.NestedReaches;
 import br.pro.hashi.sdx.rest.server.tree.mock.endpoint.Reaches;
@@ -96,6 +97,7 @@ class TreeTest {
 		itemMap.put(Reaches.class, new String[] {});
 		itemMap.put(ChildReaches.class, new String[] {});
 		itemMap.put(NestedReaches.class, new String[] {});
+		itemMap.put(Head.class, new String[] {});
 		itemMap.put(Multiple.class, new String[] {});
 		itemMap.put(SamePath.class, new String[] {});
 	}
@@ -186,6 +188,14 @@ class TreeTest {
 		assertNotNull(node.getEndpoint("PATCH"));
 		assertNull(node.getEndpoint("DELETE"));
 		assertEquals(List.of("0", "1", "2"), itemList);
+	}
+
+	@Test
+	void doesNotPutEndpointsFromHead() {
+		Exception exception = assertThrows(ReflectionException.class, () -> {
+			putNode(Head.class);
+		});
+		assertEquals("br.pro.hashi.sdx.rest.server.tree.mock.endpoint.Head cannot have a HEAD endpoint", exception.getMessage());
 	}
 
 	@Test

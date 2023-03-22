@@ -47,14 +47,14 @@ class ConcreteHandlerTest {
 	void setUp() {
 		serializer = mock(Serializer.class);
 		doAnswer((invocation) -> {
-			String body = invocation.getArgument(0);
+			String str = invocation.getArgument(0);
 			Writer writer = invocation.getArgument(2);
-			writer.write(body);
+			writer.write(str);
 			writer.close();
 			return null;
 		}).when(serializer).write(eq(BODY), eq(String.class), any());
 		facade = mock(Facade.class);
-		when(facade.cleanForSerializing("type/subtype", BODY)).thenReturn("type/subtype");
+		when(facade.cleanForSerializing(null, BODY)).thenReturn("type/subtype");
 		when(facade.getSerializer("type/subtype")).thenReturn(serializer);
 		formatter = mock(ErrorFormatter.class);
 		when(formatter.getReturnType()).thenReturn(String.class);
@@ -182,6 +182,6 @@ class ConcreteHandlerTest {
 	}
 
 	private ConcreteHandler newConcreteHandler(Charset charset, boolean base64) {
-		return new ConcreteHandler(facade, formatter, "type/subtype", charset, base64);
+		return new ConcreteHandler(facade, formatter, null, charset, base64);
 	}
 }

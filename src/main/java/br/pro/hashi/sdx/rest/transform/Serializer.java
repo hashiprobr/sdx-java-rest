@@ -29,7 +29,7 @@ public interface Serializer {
 	 * @throws SerializingException if the object cannot be transformed
 	 */
 	default void write(Object body, Writer writer) {
-		write(body, body.getClass(), writer);
+		write(body, body == null ? Object.class : body.getClass(), writer);
 	}
 
 	/**

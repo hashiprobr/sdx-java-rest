@@ -43,6 +43,9 @@ public class Node {
 	}
 
 	public Endpoint getEndpoint(String methodName) {
+		if (methodName.equals("HEAD")) {
+			methodName = "GET";
+		}
 		return endpoints.get(methodName);
 	}
 }

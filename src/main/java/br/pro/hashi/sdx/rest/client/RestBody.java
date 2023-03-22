@@ -38,7 +38,7 @@ public class RestBody {
 	 * @param actual the actual body
 	 */
 	public RestBody(Object actual) {
-		this(actual, actual.getClass());
+		this(actual, actual == null ? Object.class : actual.getClass());
 	}
 
 	/**

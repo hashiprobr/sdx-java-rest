@@ -31,7 +31,7 @@ public class RestPart extends RestBody {
 	 * @param actual the actual part
 	 */
 	public RestPart(Object actual) {
-		this(actual, actual.getClass());
+		this(actual, actual == null ? Object.class : actual.getClass());
 	}
 
 	/**

@@ -30,7 +30,7 @@ public interface Assembler {
 	 * @throws AssemblingException  if the object cannot be transformed
 	 */
 	default void write(Object body, OutputStream stream) {
-		write(body, body.getClass(), stream);
+		write(body, body == null ? Object.class : body.getClass(), stream);
 	}
 
 	/**

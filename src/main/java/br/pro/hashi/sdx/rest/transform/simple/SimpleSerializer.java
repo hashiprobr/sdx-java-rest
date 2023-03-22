@@ -57,7 +57,7 @@ public interface SimpleSerializer extends Serializer {
 	 * @throws SerializingException if the object cannot be transformed
 	 */
 	default String toString(Object body) {
-		return toString(body, body.getClass());
+		return toString(body, body == null ? Object.class : body.getClass());
 	}
 
 	/**

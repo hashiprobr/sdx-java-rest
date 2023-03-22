@@ -92,6 +92,14 @@ class OctetAssemblerTest {
 	}
 
 	@Test
+	void doesNotWriteIfBodyIsNull() {
+		ByteArrayOutputStream stream = new ByteArrayOutputStream();
+		assertThrows(SupportException.class, () -> {
+			a.write(null, stream);
+		});
+	}
+
+	@Test
 	void doesNotWriteIfBodyIsByteArrayButWriteThrows() throws IOException {
 		byte[] body = newByteArray();
 		OutputStream stream = OutputStream.nullOutputStream();
