@@ -221,9 +221,7 @@ class Handler extends AbstractHandler {
 			} else {
 				write(response, resource, responseBody, returnType, responseStream);
 			}
-		} catch (
-
-		MessageResponseException exception) {
+		} catch (MessageResponseException exception) {
 			int status = exception.getStatus();
 			String message = exception.getBody();
 			sendError(response, status, message);
