@@ -26,9 +26,9 @@ import org.junit.jupiter.params.provider.ValueSource;
 
 import br.pro.hashi.sdx.rest.reflection.Cache;
 import br.pro.hashi.sdx.rest.reflection.exception.ReflectionException;
+import br.pro.hashi.sdx.rest.server.RestException;
 import br.pro.hashi.sdx.rest.server.RestResource;
 import br.pro.hashi.sdx.rest.server.exception.BadRequestException;
-import br.pro.hashi.sdx.rest.server.exception.ResponseException;
 import br.pro.hashi.sdx.rest.server.tree.Endpoint.DataParameter;
 import br.pro.hashi.sdx.rest.server.tree.Endpoint.ItemParameter;
 import br.pro.hashi.sdx.rest.server.tree.mock.endpoint.Signatures;
@@ -633,7 +633,7 @@ class EndpointTest {
 	@Test
 	void doesNotCallWithOneItemAndOneUnsupportedPart() {
 		e = newEndpoint(0, "withOneItemAndOnePart", int.class, Object.class);
-		ResponseException exception = assertThrows(ResponseException.class, () -> {
+		RestException exception = assertThrows(RestException.class, () -> {
 			e.call(resource, List.of("1"), Map.of("name", List.of(mockUnsupportedData())), null);
 		});
 		assertEquals(415, exception.getStatus());
@@ -690,7 +690,7 @@ class EndpointTest {
 	@Test
 	void doesNotCallWithOneItemAndOneUnsupportedBody() {
 		e = newEndpoint(0, "withOneItemAndOneBody", int.class, Object.class);
-		ResponseException exception = assertThrows(ResponseException.class, () -> {
+		RestException exception = assertThrows(RestException.class, () -> {
 			e.call(resource, List.of("1"), Map.of(), mockUnsupportedData());
 		});
 		assertEquals(415, exception.getStatus());
@@ -747,7 +747,7 @@ class EndpointTest {
 	@Test
 	void doesNotCallWithOneUnsupportedPart() {
 		e = newEndpoint(0, "withOnePart", Object.class);
-		ResponseException exception = assertThrows(ResponseException.class, () -> {
+		RestException exception = assertThrows(RestException.class, () -> {
 			e.call(resource, List.of(), Map.of("name", List.of(mockUnsupportedData())), null);
 		});
 		assertEquals(415, exception.getStatus());
@@ -804,7 +804,7 @@ class EndpointTest {
 	@Test
 	void doesNotCallWithOneUnsupportedPartAndOneItem() {
 		e = newEndpoint(0, "withOnePartAndOneItem", Object.class, int.class);
-		ResponseException exception = assertThrows(ResponseException.class, () -> {
+		RestException exception = assertThrows(RestException.class, () -> {
 			e.call(resource, List.of("1"), Map.of("name", List.of(mockUnsupportedData())), null);
 		});
 		assertEquals(415, exception.getStatus());
@@ -899,7 +899,7 @@ class EndpointTest {
 	@Test
 	void doesNotCallWithOneUnsupportedBody() {
 		e = newEndpoint(0, "withOneBody", Object.class);
-		ResponseException exception = assertThrows(ResponseException.class, () -> {
+		RestException exception = assertThrows(RestException.class, () -> {
 			e.call(resource, List.of(), Map.of(), mockUnsupportedData());
 		});
 		assertEquals(415, exception.getStatus());
@@ -946,7 +946,7 @@ class EndpointTest {
 	@Test
 	void doesNotCallWithOneUnsupportedBodyAndOneItem() {
 		e = newEndpoint(0, "withOneBodyAndOneItem", Object.class, int.class);
-		ResponseException exception = assertThrows(ResponseException.class, () -> {
+		RestException exception = assertThrows(RestException.class, () -> {
 			e.call(resource, List.of("1"), Map.of(), mockUnsupportedData());
 		});
 		assertEquals(415, exception.getStatus());

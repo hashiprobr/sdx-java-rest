@@ -21,11 +21,11 @@ import org.slf4j.LoggerFactory;
 
 import br.pro.hashi.sdx.rest.reflection.Cache;
 import br.pro.hashi.sdx.rest.reflection.exception.ReflectionException;
+import br.pro.hashi.sdx.rest.server.RestException;
 import br.pro.hashi.sdx.rest.server.RestResource;
 import br.pro.hashi.sdx.rest.server.annotation.Body;
 import br.pro.hashi.sdx.rest.server.annotation.Part;
 import br.pro.hashi.sdx.rest.server.exception.BadRequestException;
-import br.pro.hashi.sdx.rest.server.exception.ResponseException;
 import br.pro.hashi.sdx.rest.transform.exception.DeserializingException;
 import br.pro.hashi.sdx.rest.transform.exception.DisassemblingException;
 import br.pro.hashi.sdx.rest.transform.facade.exception.SupportException;
@@ -222,7 +222,7 @@ public class Endpoint {
 		} catch (SupportException error) {
 			String message = "%s does not have a supported content type".formatted(description);
 			logger.error(message, error);
-			throw new ResponseException(HttpStatus.UNSUPPORTED_MEDIA_TYPE_415, message);
+			throw new RestException(HttpStatus.UNSUPPORTED_MEDIA_TYPE_415, message);
 		} catch (DisassemblingException | DeserializingException error) {
 			String message = "%s could not be understood".formatted(description);
 			logger.error(message, error);

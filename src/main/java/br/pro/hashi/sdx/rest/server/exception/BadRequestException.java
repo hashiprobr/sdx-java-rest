@@ -2,7 +2,7 @@ package br.pro.hashi.sdx.rest.server.exception;
 
 import org.eclipse.jetty.http.HttpStatus;
 
-public class BadRequestException extends MessageResponseException {
+public class BadRequestException extends MessageRestException {
 	private static final long serialVersionUID = -6428770178527056029L;
 
 	public BadRequestException(String message) {

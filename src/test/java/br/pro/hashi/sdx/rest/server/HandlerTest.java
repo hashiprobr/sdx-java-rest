@@ -53,7 +53,6 @@ import br.pro.hashi.sdx.rest.reflection.Headers;
 import br.pro.hashi.sdx.rest.reflection.PartHeaders;
 import br.pro.hashi.sdx.rest.reflection.Queries;
 import br.pro.hashi.sdx.rest.server.exception.NotFoundException;
-import br.pro.hashi.sdx.rest.server.exception.ResponseException;
 import br.pro.hashi.sdx.rest.server.mock.valid.NullableResource;
 import br.pro.hashi.sdx.rest.server.mock.valid.Resource;
 import br.pro.hashi.sdx.rest.server.tree.Data;
@@ -604,7 +603,7 @@ class HandlerTest {
 	}
 
 	@Test
-	void handlesWithResponseException() {
+	void handlesWithRestException() {
 		mockRequestUri();
 		mockNode();
 		mockMethodNames();
@@ -613,7 +612,7 @@ class HandlerTest {
 		mockContentType();
 		ServletInputStream stream = mockInputStream();
 		mockResourceType();
-		mockResponseException(450, new Object());
+		mockRestException(450, new Object());
 		mockReturnType();
 		handle();
 		assertEquals(List.of("0", "1"), callItemList);
@@ -622,7 +621,7 @@ class HandlerTest {
 	}
 
 	@Test
-	void handlesWithMessageResponseException() {
+	void handlesWithMessageRestException() {
 		mockRequestUri();
 		mockNode();
 		mockMethodNames();
@@ -631,7 +630,7 @@ class HandlerTest {
 		mockContentType();
 		ServletInputStream stream = mockInputStream();
 		mockResourceType();
-		mockResponseException(550, "message");
+		mockRestException(550, "message");
 		when(formatter.format(550, "message")).thenReturn(new Object());
 		when(formatter.getReturnType()).thenReturn(Object.class);
 		handle();
@@ -640,10 +639,10 @@ class HandlerTest {
 		assertResponseWithoutHeaders(550);
 	}
 
-	private void mockResponseException(int status, Object body) {
+	private void mockRestException(int status, Object body) {
 		when(endpoint.call(any(), any(), any(), any())).thenAnswer((invocation) -> {
 			saveCall(invocation);
-			throw new ResponseException(status, body);
+			throw new RestException(status, body);
 		});
 	}
 

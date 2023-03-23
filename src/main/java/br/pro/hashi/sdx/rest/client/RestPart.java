@@ -82,7 +82,7 @@ public class RestPart extends RestBody {
 	 *                                  value is invalid
 	 * @hidden
 	 */
-	public RestPart h(String name, Object value) {
+	public final RestPart h(String name, Object value) {
 		return withHeader(name, value);
 	}
 
@@ -106,7 +106,7 @@ public class RestPart extends RestBody {
 	 * @throws IllegalArgumentException if the header name is invalid or the header
 	 *                                  value is invalid
 	 */
-	public RestPart withHeader(String name, Object value) {
+	public final RestPart withHeader(String name, Object value) {
 		if (name == null) {
 			throw new NullPointerException("Header name cannot be null");
 		}

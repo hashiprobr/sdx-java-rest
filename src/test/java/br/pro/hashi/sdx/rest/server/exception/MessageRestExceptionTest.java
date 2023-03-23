@@ -7,12 +7,14 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.junit.jupiter.api.Test;
 
-class MessageResponseExceptionTest {
-	private MessageResponseException e;
+import br.pro.hashi.sdx.rest.server.RestException;
+
+class MessageRestExceptionTest {
+	private MessageRestException e;
 
 	@Test
 	void constructsWithClientStatus() {
-		e = new MessageResponseException(450, "message");
+		e = new MessageRestException(450, "message");
 		assertNull(e.getMessage());
 		assertNull(e.getCause());
 		assertEquals(450, e.getStatus());
@@ -22,7 +24,7 @@ class MessageResponseExceptionTest {
 
 	@Test
 	void constructsWithServerStatus() {
-		e = new MessageResponseException(550, "message");
+		e = new MessageRestException(550, "message");
 		assertNull(e.getMessage());
 		assertNull(e.getCause());
 		assertEquals(550, e.getStatus());
@@ -34,7 +36,7 @@ class MessageResponseExceptionTest {
 	void doesNotConstructWithSmallStatus() {
 		Object body = new Object();
 		assertThrows(IllegalArgumentException.class, () -> {
-			new ResponseException(350, body);
+			new RestException(350, body);
 		});
 	}
 
@@ -42,7 +44,7 @@ class MessageResponseExceptionTest {
 	void doesNotConstructWithLargeStatus() {
 		Object body = new Object();
 		assertThrows(IllegalArgumentException.class, () -> {
-			new ResponseException(650, body);
+			new RestException(650, body);
 		});
 	}
 }

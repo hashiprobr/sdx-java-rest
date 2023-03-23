@@ -9,6 +9,8 @@ import java.io.UncheckedIOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Type;
 import java.nio.charset.Charset;
+import java.nio.charset.CharsetEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -32,9 +34,8 @@ import br.pro.hashi.sdx.rest.reflection.PartHeaders;
 import br.pro.hashi.sdx.rest.reflection.Queries;
 import br.pro.hashi.sdx.rest.reflection.Reflection;
 import br.pro.hashi.sdx.rest.server.exception.BadRequestException;
-import br.pro.hashi.sdx.rest.server.exception.MessageResponseException;
+import br.pro.hashi.sdx.rest.server.exception.MessageRestException;
 import br.pro.hashi.sdx.rest.server.exception.NotFoundException;
-import br.pro.hashi.sdx.rest.server.exception.ResponseException;
 import br.pro.hashi.sdx.rest.server.tree.Data;
 import br.pro.hashi.sdx.rest.server.tree.Endpoint;
 import br.pro.hashi.sdx.rest.server.tree.Node;
@@ -136,7 +137,7 @@ class Handler extends AbstractHandler {
 			Endpoint endpoint = node.getEndpoint(methodName);
 			if (endpoint == null) {
 				if (!methodName.equals("OPTIONS")) {
-					throw new MessageResponseException(HttpStatus.METHOD_NOT_ALLOWED_405, "%s not allowed".formatted(methodName));
+					throw new MessageRestException(HttpStatus.METHOD_NOT_ALLOWED_405, "%s not allowed".formatted(methodName));
 				}
 				response.addHeader("Allow", String.join(", ", methodNames));
 				response.setStatus(HttpServletResponse.SC_OK);
@@ -186,7 +187,8 @@ class Handler extends AbstractHandler {
 			Class<? extends RestResource> resourceType = endpoint.getResourceType();
 			Constructor<? extends RestResource> constructor = constructors.get(resourceType);
 			RestResource resource = Reflection.newNoArgsInstance(constructor);
-			resource.setFields(partHeadersMap, headers, queries);
+			CharsetEncoder encoder = StandardCharsets.US_ASCII.newEncoder();
+			resource.setFields(partHeadersMap, headers, queries, response, encoder);
 
 			Object responseBody;
 			Type returnType;
@@ -195,7 +197,7 @@ class Handler extends AbstractHandler {
 				responseBody = endpoint.call(resource, itemList, partMap, requestBody);
 				returnType = endpoint.getReturnType();
 				status = resource.getStatus();
-			} catch (ResponseException exception) {
+			} catch (RestException exception) {
 				responseBody = exception.getBody();
 				status = exception.getStatus();
 				if (responseBody instanceof String) {
@@ -233,7 +235,7 @@ class Handler extends AbstractHandler {
 					responseStream.close();
 				}
 			}
-		} catch (MessageResponseException exception) {
+		} catch (MessageRestException exception) {
 			int status = exception.getStatus();
 			String message = exception.getBody();
 			sendError(response, status, message);

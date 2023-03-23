@@ -1,4 +1,4 @@
-package br.pro.hashi.sdx.rest.server.exception;
+package br.pro.hashi.sdx.rest.server;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -9,13 +9,13 @@ import org.junit.jupiter.api.Test;
 
 import br.pro.hashi.sdx.rest.transform.Hint;
 
-class ResponseExceptionTest {
-	private ResponseException e;
+class RestExceptionTest {
+	private RestException e;
 
 	@Test
 	void constructsWithClientStatus() {
 		Object body = new Object();
-		e = new ResponseException(450, body);
+		e = new RestException(450, body);
 		assertNull(e.getMessage());
 		assertNull(e.getCause());
 		assertEquals(450, e.getStatus());
@@ -26,7 +26,7 @@ class ResponseExceptionTest {
 	@Test
 	void constructsWithClientStatusAndHint() {
 		Object body = new Object();
-		e = new ResponseException(450, body, new Hint<Object>() {});
+		e = new RestException(450, body, new Hint<Object>() {});
 		assertNull(e.getMessage());
 		assertNull(e.getCause());
 		assertEquals(450, e.getStatus());
@@ -36,7 +36,7 @@ class ResponseExceptionTest {
 
 	@Test
 	void constructsWithClientStatusAndNull() {
-		e = new ResponseException(450, null);
+		e = new RestException(450, null);
 		assertNull(e.getMessage());
 		assertNull(e.getCause());
 		assertEquals(450, e.getStatus());
@@ -46,7 +46,7 @@ class ResponseExceptionTest {
 
 	@Test
 	void constructsWithClientStatusAndNullAndHint() {
-		e = new ResponseException(450, null, new Hint<Object>() {});
+		e = new RestException(450, null, new Hint<Object>() {});
 		assertNull(e.getMessage());
 		assertNull(e.getCause());
 		assertEquals(450, e.getStatus());
@@ -57,7 +57,7 @@ class ResponseExceptionTest {
 	@Test
 	void constructsWithServerStatus() {
 		Object body = new Object();
-		e = new ResponseException(550, body);
+		e = new RestException(550, body);
 		assertNull(e.getMessage());
 		assertNull(e.getCause());
 		assertEquals(550, e.getStatus());
@@ -68,7 +68,7 @@ class ResponseExceptionTest {
 	@Test
 	void constructsWithServerStatusAndHint() {
 		Object body = new Object();
-		e = new ResponseException(550, body, new Hint<Object>() {});
+		e = new RestException(550, body, new Hint<Object>() {});
 		assertNull(e.getMessage());
 		assertNull(e.getCause());
 		assertEquals(550, e.getStatus());
@@ -78,7 +78,7 @@ class ResponseExceptionTest {
 
 	@Test
 	void constructsWithServerStatusAndNull() {
-		e = new ResponseException(550, null);
+		e = new RestException(550, null);
 		assertNull(e.getMessage());
 		assertNull(e.getCause());
 		assertEquals(550, e.getStatus());
@@ -88,7 +88,7 @@ class ResponseExceptionTest {
 
 	@Test
 	void constructsWithServerStatusAndNullAndHint() {
-		e = new ResponseException(550, null, new Hint<Object>() {});
+		e = new RestException(550, null, new Hint<Object>() {});
 		assertNull(e.getMessage());
 		assertNull(e.getCause());
 		assertEquals(550, e.getStatus());
@@ -100,7 +100,7 @@ class ResponseExceptionTest {
 	void doesNotConstructWithSmallStatus() {
 		Object body = new Object();
 		assertThrows(IllegalArgumentException.class, () -> {
-			new ResponseException(350, body);
+			new RestException(350, body);
 		});
 	}
 
@@ -108,7 +108,7 @@ class ResponseExceptionTest {
 	void doesNotConstructWithLargeStatus() {
 		Object body = new Object();
 		assertThrows(IllegalArgumentException.class, () -> {
-			new ResponseException(650, body);
+			new RestException(650, body);
 		});
 	}
 }
