@@ -20,6 +20,14 @@ public class Data {
 		this.stream = stream;
 	}
 
+	public String getContentType() {
+		return contentType;
+	}
+
+	public InputStream getStream() {
+		return stream;
+	}
+
 	Object getBody(Type type) {
 		Object body;
 		String contentType = this.contentType;

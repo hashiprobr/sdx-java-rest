@@ -16,6 +16,10 @@ public final class Queries extends Fields {
 		this.map = map;
 	}
 
+	public Map<String, String[]> getMap() {
+		return map;
+	}
+
 	@Override
 	protected Stream<String> getStream(String name) {
 		String[] valueStrings = map.get(name);

@@ -16,6 +16,10 @@ public final class PartHeaders extends Fields {
 		this.part = part;
 	}
 
+	public Part getPart() {
+		return part;
+	}
+
 	@Override
 	protected Stream<String> getStream(String name) {
 		name = clean(name);

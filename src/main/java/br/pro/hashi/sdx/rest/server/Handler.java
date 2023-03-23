@@ -28,6 +28,7 @@ import br.pro.hashi.sdx.rest.coding.Media;
 import br.pro.hashi.sdx.rest.coding.Percent;
 import br.pro.hashi.sdx.rest.reflection.Cache;
 import br.pro.hashi.sdx.rest.reflection.Headers;
+import br.pro.hashi.sdx.rest.reflection.PartHeaders;
 import br.pro.hashi.sdx.rest.reflection.Queries;
 import br.pro.hashi.sdx.rest.reflection.Reflection;
 import br.pro.hashi.sdx.rest.server.exception.BadRequestException;
@@ -171,7 +172,7 @@ class Handler extends AbstractHandler {
 						partList = new ArrayList<>();
 						partMap.put(name, partList);
 					}
-					partHeadersList.add(new Headers(cache, null));
+					partHeadersList.add(new PartHeaders(cache, part));
 					partList.add(new Data(facade, part.getContentType(), part.getInputStream()));
 				}
 				requestBody = null;
@@ -226,14 +227,17 @@ class Handler extends AbstractHandler {
 				}
 				responseStream.close();
 			} else {
-				write(response, resource, responseBody, returnType, responseStream);
+				if (hasContent) {
+					write(response, resource, responseBody, returnType, responseStream);
+				} else {
+					responseStream.close();
+				}
 			}
 		} catch (MessageResponseException exception) {
 			int status = exception.getStatus();
 			String message = exception.getBody();
 			sendError(response, status, message);
 		} catch (Exception exception) {
-			logger.error("", exception);
 			boolean gateway = false;
 			for (Class<? extends RuntimeException> type : gatewayTypes) {
 				if (type.isAssignableFrom(exception.getClass())) {
@@ -243,10 +247,13 @@ class Handler extends AbstractHandler {
 			}
 			int status;
 			if (gateway) {
+				logger.error("Bad gateway", exception);
 				status = HttpServletResponse.SC_BAD_GATEWAY;
 			} else {
+				logger.error("Internal server error", exception);
 				status = HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
 			}
+			response.reset();
 			sendError(response, status, null);
 		} finally {
 			baseRequest.setHandled(true);
@@ -254,11 +261,11 @@ class Handler extends AbstractHandler {
 	}
 
 	boolean write(HttpServletResponse response, RestResource resource, Object actual, Type type, OutputStream stream) {
-		String contentType = resource.getContentType();
-		boolean base64 = resource.isBase64();
-
 		boolean withoutLength;
 		try {
+			String contentType = resource.getContentType();
+			boolean base64 = resource.isBase64();
+
 			Consumer<OutputStream> consumer;
 			if (facade.isBinary(type)) {
 				contentType = facade.cleanForAssembling(contentType, actual);
@@ -309,7 +316,7 @@ class Handler extends AbstractHandler {
 		return !withoutLength;
 	}
 
-	private void sendError(HttpServletResponse response, int status, String message) {
+	void sendError(HttpServletResponse response, int status, String message) {
 		try {
 			response.sendError(status, message);
 		} catch (Exception exception) {

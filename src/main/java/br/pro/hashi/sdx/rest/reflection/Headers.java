@@ -17,6 +17,10 @@ public final class Headers extends Fields {
 		this.fields = fields;
 	}
 
+	public HttpFields getFields() {
+		return fields;
+	}
+
 	@Override
 	protected Stream<String> getStream(String name) {
 		name = clean(name);
