@@ -4,13 +4,13 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 
 /**
- * Stub.
+ * An error formatter can wrap messages into arbitrary objects.
  */
 public abstract class ErrorFormatter {
 	private final Type returnType;
 
 	/**
-	 * Stub.
+	 * Constructs a new formatter.
 	 */
 	protected ErrorFormatter() {
 		Class<? extends ErrorFormatter> type = getClass();
@@ -32,11 +32,14 @@ public abstract class ErrorFormatter {
 	}
 
 	/**
-	 * Stub.
+	 * Wraps a status and a message into an object.
 	 * 
-	 * @param status  stub
-	 * @param message stub
-	 * @return stub
+	 * @implNote The implementation should override the return type to ensure
+	 *           serialization accuracy.
+	 * 
+	 * @param status  the status
+	 * @param message the message
+	 * @return the object
 	 */
 	public abstract Object format(int status, String message);
 }

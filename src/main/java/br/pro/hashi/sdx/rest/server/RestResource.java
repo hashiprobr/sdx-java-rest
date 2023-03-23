@@ -8,7 +8,7 @@ import br.pro.hashi.sdx.rest.Fields;
 import br.pro.hashi.sdx.rest.coding.Coding;
 
 /**
- * Stub.
+ * Base class for representing REST resources.
  */
 public abstract class RestResource {
 	private final String base;
@@ -20,22 +20,23 @@ public abstract class RestResource {
 	private boolean base64;
 
 	/**
-	 * Stub.
+	 * Maps each part name to its headers. If the request is not multipart, this map
+	 * is empty.
 	 */
 	protected Map<String, List<Fields>> partHeaders;
 
 	/**
-	 * Stub.
+	 * The request headers.
 	 */
 	protected Fields headers;
 
 	/**
-	 * Stub.
+	 * The query parameters.
 	 */
 	protected Fields queries;
 
 	/**
-	 * Stub.
+	 * Constructs a new resource with a default base.
 	 */
 	protected RestResource() {
 		this.base = null;
@@ -44,9 +45,9 @@ public abstract class RestResource {
 	}
 
 	/**
-	 * Stub.
+	 * Constructs a new resource with a specified base.
 	 * 
-	 * @param base stub
+	 * @param base the base
 	 */
 	protected RestResource(String base) {
 		this.base = base;
@@ -97,11 +98,12 @@ public abstract class RestResource {
 	}
 
 	/**
-	 * Stub.
+	 * Wrap the response body with this method to indicate that it should be
+	 * serialized even if it is null.
 	 * 
-	 * @param <T>  stub
-	 * @param body stub
-	 * @return stub
+	 * @param <T>  the type of the response body
+	 * @param body the response body
+	 * @return the parameter, for wrapping
 	 */
 	protected <T> T nullable(T body) {
 		nullable = true;
