@@ -273,18 +273,6 @@ public abstract class RestResource {
 	/**
 	 * Stub.
 	 * 
-	 * @param <T>  stub
-	 * @param body stub
-	 * @param args stub
-	 * @return stub
-	 */
-	protected <T> T ok(T body, Void... args) {
-		return response(200, body);
-	}
-
-	/**
-	 * Stub.
-	 * 
 	 * @param <T>    stub
 	 * @param status stub
 	 * @param body   stub
