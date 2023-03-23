@@ -16,6 +16,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.eclipse.jetty.http.HttpStatus;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import br.pro.hashi.sdx.rest.reflection.Cache;
 import br.pro.hashi.sdx.rest.reflection.exception.ReflectionException;
@@ -31,6 +33,7 @@ import br.pro.hashi.sdx.rest.transform.facade.exception.SupportException;
 public class Endpoint {
 	private static final Pattern METHOD_PATTERN = Pattern.compile("[A-Za-z]+");
 
+	private final Logger logger;
 	private final Class<? extends RestResource> resourceType;
 	private final Method method;
 	private final Type returnType;
@@ -100,6 +103,7 @@ public class Endpoint {
 			throw new ReflectionException("Method %s must have at least %d parameters that are neither part or body".formatted(methodName, distance));
 		}
 
+		this.logger = LoggerFactory.getLogger(Endpoint.class);
 		this.resourceType = resourceType;
 		this.method = method;
 		this.returnType = method.getGenericReturnType();
@@ -203,9 +207,10 @@ public class Endpoint {
 		Object argument;
 		try {
 			argument = function.apply(item);
-		} catch (RuntimeException exception) {
-			exception.printStackTrace();
-			throw new BadRequestException("Argument '%s' could not be understood".formatted(item));
+		} catch (RuntimeException error) {
+			String message = "Argument '%s' could not be understood".formatted(item);
+			logger.error(message, error);
+			throw new BadRequestException(message);
 		}
 		return argument;
 	}
@@ -214,12 +219,14 @@ public class Endpoint {
 		Object argument;
 		try {
 			argument = data.getBody(type);
-		} catch (SupportException exception) {
-			exception.printStackTrace();
-			throw new ResponseException(HttpStatus.UNSUPPORTED_MEDIA_TYPE_415, "%s does not have a supported content type".formatted(description));
-		} catch (DisassemblingException | DeserializingException exception) {
-			exception.printStackTrace();
-			throw new BadRequestException("%s could not be understood".formatted(description));
+		} catch (SupportException error) {
+			String message = "%s does not have a supported content type".formatted(description);
+			logger.error(message, error);
+			throw new ResponseException(HttpStatus.UNSUPPORTED_MEDIA_TYPE_415, message);
+		} catch (DisassemblingException | DeserializingException error) {
+			String message = "%s could not be understood".formatted(description);
+			logger.error(message, error);
+			throw new BadRequestException(message);
 		}
 		return argument;
 	}

@@ -20,6 +20,8 @@ import java.util.function.Consumer;
 import org.eclipse.jetty.http.HttpStatus;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.handler.AbstractHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import br.pro.hashi.sdx.rest.Fields;
 import br.pro.hashi.sdx.rest.coding.Media;
@@ -41,11 +43,13 @@ import br.pro.hashi.sdx.rest.transform.Serializer;
 import br.pro.hashi.sdx.rest.transform.facade.Facade;
 import jakarta.servlet.MultipartConfigElement;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletOutputStream;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.Part;
 
 class Handler extends AbstractHandler {
+	private final Logger logger;
 	private final Cache cache;
 	private final Facade facade;
 	private final Tree tree;
@@ -57,6 +61,7 @@ class Handler extends AbstractHandler {
 	private final boolean cors;
 
 	Handler(Cache cache, Facade facade, Tree tree, ErrorFormatter formatter, Map<Class<? extends RestResource>, Constructor<? extends RestResource>> constructors, MultipartConfigElement element, Set<Class<? extends RuntimeException>> gatewayTypes, Charset urlCharset, boolean cors) {
+		this.logger = LoggerFactory.getLogger(Handler.class);
 		this.cache = cache;
 		this.facade = facade;
 		this.tree = tree;
@@ -114,9 +119,10 @@ class Handler extends AbstractHandler {
 			String[] items;
 			try {
 				items = Percent.splitAndDecode(uri, urlCharset);
-			} catch (IllegalArgumentException exception) {
-				exception.printStackTrace();
-				throw new BadRequestException("URI could not be decoded");
+			} catch (IllegalArgumentException error) {
+				String message = "URI could not be decoded";
+				logger.error(message, error);
+				throw new BadRequestException(message);
 			}
 			List<String> itemList = new ArrayList<>();
 			Node node = tree.getNodeAndAddItems(items, itemList);
@@ -145,9 +151,10 @@ class Handler extends AbstractHandler {
 				Collection<Part> parts;
 				try {
 					parts = request.getParts();
-				} catch (ServletException exception) {
-					exception.printStackTrace();
-					throw new BadRequestException("Parts could not be parsed");
+				} catch (ServletException error) {
+					String message = "Parts could not be parsed";
+					logger.error(message, error);
+					throw new BadRequestException(message);
 				}
 				for (Part part : parts) {
 					String name = part.getName();
@@ -226,7 +233,7 @@ class Handler extends AbstractHandler {
 			String message = exception.getBody();
 			sendError(response, status, message);
 		} catch (Exception exception) {
-			exception.printStackTrace();
+			logger.error("", exception);
 			boolean gateway = false;
 			for (Class<? extends RuntimeException> type : gatewayTypes) {
 				if (type.isAssignableFrom(exception.getClass())) {
@@ -240,11 +247,7 @@ class Handler extends AbstractHandler {
 			} else {
 				status = HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
 			}
-			try {
-				sendError(response, status);
-			} catch (RuntimeException error) {
-				error.printStackTrace();
-			}
+			sendError(response, status, null);
 		} finally {
 			baseRequest.setHandled(true);
 		}
@@ -254,8 +257,7 @@ class Handler extends AbstractHandler {
 		String contentType = resource.getContentType();
 		boolean base64 = resource.isBase64();
 
-		boolean writing;
-		boolean consuming = false;
+		boolean withoutLength;
 		try {
 			Consumer<OutputStream> consumer;
 			if (facade.isBinary(type)) {
@@ -264,7 +266,7 @@ class Handler extends AbstractHandler {
 				consumer = (output) -> {
 					assembler.write(actual, type, output);
 				};
-				writing = actual instanceof InputStream;
+				withoutLength = actual instanceof InputStream;
 			} else {
 				contentType = facade.cleanForSerializing(contentType, actual);
 				Serializer serializer = facade.getSerializer(contentType);
@@ -273,7 +275,7 @@ class Handler extends AbstractHandler {
 					OutputStreamWriter writer = new OutputStreamWriter(output, charset);
 					serializer.write(actual, type, writer);
 				};
-				writing = actual instanceof Reader;
+				withoutLength = actual instanceof Reader;
 				contentType = "%s;charset=%s".formatted(contentType, charset.name());
 			}
 			if (base64) {
@@ -281,7 +283,7 @@ class Handler extends AbstractHandler {
 			}
 
 			response.setContentType(contentType);
-			if (writing) {
+			if (withoutLength && stream instanceof ServletOutputStream) {
 				try {
 					response.flushBuffer();
 				} catch (IOException exception) {
@@ -292,29 +294,26 @@ class Handler extends AbstractHandler {
 				stream = Media.encode(stream);
 			}
 
-			consuming = true;
 			consumer.accept(stream);
-		} finally {
-			if (!consuming) {
-				try {
-					stream.close();
-				} catch (IOException exception) {
-					throw new UncheckedIOException(exception);
-				}
+		} catch (RuntimeException exception) {
+			if (!response.isCommitted()) {
+				throw exception;
 			}
+			try {
+				stream.close();
+			} catch (IOException error) {
+				logger.warn("Could not close stream", error);
+			}
+			withoutLength = true;
 		}
-		return !writing;
-	}
-
-	private void sendError(HttpServletResponse response, int status) {
-		sendError(response, status, null);
+		return !withoutLength;
 	}
 
 	private void sendError(HttpServletResponse response, int status, String message) {
 		try {
 			response.sendError(status, message);
-		} catch (IOException exception) {
-			throw new UncheckedIOException(exception);
+		} catch (Exception exception) {
+			logger.warn("Could not send error message", exception);
 		}
 	}
 }

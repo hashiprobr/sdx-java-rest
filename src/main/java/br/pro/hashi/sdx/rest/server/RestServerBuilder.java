@@ -481,8 +481,10 @@ public non-sealed class RestServerBuilder extends Builder<RestServerBuilder> {
 		String urlSuffix;
 		try {
 			urlSuffix = Percent.recode(base, urlCharset);
-		} catch (IllegalArgumentException exception) {
-			throw new ResourceException(typeName, exception.getMessage());
+		} catch (IllegalArgumentException error) {
+			String message = "Base could not be decoded";
+			logger.error(message, error);
+			throw new ResourceException(typeName, message);
 		}
 		HttpURI uri = HttpURI.from("http://a%s".formatted(urlSuffix));
 		String message = UriCompliance.checkUriCompliance(compliance, uri);

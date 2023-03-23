@@ -201,8 +201,8 @@ public final class RestServer {
 			try {
 				inet = InetAddress.getByName(authority);
 				publicAddress = inet.getHostAddress();
-			} catch (UnknownHostException exception) {
-				exception.printStackTrace();
+			} catch (UnknownHostException warning) {
+				logger.warn("Could not get IP of %s".formatted(authority), warning);
 			}
 			publicUrl = tunnelUrl;
 		} else {
@@ -214,8 +214,8 @@ public final class RestServer {
 				if (altPort != -1) {
 					publicUrl3 = formatUrl(authority, altPort);
 				}
-			} catch (UnknownHostException exception) {
-				exception.printStackTrace();
+			} catch (UnknownHostException warning) {
+				logger.warn("Could not get local address", warning);
 			}
 		}
 		inet = InetAddress.getLoopbackAddress();

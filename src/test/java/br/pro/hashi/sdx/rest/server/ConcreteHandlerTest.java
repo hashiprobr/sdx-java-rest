@@ -5,7 +5,10 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -70,7 +73,7 @@ class ConcreteHandlerTest {
 	}
 
 	@Test
-	void getBadMessageError() {
+	void writesBadMessageError() {
 		h = newConcreteHandler();
 		ByteBuffer buffer = h.badMessageError(400, BODY, fields);
 		assertEqualsBuffer(buffer, StandardCharsets.UTF_8, false);
@@ -78,7 +81,7 @@ class ConcreteHandlerTest {
 	}
 
 	@Test
-	void getBadMessageErrorInISO88591() {
+	void writesBadMessageErrorInISO88591() {
 		h = newConcreteHandler(StandardCharsets.ISO_8859_1, false);
 		ByteBuffer buffer = h.badMessageError(400, BODY, fields);
 		assertEqualsBuffer(buffer, StandardCharsets.ISO_8859_1, false);
@@ -86,7 +89,7 @@ class ConcreteHandlerTest {
 	}
 
 	@Test
-	void getBadMessageErrorInBase64() {
+	void writesBadMessageErrorInBase64() {
 		h = newConcreteHandler(StandardCharsets.UTF_8, true);
 		ByteBuffer buffer = h.badMessageError(400, BODY, fields);
 		assertEqualsBuffer(buffer, StandardCharsets.UTF_8, true);
@@ -94,39 +97,63 @@ class ConcreteHandlerTest {
 	}
 
 	private void assertEqualsBuffer(ByteBuffer buffer, Charset charset, boolean base64) {
-		assertEqualsBytes(buffer.array(), charset, base64);
+		assertEqualsBytes(BODY, buffer.array(), charset, base64);
 	}
 
 	@Test
-	void doesNotGetBadMessageError() {
+	void doesNotWriteBadMessageError() {
 		h = newConcreteHandler();
 		when(fields.add("Content-Type", "type/subtype;charset=UTF-8")).thenThrow(RuntimeException.class);
 		assertNull(h.badMessageError(400, BODY, fields));
 	}
 
-	private ConcreteHandler newConcreteHandler() {
-		return newConcreteHandler(StandardCharsets.UTF_8, false);
-	}
-
 	@Test
 	void handles() {
 		mockMessage();
-		handle();
+		assertHandles();
 		verify(response).setContentType("type/subtype;charset=UTF-8");
 	}
 
 	@Test
 	void handlesInISO88591() {
 		mockMessage();
-		handle(StandardCharsets.ISO_8859_1, false);
+		assertHandles(StandardCharsets.ISO_8859_1, false);
 		verify(response).setContentType("type/subtype;charset=ISO-8859-1");
 	}
 
 	@Test
 	void handlesInBase64() {
 		mockMessage();
-		handle(StandardCharsets.UTF_8, true);
+		assertHandles(StandardCharsets.UTF_8, true);
 		verify(response).setContentType("type/subtype;charset=UTF-8;base64");
+	}
+
+	private void assertHandles(Charset charset, boolean base64) {
+		assertHandles(BODY, charset, base64);
+	}
+
+	@Test
+	void handlesWithException() {
+		mockMessage();
+		doThrow(RuntimeException.class).when(response).setContentType("type/subtype;charset=UTF-8");
+		assertHandles("");
+	}
+
+	@Test
+	void handlesWithCommittedException() {
+		mockMessage();
+		h = newConcreteHandler();
+		ServletOutputStream output = mock(ServletOutputStream.class);
+		try {
+			doThrow(RuntimeException.class).when(output).write(any(int.class));
+			doThrow(RuntimeException.class).when(output).write(any(byte[].class));
+			doThrow(RuntimeException.class).when(output).write(any(byte[].class), any(int.class), any(int.class));
+			when(response.getOutputStream()).thenReturn(output);
+			handle();
+			verify(output, times(0)).close();
+		} catch (IOException exception) {
+			throw new AssertionError(exception);
+		}
 	}
 
 	private void mockMessage() {
@@ -136,49 +163,66 @@ class ConcreteHandlerTest {
 	@Test
 	void handlesWithoutMessage() {
 		when(request.getAttribute(Dispatcher.ERROR_MESSAGE)).thenReturn(null);
-		handle();
+		assertHandles();
 		verify(response).setContentType("type/subtype;charset=UTF-8");
 	}
 
-	private void handle() {
-		handle(StandardCharsets.UTF_8, false);
+	private void assertHandles() {
+		assertHandles(BODY);
 	}
 
-	private void handle(Charset charset, boolean base64) {
+	private void assertHandles(String expected) {
+		assertHandles(expected, StandardCharsets.UTF_8, false);
+	}
+
+	private void assertHandles(String expected, Charset charset, boolean base64) {
 		h = newConcreteHandler(charset, base64);
-		ByteArrayOutputStream output = new ByteArrayOutputStream();
-		ServletOutputStream stream = mock(ServletOutputStream.class);
+		ByteArrayOutputStream stream = spy(new ByteArrayOutputStream());
+		ServletOutputStream output = mock(ServletOutputStream.class);
 		try {
 			doAnswer((invocation) -> {
-				int b = invocation.getArgument(0);
-				output.write(b);
+				stream.close();
 				return null;
-			}).when(stream).write(any(int.class));
+			}).when(output).close();
+			doAnswer((invocation) -> {
+				int b = invocation.getArgument(0);
+				stream.write(b);
+				return null;
+			}).when(output).write(any(int.class));
 			doAnswer((invocation) -> {
 				byte[] b = invocation.getArgument(0);
-				output.write(b);
+				stream.write(b);
 				return null;
-			}).when(stream).write(any(byte[].class));
+			}).when(output).write(any(byte[].class));
 			doAnswer((invocation) -> {
 				byte[] b = invocation.getArgument(0);
 				int off = invocation.getArgument(1);
 				int len = invocation.getArgument(2);
-				output.write(b, off, len);
+				stream.write(b, off, len);
 				return null;
-			}).when(stream).write(any(byte[].class), any(int.class), any(int.class));
-			when(response.getOutputStream()).thenReturn(stream);
-			h.handle("target", baseRequest, request, response);
+			}).when(output).write(any(byte[].class), any(int.class), any(int.class));
+			when(response.getOutputStream()).thenReturn(output);
+			handle();
+			verify(stream, times(1)).close();
 		} catch (IOException exception) {
 			throw new AssertionError(exception);
 		}
-		assertEqualsBytes(output.toByteArray(), charset, base64);
+		assertEqualsBytes(expected, stream.toByteArray(), charset, base64);
 	}
 
-	private void assertEqualsBytes(byte[] bytes, Charset charset, boolean base64) {
+	private void handle() throws IOException {
+		h.handle("target", baseRequest, request, response);
+	}
+
+	private void assertEqualsBytes(String expected, byte[] bytes, Charset charset, boolean base64) {
 		if (base64) {
 			bytes = Base64.getDecoder().decode(new String(bytes, StandardCharsets.US_ASCII));
 		}
-		assertEquals(BODY, new String(bytes, charset));
+		assertEquals(expected, new String(bytes, charset));
+	}
+
+	private ConcreteHandler newConcreteHandler() {
+		return newConcreteHandler(StandardCharsets.UTF_8, false);
 	}
 
 	private ConcreteHandler newConcreteHandler(Charset charset, boolean base64) {

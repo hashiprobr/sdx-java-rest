@@ -12,6 +12,8 @@ import org.eclipse.jetty.http.HttpFields;
 import org.eclipse.jetty.server.Dispatcher;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.handler.ErrorHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import br.pro.hashi.sdx.rest.coding.Media;
 import br.pro.hashi.sdx.rest.transform.Serializer;
@@ -20,6 +22,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 class ConcreteHandler extends ErrorHandler {
+	private final Logger logger;
 	private final Facade facade;
 	private final ErrorFormatter formatter;
 	private final Type type;
@@ -28,6 +31,7 @@ class ConcreteHandler extends ErrorHandler {
 	private final boolean base64;
 
 	ConcreteHandler(Facade facade, ErrorFormatter formatter, String contentType, Charset charset, boolean base64) {
+		this.logger = LoggerFactory.getLogger(ConcreteHandler.class);
 		this.facade = facade;
 		this.formatter = formatter;
 		this.type = formatter.getReturnType();
@@ -78,8 +82,8 @@ class ConcreteHandler extends ErrorHandler {
 
 			serializer.write(actual, type, writer);
 			buffer = ByteBuffer.wrap(output.toByteArray());
-		} catch (RuntimeException error) {
-			error.printStackTrace();
+		} catch (RuntimeException warning) {
+			logger.warn("Could not write bad message error", warning);
 			buffer = null;
 		}
 		return buffer;
@@ -87,28 +91,36 @@ class ConcreteHandler extends ErrorHandler {
 
 	@Override
 	public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws IOException {
-		String message = (String) request.getAttribute(Dispatcher.ERROR_MESSAGE);
-		if (message == null) {
-			message = baseRequest.getResponse().getReason();
-		}
-
-		Object actual = formatter.format(response.getStatus(), message);
-		String contentType = this.contentType;
-
-		contentType = facade.cleanForSerializing(this.contentType, actual);
-		Serializer serializer = facade.getSerializer(contentType);
-		contentType = "%s;charset=%s".formatted(contentType, charset.name());
-		if (base64) {
-			contentType = "%s;base64".formatted(contentType);
-		}
-
-		response.setContentType(contentType);
 		OutputStream stream = response.getOutputStream();
-		if (base64) {
-			stream = Media.encode(stream);
-		}
-		OutputStreamWriter writer = new OutputStreamWriter(stream, charset);
+		boolean withoutWrites = true;
+		try {
+			String message = (String) request.getAttribute(Dispatcher.ERROR_MESSAGE);
+			if (message == null) {
+				message = baseRequest.getResponse().getReason();
+			}
 
-		serializer.write(actual, type, writer);
+			Object actual = formatter.format(response.getStatus(), message);
+			String contentType = this.contentType;
+
+			contentType = facade.cleanForSerializing(this.contentType, actual);
+			Serializer serializer = facade.getSerializer(contentType);
+			contentType = "%s;charset=%s".formatted(contentType, charset.name());
+			if (base64) {
+				contentType = "%s;base64".formatted(contentType);
+			}
+
+			response.setContentType(contentType);
+			if (base64) {
+				stream = Media.encode(stream);
+			}
+			OutputStreamWriter writer = new OutputStreamWriter(stream, charset);
+
+			withoutWrites = false;
+			serializer.write(actual, type, writer);
+		} catch (RuntimeException exception) {
+			if (withoutWrites) {
+				stream.close();
+			}
+		}
 	}
 }

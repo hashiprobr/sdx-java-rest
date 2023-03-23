@@ -1,11 +1,12 @@
 package br.pro.hashi.sdx.rest.server;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
@@ -26,14 +27,15 @@ import java.io.UncheckedIOException;
 import java.io.Writer;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Type;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 
 import org.eclipse.jetty.server.Request;
@@ -93,9 +95,9 @@ class HandlerTest {
 		gatewayTypes = new HashSet<>();
 		baseRequest = mock(Request.class);
 		request = mock(HttpServletRequest.class);
-		ServletOutputStream servletStream = mock(ServletOutputStream.class);
+		ServletOutputStream output = mock(ServletOutputStream.class);
 		response = mock(HttpServletResponse.class);
-		when(response.getOutputStream()).thenReturn(servletStream);
+		when(response.getOutputStream()).thenReturn(output);
 		node = mock(Node.class);
 		endpoint = mock(Endpoint.class);
 		parts = new ArrayList<>();
@@ -641,7 +643,7 @@ class HandlerTest {
 
 	private void handle(boolean cors, Answer<Boolean> answer) {
 		Handler h = spy(new Handler(cache, facade, tree, formatter, constructors, element, gatewayTypes, StandardCharsets.UTF_8, cors));
-		doAnswer(answer).when(h).write(same(response), any(), any(), any(), any());
+		doAnswer(answer).when(h).write(eq(response), any(), any(), any(), any());
 		h.handle("target", baseRequest, request, response);
 		verify(baseRequest).setHandled(true);
 	}
@@ -650,16 +652,30 @@ class HandlerTest {
 	void writes() {
 		mockCharset();
 		mockWithoutBase64();
+		mockWithoutCommitted();
 		assertTrue(write());
 		verify(response).setContentType("type/subtype;charset=UTF-8");
+		assertEqualsBytes();
 	}
 
 	@Test
-	void writesBase64() {
+	void writesWithISO88591() {
+		when(resource.getCharset()).thenReturn(StandardCharsets.ISO_8859_1);
+		mockWithoutBase64();
+		mockWithoutCommitted();
+		assertTrue(write());
+		verify(response).setContentType("type/subtype;charset=ISO-8859-1");
+		assertEqualsBytes(StandardCharsets.ISO_8859_1, false);
+	}
+
+	@Test
+	void writesWithBase64() {
 		mockCharset();
 		mockWithBase64();
+		mockWithoutCommitted();
 		assertTrue(write());
 		verify(response).setContentType("type/subtype;charset=UTF-8;base64");
+		assertEqualsBytes(StandardCharsets.UTF_8, true);
 	}
 
 	private boolean write() {
@@ -670,31 +686,48 @@ class HandlerTest {
 	void writesLarge() {
 		mockCharset();
 		mockWithoutBase64();
+		mockWithoutCommitted();
 		assertFalse(writeLarge());
 		verify(response).setContentType("type/subtype;charset=UTF-8");
+		assertEqualsBytes();
+		verifyFlush();
 	}
 
 	@Test
-	void writesLargeWithSingleException() {
+	void writesLargeWithFlushException() {
 		mockCharset();
 		mockWithoutBase64();
-		mockResponseException();
-		assertThrows(UncheckedIOException.class, () -> {
+		mockWithoutCommitted();
+		Throwable cause = mockFlushException();
+		Exception exception = assertThrows(UncheckedIOException.class, () -> {
 			writeLarge();
 		});
+		assertSame(cause, exception.getCause());
 		verify(response).setContentType("type/subtype;charset=UTF-8");
+		verifyClose();
 	}
 
 	@Test
-	void writesLargeWithDoubleException() {
+	void writesLargeWithCommittedFlushException() {
 		mockCharset();
 		mockWithoutBase64();
-		mockResponseException();
-		mockStreamException();
-		assertThrows(UncheckedIOException.class, () -> {
-			writeLarge();
-		});
+		mockWithCommitted();
+		mockFlushException();
+		assertFalse(writeLarge());
 		verify(response).setContentType("type/subtype;charset=UTF-8");
+		assertEmptyBytes();
+	}
+
+	@Test
+	void writesLargeWithCloseAndFlushException() {
+		mockCharset();
+		mockWithoutBase64();
+		mockWithCommitted();
+		mockCloseException();
+		mockFlushException();
+		assertFalse(writeLarge());
+		verify(response).setContentType("type/subtype;charset=UTF-8");
+		assertEmptyBytes();
 	}
 
 	private boolean writeLarge() {
@@ -702,34 +735,111 @@ class HandlerTest {
 	}
 
 	private boolean serialize(Object actual, Type type) {
+		mockSerializer(actual);
+		return write(actual, type);
+	}
+
+	@Test
+	void writesDirectly() {
+		mockCharset();
+		mockWithoutBase64();
+		mockWithoutCommitted();
+		assertTrue(writeDirectly());
+		verify(response).setContentType("type/subtype;charset=UTF-8");
+		assertEqualsBytes();
+	}
+
+	@Test
+	void writesDirectlyWithISO88591() {
+		when(resource.getCharset()).thenReturn(StandardCharsets.ISO_8859_1);
+		mockWithoutBase64();
+		mockWithoutCommitted();
+		assertTrue(writeDirectly());
+		verify(response).setContentType("type/subtype;charset=ISO-8859-1");
+		assertEqualsBytes(StandardCharsets.ISO_8859_1, false);
+	}
+
+	@Test
+	void writesDirectlyWithBase64() {
+		mockCharset();
+		mockWithBase64();
+		mockWithoutCommitted();
+		assertTrue(writeDirectly());
+		verify(response).setContentType("type/subtype;charset=UTF-8;base64");
+		assertEqualsBytes(StandardCharsets.UTF_8, true);
+	}
+
+	private boolean writeDirectly() {
+		return serializeDirectly(SPECIAL_BODY, String.class);
+	}
+
+	@Test
+	void writesDirectlyLarge() {
+		mockCharset();
+		mockWithoutBase64();
+		mockWithoutCommitted();
+		assertFalse(writeDirectlyLarge());
+		verify(response).setContentType("type/subtype;charset=UTF-8");
+		assertEqualsBytes();
+	}
+
+	private boolean writeDirectlyLarge() {
+		return serializeDirectly(new StringReader(SPECIAL_BODY), Reader.class);
+	}
+
+	private boolean serializeDirectly(Object actual, Type type) {
+		mockSerializer(actual);
+		return writeDirectly(actual, type);
+	}
+
+	private void mockSerializer(Object actual) {
 		Serializer serializer = mock(Serializer.class);
 		doAnswer((invocation) -> {
-			String str = Objects.toString(invocation.getArgument(0));
+			String str = invocation.getArgument(0);
 			Writer writer = invocation.getArgument(2);
 			writer.write(str);
 			writer.close();
 			return null;
-		}).when(serializer).write(eq(actual), any(), any());
+		}).when(serializer).write(eq(actual), eq(String.class), any());
+		doAnswer((invocation) -> {
+			StringReader reader = invocation.getArgument(0);
+			Writer writer = invocation.getArgument(2);
+			reader.transferTo(writer);
+			writer.close();
+			return null;
+		}).when(serializer).write(eq(actual), eq(Reader.class), any());
+		when(resource.getContentType()).thenReturn(null);
 		when(facade.isBinary(any())).thenReturn(false);
 		when(facade.cleanForSerializing(null, actual)).thenReturn("type/subtype");
 		when(facade.getSerializer("type/subtype")).thenReturn(serializer);
-		return write(actual, type);
+	}
+
+	private void assertEqualsBytes() {
+		assertEqualsBytes(StandardCharsets.UTF_8, false);
+	}
+
+	private void assertEqualsBytes(Charset charset, boolean base64) {
+		assertEqualsBytes(SPECIAL_BODY, charset, base64);
 	}
 
 	@Test
 	void writesBinary() {
 		mockCharset();
 		mockWithoutBase64();
+		mockWithoutCommitted();
 		assertTrue(writeBinary());
 		verify(response).setContentType("type/subtype");
+		assertBinaryEqualsBytes();
 	}
 
 	@Test
-	void writesBinaryBase64() {
+	void writesBinaryWithBase64() {
 		mockCharset();
 		mockWithBase64();
+		mockWithoutCommitted();
 		assertTrue(writeBinary());
 		verify(response).setContentType("type/subtype;base64");
+		assertBinaryEqualsBytes(StandardCharsets.US_ASCII, true);
 	}
 
 	private boolean writeBinary() {
@@ -740,31 +850,48 @@ class HandlerTest {
 	void writesLargeBinary() {
 		mockCharset();
 		mockWithoutBase64();
+		mockWithoutCommitted();
 		assertFalse(writeLargeBinary());
 		verify(response).setContentType("type/subtype");
+		assertBinaryEqualsBytes();
+		verifyFlush();
 	}
 
 	@Test
-	void writesLargeBinaryWithSingleException() {
+	void writesLargeBinaryWithFlushException() {
 		mockCharset();
 		mockWithoutBase64();
-		mockResponseException();
-		assertThrows(UncheckedIOException.class, () -> {
+		mockWithoutCommitted();
+		Throwable cause = mockFlushException();
+		Exception exception = assertThrows(UncheckedIOException.class, () -> {
 			writeLargeBinary();
 		});
+		assertSame(cause, exception.getCause());
 		verify(response).setContentType("type/subtype");
+		verifyClose();
 	}
 
 	@Test
-	void writesLargeBinaryWithDoubleException() {
+	void writesLargeBinaryCommittedFlushException() {
 		mockCharset();
 		mockWithoutBase64();
-		mockResponseException();
-		mockStreamException();
-		assertThrows(UncheckedIOException.class, () -> {
-			writeLargeBinary();
-		});
+		mockWithCommitted();
+		mockFlushException();
+		assertFalse(writeLargeBinary());
 		verify(response).setContentType("type/subtype");
+		assertEmptyBytes();
+	}
+
+	@Test
+	void writesLargeBinaryCloseAndFlushException() {
+		mockCharset();
+		mockWithoutBase64();
+		mockWithCommitted();
+		mockCloseException();
+		mockFlushException();
+		assertFalse(writeLargeBinary());
+		verify(response).setContentType("type/subtype");
+		assertEmptyBytes();
 	}
 
 	private boolean writeLargeBinary() {
@@ -772,18 +899,81 @@ class HandlerTest {
 	}
 
 	private boolean assemble(Object actual, Type type) {
+		mockAssembler(actual);
+		return write(actual, type);
+	}
+
+	@Test
+	void writesDirectlyBinary() {
+		mockCharset();
+		mockWithoutBase64();
+		mockWithoutCommitted();
+		assertTrue(writeDirectlyBinary());
+		verify(response).setContentType("type/subtype");
+		assertBinaryEqualsBytes();
+	}
+
+	@Test
+	void writesDirectlyBinaryWithBase64() {
+		mockCharset();
+		mockWithBase64();
+		mockWithoutCommitted();
+		assertTrue(writeDirectlyBinary());
+		verify(response).setContentType("type/subtype;base64");
+		assertBinaryEqualsBytes(StandardCharsets.US_ASCII, true);
+	}
+
+	private boolean writeDirectlyBinary() {
+		return assembleDirectly(USASCII_BODY, String.class);
+	}
+
+	@Test
+	void writesDirectlyLargeBinary() {
+		mockCharset();
+		mockWithoutBase64();
+		mockWithoutCommitted();
+		assertFalse(writeDirectlyLargeBinary());
+		verify(response).setContentType("type/subtype");
+		assertBinaryEqualsBytes();
+	}
+
+	private boolean writeDirectlyLargeBinary() {
+		return assembleDirectly(new ByteArrayInputStream(USASCII_BODY.getBytes(StandardCharsets.US_ASCII)), InputStream.class);
+	}
+
+	private boolean assembleDirectly(Object actual, Type type) {
+		mockAssembler(actual);
+		return writeDirectly(actual, type);
+	}
+
+	private void mockAssembler(Object actual) {
 		Assembler assembler = mock(Assembler.class);
 		doAnswer((invocation) -> {
-			String str = Objects.toString(invocation.getArgument(0));
-			OutputStream stream = invocation.getArgument(2);
-			stream.write(str.getBytes(StandardCharsets.US_ASCII));
-			stream.close();
+			String str = invocation.getArgument(0);
+			OutputStream output = invocation.getArgument(2);
+			output.write(str.getBytes(StandardCharsets.US_ASCII));
+			output.close();
 			return null;
-		}).when(assembler).write(eq(actual), any(), eq(stream));
+		}).when(assembler).write(eq(actual), eq(String.class), any());
+		doAnswer((invocation) -> {
+			InputStream input = invocation.getArgument(0);
+			OutputStream output = invocation.getArgument(2);
+			input.transferTo(output);
+			output.close();
+			return null;
+		}).when(assembler).write(eq(actual), eq(InputStream.class), any());
+		when(resource.getContentType()).thenReturn(null);
 		when(facade.isBinary(any())).thenReturn(true);
 		when(facade.cleanForAssembling(null, actual)).thenReturn("type/subtype");
 		when(facade.getAssembler("type/subtype")).thenReturn(assembler);
-		return write(actual, type);
+	}
+
+	private void assertBinaryEqualsBytes() {
+		assertBinaryEqualsBytes(StandardCharsets.US_ASCII, false);
+	}
+
+	private void assertBinaryEqualsBytes(Charset charset, boolean base64) {
+		assertEqualsBytes(USASCII_BODY, charset, base64);
 	}
 
 	private void mockCharset() {
@@ -798,15 +988,15 @@ class HandlerTest {
 		when(resource.isBase64()).thenReturn(true);
 	}
 
-	private void mockResponseException() {
-		try {
-			doThrow(IOException.class).when(response).flushBuffer();
-		} catch (IOException exception) {
-			throw new AssertionError();
-		}
+	private void mockWithoutCommitted() {
+		when(response.isCommitted()).thenReturn(false);
 	}
 
-	private void mockStreamException() {
+	private void mockWithCommitted() {
+		when(response.isCommitted()).thenReturn(true);
+	}
+
+	private void mockCloseException() {
 		try {
 			doThrow(IOException.class).when(stream).close();
 		} catch (IOException exception) {
@@ -814,8 +1004,86 @@ class HandlerTest {
 		}
 	}
 
+	private Throwable mockFlushException() {
+		Throwable cause = new IOException();
+		try {
+			doThrow(cause).when(response).flushBuffer();
+		} catch (IOException exception) {
+			throw new AssertionError();
+		}
+		return cause;
+	}
+
 	private boolean write(Object actual, Type type) {
+		ServletOutputStream output;
+		try {
+			output = response.getOutputStream();
+			doAnswer((invocation) -> {
+				stream.close();
+				return null;
+			}).when(output).close();
+			doAnswer((invocation) -> {
+				int b = invocation.getArgument(0);
+				stream.write(b);
+				return null;
+			}).when(output).write(any(int.class));
+			doAnswer((invocation) -> {
+				byte[] b = invocation.getArgument(0);
+				stream.write(b);
+				return null;
+			}).when(output).write(any(byte[].class));
+			doAnswer((invocation) -> {
+				byte[] b = invocation.getArgument(0);
+				int off = invocation.getArgument(1);
+				int len = invocation.getArgument(2);
+				stream.write(b, off, len);
+				return null;
+			}).when(output).write(any(byte[].class), any(int.class), any(int.class));
+		} catch (IOException exception) {
+			throw new AssertionError(exception);
+		}
+		return write(actual, type, output);
+	}
+
+	private boolean writeDirectly(Object actual, Type type) {
+		return write(actual, type, stream);
+	}
+
+	private boolean write(Object actual, Type type, OutputStream output) {
 		Handler h = new Handler(cache, facade, tree, formatter, constructors, element, gatewayTypes, StandardCharsets.UTF_8, false);
-		return h.write(response, resource, actual, type, stream);
+		return h.write(response, resource, actual, type, output);
+	}
+
+	private void assertEmptyBytes() {
+		assertEqualsBytes("", StandardCharsets.US_ASCII, false);
+	}
+
+	private void assertEqualsBytes(String expected, Charset charset, boolean base64) {
+		try {
+			verify(stream, times(1)).close();
+		} catch (IOException exception) {
+			throw new AssertionError(exception);
+		}
+		byte[] bytes = stream.toByteArray();
+		if (base64) {
+			bytes = Base64.getDecoder().decode(new String(bytes, StandardCharsets.US_ASCII));
+		}
+		assertEquals(expected, new String(bytes, charset));
+	}
+
+	private void verifyClose() {
+		try {
+			verify(stream, times(0)).close();
+		} catch (IOException exception) {
+			throw new AssertionError(exception);
+		}
+	}
+
+	private void verifyFlush() {
+		try {
+			verify(response).flushBuffer();
+		} catch (IOException exception) {
+			throw new AssertionError(exception);
+		}
 	}
 }

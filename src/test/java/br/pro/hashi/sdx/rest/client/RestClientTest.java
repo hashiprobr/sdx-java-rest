@@ -7,7 +7,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
@@ -686,7 +685,7 @@ class RestClientTest {
 		List<Task> tasks = List.of();
 		doReturn(tasks).when(p).consumeBodyAndGetTasks(request);
 		RestResponse restResponse = mock(RestResponse.class);
-		doReturn(restResponse).when(p).send(same(request), same(tasks));
+		doReturn(restResponse).when(p).send(request, tasks);
 		assertSame(restResponse, p.doRequest("OPTIONS", " \t\n/ \t\n"));
 	}
 

@@ -8,7 +8,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.AdditionalMatchers.eq;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
@@ -998,7 +997,7 @@ class EndpointTest {
 		Object body = new Object();
 		assertTrue((boolean) e.call(resource, List.of("1", "2.3"), Map.of("name0", List.of(mockData(body)), "name1", List.of(mockStringData())), null));
 		assertArrayEquals(new Object[] { null, null, null, null }, e.getArguments());
-		verify(resource).withEverythingAndTwoParts(eq(1), same(body), eq(2.3, DELTA), eq("body"));
+		verify(resource).withEverythingAndTwoParts(eq(1), eq(body), eq(2.3, DELTA), eq("body"));
 	}
 
 	@Test
@@ -1007,7 +1006,7 @@ class EndpointTest {
 		Object body = new Object();
 		assertTrue((boolean) e.call(resource, List.of("1", "2.3"), Map.of(), mockData(body)));
 		assertArrayEquals(new Object[] { null, null, null }, e.getArguments());
-		verify(resource).withEverythingAndOneBody(eq(1), same(body), eq(2.3, DELTA));
+		verify(resource).withEverythingAndOneBody(eq(1), eq(body), eq(2.3, DELTA));
 	}
 
 	private Data mockData(Object body) {
