@@ -14,7 +14,7 @@ public abstract class RestResource {
 	private final String base;
 	private final boolean nullBase;
 	private int status;
-	private boolean nullBody;
+	private boolean nullable;
 	private String contentType;
 	private Charset charset;
 	private boolean base64;
@@ -56,7 +56,7 @@ public abstract class RestResource {
 
 	private void init() {
 		this.status = -1;
-		this.nullBody = false;
+		this.nullable = false;
 		this.contentType = null;
 		this.charset = Coding.CHARSET;
 		this.base64 = false;
@@ -74,8 +74,8 @@ public abstract class RestResource {
 		return status;
 	}
 
-	boolean isNullBody() {
-		return nullBody;
+	boolean isNullable() {
+		return nullable;
 	}
 
 	String getContentType() {
@@ -94,5 +94,17 @@ public abstract class RestResource {
 		this.partHeaders = partHeaders;
 		this.headers = headers;
 		this.queries = queries;
+	}
+
+	/**
+	 * Stub.
+	 * 
+	 * @param <T>  stub
+	 * @param body stub
+	 * @return stub
+	 */
+	protected <T> T nullable(T body) {
+		nullable = true;
+		return body;
 	}
 }

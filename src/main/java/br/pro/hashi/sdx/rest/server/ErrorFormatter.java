@@ -27,15 +27,16 @@ public abstract class ErrorFormatter {
 		return type.getMethod("format", int.class, String.class);
 	}
 
-	/**
-	 * Stub.
-	 */
-	public final Type getReturnType() {
+	Type getReturnType() {
 		return returnType;
 	}
 
 	/**
 	 * Stub.
+	 * 
+	 * @param status  stub
+	 * @param message stub
+	 * @return stub
 	 */
 	public abstract Object format(int status, String message);
 }

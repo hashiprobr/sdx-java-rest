@@ -198,7 +198,7 @@ class Handler extends AbstractHandler {
 				}
 			}
 
-			boolean hasContent = returnType.equals(void.class) || returnType.equals(Void.class) || (responseBody == null && !resource.isNullBody());
+			boolean hasContent = !(returnType.equals(void.class) || returnType.equals(Void.class) || (responseBody == null && !resource.isNullable()));
 			if (status == -1) {
 				if (hasContent) {
 					response.setStatus(HttpStatus.OK_200);
