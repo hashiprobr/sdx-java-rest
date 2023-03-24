@@ -696,7 +696,7 @@ class RestClientTest {
 			p.doRequest("OPTIONS", null);
 		});
 		verify(p, times(0)).withQueries(any());
-		verify(jettyClient, times(0)).newRequest((String) any());
+		verify(jettyClient, times(0)).newRequest(any(String.class));
 	}
 
 	@Test
@@ -706,7 +706,7 @@ class RestClientTest {
 			p.doRequest("OPTIONS", " \t\n");
 		});
 		verify(p, times(0)).withQueries(any());
-		verify(jettyClient, times(0)).newRequest((String) any());
+		verify(jettyClient, times(0)).newRequest(any(String.class));
 	}
 
 	@Test
@@ -716,7 +716,7 @@ class RestClientTest {
 			p.doRequest("OPTIONS", "a");
 		});
 		verify(p, times(0)).withQueries(any());
-		verify(jettyClient, times(0)).newRequest((String) any());
+		verify(jettyClient, times(0)).newRequest(any(String.class));
 	}
 
 	@ParameterizedTest

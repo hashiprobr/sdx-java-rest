@@ -958,7 +958,7 @@ class HandlerTest {
 		} catch (IOException exception) {
 			throw new AssertionError(exception);
 		}
-		verify(h).sendError(eq(response), eq(status), eq(null));
+		verify(h).sendError(response, status, null);
 	}
 
 	private void assertHeaders() {

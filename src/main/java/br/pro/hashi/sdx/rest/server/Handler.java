@@ -118,6 +118,15 @@ class Handler extends AbstractHandler {
 			}
 
 			String uri = request.getRequestURI();
+			String extension;
+			int length = uri.lastIndexOf('.') + 1;
+			if (length > 0 && length < uri.length() && uri.indexOf('/', length) == -1) {
+				extension = uri.substring(length);
+				uri = uri.substring(0, length - 1);
+			} else {
+				extension = null;
+			}
+
 			String[] items;
 			try {
 				items = Percent.splitAndDecode(uri, urlCharset);
@@ -208,9 +217,9 @@ class Handler extends AbstractHandler {
 				}
 			}
 
-			boolean hasContent = !(returnType.equals(void.class) || returnType.equals(Void.class) || (responseBody == null && !resource.isNullable()));
+			boolean withContent = !(returnType.equals(void.class) || returnType.equals(Void.class) || (responseBody == null && !resource.isNullable()));
 			if (status == -1) {
-				if (hasContent) {
+				if (withContent) {
 					response.setStatus(HttpStatus.OK_200);
 				} else {
 					response.setStatus(HttpStatus.NO_CONTENT_204);
@@ -222,14 +231,14 @@ class Handler extends AbstractHandler {
 			OutputStream responseStream = response.getOutputStream();
 			if (methodName.equals("HEAD")) {
 				CountOutputStream countStream = new CountOutputStream();
-				if (hasContent) {
+				if (withContent) {
 					if (write(response, resource, responseBody, returnType, countStream)) {
 						response.setContentLengthLong(countStream.getCount());
 					}
 				}
 				responseStream.close();
 			} else {
-				if (hasContent) {
+				if (withContent) {
 					write(response, resource, responseBody, returnType, responseStream);
 				} else {
 					responseStream.close();

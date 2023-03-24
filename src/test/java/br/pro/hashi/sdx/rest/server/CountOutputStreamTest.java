@@ -192,6 +192,7 @@ class CountOutputStreamTest {
 			s.write(newBytes(), off, len);
 		});
 		assertEquals("Index out of range: %d".formatted(expected), exception.getMessage());
+		assertEquals(0, s.getCount());
 	}
 
 	@Test
@@ -199,6 +200,7 @@ class CountOutputStreamTest {
 		assertThrows(NullPointerException.class, () -> {
 			s.write(null, 0, 0);
 		});
+		assertEquals(0, s.getCount());
 	}
 
 	@Test
@@ -234,6 +236,7 @@ class CountOutputStreamTest {
 		assertThrows(NullPointerException.class, () -> {
 			s.write(null);
 		});
+		assertEquals(0, s.getCount());
 	}
 
 	@Test
