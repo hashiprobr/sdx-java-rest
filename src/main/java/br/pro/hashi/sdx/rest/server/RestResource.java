@@ -97,12 +97,12 @@ public abstract class RestResource {
 		return base64;
 	}
 
-	void setFields(Map<String, List<Fields>> partHeaders, Fields headers, Fields queries, HttpServletResponse response, CharsetEncoder encoder) {
+	void setFields(Map<String, List<Fields>> partHeaders, Fields headers, Fields queries, CharsetEncoder encoder, HttpServletResponse response) {
 		this.partHeaders = partHeaders;
 		this.headers = headers;
 		this.queries = queries;
-		this.response = response;
 		this.encoder = encoder;
+		this.response = response;
 	}
 
 	/**

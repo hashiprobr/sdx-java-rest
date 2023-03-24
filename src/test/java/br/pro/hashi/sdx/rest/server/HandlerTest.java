@@ -246,7 +246,7 @@ class HandlerTest {
 		verify(h, times(0)).write(eq(response), any(), any(), eq(Object.class), any(ServletOutputStream.class));
 		verify(h, times(0)).write(eq(response), any(), any(), eq(Object.class), any(CountOutputStream.class));
 		try {
-			verify(response.getOutputStream(), times(0)).close();
+			verify(response.getOutputStream()).close();
 		} catch (IOException exception) {
 			throw new AssertionError(exception);
 		}

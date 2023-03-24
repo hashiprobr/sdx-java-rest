@@ -70,8 +70,8 @@ public class Tree {
 				String methodName = method.getName();
 				Endpoint endpoint = new Endpoint(cache, distance, type, typeName, method, methodName);
 				methodName = methodName.toUpperCase(locale);
-				if (methodName.equals("HEAD")) {
-					throw new ReflectionException("%s cannot have a %s endpoint".formatted(typeName, methodName));
+				if (methodName.equals("OPTIONS") || methodName.equals("HEAD")) {
+					throw new ReflectionException("%s cannot have %s endpoints".formatted(typeName, methodName));
 				}
 				node = subRoot;
 				for (int i = 0; i < endpoint.getReach(); i++) {

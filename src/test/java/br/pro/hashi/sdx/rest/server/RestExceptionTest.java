@@ -35,6 +35,14 @@ class RestExceptionTest {
 	}
 
 	@Test
+	void doesNotConstructWithClientStatusAndHint() {
+		Object body = new Object();
+		assertThrows(NullPointerException.class, () -> {
+			new RestException(450, body, null);
+		});
+	}
+
+	@Test
 	void constructsWithClientStatusAndNull() {
 		e = new RestException(450, null);
 		assertNull(e.getMessage());
@@ -52,6 +60,13 @@ class RestExceptionTest {
 		assertEquals(450, e.getStatus());
 		assertNull(e.getBody());
 		assertEquals(Object.class, e.getType());
+	}
+
+	@Test
+	void doesNotConstructWithClientStatusAndNullAndHint() {
+		assertThrows(NullPointerException.class, () -> {
+			new RestException(450, null, null);
+		});
 	}
 
 	@Test
@@ -77,6 +92,14 @@ class RestExceptionTest {
 	}
 
 	@Test
+	void doesNotConstructWithServerStatusAndHint() {
+		Object body = new Object();
+		assertThrows(NullPointerException.class, () -> {
+			new RestException(550, body, null);
+		});
+	}
+
+	@Test
 	void constructsWithServerStatusAndNull() {
 		e = new RestException(550, null);
 		assertNull(e.getMessage());
@@ -94,6 +117,13 @@ class RestExceptionTest {
 		assertEquals(550, e.getStatus());
 		assertNull(e.getBody());
 		assertEquals(Object.class, e.getType());
+	}
+
+	@Test
+	void doesNotConstructWithServerStatusAndNullAndHint() {
+		assertThrows(NullPointerException.class, () -> {
+			new RestException(550, null, null);
+		});
 	}
 
 	@Test

@@ -51,6 +51,7 @@ public class RestException extends RuntimeException {
 	 * 
 	 * @param status the status
 	 * @param body   the body
+	 * @throws IllegalArgumentException if the status is invalid
 	 */
 	public RestException(int status, Object body) {
 		this(status, body, body == null ? Object.class : body.getClass());
@@ -68,7 +69,8 @@ public class RestException extends RuntimeException {
 	 * @param status the status
 	 * @param body   the body
 	 * @param hint   the type hint
-	 * @throws NullPointerException if the type hint is null
+	 * @throws NullPointerException     if the type hint is null
+	 * @throws IllegalArgumentException if the status is invalid
 	 */
 	public <T> RestException(int status, T body, Hint<T> hint) {
 		this(status, body, getType(hint));

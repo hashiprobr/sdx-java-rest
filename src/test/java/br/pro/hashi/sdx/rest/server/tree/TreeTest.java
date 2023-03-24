@@ -52,6 +52,7 @@ import br.pro.hashi.sdx.rest.server.tree.mock.endpoint.ChildReaches;
 import br.pro.hashi.sdx.rest.server.tree.mock.endpoint.Head;
 import br.pro.hashi.sdx.rest.server.tree.mock.endpoint.Multiple;
 import br.pro.hashi.sdx.rest.server.tree.mock.endpoint.NestedReaches;
+import br.pro.hashi.sdx.rest.server.tree.mock.endpoint.Options;
 import br.pro.hashi.sdx.rest.server.tree.mock.endpoint.Reaches;
 import br.pro.hashi.sdx.rest.server.tree.mock.endpoint.SamePath;
 import br.pro.hashi.sdx.rest.server.tree.mock.multiple.*;
@@ -97,6 +98,7 @@ class TreeTest {
 		itemMap.put(Reaches.class, new String[] {});
 		itemMap.put(ChildReaches.class, new String[] {});
 		itemMap.put(NestedReaches.class, new String[] {});
+		itemMap.put(Options.class, new String[] {});
 		itemMap.put(Head.class, new String[] {});
 		itemMap.put(Multiple.class, new String[] {});
 		itemMap.put(SamePath.class, new String[] {});
@@ -191,11 +193,19 @@ class TreeTest {
 	}
 
 	@Test
+	void doesNotPutEndpointsFromOptions() {
+		Exception exception = assertThrows(ReflectionException.class, () -> {
+			putNode(Options.class);
+		});
+		assertEquals("br.pro.hashi.sdx.rest.server.tree.mock.endpoint.Options cannot have OPTIONS endpoints", exception.getMessage());
+	}
+
+	@Test
 	void doesNotPutEndpointsFromHead() {
 		Exception exception = assertThrows(ReflectionException.class, () -> {
 			putNode(Head.class);
 		});
-		assertEquals("br.pro.hashi.sdx.rest.server.tree.mock.endpoint.Head cannot have a HEAD endpoint", exception.getMessage());
+		assertEquals("br.pro.hashi.sdx.rest.server.tree.mock.endpoint.Head cannot have HEAD endpoints", exception.getMessage());
 	}
 
 	@Test

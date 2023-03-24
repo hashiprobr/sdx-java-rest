@@ -135,6 +135,7 @@ class Handler extends AbstractHandler {
 				logger.error(message, error);
 				throw new BadRequestException(message);
 			}
+
 			List<String> itemList = new ArrayList<>();
 			Node node = tree.getNodeAndAddItems(items, itemList);
 			Set<String> methodNames = node.getMethodNames();
@@ -143,14 +144,17 @@ class Handler extends AbstractHandler {
 			}
 
 			String methodName = request.getMethod();
-			Endpoint endpoint = node.getEndpoint(methodName);
-			if (endpoint == null) {
-				if (!methodName.equals("OPTIONS")) {
-					throw new MessageRestException(HttpStatus.METHOD_NOT_ALLOWED_405, "%s not allowed".formatted(methodName));
-				}
+			OutputStream responseStream = response.getOutputStream();
+			if (methodName.equals("OPTIONS")) {
 				response.addHeader("Allow", String.join(", ", methodNames));
 				response.setStatus(HttpServletResponse.SC_OK);
+				responseStream.close();
 				return;
+			}
+
+			Endpoint endpoint = node.getEndpoint(methodName);
+			if (endpoint == null) {
+				throw new MessageRestException(HttpStatus.METHOD_NOT_ALLOWED_405, "%s not allowed".formatted(methodName));
 			}
 
 			String requestType = request.getContentType();
@@ -192,12 +196,12 @@ class Handler extends AbstractHandler {
 
 			Fields headers = new Headers(cache, baseRequest.getHttpFields());
 			Fields queries = new Queries(cache, request.getParameterMap());
+			CharsetEncoder encoder = StandardCharsets.US_ASCII.newEncoder();
 
 			Class<? extends RestResource> resourceType = endpoint.getResourceType();
 			Constructor<? extends RestResource> constructor = constructors.get(resourceType);
 			RestResource resource = Reflection.newNoArgsInstance(constructor);
-			CharsetEncoder encoder = StandardCharsets.US_ASCII.newEncoder();
-			resource.setFields(partHeadersMap, headers, queries, response, encoder);
+			resource.setFields(partHeadersMap, headers, queries, encoder, response);
 
 			Object responseBody;
 			Type returnType;
@@ -219,16 +223,19 @@ class Handler extends AbstractHandler {
 
 			boolean withContent = !(returnType.equals(void.class) || returnType.equals(Void.class) || (responseBody == null && !resource.isNullable()));
 			if (status == -1) {
-				if (withContent) {
-					response.setStatus(HttpStatus.OK_200);
+				if (methodName.equals("POST")) {
+					response.setStatus(HttpStatus.CREATED_201);
 				} else {
-					response.setStatus(HttpStatus.NO_CONTENT_204);
+					if (withContent) {
+						response.setStatus(HttpStatus.OK_200);
+					} else {
+						response.setStatus(HttpStatus.NO_CONTENT_204);
+					}
 				}
 			} else {
 				response.setStatus(status);
 			}
 
-			OutputStream responseStream = response.getOutputStream();
 			if (methodName.equals("HEAD")) {
 				CountOutputStream countStream = new CountOutputStream();
 				if (withContent) {
