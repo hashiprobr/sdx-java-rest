@@ -628,7 +628,7 @@ class HandlerTest {
 	}
 
 	private void mockRestExceptionCall(int status, Object body) {
-		when(endpoint.call(any(), any(), any(), any())).thenAnswer((invocation) -> {
+		when(endpoint.call(any(), eq(List.of("0", "1")), eq(Map.of()), any())).thenAnswer((invocation) -> {
 			saveCall(invocation);
 			throw new RestException(status, body);
 		});
@@ -767,7 +767,7 @@ class HandlerTest {
 	}
 
 	private void mockNullCall() {
-		when(endpoint.call(any(), any(), any(), any())).thenAnswer((invocation) -> {
+		when(endpoint.call(any(), eq(List.of("0", "1")), eq(Map.of()), any())).thenAnswer((invocation) -> {
 			saveCall(invocation);
 			return null;
 		});
@@ -894,7 +894,7 @@ class HandlerTest {
 		} catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException | InstantiationException error) {
 			throw new AssertionError(error);
 		}
-		when(endpoint.call(any(), any(), any(), any())).thenAnswer((invocation) -> {
+		when(endpoint.call(any(), eq(List.of("0", "1")), eq(Map.of()), any())).thenAnswer((invocation) -> {
 			saveCall(invocation);
 			throw exception;
 		});
@@ -963,7 +963,7 @@ class HandlerTest {
 	}
 
 	private void mockCall() {
-		when(endpoint.call(any(), any(), any(), any())).thenAnswer((invocation) -> {
+		when(endpoint.call(any(), eq(List.of("0", "1")), any(), any())).thenAnswer((invocation) -> {
 			saveCall(invocation);
 			return new Object();
 		});
