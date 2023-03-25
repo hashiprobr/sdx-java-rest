@@ -106,26 +106,8 @@ public abstract class RestResource {
 	}
 
 	/**
-	 * Alias for {@code nullable(T)}.
-	 * 
-	 * @param <T>  the type of the response body
-	 * @param body the response body
-	 * @return the parameter, for wrapping
-	 * @hidden
-	 */
-	protected final <T> T n(T body) {
-		nullable = true;
-		return body;
-	}
-
-	/**
-	 * <p>
 	 * Wrap the response body with this method to indicate that it should be
 	 * serialized even if it is null.
-	 * </p>
-	 * <p>
-	 * The alias {@link #as(String)} is available for short wrapping.
-	 * </p>
 	 * 
 	 * @param <T>  the type of the response body
 	 * @param body the response body
@@ -271,13 +253,21 @@ public abstract class RestResource {
 	}
 
 	/**
-	 * Stub.
+	 * <p>
+	 * Wrap the response body with this method to set the status.
+	 * </p>
+	 * <p>
+	 * The convenience parameter {@code args} can be used to call the other methods.
+	 * This ensures that the response and its details are syntactically related and
+	 * improves autocomplete accuracy.
+	 * </p>
 	 * 
-	 * @param <T>    stub
-	 * @param status stub
-	 * @param body   stub
-	 * @param args   stub
-	 * @return stub
+	 * @param <T>    the type of the response body
+	 * @param status the response status
+	 * @param body   the response body
+	 * @param args   convenience parameters to call the other methods
+	 * @throws IllegalArgumentException if the status is invalid
+	 * @return the second parameter, for wrapping
 	 */
 	protected <T> T response(int status, T body, Void... args) {
 		if (status < 100 || status > 399) {
@@ -288,13 +278,21 @@ public abstract class RestResource {
 	}
 
 	/**
-	 * Stub.
+	 * <p>
+	 * Wrap the response body with this method to construct an exception.
+	 * </p>
+	 * <p>
+	 * The convenience parameter {@code args} can be used to call the other methods.
+	 * This ensures that the response and its details are syntactically related and
+	 * improves autocomplete accuracy.
+	 * </p>
 	 * 
-	 * @param <T>    stub
-	 * @param status stub
-	 * @param body   stub
-	 * @param args   stub
-	 * @return stub
+	 * @param <T>    the type of the response body
+	 * @param status the response status
+	 * @param body   the response body
+	 * @param args   convenience parameters to call the other methods
+	 * @throws IllegalArgumentException if the status is invalid
+	 * @return the second parameter, for wrapping
 	 */
 	protected <T> RestException error(int status, T body, Void... args) {
 		return new RestException(status, body);

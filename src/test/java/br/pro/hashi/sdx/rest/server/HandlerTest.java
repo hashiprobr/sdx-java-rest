@@ -53,8 +53,8 @@ import br.pro.hashi.sdx.rest.reflection.Headers;
 import br.pro.hashi.sdx.rest.reflection.PartHeaders;
 import br.pro.hashi.sdx.rest.reflection.Queries;
 import br.pro.hashi.sdx.rest.server.exception.NotFoundException;
+import br.pro.hashi.sdx.rest.server.mock.valid.ConcreteResource;
 import br.pro.hashi.sdx.rest.server.mock.valid.NullableResource;
-import br.pro.hashi.sdx.rest.server.mock.valid.Resource;
 import br.pro.hashi.sdx.rest.server.tree.Data;
 import br.pro.hashi.sdx.rest.server.tree.Endpoint;
 import br.pro.hashi.sdx.rest.server.tree.Node;
@@ -104,7 +104,7 @@ class HandlerTest {
 		tree = mock(Tree.class);
 		formatter = mock(ErrorFormatter.class);
 		constructors = new HashMap<>();
-		constructors.put(Resource.class, Resource.class.getConstructor());
+		constructors.put(ConcreteResource.class, ConcreteResource.class.getConstructor());
 		constructors.put(NullableResource.class, NullableResource.class.getConstructor());
 		element = mock(MultipartConfigElement.class);
 		gatewayTypes = new HashSet<>();
@@ -1002,7 +1002,7 @@ class HandlerTest {
 	}
 
 	private void mockResourceType() {
-		doReturn(Resource.class).when(endpoint).getResourceType();
+		doReturn(ConcreteResource.class).when(endpoint).getResourceType();
 	}
 
 	private void mockCall() {
