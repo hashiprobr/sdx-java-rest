@@ -223,14 +223,14 @@ class Handler extends AbstractHandler {
 
 			boolean withContent = !(returnType.equals(void.class) || returnType.equals(Void.class) || (responseBody == null && !resource.isNullable()));
 			if (status == -1) {
-				if (methodName.equals("POST")) {
-					response.setStatus(HttpStatus.CREATED_201);
-				} else {
-					if (withContent) {
-						response.setStatus(HttpStatus.OK_200);
+				if (withContent) {
+					if (methodName.equals("POST")) {
+						response.setStatus(HttpStatus.CREATED_201);
 					} else {
-						response.setStatus(HttpStatus.NO_CONTENT_204);
+						response.setStatus(HttpStatus.OK_200);
 					}
+				} else {
+					response.setStatus(HttpStatus.NO_CONTENT_204);
 				}
 			} else {
 				response.setStatus(status);

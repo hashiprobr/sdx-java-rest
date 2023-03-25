@@ -214,6 +214,24 @@ class HandlerTest {
 	}
 
 	@Test
+	void handlesWithPost() {
+		mockRequestUri();
+		mockNode();
+		mockMethodNames();
+		when(request.getMethod()).thenReturn("POST");
+		when(node.getEndpoint("POST")).thenReturn(endpoint);
+		mockContentType();
+		ServletInputStream stream = mockInputStream();
+		mockResourceType();
+		mockCall();
+		mockReturnType();
+		handle();
+		assertItemList();
+		assertBody(stream);
+		assertResponseWithoutHeaders(201);
+	}
+
+	@Test
 	void handlesWithOptions() {
 		mockRequestUri();
 		mockNode();
