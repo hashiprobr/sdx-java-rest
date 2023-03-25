@@ -20,16 +20,25 @@ public class Signatures extends RestResource {
 	public void withTwoItems(int i, double d) {
 	}
 
+	public void withOneItemAndVarArgs(int i, double... args) {
+	}
+
 	public void withOneItemAndOnePart(int i, @Part("name") Object part) {
 	}
 
 	public void withOneItemAndOneBody(int i, @Body Object body) {
 	}
 
+	public void withVarArgs(int... args) {
+	}
+
 	public void withOnePart(@Part("name") Object part) {
 	}
 
 	public void withOnePartAndOneItem(@Part("name") Object part, int i) {
+	}
+
+	public void withOnePartAndVarArgs(@Part("name") Object part, int... args) {
 	}
 
 	public void withTwoPartsAndOneName(@Part("name") Object part0, @Part("name") String part1) {
@@ -47,6 +56,9 @@ public class Signatures extends RestResource {
 	public void withOneBodyAndOneItem(@Body Object body, int i) {
 	}
 
+	public void withOneBodyAndVarArgs(@Body Object body, int... args) {
+	}
+
 	public void withOneBodyAndOnePart(@Body Object body, @Part("name") String part) {
 	}
 
@@ -58,6 +70,10 @@ public class Signatures extends RestResource {
 	}
 
 	public boolean withEverythingAndOneBody(int i, @Body Object body, double d) {
+		return true;
+	}
+
+	public boolean withEverythingAndVarArgs(int i, @Body Object body, double... args) {
 		return true;
 	}
 
