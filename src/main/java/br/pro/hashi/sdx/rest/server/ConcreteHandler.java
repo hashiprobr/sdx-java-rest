@@ -91,8 +91,8 @@ class ConcreteHandler extends ErrorHandler {
 
 	@Override
 	public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws IOException {
-		boolean withoutWrites = true;
 		OutputStream stream = response.getOutputStream();
+		boolean withoutWrites = true;
 		try {
 			String message = (String) request.getAttribute(Dispatcher.ERROR_MESSAGE);
 			if (message == null) {

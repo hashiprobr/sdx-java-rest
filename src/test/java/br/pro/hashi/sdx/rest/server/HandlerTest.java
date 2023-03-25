@@ -90,12 +90,12 @@ class HandlerTest {
 	private Node node;
 	private Endpoint endpoint;
 	private List<Part> parts;
-	private RestResource resource;
-	private ByteArrayOutputStream stream;
 	private RestResource callResource;
 	private List<String> callItemList;
 	private Map<String, List<Data>> callPartMap;
 	private Data callBody;
+	private RestResource resource;
+	private ByteArrayOutputStream stream;
 
 	@BeforeEach
 	void setUp() throws NoSuchMethodException, IOException {
@@ -108,11 +108,11 @@ class HandlerTest {
 		constructors.put(NullableResource.class, NullableResource.class.getConstructor());
 		element = mock(MultipartConfigElement.class);
 		gatewayTypes = new HashSet<>();
-		baseRequest = mock(Request.class);
 		fields = mock(HttpFields.class);
+		baseRequest = mock(Request.class);
 		when(baseRequest.getHttpFields()).thenReturn(fields);
-		request = mock(HttpServletRequest.class);
 		map = new HashMap<>();
+		request = mock(HttpServletRequest.class);
 		when(request.getParameterMap()).thenReturn(map);
 		ServletOutputStream output = mock(ServletOutputStream.class);
 		response = mock(HttpServletResponse.class);
@@ -1060,6 +1060,7 @@ class HandlerTest {
 		assertTrue(write());
 		verify(response).setContentType("type/subtype;charset=UTF-8");
 		assertEqualsBytes();
+		verifyNoFlush();
 	}
 
 	@Test
@@ -1070,6 +1071,7 @@ class HandlerTest {
 		assertTrue(write());
 		verify(response).setContentType("type/subtype;charset=ISO-8859-1");
 		assertEqualsBytes(StandardCharsets.ISO_8859_1, false);
+		verifyNoFlush();
 	}
 
 	@Test
@@ -1080,10 +1082,45 @@ class HandlerTest {
 		assertTrue(write());
 		verify(response).setContentType("type/subtype;charset=UTF-8;base64");
 		assertEqualsBytes(StandardCharsets.UTF_8, true);
+		verifyNoFlush();
 	}
 
 	private boolean write() {
 		return serialize(SPECIAL_BODY, String.class);
+	}
+
+	@Test
+	void writesWithException() {
+		mockCharset();
+		mockWithoutBase64();
+		mockWithoutCommitted();
+		assertThrows(RuntimeException.class, () -> {
+			serializeWithException();
+		});
+		verify(response).setContentType("type/subtype;charset=UTF-8");
+		assertEmptyBytes();
+		verifyNoFlush();
+	}
+
+	@Test
+	void writesWithCommittedException() {
+		mockCharset();
+		mockWithoutBase64();
+		mockWithCommitted();
+		assertFalse(serializeWithException());
+		verify(response).setContentType("type/subtype;charset=UTF-8");
+		assertEmptyBytes();
+		verifyNoFlush();
+	}
+
+	private boolean serializeWithException() {
+		Serializer serializer = mockSerializer(SPECIAL_BODY);
+		doAnswer((invocation) -> {
+			Writer writer = invocation.getArgument(2);
+			writer.close();
+			throw new RuntimeException();
+		}).when(serializer).write(eq(SPECIAL_BODY), eq(String.class), any());
+		return write(SPECIAL_BODY, String.class);
 	}
 
 	@Test
@@ -1108,7 +1145,7 @@ class HandlerTest {
 		});
 		assertSame(cause, exception.getCause());
 		verify(response).setContentType("type/subtype;charset=UTF-8");
-		verifyClose();
+		verifyNoClose();
 	}
 
 	@Test
@@ -1139,7 +1176,7 @@ class HandlerTest {
 	}
 
 	private boolean serialize(Object actual, Type type) {
-		mockSerializer(actual);
+		mockSerializerWithoutException(actual);
 		return write(actual, type);
 	}
 
@@ -1151,6 +1188,7 @@ class HandlerTest {
 		assertTrue(writeDirectly());
 		verify(response).setContentType("type/subtype;charset=UTF-8");
 		assertEqualsBytes();
+		verifyNoFlush();
 	}
 
 	@Test
@@ -1161,6 +1199,7 @@ class HandlerTest {
 		assertTrue(writeDirectly());
 		verify(response).setContentType("type/subtype;charset=ISO-8859-1");
 		assertEqualsBytes(StandardCharsets.ISO_8859_1, false);
+		verifyNoFlush();
 	}
 
 	@Test
@@ -1171,6 +1210,7 @@ class HandlerTest {
 		assertTrue(writeDirectly());
 		verify(response).setContentType("type/subtype;charset=UTF-8;base64");
 		assertEqualsBytes(StandardCharsets.UTF_8, true);
+		verifyNoFlush();
 	}
 
 	private boolean writeDirectly() {
@@ -1182,22 +1222,19 @@ class HandlerTest {
 		mockCharset();
 		mockWithoutBase64();
 		mockWithoutCommitted();
-		assertFalse(writeDirectlyLarge());
+		assertFalse(serializeDirectly(new StringReader(SPECIAL_BODY), Reader.class));
 		verify(response).setContentType("type/subtype;charset=UTF-8");
 		assertEqualsBytes();
-	}
-
-	private boolean writeDirectlyLarge() {
-		return serializeDirectly(new StringReader(SPECIAL_BODY), Reader.class);
+		verifyNoFlush();
 	}
 
 	private boolean serializeDirectly(Object actual, Type type) {
-		mockSerializer(actual);
+		mockSerializerWithoutException(actual);
 		return writeDirectly(actual, type);
 	}
 
-	private void mockSerializer(Object actual) {
-		Serializer serializer = mock(Serializer.class);
+	private void mockSerializerWithoutException(Object actual) {
+		Serializer serializer = mockSerializer(actual);
 		doAnswer((invocation) -> {
 			String str = invocation.getArgument(0);
 			Writer writer = invocation.getArgument(2);
@@ -1212,10 +1249,15 @@ class HandlerTest {
 			writer.close();
 			return null;
 		}).when(serializer).write(eq(actual), eq(Reader.class), any());
+	}
+
+	private Serializer mockSerializer(Object actual) {
+		Serializer serializer = mock(Serializer.class);
 		when(resource.getContentType()).thenReturn(null);
 		when(facade.isBinary(any())).thenReturn(false);
 		when(facade.cleanForSerializing(null, actual)).thenReturn("type/subtype");
 		when(facade.getSerializer("type/subtype")).thenReturn(serializer);
+		return serializer;
 	}
 
 	private void assertEqualsBytes() {
@@ -1234,6 +1276,7 @@ class HandlerTest {
 		assertTrue(writeBinary());
 		verify(response).setContentType("type/subtype");
 		assertBinaryEqualsBytes();
+		verifyNoFlush();
 	}
 
 	@Test
@@ -1244,10 +1287,45 @@ class HandlerTest {
 		assertTrue(writeBinary());
 		verify(response).setContentType("type/subtype;base64");
 		assertBinaryEqualsBytes(StandardCharsets.US_ASCII, true);
+		verifyNoFlush();
 	}
 
 	private boolean writeBinary() {
 		return assemble(USASCII_BODY, String.class);
+	}
+
+	@Test
+	void writesBinaryWithException() {
+		mockCharset();
+		mockWithoutBase64();
+		mockWithoutCommitted();
+		assertThrows(RuntimeException.class, () -> {
+			assembleWithException();
+		});
+		verify(response).setContentType("type/subtype");
+		assertEmptyBytes();
+		verifyNoFlush();
+	}
+
+	@Test
+	void writesBinaryWithCommittedException() {
+		mockCharset();
+		mockWithoutBase64();
+		mockWithCommitted();
+		assertFalse(assembleWithException());
+		verify(response).setContentType("type/subtype");
+		assertEmptyBytes();
+		verifyNoFlush();
+	}
+
+	private boolean assembleWithException() {
+		Assembler assembler = mockAssembler(USASCII_BODY);
+		doAnswer((invocation) -> {
+			OutputStream output = invocation.getArgument(2);
+			output.close();
+			throw new RuntimeException();
+		}).when(assembler).write(eq(USASCII_BODY), eq(String.class), any());
+		return write(USASCII_BODY, String.class);
 	}
 
 	@Test
@@ -1272,7 +1350,7 @@ class HandlerTest {
 		});
 		assertSame(cause, exception.getCause());
 		verify(response).setContentType("type/subtype");
-		verifyClose();
+		verifyNoClose();
 	}
 
 	@Test
@@ -1303,7 +1381,7 @@ class HandlerTest {
 	}
 
 	private boolean assemble(Object actual, Type type) {
-		mockAssembler(actual);
+		mockAssemblerWithoutException(actual);
 		return write(actual, type);
 	}
 
@@ -1315,6 +1393,7 @@ class HandlerTest {
 		assertTrue(writeDirectlyBinary());
 		verify(response).setContentType("type/subtype");
 		assertBinaryEqualsBytes();
+		verifyNoFlush();
 	}
 
 	@Test
@@ -1325,6 +1404,7 @@ class HandlerTest {
 		assertTrue(writeDirectlyBinary());
 		verify(response).setContentType("type/subtype;base64");
 		assertBinaryEqualsBytes(StandardCharsets.US_ASCII, true);
+		verifyNoFlush();
 	}
 
 	private boolean writeDirectlyBinary() {
@@ -1336,21 +1416,36 @@ class HandlerTest {
 		mockCharset();
 		mockWithoutBase64();
 		mockWithoutCommitted();
-		assertFalse(writeDirectlyLargeBinary());
+		assertFalse(assembleDirectly(new ByteArrayInputStream(USASCII_BODY.getBytes(StandardCharsets.US_ASCII)), InputStream.class));
 		verify(response).setContentType("type/subtype");
 		assertBinaryEqualsBytes();
-	}
-
-	private boolean writeDirectlyLargeBinary() {
-		return assembleDirectly(new ByteArrayInputStream(USASCII_BODY.getBytes(StandardCharsets.US_ASCII)), InputStream.class);
+		verifyNoFlush();
 	}
 
 	private boolean assembleDirectly(Object actual, Type type) {
-		mockAssembler(actual);
+		mockAssemblerWithoutException(actual);
 		return writeDirectly(actual, type);
 	}
 
-	private void mockAssembler(Object actual) {
+	private void mockAssemblerWithoutException(Object actual) {
+		Assembler assembler = mockAssembler(actual);
+		doAnswer((invocation) -> {
+			String str = invocation.getArgument(0);
+			OutputStream output = invocation.getArgument(2);
+			output.write(str.getBytes(StandardCharsets.US_ASCII));
+			output.close();
+			return null;
+		}).when(assembler).write(eq(actual), eq(String.class), any());
+		doAnswer((invocation) -> {
+			InputStream input = invocation.getArgument(0);
+			OutputStream output = invocation.getArgument(2);
+			input.transferTo(output);
+			output.close();
+			return null;
+		}).when(assembler).write(eq(actual), eq(InputStream.class), any());
+	}
+
+	private Assembler mockAssembler(Object actual) {
 		Assembler assembler = mock(Assembler.class);
 		doAnswer((invocation) -> {
 			String str = invocation.getArgument(0);
@@ -1370,6 +1465,7 @@ class HandlerTest {
 		when(facade.isBinary(any())).thenReturn(true);
 		when(facade.cleanForAssembling(null, actual)).thenReturn("type/subtype");
 		when(facade.getAssembler("type/subtype")).thenReturn(assembler);
+		return assembler;
 	}
 
 	private void assertBinaryEqualsBytes() {
@@ -1475,7 +1571,7 @@ class HandlerTest {
 		assertEquals(expected, new String(bytes, charset));
 	}
 
-	private void verifyClose() {
+	private void verifyNoClose() {
 		try {
 			verify(stream, times(0)).close();
 		} catch (IOException exception) {
@@ -1486,6 +1582,14 @@ class HandlerTest {
 	private void verifyFlush() {
 		try {
 			verify(response).flushBuffer();
+		} catch (IOException exception) {
+			throw new AssertionError(exception);
+		}
+	}
+
+	private void verifyNoFlush() {
+		try {
+			verify(response, times(0)).flushBuffer();
 		} catch (IOException exception) {
 			throw new AssertionError(exception);
 		}

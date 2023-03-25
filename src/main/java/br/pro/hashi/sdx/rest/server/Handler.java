@@ -256,6 +256,7 @@ class Handler extends AbstractHandler {
 			String message = exception.getBody();
 			sendError(response, status, message);
 		} catch (Exception exception) {
+			response.reset();
 			boolean gateway = false;
 			for (Class<? extends RuntimeException> type : gatewayTypes) {
 				if (type.isAssignableFrom(exception.getClass())) {
@@ -271,7 +272,6 @@ class Handler extends AbstractHandler {
 				logger.error("Internal server error", exception);
 				status = HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
 			}
-			response.reset();
 			sendError(response, status, null);
 		} finally {
 			baseRequest.setHandled(true);
@@ -279,6 +279,7 @@ class Handler extends AbstractHandler {
 	}
 
 	boolean write(HttpServletResponse response, RestResource resource, Object actual, Type type, OutputStream stream) {
+		boolean withoutWrites = true;
 		boolean withoutLength;
 		try {
 			String contentType = resource.getContentType();
@@ -319,15 +320,18 @@ class Handler extends AbstractHandler {
 				stream = Media.encode(stream);
 			}
 
+			withoutWrites = false;
 			consumer.accept(stream);
 		} catch (RuntimeException exception) {
 			if (!response.isCommitted()) {
 				throw exception;
 			}
-			try {
-				stream.close();
-			} catch (IOException error) {
-				logger.warn("Could not close stream", error);
+			if (withoutWrites) {
+				try {
+					stream.close();
+				} catch (IOException error) {
+					logger.warn("Could not close stream", error);
+				}
 			}
 			withoutLength = true;
 		}
