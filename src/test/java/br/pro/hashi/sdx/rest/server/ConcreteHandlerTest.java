@@ -65,11 +65,8 @@ class ConcreteHandlerTest {
 		fields = mock(HttpFields.Mutable.class);
 		baseRequest = mock(Request.class);
 		baseResponse = mock(Response.class);
-		when(baseResponse.getReason()).thenReturn(BODY);
-		when(baseRequest.getResponse()).thenReturn(baseResponse);
 		request = mock(HttpServletRequest.class);
 		response = mock(HttpServletResponse.class);
-		when(response.getStatus()).thenReturn(400);
 	}
 
 	@Test
@@ -143,6 +140,7 @@ class ConcreteHandlerTest {
 	void handlesWithCommittedException() {
 		mockMessage();
 		h = newConcreteHandler();
+		when(response.getStatus()).thenReturn(400);
 		ServletOutputStream output = mock(ServletOutputStream.class);
 		try {
 			doThrow(RuntimeException.class).when(output).write(any(int.class));
@@ -163,6 +161,8 @@ class ConcreteHandlerTest {
 	@Test
 	void handlesWithoutMessage() {
 		when(request.getAttribute(Dispatcher.ERROR_MESSAGE)).thenReturn(null);
+		when(baseRequest.getResponse()).thenReturn(baseResponse);
+		when(baseResponse.getReason()).thenReturn(BODY);
 		assertHandles();
 		verify(response).setContentType("type/subtype;charset=UTF-8");
 	}
@@ -177,6 +177,7 @@ class ConcreteHandlerTest {
 
 	private void assertHandles(String expected, Charset charset, boolean base64) {
 		h = newConcreteHandler(charset, base64);
+		when(response.getStatus()).thenReturn(400);
 		ByteArrayOutputStream stream = spy(new ByteArrayOutputStream());
 		ServletOutputStream output = mock(ServletOutputStream.class);
 		try {
