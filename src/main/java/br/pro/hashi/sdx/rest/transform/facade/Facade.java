@@ -90,7 +90,7 @@ public class Facade {
 		}
 	}
 
-	public String getContentType(String extension) {
+	public String getExtensionType(String extension) {
 		return extensions.get(extension);
 	}
 

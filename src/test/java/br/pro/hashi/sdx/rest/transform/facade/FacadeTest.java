@@ -110,22 +110,22 @@ class FacadeTest {
 
 	@Test
 	void initializesWithTxtExtension() {
-		assertEquals("text/plain", f.getContentType("txt"));
+		assertEquals("text/plain", f.getExtensionType("txt"));
 	}
 
 	@Test
 	void initializesWithoutXmlExtension() {
-		assertNull(f.getContentType("xml"));
+		assertNull(f.getExtensionType("xml"));
 	}
 
 	@Test
 	void initializesWithoutPngExtension() {
-		assertNull(f.getContentType("png"));
+		assertNull(f.getExtensionType("png"));
 	}
 
 	@Test
 	void initializesWithoutNullExtension() {
-		assertNull(f.getContentType(null));
+		assertNull(f.getExtensionType(null));
 	}
 
 	@Test
@@ -244,7 +244,7 @@ class FacadeTest {
 			String contentType = "text/plain";
 			media.when(() -> Media.strip(contentType)).thenReturn(contentType);
 			f.putExtension("xml", contentType);
-			assertEquals(contentType, f.getContentType("xml"));
+			assertEquals(contentType, f.getExtensionType("xml"));
 		}
 	}
 
@@ -253,7 +253,7 @@ class FacadeTest {
 		assertThrows(NullPointerException.class, () -> {
 			f.putExtension(null, "text/plain");
 		});
-		assertNull(f.getContentType(null));
+		assertNull(f.getExtensionType(null));
 	}
 
 	@Test
@@ -261,7 +261,7 @@ class FacadeTest {
 		assertThrows(IllegalArgumentException.class, () -> {
 			f.putExtension(" \t\n", "text/plain");
 		});
-		assertNull(f.getContentType("xml"));
+		assertNull(f.getExtensionType("xml"));
 	}
 
 	@Test
@@ -269,7 +269,7 @@ class FacadeTest {
 		assertThrows(NullPointerException.class, () -> {
 			f.putExtension("xml", null);
 		});
-		assertNull(f.getContentType("xml"));
+		assertNull(f.getExtensionType("xml"));
 	}
 
 	@Test
@@ -280,7 +280,7 @@ class FacadeTest {
 			assertThrows(IllegalArgumentException.class, () -> {
 				f.putExtension("xml", contentType);
 			});
-			assertNull(f.getContentType("xml"));
+			assertNull(f.getExtensionType("xml"));
 		}
 	}
 
@@ -292,7 +292,7 @@ class FacadeTest {
 			assertThrows(IllegalArgumentException.class, () -> {
 				f.putExtension("xml", contentType);
 			});
-			assertNull(f.getContentType("xml"));
+			assertNull(f.getExtensionType("xml"));
 		}
 	}
 
@@ -302,7 +302,7 @@ class FacadeTest {
 			String contentType = "application/octet-stream";
 			media.when(() -> Media.strip(contentType)).thenReturn(contentType);
 			f.putExtension("png", contentType);
-			assertEquals(contentType, f.getContentType("png"));
+			assertEquals(contentType, f.getExtensionType("png"));
 		}
 	}
 
@@ -311,7 +311,7 @@ class FacadeTest {
 		assertThrows(NullPointerException.class, () -> {
 			f.putExtension(null, "application/octet-stream");
 		});
-		assertNull(f.getContentType(null));
+		assertNull(f.getExtensionType(null));
 	}
 
 	@Test
@@ -319,7 +319,7 @@ class FacadeTest {
 		assertThrows(IllegalArgumentException.class, () -> {
 			f.putExtension(" \t\n", "application/octet-stream");
 		});
-		assertNull(f.getContentType("png"));
+		assertNull(f.getExtensionType("png"));
 	}
 
 	@Test
@@ -327,7 +327,7 @@ class FacadeTest {
 		assertThrows(NullPointerException.class, () -> {
 			f.putExtension("png", null);
 		});
-		assertNull(f.getContentType("png"));
+		assertNull(f.getExtensionType("png"));
 	}
 
 	@Test
@@ -338,7 +338,7 @@ class FacadeTest {
 			assertThrows(IllegalArgumentException.class, () -> {
 				f.putExtension("png", contentType);
 			});
-			assertNull(f.getContentType("png"));
+			assertNull(f.getExtensionType("png"));
 		}
 	}
 
@@ -350,7 +350,7 @@ class FacadeTest {
 			assertThrows(IllegalArgumentException.class, () -> {
 				f.putExtension("png", contentType);
 			});
-			assertNull(f.getContentType("png"));
+			assertNull(f.getExtensionType("png"));
 		}
 	}
 

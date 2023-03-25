@@ -101,6 +101,7 @@ class HandlerTest {
 	void setUp() throws NoSuchMethodException, IOException {
 		cache = mock(Cache.class);
 		facade = mock(Facade.class);
+		when(facade.getExtensionType("txt")).thenReturn("text/plain");
 		tree = mock(Tree.class);
 		formatter = mock(ErrorFormatter.class);
 		constructors = new HashMap<>();
@@ -162,6 +163,117 @@ class HandlerTest {
 		verify(response).addHeader("Access-Control-Allow-Headers", "*");
 		verify(response).addHeader("Access-Control-Allow-Credentials", "true");
 		assertResponse(200);
+	}
+
+	@Test
+	void handlesWithExtension() {
+		when(request.getRequestURI()).thenReturn("/b.txt");
+		mockNode();
+		mockMethodNames();
+		mockMethod();
+		mockEndpoint();
+		mockContentType();
+		ServletInputStream stream = mockInputStream();
+		mockResourceType();
+		mockCall();
+		mockReturnType();
+		handle();
+		assertItemList();
+		assertBody(stream);
+		assertHeaders();
+		assertFields();
+		verify(response).setStatus(200);
+		verifyNotLength();
+		verifyServletWrite("text/plain");
+		verifyNoCountWrite();
+		verifyNoResponseClose();
+		verifyNoError();
+
+	}
+
+	@Test
+	void handlesWithEncodedExtension() {
+		when(request.getRequestURI()).thenReturn("/b%2Etxt");
+		mockNodeWithExtension();
+		mockMethodNames();
+		mockMethod();
+		mockEndpoint();
+		mockContentType();
+		ServletInputStream stream = mockInputStream();
+		mockResourceType();
+		mockCall();
+		mockReturnType();
+		handle();
+		assertItemList();
+		assertBody(stream);
+		assertOk();
+	}
+
+	@Test
+	void handlesWithSlashedExtension() {
+		when(request.getRequestURI()).thenReturn("/b.txt///");
+		mockNodeWithExtension();
+		mockMethodNames();
+		mockMethod();
+		mockEndpoint();
+		mockContentType();
+		ServletInputStream stream = mockInputStream();
+		mockResourceType();
+		mockCall();
+		mockReturnType();
+		handle();
+		assertItemList();
+		assertBody(stream);
+		assertOk();
+	}
+
+	private void mockNodeWithExtension() {
+		when(tree.getNodeAndAddItems(new String[] { "b.txt" }, List.of())).thenAnswer((invocation) -> {
+			loadNode(invocation);
+			return node;
+		});
+	}
+
+	@Test
+	void handlesWithWrongExtension() {
+		when(request.getRequestURI()).thenReturn("/b.json");
+		when(tree.getNodeAndAddItems(new String[] { "b.json" }, List.of())).thenAnswer((invocation) -> {
+			loadNode(invocation);
+			return node;
+		});
+		mockMethodNames();
+		mockMethod();
+		mockEndpoint();
+		mockContentType();
+		ServletInputStream stream = mockInputStream();
+		mockResourceType();
+		mockCall();
+		mockReturnType();
+		handle();
+		assertItemList();
+		assertBody(stream);
+		assertOk();
+	}
+
+	@Test
+	void handlesWithEmptyExtension() {
+		when(request.getRequestURI()).thenReturn("/b.");
+		when(tree.getNodeAndAddItems(new String[] { "b." }, List.of())).thenAnswer((invocation) -> {
+			loadNode(invocation);
+			return node;
+		});
+		mockMethodNames();
+		mockMethod();
+		mockEndpoint();
+		mockContentType();
+		ServletInputStream stream = mockInputStream();
+		mockResourceType();
+		mockCall();
+		mockReturnType();
+		handle();
+		assertItemList();
+		assertBody(stream);
+		assertOk();
 	}
 
 	@Test
@@ -737,7 +849,7 @@ class HandlerTest {
 		assertFields();
 		verify(response).setStatus(status);
 		verifyNotLength();
-		verify(h).write(eq(response), any(), any(), eq(Object.class), any(ServletOutputStream.class));
+		verifyServletWrite(null);
 		verifyNoCountWrite();
 		verifyNoResponseClose();
 		verifyNoError();
@@ -834,7 +946,7 @@ class HandlerTest {
 	}
 
 	private void verifyCountWrite() {
-		verify(h).write(eq(response), any(), any(), eq(Object.class), any(CountOutputStream.class));
+		verify(h).write(eq(response), any(), any(), eq(Object.class), eq(null), any(CountOutputStream.class));
 	}
 
 	private void verifyResponseClose() {
@@ -938,16 +1050,20 @@ class HandlerTest {
 	}
 
 	private void mockRequestUri() {
-		when(request.getRequestURI()).thenReturn("/b");
+		when(request.getRequestURI()).thenReturn("/b///");
 	}
 
 	private void mockNode() {
 		when(tree.getNodeAndAddItems(new String[] { "b" }, List.of())).thenAnswer((invocation) -> {
-			List<String> itemList = invocation.getArgument(1);
-			itemList.add("0");
-			itemList.add("1");
+			loadNode(invocation);
 			return node;
 		});
+	}
+
+	private void loadNode(InvocationOnMock invocation) {
+		List<String> itemList = invocation.getArgument(1);
+		itemList.add("0");
+		itemList.add("1");
 	}
 
 	private void mockMethodNames() {
@@ -1034,12 +1150,16 @@ class HandlerTest {
 		verify(response, times(0)).setContentLengthLong(any(long.class));
 	}
 
+	private void verifyServletWrite(String responseType) {
+		verify(h).write(eq(response), any(), any(), eq(Object.class), eq(responseType), any(ServletOutputStream.class));
+	}
+
 	private void verifyNoServletWrite() {
-		verify(h, times(0)).write(eq(response), any(), any(), eq(Object.class), any(ServletOutputStream.class));
+		verify(h, times(0)).write(eq(response), any(), any(), eq(Object.class), any(), any(ServletOutputStream.class));
 	}
 
 	private void verifyNoCountWrite() {
-		verify(h, times(0)).write(eq(response), any(), any(), eq(Object.class), any(CountOutputStream.class));
+		verify(h, times(0)).write(eq(response), any(), any(), eq(Object.class), any(), any(CountOutputStream.class));
 	}
 
 	private void verifyNoResponseClose() {
@@ -1068,7 +1188,7 @@ class HandlerTest {
 
 	private void handle(boolean cors, Answer<Boolean> answer) {
 		h = spy(new Handler(cache, facade, tree, formatter, constructors, element, gatewayTypes, StandardCharsets.UTF_8, cors));
-		doAnswer(answer).when(h).write(eq(response), any(), any(), eq(Object.class), any());
+		doAnswer(answer).when(h).write(eq(response), any(), any(), eq(Object.class), any(), any());
 		h.handle("target", baseRequest, request, response);
 		verify(baseRequest).setHandled(true);
 	}
@@ -1219,6 +1339,17 @@ class HandlerTest {
 	}
 
 	@Test
+	void writesDirectlyWithExtension() {
+		mockCharset();
+		mockWithoutBase64();
+		mockWithoutCommitted();
+		assertTrue(serializeDirectlyWithExtension(SPECIAL_BODY, String.class));
+		verify(response).setContentType("text/plain;charset=UTF-8");
+		assertEqualsBytes();
+		verifyNoFlush();
+	}
+
+	@Test
 	void writesDirectlyWithISO88591() {
 		when(resource.getCharset()).thenReturn(StandardCharsets.ISO_8859_1);
 		mockWithoutBase64();
@@ -1255,9 +1386,25 @@ class HandlerTest {
 		verifyNoFlush();
 	}
 
+	@Test
+	void writesDirectlyWithExtensionLarge() {
+		mockCharset();
+		mockWithoutBase64();
+		mockWithoutCommitted();
+		assertFalse(serializeDirectlyWithExtension(new StringReader(SPECIAL_BODY), Reader.class));
+		verify(response).setContentType("text/plain;charset=UTF-8");
+		assertEqualsBytes();
+		verifyNoFlush();
+	}
+
 	private boolean serializeDirectly(Object actual, Type type) {
 		mockSerializerWithoutException(actual);
 		return writeDirectly(actual, type);
+	}
+
+	private boolean serializeDirectlyWithExtension(Object actual, Type type) {
+		mockSerializerWithoutException(actual);
+		return writeDirectlyWithExtension(actual, type);
 	}
 
 	private void mockSerializerWithoutException(Object actual) {
@@ -1283,7 +1430,9 @@ class HandlerTest {
 		when(resource.getContentType()).thenReturn(null);
 		when(facade.isBinary(any())).thenReturn(false);
 		when(facade.cleanForSerializing(null, actual)).thenReturn("type/subtype");
+		when(facade.cleanForSerializing("text/plain", actual)).thenReturn("text/plain");
 		when(facade.getSerializer("type/subtype")).thenReturn(serializer);
+		when(facade.getSerializer("text/plain")).thenReturn(serializer);
 		return serializer;
 	}
 
@@ -1424,6 +1573,17 @@ class HandlerTest {
 	}
 
 	@Test
+	void writesDirectlyBinaryWithExtension() {
+		mockCharset();
+		mockWithoutBase64();
+		mockWithoutCommitted();
+		assertTrue(assembleDirectlyWithExtension(USASCII_BODY, String.class));
+		verify(response).setContentType("text/plain");
+		assertBinaryEqualsBytes();
+		verifyNoFlush();
+	}
+
+	@Test
 	void writesDirectlyBinaryWithBase64() {
 		mockCharset();
 		mockWithBase64();
@@ -1449,9 +1609,25 @@ class HandlerTest {
 		verifyNoFlush();
 	}
 
+	@Test
+	void writesDirectlyLargeBinaryWithExtension() {
+		mockCharset();
+		mockWithoutBase64();
+		mockWithoutCommitted();
+		assertFalse(assembleDirectlyWithExtension(new ByteArrayInputStream(USASCII_BODY.getBytes(StandardCharsets.US_ASCII)), InputStream.class));
+		verify(response).setContentType("text/plain");
+		assertBinaryEqualsBytes();
+		verifyNoFlush();
+	}
+
 	private boolean assembleDirectly(Object actual, Type type) {
 		mockAssemblerWithoutException(actual);
 		return writeDirectly(actual, type);
+	}
+
+	private boolean assembleDirectlyWithExtension(Object actual, Type type) {
+		mockAssemblerWithoutException(actual);
+		return writeDirectlyWithExtension(actual, type);
 	}
 
 	private void mockAssemblerWithoutException(Object actual) {
@@ -1491,7 +1667,9 @@ class HandlerTest {
 		when(resource.getContentType()).thenReturn(null);
 		when(facade.isBinary(any())).thenReturn(true);
 		when(facade.cleanForAssembling(null, actual)).thenReturn("type/subtype");
+		when(facade.cleanForAssembling("text/plain", actual)).thenReturn("text/plain");
 		when(facade.getAssembler("type/subtype")).thenReturn(assembler);
+		when(facade.getAssembler("text/plain")).thenReturn(assembler);
 		return assembler;
 	}
 
@@ -1569,16 +1747,20 @@ class HandlerTest {
 		} catch (IOException exception) {
 			throw new AssertionError(exception);
 		}
-		return write(actual, type, output);
+		return write(actual, type, null, output);
 	}
 
 	private boolean writeDirectly(Object actual, Type type) {
-		return write(actual, type, stream);
+		return write(actual, type, null, stream);
 	}
 
-	private boolean write(Object actual, Type type, OutputStream output) {
+	private boolean writeDirectlyWithExtension(Object actual, Type type) {
+		return write(actual, type, "text/plain", stream);
+	}
+
+	private boolean write(Object actual, Type type, String extensionType, OutputStream output) {
 		h = new Handler(cache, facade, tree, formatter, constructors, element, gatewayTypes, StandardCharsets.UTF_8, false);
-		return h.write(response, resource, actual, type, output);
+		return h.write(response, resource, actual, type, extensionType, output);
 	}
 
 	private void assertEmptyBytes() {

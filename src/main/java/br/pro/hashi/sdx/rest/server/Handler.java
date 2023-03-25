@@ -118,15 +118,19 @@ class Handler extends AbstractHandler {
 			}
 
 			String uri = request.getRequestURI();
-			String extension;
+			String extensionType;
 			int length = uri.lastIndexOf('.') + 1;
 			if (length > 0 && length < uri.length() && uri.indexOf('/', length) == -1) {
-				extension = uri.substring(length);
-				uri = uri.substring(0, length - 1);
+				String extension = uri.substring(length);
+				extensionType = facade.getExtensionType(extension);
+				if (extensionType != null) {
+					uri = uri.substring(0, length - 1);
+				}
 			} else {
-				extension = null;
+				extensionType = null;
 			}
 
+			uri = Percent.stripEndingSlashes(uri);
 			String[] items;
 			try {
 				items = Percent.splitAndDecode(uri, urlCharset);
@@ -239,14 +243,14 @@ class Handler extends AbstractHandler {
 			if (methodName.equals("HEAD")) {
 				CountOutputStream countStream = new CountOutputStream();
 				if (withContent) {
-					if (write(response, resource, responseBody, returnType, countStream)) {
+					if (write(response, resource, responseBody, returnType, extensionType, countStream)) {
 						response.setContentLengthLong(countStream.getCount());
 					}
 				}
 				responseStream.close();
 			} else {
 				if (withContent) {
-					write(response, resource, responseBody, returnType, responseStream);
+					write(response, resource, responseBody, returnType, extensionType, responseStream);
 				} else {
 					responseStream.close();
 				}
@@ -278,11 +282,16 @@ class Handler extends AbstractHandler {
 		}
 	}
 
-	boolean write(HttpServletResponse response, RestResource resource, Object actual, Type type, OutputStream stream) {
+	boolean write(HttpServletResponse response, RestResource resource, Object actual, Type type, String extensionType, OutputStream stream) {
 		boolean withoutWrites = true;
 		boolean withoutLength;
 		try {
-			String contentType = resource.getContentType();
+			String contentType;
+			if (extensionType == null) {
+				contentType = resource.getContentType();
+			} else {
+				contentType = extensionType;
+			}
 			boolean base64 = resource.isBase64();
 
 			Consumer<OutputStream> consumer;
