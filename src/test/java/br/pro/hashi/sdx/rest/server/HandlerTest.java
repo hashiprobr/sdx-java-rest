@@ -137,7 +137,7 @@ class HandlerTest {
 		mockCall();
 		mockReturnType();
 		handle();
-		assertEquals(List.of("0", "1"), callItemList);
+		assertItemList();
 		assertBody(stream);
 		assertOk();
 	}
@@ -155,7 +155,7 @@ class HandlerTest {
 		mockCall();
 		mockReturnType();
 		handle(false, mockAnswer());
-		assertEquals(List.of("0", "1"), callItemList);
+		assertItemList();
 		assertBody(stream);
 		verify(response).addHeader("Access-Control-Allow-Origin", "*");
 		verify(response).addHeader("Access-Control-Allow-Methods", "*");
@@ -214,27 +214,12 @@ class HandlerTest {
 	}
 
 	@Test
-	void handlesWithoutEndpoint() {
-		mockRequestUri();
-		mockNode();
-		mockMethodNames();
-		mockMethod();
-		mockNullEndpoint();
-		mockContentType();
-		mockResourceType();
-		mockCall();
-		mockReturnType();
-		handle();
-		assertMessageResponse(405, "GET not allowed");
-	}
-
-	@Test
-	void handlesWithoutEndpointWithOptions() {
+	void handlesWithOptions() {
 		mockRequestUri();
 		mockNode();
 		mockMethodNames();
 		when(request.getMethod()).thenReturn("OPTIONS");
-		mockNullEndpoint();
+		mockEndpoint();
 		mockContentType();
 		mockResourceType();
 		mockCall();
@@ -242,19 +227,26 @@ class HandlerTest {
 		handle();
 		verify(response).addHeader("Allow", "GET, POST");
 		verify(response).setStatus(200);
-		verify(response, times(0)).setContentLengthLong(any(long.class));
-		verify(h, times(0)).write(eq(response), any(), any(), eq(Object.class), any(ServletOutputStream.class));
-		verify(h, times(0)).write(eq(response), any(), any(), eq(Object.class), any(CountOutputStream.class));
-		try {
-			verify(response.getOutputStream()).close();
-		} catch (IOException exception) {
-			throw new AssertionError(exception);
-		}
-		verify(h, times(0)).sendError(eq(response), any(int.class), any());
+		verifyNotLength();
+		verifyNoServletWrite();
+		verifyNoCountWrite();
+		verifyResponseClose();
+		verifyNoError();
 	}
 
-	private void mockNullEndpoint() {
+	@Test
+	void handlesWithoutEndpoint() {
+		mockRequestUri();
+		mockNode();
+		mockMethodNames();
+		mockMethod();
 		when(node.getEndpoint("GET")).thenReturn(null);
+		mockContentType();
+		mockResourceType();
+		mockCall();
+		mockReturnType();
+		handle();
+		assertMessageResponse(405, "GET not allowed");
 	}
 
 	@Test
@@ -270,7 +262,7 @@ class HandlerTest {
 		mockCall();
 		mockReturnType();
 		handle();
-		assertEquals(List.of("0", "1"), callItemList);
+		assertItemList();
 		assertBody(null, stream);
 		assertOk();
 	}
@@ -288,7 +280,7 @@ class HandlerTest {
 		mockCall();
 		mockReturnType();
 		handle();
-		assertEquals(List.of("0", "1"), callItemList);
+		assertItemList();
 		Map<String, List<Fields>> partHeaders = callResource.partHeaders;
 		assertTrue(partHeaders.isEmpty());
 		assertTrue(callPartMap.isEmpty());
@@ -314,7 +306,7 @@ class HandlerTest {
 		mockCall();
 		mockReturnType();
 		handle();
-		assertEquals(List.of("0", "1"), callItemList);
+		assertItemList();
 		Map<String, List<Fields>> partHeaders = callResource.partHeaders;
 		assertEquals(1, partHeaders.size());
 		PartHeaders headers = (PartHeaders) partHeaders.get("").get(0);
@@ -352,7 +344,7 @@ class HandlerTest {
 		mockCall();
 		mockReturnType();
 		handle();
-		assertEquals(List.of("0", "1"), callItemList);
+		assertItemList();
 		Map<String, List<Fields>> partHeaders = callResource.partHeaders;
 		assertEquals(1, partHeaders.size());
 		List<Fields> headersList = partHeaders.get("");
@@ -397,7 +389,7 @@ class HandlerTest {
 		mockCall();
 		mockReturnType();
 		handle();
-		assertEquals(List.of("0", "1"), callItemList);
+		assertItemList();
 		Map<String, List<Fields>> partHeaders = callResource.partHeaders;
 		assertEquals(2, partHeaders.size());
 		PartHeaders headers = (PartHeaders) partHeaders.get("").get(0);
@@ -437,7 +429,7 @@ class HandlerTest {
 		mockCall();
 		mockReturnType();
 		handle();
-		assertEquals(List.of("0", "1"), callItemList);
+		assertItemList();
 		Map<String, List<Fields>> partHeaders = callResource.partHeaders;
 		assertEquals(1, partHeaders.size());
 		PartHeaders headers = (PartHeaders) partHeaders.get("name").get(0);
@@ -475,7 +467,7 @@ class HandlerTest {
 		mockCall();
 		mockReturnType();
 		handle();
-		assertEquals(List.of("0", "1"), callItemList);
+		assertItemList();
 		Map<String, List<Fields>> partHeaders = callResource.partHeaders;
 		assertEquals(2, partHeaders.size());
 		PartHeaders headers = (PartHeaders) partHeaders.get("name").get(0);
@@ -520,7 +512,7 @@ class HandlerTest {
 		mockCall();
 		mockReturnType();
 		handle();
-		assertEquals(List.of("0", "1"), callItemList);
+		assertItemList();
 		Map<String, List<Fields>> partHeaders = callResource.partHeaders;
 		assertEquals(2, partHeaders.size());
 		PartHeaders headers = (PartHeaders) partHeaders.get("name0").get(0);
@@ -555,7 +547,7 @@ class HandlerTest {
 	private void mockParts() {
 		try {
 			when(request.getParts()).thenReturn(parts);
-		} catch (IOException | ServletException exception) {
+		} catch (ServletException | IOException exception) {
 			throw new AssertionError(exception);
 		}
 	}
@@ -590,16 +582,12 @@ class HandlerTest {
 
 	private void assertMessageResponse(int status, String message) {
 		assertHeaders();
-		verify(response, times(0)).setStatus(any(int.class));
-		verify(response, times(0)).setContentLengthLong(any(long.class));
-		verify(h, times(0)).write(eq(response), any(), any(), eq(Object.class), any(ServletOutputStream.class));
-		verify(h, times(0)).write(eq(response), any(), any(), eq(Object.class), any(CountOutputStream.class));
-		try {
-			verify(response.getOutputStream(), times(0)).close();
-		} catch (IOException exception) {
-			throw new AssertionError(exception);
-		}
-		verify(h).sendError(response, status, message);
+		assertNoStatus();
+		verifyNotLength();
+		verifyNoServletWrite();
+		verifyNoCountWrite();
+		verifyNoResponseClose();
+		verifyError(status, message);
 	}
 
 	@Test
@@ -612,10 +600,10 @@ class HandlerTest {
 		mockContentType();
 		ServletInputStream stream = mockInputStream();
 		mockResourceType();
-		mockRestException(450, new Object());
+		mockRestExceptionCall(450, new Object());
 		mockReturnType();
 		handle();
-		assertEquals(List.of("0", "1"), callItemList);
+		assertItemList();
 		assertBody(stream);
 		assertResponseWithoutHeaders(450);
 	}
@@ -630,16 +618,16 @@ class HandlerTest {
 		mockContentType();
 		ServletInputStream stream = mockInputStream();
 		mockResourceType();
-		mockRestException(550, "message");
+		mockRestExceptionCall(550, "message");
 		when(formatter.format(550, "message")).thenReturn(new Object());
 		when(formatter.getReturnType()).thenReturn(Object.class);
 		handle();
-		assertEquals(List.of("0", "1"), callItemList);
+		assertItemList();
 		assertBody(stream);
 		assertResponseWithoutHeaders(550);
 	}
 
-	private void mockRestException(int status, Object body) {
+	private void mockRestExceptionCall(int status, Object body) {
 		when(endpoint.call(any(), any(), any(), any())).thenAnswer((invocation) -> {
 			saveCall(invocation);
 			throw new RestException(status, body);
@@ -659,7 +647,7 @@ class HandlerTest {
 		mockCall();
 		mockReturnType(void.class);
 		handle();
-		assertEquals(List.of("0", "1"), callItemList);
+		assertItemList();
 		assertBody(stream);
 		assertNoContent();
 	}
@@ -677,7 +665,7 @@ class HandlerTest {
 		mockCall();
 		mockReturnType(Void.class);
 		handle();
-		assertEquals(List.of("0", "1"), callItemList);
+		assertItemList();
 		assertBody(stream);
 		assertNoContent();
 	}
@@ -695,24 +683,9 @@ class HandlerTest {
 		mockNullCall();
 		mockReturnType();
 		handle();
-		assertEquals(List.of("0", "1"), callItemList);
+		assertItemList();
 		assertBody(stream);
 		assertNoContent();
-	}
-
-	private void assertNoContent() {
-		assertHeaders();
-		assertFields();
-		verify(response).setStatus(204);
-		verify(response, times(0)).setContentLengthLong(any(long.class));
-		verify(h, times(0)).write(eq(response), any(), any(), eq(Object.class), any(ServletOutputStream.class));
-		verify(h, times(0)).write(eq(response), any(), any(), eq(Object.class), any(CountOutputStream.class));
-		try {
-			verify(response.getOutputStream()).close();
-		} catch (IOException exception) {
-			throw new AssertionError(exception);
-		}
-		verify(h, times(0)).sendError(eq(response), any(int.class), any());
 	}
 
 	@Test
@@ -728,7 +701,7 @@ class HandlerTest {
 		mockNullCall();
 		mockReturnType();
 		handle();
-		assertEquals(List.of("0", "1"), callItemList);
+		assertItemList();
 		assertBody(stream);
 		assertOk();
 	}
@@ -745,15 +718,11 @@ class HandlerTest {
 	private void assertResponse(int status) {
 		assertFields();
 		verify(response).setStatus(status);
-		verify(response, times(0)).setContentLengthLong(any(long.class));
+		verifyNotLength();
 		verify(h).write(eq(response), any(), any(), eq(Object.class), any(ServletOutputStream.class));
-		verify(h, times(0)).write(eq(response), any(), any(), eq(Object.class), any(CountOutputStream.class));
-		try {
-			verify(response.getOutputStream(), times(0)).close();
-		} catch (IOException exception) {
-			throw new AssertionError(exception);
-		}
-		verify(h, times(0)).sendError(eq(response), any(int.class), any());
+		verifyNoCountWrite();
+		verifyNoResponseClose();
+		verifyNoError();
 	}
 
 	@Test
@@ -768,20 +737,16 @@ class HandlerTest {
 		mockCall();
 		mockReturnType();
 		handle();
-		assertEquals(List.of("0", "1"), callItemList);
+		assertItemList();
 		assertBody(stream);
 		assertHeaders();
 		assertFields();
 		verify(response).setStatus(200);
 		verify(response).setContentLengthLong(any(long.class));
-		verify(h, times(0)).write(eq(response), any(), any(), eq(Object.class), any(ServletOutputStream.class));
-		verify(h).write(eq(response), any(), any(), eq(Object.class), any(CountOutputStream.class));
-		try {
-			verify(response.getOutputStream()).close();
-		} catch (IOException exception) {
-			throw new AssertionError(exception);
-		}
-		verify(h, times(0)).sendError(eq(response), any(int.class), any());
+		verifyNoServletWrite();
+		verifyCountWrite();
+		verifyResponseClose();
+		verifyNoError();
 	}
 
 	@Test
@@ -796,20 +761,9 @@ class HandlerTest {
 		mockNullCall();
 		mockReturnType();
 		handle();
-		assertEquals(List.of("0", "1"), callItemList);
+		assertItemList();
 		assertBody(stream);
-		assertHeaders();
-		assertFields();
-		verify(response).setStatus(204);
-		verify(response, times(0)).setContentLengthLong(any(long.class));
-		verify(h, times(0)).write(eq(response), any(), any(), eq(Object.class), any(ServletOutputStream.class));
-		verify(h, times(0)).write(eq(response), any(), any(), eq(Object.class), any(CountOutputStream.class));
-		try {
-			verify(response.getOutputStream()).close();
-		} catch (IOException exception) {
-			throw new AssertionError(exception);
-		}
-		verify(h, times(0)).sendError(eq(response), any(int.class), any());
+		assertNoContent();
 	}
 
 	private void mockNullCall() {
@@ -817,6 +771,17 @@ class HandlerTest {
 			saveCall(invocation);
 			return null;
 		});
+	}
+
+	private void assertNoContent() {
+		assertHeaders();
+		assertFields();
+		verify(response).setStatus(204);
+		verifyNotLength();
+		verifyNoServletWrite();
+		verifyNoCountWrite();
+		verifyResponseClose();
+		verifyNoError();
 	}
 
 	@Test
@@ -833,25 +798,33 @@ class HandlerTest {
 		handle((invocation) -> {
 			return false;
 		});
-		assertEquals(List.of("0", "1"), callItemList);
+		assertItemList();
 		assertBody(stream);
 		assertHeaders();
 		assertFields();
 		verify(response).setStatus(200);
-		verify(response, times(0)).setContentLengthLong(any(long.class));
-		verify(h, times(0)).write(eq(response), any(), any(), eq(Object.class), any(ServletOutputStream.class));
-		verify(h).write(eq(response), any(), any(), eq(Object.class), any(CountOutputStream.class));
-		try {
-			verify(response.getOutputStream()).close();
-		} catch (IOException exception) {
-			throw new AssertionError(exception);
-		}
-		verify(h, times(0)).sendError(eq(response), any(int.class), any());
+		verifyNotLength();
+		verifyNoServletWrite();
+		verifyCountWrite();
+		verifyResponseClose();
+		verifyNoError();
 	}
 
 	private void mockHead() {
 		when(request.getMethod()).thenReturn("HEAD");
 		when(node.getEndpoint("HEAD")).thenReturn(endpoint);
+	}
+
+	private void verifyCountWrite() {
+		verify(h).write(eq(response), any(), any(), eq(Object.class), any(CountOutputStream.class));
+	}
+
+	private void verifyResponseClose() {
+		try {
+			verify(response.getOutputStream()).close();
+		} catch (IOException exception) {
+			throw new AssertionError(exception);
+		}
 	}
 
 	@Test
@@ -864,10 +837,10 @@ class HandlerTest {
 		mockContentType();
 		ServletInputStream stream = mockInputStream();
 		mockResourceType();
-		mockReturnType();
 		mockException(NullPointerException.class);
+		mockReturnType();
 		handle();
-		assertEquals(List.of("0", "1"), callItemList);
+		assertItemList();
 		assertBody(stream);
 		assertException(502);
 	}
@@ -882,12 +855,12 @@ class HandlerTest {
 		mockContentType();
 		ServletInputStream stream = mockInputStream();
 		mockResourceType();
-		mockReturnType();
 		mockException();
+		mockReturnType();
 		handle();
-		assertEquals(List.of("0", "1"), callItemList);
+		assertItemList();
 		assertBody(stream);
-		assertException(500);
+		assertException();
 	}
 
 	@Test
@@ -900,23 +873,13 @@ class HandlerTest {
 		mockContentType();
 		ServletInputStream stream = mockInputStream();
 		mockResourceType();
-		mockReturnType();
 		mockException();
+		mockReturnType();
 		doThrow(IOException.class).when(response).sendError(500, null);
 		handle();
-		assertEquals(List.of("0", "1"), callItemList);
+		assertItemList();
 		assertBody(stream);
-		assertException(500);
-	}
-
-	private ServletInputStream mockInputStream() {
-		ServletInputStream stream = mock(ServletInputStream.class);
-		try {
-			when(request.getInputStream()).thenReturn(stream);
-		} catch (IOException exception) {
-			throw new AssertionError(exception);
-		}
-		return stream;
+		assertException();
 	}
 
 	private void mockException() {
@@ -937,39 +900,23 @@ class HandlerTest {
 		});
 	}
 
-	private void assertBody(ServletInputStream stream) {
-		assertBody("type/subtype", stream);
-	}
-
-	private void assertBody(String contentType, ServletInputStream stream) {
-		assertEquals(contentType, callBody.getContentType());
-		assertSame(stream, callBody.getStream());
+	private void assertException() {
+		assertException(500);
 	}
 
 	private void assertException(int status) {
 		assertHeaders();
 		assertFields();
-		verify(response, times(0)).setStatus(any(int.class));
-		verify(response, times(0)).setContentLengthLong(any(long.class));
-		verify(h, times(0)).write(eq(response), any(), any(), eq(Object.class), any(ServletOutputStream.class));
-		verify(h, times(0)).write(eq(response), any(), any(), eq(Object.class), any(CountOutputStream.class));
-		try {
-			verify(response.getOutputStream(), times(0)).close();
-		} catch (IOException exception) {
-			throw new AssertionError(exception);
-		}
-		verify(h).sendError(response, status, null);
+		assertNoStatus();
+		verifyNotLength();
+		verifyNoServletWrite();
+		verifyNoCountWrite();
+		verifyNoResponseClose();
+		verifyError(status, null);
 	}
 
-	private void assertHeaders() {
-		verify(response, times(0)).addHeader(any(), any());
-	}
-
-	private void assertFields() {
-		Headers headers = (Headers) callResource.headers;
-		assertSame(fields, headers.getFields());
-		Queries queries = (Queries) callResource.queries;
-		assertSame(map, queries.getMap());
+	private void verifyError(int status, String message) {
+		verify(h).sendError(response, status, message);
 	}
 
 	private void mockRequestUri() {
@@ -1001,6 +948,16 @@ class HandlerTest {
 		when(request.getContentType()).thenReturn("type/subtype");
 	}
 
+	private ServletInputStream mockInputStream() {
+		ServletInputStream stream = mock(ServletInputStream.class);
+		try {
+			when(request.getInputStream()).thenReturn(stream);
+		} catch (IOException exception) {
+			throw new AssertionError(exception);
+		}
+		return stream;
+	}
+
 	private void mockResourceType() {
 		doReturn(ConcreteResource.class).when(endpoint).getResourceType();
 	}
@@ -1027,14 +984,60 @@ class HandlerTest {
 		when(endpoint.getReturnType()).thenReturn(type);
 	}
 
-	private void handle() {
-		handle(mockAnswer());
+	private void assertItemList() {
+		assertEquals(List.of("0", "1"), callItemList);
 	}
 
-	private Answer<Boolean> mockAnswer() {
-		return (invocation) -> {
-			return true;
-		};
+	private void assertBody(ServletInputStream stream) {
+		assertBody("type/subtype", stream);
+	}
+
+	private void assertBody(String contentType, ServletInputStream stream) {
+		assertEquals(contentType, callBody.getContentType());
+		assertSame(stream, callBody.getStream());
+	}
+
+	private void assertHeaders() {
+		verify(response, times(0)).addHeader(any(), any());
+	}
+
+	private void assertFields() {
+		Headers headers = (Headers) callResource.headers;
+		assertSame(fields, headers.getFields());
+		Queries queries = (Queries) callResource.queries;
+		assertSame(map, queries.getMap());
+	}
+
+	private void assertNoStatus() {
+		verify(response, times(0)).setStatus(any(int.class));
+	}
+
+	private void verifyNotLength() {
+		verify(response, times(0)).setContentLengthLong(any(long.class));
+	}
+
+	private void verifyNoServletWrite() {
+		verify(h, times(0)).write(eq(response), any(), any(), eq(Object.class), any(ServletOutputStream.class));
+	}
+
+	private void verifyNoCountWrite() {
+		verify(h, times(0)).write(eq(response), any(), any(), eq(Object.class), any(CountOutputStream.class));
+	}
+
+	private void verifyNoResponseClose() {
+		try {
+			verify(response.getOutputStream(), times(0)).close();
+		} catch (IOException exception) {
+			throw new AssertionError(exception);
+		}
+	}
+
+	private void verifyNoError() {
+		verify(h, times(0)).sendError(eq(response), any(int.class), any());
+	}
+
+	private void handle() {
+		handle(mockAnswer());
 	}
 
 	private void handle(Answer<Boolean> answer) {
@@ -1050,6 +1053,12 @@ class HandlerTest {
 		doAnswer(answer).when(h).write(eq(response), any(), any(), eq(Object.class), any());
 		h.handle("target", baseRequest, request, response);
 		verify(baseRequest).setHandled(true);
+	}
+
+	private Answer<Boolean> mockAnswer() {
+		return (invocation) -> {
+			return true;
+		};
 	}
 
 	@Test
