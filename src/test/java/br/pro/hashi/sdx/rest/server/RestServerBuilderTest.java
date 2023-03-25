@@ -139,6 +139,12 @@ class RestServerBuilderTest extends BuilderTest {
 	}
 
 	@Test
+	void addsExtension() {
+		assertSame(b, b.withExtension("ext", "type/subtype"));
+		verify(b.getFacade()).putExtension("ext", "type/subtype");
+	}
+
+	@Test
 	void addsGateway() {
 		assertSame(b, b.withGateway(RuntimeException.class));
 		assertEquals(Set.of(RuntimeException.class), b.getGatewayTypes());

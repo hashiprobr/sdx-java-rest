@@ -3,6 +3,7 @@ package br.pro.hashi.sdx.rest.transform.facade;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -108,12 +109,32 @@ class FacadeTest {
 	}
 
 	@Test
+	void initializesWithTxtExtension() {
+		assertEquals("text/plain", f.getContentType("txt"));
+	}
+
+	@Test
+	void initializesWithoutXmlExtension() {
+		assertNull(f.getContentType("xml"));
+	}
+
+	@Test
+	void initializesWithoutPngExtension() {
+		assertNull(f.getContentType("png"));
+	}
+
+	@Test
+	void initializesWithoutNullExtension() {
+		assertNull(f.getContentType(null));
+	}
+
+	@Test
 	void initializesWithOctetAssembler() {
 		assertInstanceOf(OctetAssembler.class, f.getAssembler("application/octet-stream"));
 	}
 
 	@Test
-	void initializesWithoutPNGAssembler() {
+	void initializesWithoutPngAssembler() {
 		assertThrows(SupportException.class, () -> {
 			f.getAssembler("image/png");
 		});
@@ -132,7 +153,7 @@ class FacadeTest {
 	}
 
 	@Test
-	void initializesWithoutPNGDisassembler() {
+	void initializesWithoutPngDisassembler() {
 		assertThrows(SupportException.class, () -> {
 			f.getDisassembler("image/png");
 		});
@@ -151,7 +172,7 @@ class FacadeTest {
 	}
 
 	@Test
-	void initializesWithoutXMLSerializer() {
+	void initializesWithoutXmlSerializer() {
 		assertThrows(SupportException.class, () -> {
 			f.getSerializer("application/xml");
 		});
@@ -170,7 +191,7 @@ class FacadeTest {
 	}
 
 	@Test
-	void initializesWithoutXMLDeserializer() {
+	void initializesWithoutXmlDeserializer() {
 		assertThrows(SupportException.class, () -> {
 			f.getDeserializer("application/xml");
 		});
@@ -218,9 +239,125 @@ class FacadeTest {
 	}
 
 	@Test
+	void addsXmlExtension() {
+		try (MockedStatic<Media> media = mockStatic(Media.class)) {
+			String contentType = "text/plain";
+			media.when(() -> Media.strip(contentType)).thenReturn(contentType);
+			f.putExtension("xml", contentType);
+			assertEquals(contentType, f.getContentType("xml"));
+		}
+	}
+
+	@Test
+	void doesNotAddXmlExtensionIfItIsNull() {
+		assertThrows(NullPointerException.class, () -> {
+			f.putExtension(null, "text/plain");
+		});
+		assertNull(f.getContentType(null));
+	}
+
+	@Test
+	void doesNotAddXmlExtensionIfItIsBlank() {
+		assertThrows(IllegalArgumentException.class, () -> {
+			f.putExtension(" \t\n", "text/plain");
+		});
+		assertNull(f.getContentType("xml"));
+	}
+
+	@Test
+	void doesNotAddXmlExtensionIfTypeIsNull() {
+		assertThrows(NullPointerException.class, () -> {
+			f.putExtension("xml", null);
+		});
+		assertNull(f.getContentType("xml"));
+	}
+
+	@Test
+	void doesNotAddXmlExtensionIfStripReturnsNull() {
+		try (MockedStatic<Media> media = mockStatic(Media.class)) {
+			String contentType = "text/plain";
+			media.when(() -> Media.strip(contentType)).thenReturn(null);
+			assertThrows(IllegalArgumentException.class, () -> {
+				f.putExtension("xml", contentType);
+			});
+			assertNull(f.getContentType("xml"));
+		}
+	}
+
+	@Test
+	void doesNotAddXmlExtensionIfTypeIsInvalid() {
+		try (MockedStatic<Media> media = mockStatic(Media.class)) {
+			String contentType = "application/xml";
+			media.when(() -> Media.strip(contentType)).thenReturn(contentType);
+			assertThrows(IllegalArgumentException.class, () -> {
+				f.putExtension("xml", contentType);
+			});
+			assertNull(f.getContentType("xml"));
+		}
+	}
+
+	@Test
+	void addsPngExtension() {
+		try (MockedStatic<Media> media = mockStatic(Media.class)) {
+			String contentType = "application/octet-stream";
+			media.when(() -> Media.strip(contentType)).thenReturn(contentType);
+			f.putExtension("png", contentType);
+			assertEquals(contentType, f.getContentType("png"));
+		}
+	}
+
+	@Test
+	void doesNotAddPngExtensionIfItIsNull() {
+		assertThrows(NullPointerException.class, () -> {
+			f.putExtension(null, "application/octet-stream");
+		});
+		assertNull(f.getContentType(null));
+	}
+
+	@Test
+	void doesNotAddPngExtensionIfItIsBlank() {
+		assertThrows(IllegalArgumentException.class, () -> {
+			f.putExtension(" \t\n", "application/octet-stream");
+		});
+		assertNull(f.getContentType("png"));
+	}
+
+	@Test
+	void doesNotAddPngExtensionIfTypeIsNull() {
+		assertThrows(NullPointerException.class, () -> {
+			f.putExtension("png", null);
+		});
+		assertNull(f.getContentType("png"));
+	}
+
+	@Test
+	void doesNotAddPngExtensionIfStripReturnsNull() {
+		try (MockedStatic<Media> media = mockStatic(Media.class)) {
+			String contentType = "application/octet-stream";
+			media.when(() -> Media.strip(contentType)).thenReturn(null);
+			assertThrows(IllegalArgumentException.class, () -> {
+				f.putExtension("png", contentType);
+			});
+			assertNull(f.getContentType("png"));
+		}
+	}
+
+	@Test
+	void doesNotAddPngExtensionIfTypeIsInvalid() {
+		try (MockedStatic<Media> media = mockStatic(Media.class)) {
+			String contentType = "image/png";
+			media.when(() -> Media.strip(contentType)).thenReturn(contentType);
+			assertThrows(IllegalArgumentException.class, () -> {
+				f.putExtension("png", contentType);
+			});
+			assertNull(f.getContentType("png"));
+		}
+	}
+
+	@Test
 	void cleansForAssembling() {
 		String contentType = "image/png";
-		assertSame(contentType, f.cleanForAssembling(contentType, null));
+		assertEquals(contentType, f.cleanForAssembling(contentType, null));
 	}
 
 	@Test
@@ -239,7 +376,7 @@ class FacadeTest {
 			String fallbackByteType = "image/png";
 			media.when(() -> Media.strip(fallbackByteType)).thenReturn(fallbackByteType);
 			f.setFallbackByteType(fallbackByteType);
-			assertSame(fallbackByteType, f.cleanForAssembling(null, new Object()));
+			assertEquals(fallbackByteType, f.cleanForAssembling(null, new Object()));
 		}
 	}
 
@@ -254,7 +391,7 @@ class FacadeTest {
 	@Test
 	void cleansForDisassembling() {
 		String contentType = "image/png";
-		assertSame(contentType, f.cleanForDisassembling(contentType, null));
+		assertEquals(contentType, f.cleanForDisassembling(contentType, null));
 	}
 
 	@Test
@@ -273,7 +410,7 @@ class FacadeTest {
 			String fallbackByteType = "image/png";
 			media.when(() -> Media.strip(fallbackByteType)).thenReturn(fallbackByteType);
 			f.setFallbackByteType(fallbackByteType);
-			assertSame(fallbackByteType, f.cleanForDisassembling(null, Object.class));
+			assertEquals(fallbackByteType, f.cleanForDisassembling(null, Object.class));
 		}
 	}
 
@@ -287,7 +424,7 @@ class FacadeTest {
 	@Test
 	void cleansForSerializing() {
 		String contentType = "application/xml";
-		assertSame(contentType, f.cleanForSerializing(contentType, null));
+		assertEquals(contentType, f.cleanForSerializing(contentType, null));
 	}
 
 	@Test
@@ -306,7 +443,7 @@ class FacadeTest {
 			String fallbackTextType = "application/xml";
 			media.when(() -> Media.strip(fallbackTextType)).thenReturn(fallbackTextType);
 			f.setFallbackTextType(fallbackTextType);
-			assertSame(fallbackTextType, f.cleanForSerializing(null, new Object()));
+			assertEquals(fallbackTextType, f.cleanForSerializing(null, new Object()));
 		}
 	}
 
@@ -321,7 +458,7 @@ class FacadeTest {
 	@Test
 	void cleansForDeserializing() {
 		String contentType = "application/xml";
-		assertSame(contentType, f.cleanForDeserializing(contentType, null));
+		assertEquals(contentType, f.cleanForDeserializing(contentType, null));
 	}
 
 	@Test
@@ -340,7 +477,7 @@ class FacadeTest {
 			String fallbackTextType = "application/xml";
 			media.when(() -> Media.strip(fallbackTextType)).thenReturn(fallbackTextType);
 			f.setFallbackTextType(fallbackTextType);
-			assertSame(fallbackTextType, f.cleanForDeserializing(null, Object.class));
+			assertEquals(fallbackTextType, f.cleanForDeserializing(null, Object.class));
 		}
 	}
 

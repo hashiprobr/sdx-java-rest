@@ -150,6 +150,27 @@ public non-sealed class RestServerBuilder extends Builder<RestServerBuilder> {
 	}
 
 	/**
+	 * <p>
+	 * Associates an extension to a content type.
+	 * </p>
+	 * <p>
+	 * The only extension associated to a content type by default is {@code txt}.
+	 * </p>
+	 * 
+	 * @param extension   the extension
+	 * @param contentType the content type
+	 * @return this builder, for chaining
+	 * @throws NullPointerException     if the extension is null or the content type
+	 *                                  is null
+	 * @throws IllegalArgumentException if the extension is blank or the content
+	 *                                  type is invalid
+	 */
+	public final RestServerBuilder withExtension(String extension, String contentType) {
+		facade.putExtension(extension, contentType);
+		return self();
+	}
+
+	/**
 	 * Adds an exception type that should be considered gateway.
 	 * 
 	 * @param type the exception type

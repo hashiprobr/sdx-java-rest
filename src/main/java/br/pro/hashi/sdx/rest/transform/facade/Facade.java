@@ -23,6 +23,7 @@ public class Facade {
 
 	private final Set<Class<?>> binaryClasses;
 	private final Set<ParameterizedType> binaryParameterizedTypes;
+	private final Map<String, String> extensions;
 	private final Map<String, Assembler> assemblers;
 	private final Map<String, Disassembler> disassemblers;
 	private final Map<String, Serializer> serializers;
@@ -35,6 +36,9 @@ public class Facade {
 		this.binaryClasses.addAll(Set.of(byte[].class, InputStream.class));
 
 		this.binaryParameterizedTypes = new HashSet<>();
+
+		this.extensions = new HashMap<>();
+		this.extensions.put("txt", PLAIN_TYPE);
 
 		this.assemblers = new HashMap<>();
 		this.assemblers.put(OCTET_TYPE, new OctetAssembler());
@@ -84,6 +88,31 @@ public class Facade {
 		} else {
 			binaryClasses.add((Class<?>) type);
 		}
+	}
+
+	public String getContentType(String extension) {
+		return extensions.get(extension);
+	}
+
+	public void putExtension(String extension, String contentType) {
+		if (extension == null) {
+			throw new NullPointerException("Extension cannot be null");
+		}
+		extension = extension.strip();
+		if (extension.isEmpty()) {
+			throw new IllegalArgumentException("Extension cannot be blank");
+		}
+		if (contentType == null) {
+			throw new NullPointerException("Extension type cannot be null");
+		}
+		contentType = Media.strip(contentType);
+		if (contentType == null) {
+			throw new IllegalArgumentException("Extension type cannot be blank");
+		}
+		if (!(assemblers.containsKey(contentType) || serializers.containsKey(contentType))) {
+			throw new IllegalArgumentException("Extension is not associated to an assembler or a serializer");
+		}
+		extensions.put(extension, contentType);
 	}
 
 	public String cleanForAssembling(String contentType, Object body) {
