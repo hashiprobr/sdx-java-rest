@@ -6,4 +6,7 @@ public class ResourceWithOne extends RestResource {
 	public ResourceWithOne() {
 		super("/b");
 	}
+
+	public void get() {
+	}
 }

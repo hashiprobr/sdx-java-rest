@@ -6,4 +6,7 @@ public class ResourceWithTwo extends RestResource {
 	public ResourceWithTwo() {
 		super("/b/c");
 	}
+
+	public void get() {
+	}
 }

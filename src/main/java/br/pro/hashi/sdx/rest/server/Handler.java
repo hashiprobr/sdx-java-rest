@@ -35,11 +35,11 @@ import br.pro.hashi.sdx.rest.reflection.Queries;
 import br.pro.hashi.sdx.rest.reflection.Reflection;
 import br.pro.hashi.sdx.rest.server.exception.BadRequestException;
 import br.pro.hashi.sdx.rest.server.exception.MessageRestException;
-import br.pro.hashi.sdx.rest.server.exception.NotFoundException;
 import br.pro.hashi.sdx.rest.server.tree.Data;
 import br.pro.hashi.sdx.rest.server.tree.Endpoint;
 import br.pro.hashi.sdx.rest.server.tree.Node;
 import br.pro.hashi.sdx.rest.server.tree.Tree;
+import br.pro.hashi.sdx.rest.server.tree.Tree.Leaf;
 import br.pro.hashi.sdx.rest.transform.Assembler;
 import br.pro.hashi.sdx.rest.transform.Serializer;
 import br.pro.hashi.sdx.rest.transform.facade.Facade;
@@ -141,15 +141,19 @@ class Handler extends AbstractHandler {
 			}
 
 			List<String> itemList = new ArrayList<>();
-			Node node = tree.getNodeAndAddItems(items, itemList);
-			Set<String> methodNames = node.getMethodNames();
-			if (methodNames.isEmpty()) {
-				throw new NotFoundException();
-			}
+			Leaf leaf = tree.getLeafAndAddItems(items, itemList);
+			Node node = leaf.node();
+			int varSize = leaf.varSize();
 
 			String methodName = request.getMethod();
 			OutputStream responseStream = response.getOutputStream();
 			if (methodName.equals("OPTIONS")) {
+				Set<String> methodNames;
+				if (varSize == 0) {
+					methodNames = node.getMethodNames();
+				} else {
+					methodNames = node.getVarMethodNames();
+				}
 				response.addHeader("Allow", String.join(", ", methodNames));
 				response.setStatus(HttpServletResponse.SC_OK);
 				responseStream.close();

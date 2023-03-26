@@ -38,7 +38,7 @@ public class Endpoint {
 	private final Class<? extends RestResource> resourceType;
 	private final Method method;
 	private final Type returnType;
-	private final Class<?> varArgsType;
+	private final Class<?> varType;
 	private final ItemParameter[] itemParameters;
 	private final Map<String, DataParameter[]> partParameters;
 	private final DataParameter bodyParameter;
@@ -53,7 +53,7 @@ public class Endpoint {
 		}
 
 		Type[] types = method.getGenericParameterTypes();
-		Class<?> varArgsType = null;
+		Class<?> varType = null;
 		List<ItemParameter> itemList = new ArrayList<>();
 		Map<String, List<DataParameter>> partMap = new HashMap<>();
 		DataParameter bodyParameter = null;
@@ -75,12 +75,12 @@ public class Endpoint {
 					if (type instanceof ParameterizedType) {
 						throw new ReflectionException("Parameter %d of method %s cannot be generic if neither part or body".formatted(index, methodName));
 					}
-					Class<?> specificType = (Class<?>) type;
+					Class<?> rawType = (Class<?>) type;
 					if (index == start) {
-						specificType = specificType.getComponentType();
-						varArgsType = specificType;
+						rawType = rawType.getComponentType();
+						varType = rawType;
 					}
-					Function<String, ?> function = cache.get(specificType);
+					Function<String, ?> function = cache.get(rawType);
 					itemList.add(new ItemParameter(index, function, parameter.getName()));
 				} else {
 					if (!partMap.isEmpty()) {
@@ -109,8 +109,8 @@ public class Endpoint {
 			index++;
 		}
 
-		int shift = varArgsType == null ? 0 : 1;
-		if (itemList.size() - shift < distance) {
+		int varSize = varType == null ? 0 : 1;
+		if (itemList.size() - varSize < distance) {
 			throw new ReflectionException("Method %s must have at least %d parameters that are neither part or body".formatted(methodName, distance));
 		}
 
@@ -118,7 +118,7 @@ public class Endpoint {
 		this.resourceType = resourceType;
 		this.method = method;
 		this.returnType = method.getGenericReturnType();
-		this.varArgsType = varArgsType;
+		this.varType = varType;
 		this.itemParameters = itemList.toArray(new ItemParameter[itemList.size()]);
 		this.partParameters = new HashMap<>();
 		for (String name : partMap.keySet()) {
@@ -127,7 +127,11 @@ public class Endpoint {
 		}
 		this.bodyParameter = bodyParameter;
 		this.arguments = new Object[types.length];
-		this.reach = itemParameters.length - distance - shift;
+		this.reach = itemParameters.length - varSize - distance;
+	}
+
+	Class<?> getVarType() {
+		return varType;
 	}
 
 	ItemParameter[] getItemParameters() {
@@ -161,12 +165,12 @@ public class Endpoint {
 	public Object call(RestResource resource, List<String> items, Map<String, List<Data>> partMap, Data body) {
 		Object result;
 		try {
-			if (varArgsType != null) {
+			if (varType != null) {
 				int start = itemParameters.length - 1;
 				int end = items.size();
 				ItemParameter parameter = itemParameters[start];
 				Function<String, ?> function = parameter.function();
-				Object varArgs = Array.newInstance(varArgsType, end - start);
+				Object varArgs = Array.newInstance(varType, end - start);
 				int index = 0;
 				for (String item : items.subList(start, end)) {
 					Array.set(varArgs, index, apply(function, item));

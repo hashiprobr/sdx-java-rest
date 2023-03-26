@@ -28,20 +28,36 @@ public class Tree {
 		this.root = new Node();
 	}
 
-	public Node getNodeAndAddItems(String[] items, List<String> itemList) {
+	public Leaf getLeafAndAddItems(String[] items, List<String> itemList) {
 		Node node = root;
-		for (String item : items) {
+		int index = 0;
+		while (index < items.length) {
+			String item = items[index];
 			Node child = node.getChild(item);
 			if (child == null) {
 				child = node.getChild(null);
 				if (child == null) {
-					throw new NotFoundException();
+					break;
 				}
 				itemList.add(item);
 			}
 			node = child;
+			index++;
 		}
-		return node;
+		if (node.getMethodNames().isEmpty()) {
+			throw new NotFoundException();
+		}
+		int varSize = items.length - index;
+		if (varSize > 0) {
+			if (node.getVarMethodNames().isEmpty()) {
+				throw new NotFoundException();
+			}
+			while (index < items.length) {
+				itemList.add(items[index]);
+				index++;
+			}
+		}
+		return new Leaf(node, varSize);
 	}
 
 	public void putNodesAndEndpoints(Class<? extends RestResource> type, String typeName, Map<Class<? extends RestResource>, String[]> itemMap) {
@@ -74,8 +90,15 @@ public class Tree {
 					throw new ReflectionException("%s cannot have %s endpoints".formatted(typeName, methodName));
 				}
 				node = subRoot;
-				for (int i = 0; i < endpoint.getReach(); i++) {
+				int reach = endpoint.getReach();
+				if (reach > 0 && !node.getVarMethodNames().isEmpty()) {
+					throw new ReflectionException("%s has a %s endpoint that shadows a varargs endpoint".formatted(typeName, methodName));
+				}
+				for (int i = 0; i < reach; i++) {
 					node = node.requireChild(null);
+				}
+				if (endpoint.getVarType() != null && node.getChild(null) != null) {
+					throw new ReflectionException("%s has a %s varargs endpoint shadowed by another endpoint".formatted(typeName, methodName));
 				}
 				Endpoint existing = node.getEndpoint(methodName);
 				if (existing != null) {
@@ -83,7 +106,7 @@ public class Tree {
 					if (type.equals(existingType)) {
 						throw new ReflectionException("%s has multiple %s endpoints in the same path".formatted(typeName, methodName));
 					}
-					throw new ReflectionException("%s and %s have %s endpoints in the same path".formatted(typeName, existingType.getName(), methodName));
+					throw new ReflectionException("%s and %s have %s endpoints in the same path".formatted(existingType.getName(), typeName, methodName));
 				}
 				node.putEndpoint(methodName, endpoint);
 			}
@@ -127,5 +150,8 @@ public class Tree {
 			type = type.getSuperclass();
 		}
 		return existing;
+	}
+
+	public record Leaf(Node node, int varSize) {
 	}
 }

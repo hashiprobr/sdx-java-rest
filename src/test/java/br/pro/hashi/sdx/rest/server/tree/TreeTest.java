@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.Stack;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -27,6 +28,7 @@ import br.pro.hashi.sdx.rest.reflection.exception.ReflectionException;
 import br.pro.hashi.sdx.rest.server.RestResource;
 import br.pro.hashi.sdx.rest.server.annotation.Nested;
 import br.pro.hashi.sdx.rest.server.exception.NotFoundException;
+import br.pro.hashi.sdx.rest.server.tree.Tree.Leaf;
 import br.pro.hashi.sdx.rest.server.tree.mock.cyclic.Acyclic;
 import br.pro.hashi.sdx.rest.server.tree.mock.cyclic.AcyclicInAcyclic;
 import br.pro.hashi.sdx.rest.server.tree.mock.cyclic.AcyclicInAcyclicInAcyclic;
@@ -52,9 +54,16 @@ import br.pro.hashi.sdx.rest.server.tree.mock.endpoint.ChildReaches;
 import br.pro.hashi.sdx.rest.server.tree.mock.endpoint.Head;
 import br.pro.hashi.sdx.rest.server.tree.mock.endpoint.Multiple;
 import br.pro.hashi.sdx.rest.server.tree.mock.endpoint.NestedReaches;
+import br.pro.hashi.sdx.rest.server.tree.mock.endpoint.OneInfiniteReaches;
 import br.pro.hashi.sdx.rest.server.tree.mock.endpoint.Options;
 import br.pro.hashi.sdx.rest.server.tree.mock.endpoint.Reaches;
-import br.pro.hashi.sdx.rest.server.tree.mock.endpoint.SamePath;
+import br.pro.hashi.sdx.rest.server.tree.mock.endpoint.Same;
+import br.pro.hashi.sdx.rest.server.tree.mock.endpoint.SameOneItem;
+import br.pro.hashi.sdx.rest.server.tree.mock.endpoint.SameVarArgs;
+import br.pro.hashi.sdx.rest.server.tree.mock.endpoint.ShadowOneItem;
+import br.pro.hashi.sdx.rest.server.tree.mock.endpoint.ShadowVarArgs;
+import br.pro.hashi.sdx.rest.server.tree.mock.endpoint.TwoInfiniteReaches;
+import br.pro.hashi.sdx.rest.server.tree.mock.endpoint.ZeroInfiniteReaches;
 import br.pro.hashi.sdx.rest.server.tree.mock.multiple.*;
 import br.pro.hashi.sdx.rest.server.tree.mock.node.Enclosing;
 import br.pro.hashi.sdx.rest.server.tree.mock.node.One;
@@ -98,104 +107,235 @@ class TreeTest {
 		itemMap.put(Reaches.class, new String[] {});
 		itemMap.put(ChildReaches.class, new String[] {});
 		itemMap.put(NestedReaches.class, new String[] {});
+		itemMap.put(ZeroInfiniteReaches.class, new String[] {});
+		itemMap.put(OneInfiniteReaches.class, new String[] {});
+		itemMap.put(TwoInfiniteReaches.class, new String[] {});
 		itemMap.put(Options.class, new String[] {});
 		itemMap.put(Head.class, new String[] {});
 		itemMap.put(Multiple.class, new String[] {});
-		itemMap.put(SamePath.class, new String[] {});
+		itemMap.put(ShadowOneItem.class, new String[] {});
+		itemMap.put(ShadowVarArgs.class, new String[] {});
+		itemMap.put(Same.class, new String[] {});
+		itemMap.put(SameOneItem.class, new String[] {});
+		itemMap.put(SameVarArgs.class, new String[] {});
 	}
 
 	@Test
 	void putsEndpointsFromReaches() {
-		putNode(Reaches.class);
-		Node node = getNode(new String[] {});
+		putNodesAndEndpoints(Reaches.class);
+		Node node = getNodeAndAddItems(new String[] {});
 		assertNull(node.getEndpoint("GET"));
 		assertNotNull(node.getEndpoint("POST"));
 		assertNull(node.getEndpoint("PUT"));
 		assertNull(node.getEndpoint("PATCH"));
 		assertNull(node.getEndpoint("DELETE"));
+		assertTrue(node.getVarMethodNames().isEmpty());
 		assertTrue(itemList.isEmpty());
-		node = getNode(new String[] { "0" });
+		node = getNodeAndAddItems(new String[] { "0" });
 		assertNull(node.getEndpoint("GET"));
 		assertNull(node.getEndpoint("POST"));
 		assertNotNull(node.getEndpoint("PUT"));
 		assertNull(node.getEndpoint("PATCH"));
 		assertNull(node.getEndpoint("DELETE"));
+		assertTrue(node.getVarMethodNames().isEmpty());
 		assertEquals(List.of("0"), itemList);
-		node = getNode(new String[] { "0", "1" });
+		node = getNodeAndAddItems(new String[] { "0", "1" });
 		assertNull(node.getEndpoint("GET"));
 		assertNull(node.getEndpoint("POST"));
 		assertNull(node.getEndpoint("PUT"));
 		assertNotNull(node.getEndpoint("PATCH"));
 		assertNull(node.getEndpoint("DELETE"));
+		assertTrue(node.getVarMethodNames().isEmpty());
 		assertEquals(List.of("0", "1"), itemList);
 		assertThrows(NotFoundException.class, () -> {
-			getNode(new String[] { "0", "1", "2" });
+			getNodeAndAddItems(new String[] { "0", "1", "2" });
 		});
 	}
 
 	@Test
 	void putsEndpointsFromChildReaches() {
-		putNode(ChildReaches.class);
-		Node node = getNode(new String[] {});
+		putNodesAndEndpoints(ChildReaches.class);
+		Node node = getNodeAndAddItems(new String[] {});
 		assertNull(node.getEndpoint("GET"));
 		assertNotNull(node.getEndpoint("POST"));
 		assertNull(node.getEndpoint("PUT"));
 		assertNull(node.getEndpoint("PATCH"));
 		assertNull(node.getEndpoint("DELETE"));
+		assertTrue(node.getVarMethodNames().isEmpty());
 		assertTrue(itemList.isEmpty());
-		node = getNode(new String[] { "0" });
+		node = getNodeAndAddItems(new String[] { "0" });
 		assertNull(node.getEndpoint("GET"));
 		assertNull(node.getEndpoint("POST"));
 		assertNotNull(node.getEndpoint("PUT"));
 		assertNull(node.getEndpoint("PATCH"));
 		assertNull(node.getEndpoint("DELETE"));
+		assertTrue(node.getVarMethodNames().isEmpty());
 		assertEquals(List.of("0"), itemList);
-		node = getNode(new String[] { "0", "1" });
+		node = getNodeAndAddItems(new String[] { "0", "1" });
 		assertNull(node.getEndpoint("GET"));
 		assertNull(node.getEndpoint("POST"));
 		assertNull(node.getEndpoint("PUT"));
 		assertNotNull(node.getEndpoint("PATCH"));
 		assertNull(node.getEndpoint("DELETE"));
+		assertTrue(node.getVarMethodNames().isEmpty());
 		assertEquals(List.of("0", "1"), itemList);
-		node = getNode(new String[] { "0", "1", "2" });
+		node = getNodeAndAddItems(new String[] { "0", "1", "2" });
 		assertNull(node.getEndpoint("GET"));
 		assertNull(node.getEndpoint("POST"));
 		assertNull(node.getEndpoint("PUT"));
 		assertNull(node.getEndpoint("PATCH"));
 		assertNotNull(node.getEndpoint("DELETE"));
+		assertTrue(node.getVarMethodNames().isEmpty());
 		assertEquals(List.of("0", "1", "2"), itemList);
 	}
 
 	@Test
 	void putsEndpointsFromNestedReaches() {
-		putNode(NestedReaches.class);
-		Node node = getNode(new String[] { "0" });
+		putNodesAndEndpoints(NestedReaches.class);
+		assertThrows(NotFoundException.class, () -> {
+			getNodeAndAddItems(new String[] {});
+		});
+		Node node = getNodeAndAddItems(new String[] { "0" });
 		assertNull(node.getEndpoint("GET"));
 		assertNotNull(node.getEndpoint("POST"));
 		assertNull(node.getEndpoint("PUT"));
 		assertNull(node.getEndpoint("PATCH"));
 		assertNull(node.getEndpoint("DELETE"));
+		assertTrue(node.getVarMethodNames().isEmpty());
 		assertEquals(List.of("0"), itemList);
-		node = getNode(new String[] { "0", "1" });
+		node = getNodeAndAddItems(new String[] { "0", "1" });
 		assertNull(node.getEndpoint("GET"));
 		assertNull(node.getEndpoint("POST"));
 		assertNotNull(node.getEndpoint("PUT"));
 		assertNull(node.getEndpoint("PATCH"));
 		assertNull(node.getEndpoint("DELETE"));
+		assertTrue(node.getVarMethodNames().isEmpty());
 		assertEquals(List.of("0", "1"), itemList);
-		node = getNode(new String[] { "0", "1", "2" });
+		node = getNodeAndAddItems(new String[] { "0", "1", "2" });
 		assertNull(node.getEndpoint("GET"));
 		assertNull(node.getEndpoint("POST"));
 		assertNull(node.getEndpoint("PUT"));
 		assertNotNull(node.getEndpoint("PATCH"));
 		assertNull(node.getEndpoint("DELETE"));
+		assertTrue(node.getVarMethodNames().isEmpty());
+		assertEquals(List.of("0", "1", "2"), itemList);
+	}
+
+	@Test
+	void putsEndpointsFromZeroInfiniteReaches() {
+		putNodesAndEndpoints(ZeroInfiniteReaches.class);
+		Node node = getNodeAndAddItems(new String[] {});
+		assertNull(node.getEndpoint("GET"));
+		assertNotNull(node.getEndpoint("POST"));
+		assertNotNull(node.getEndpoint("PUT"));
+		assertNull(node.getEndpoint("PATCH"));
+		assertNull(node.getEndpoint("DELETE"));
+		assertEquals(Set.of("POST"), node.getVarMethodNames());
+		assertTrue(itemList.isEmpty());
+		node = getNodeAndAddItems(1, new String[] { "0" });
+		assertNull(node.getEndpoint("GET"));
+		assertNotNull(node.getEndpoint("POST"));
+		assertNotNull(node.getEndpoint("PUT"));
+		assertNull(node.getEndpoint("PATCH"));
+		assertNull(node.getEndpoint("DELETE"));
+		assertEquals(Set.of("POST"), node.getVarMethodNames());
+		assertEquals(List.of("0"), itemList);
+		node = getNodeAndAddItems(2, new String[] { "0", "1" });
+		assertNull(node.getEndpoint("GET"));
+		assertNotNull(node.getEndpoint("POST"));
+		assertNotNull(node.getEndpoint("PUT"));
+		assertNull(node.getEndpoint("PATCH"));
+		assertNull(node.getEndpoint("DELETE"));
+		assertEquals(Set.of("POST"), node.getVarMethodNames());
+		assertEquals(List.of("0", "1"), itemList);
+		node = getNodeAndAddItems(3, new String[] { "0", "1", "2" });
+		assertNull(node.getEndpoint("GET"));
+		assertNotNull(node.getEndpoint("POST"));
+		assertNotNull(node.getEndpoint("PUT"));
+		assertNull(node.getEndpoint("PATCH"));
+		assertNull(node.getEndpoint("DELETE"));
+		assertEquals(Set.of("POST"), node.getVarMethodNames());
+		assertEquals(List.of("0", "1", "2"), itemList);
+	}
+
+	@Test
+	void putsEndpointsFromOneInfiniteReaches() {
+		putNodesAndEndpoints(OneInfiniteReaches.class);
+		Node node = getNodeAndAddItems(new String[] {});
+		assertNull(node.getEndpoint("GET"));
+		assertNull(node.getEndpoint("POST"));
+		assertNull(node.getEndpoint("PUT"));
+		assertNotNull(node.getEndpoint("PATCH"));
+		assertNull(node.getEndpoint("DELETE"));
+		assertTrue(node.getVarMethodNames().isEmpty());
+		assertTrue(itemList.isEmpty());
+		node = getNodeAndAddItems(new String[] { "0" });
+		assertNull(node.getEndpoint("GET"));
+		assertNotNull(node.getEndpoint("POST"));
+		assertNotNull(node.getEndpoint("PUT"));
+		assertNull(node.getEndpoint("PATCH"));
+		assertNull(node.getEndpoint("DELETE"));
+		assertEquals(Set.of("POST"), node.getVarMethodNames());
+		assertEquals(List.of("0"), itemList);
+		node = getNodeAndAddItems(1, new String[] { "0", "1" });
+		assertNull(node.getEndpoint("GET"));
+		assertNotNull(node.getEndpoint("POST"));
+		assertNotNull(node.getEndpoint("PUT"));
+		assertNull(node.getEndpoint("PATCH"));
+		assertNull(node.getEndpoint("DELETE"));
+		assertEquals(Set.of("POST"), node.getVarMethodNames());
+		assertEquals(List.of("0", "1"), itemList);
+		node = getNodeAndAddItems(2, new String[] { "0", "1", "2" });
+		assertNull(node.getEndpoint("GET"));
+		assertNotNull(node.getEndpoint("POST"));
+		assertNotNull(node.getEndpoint("PUT"));
+		assertNull(node.getEndpoint("PATCH"));
+		assertNull(node.getEndpoint("DELETE"));
+		assertEquals(Set.of("POST"), node.getVarMethodNames());
+		assertEquals(List.of("0", "1", "2"), itemList);
+	}
+
+	@Test
+	void putsEndpointsFromTwoInfiniteReaches() {
+		putNodesAndEndpoints(TwoInfiniteReaches.class);
+		Node node = getNodeAndAddItems(new String[] {});
+		assertNull(node.getEndpoint("GET"));
+		assertNull(node.getEndpoint("POST"));
+		assertNull(node.getEndpoint("PUT"));
+		assertNull(node.getEndpoint("PATCH"));
+		assertNotNull(node.getEndpoint("DELETE"));
+		assertTrue(node.getVarMethodNames().isEmpty());
+		assertTrue(itemList.isEmpty());
+		node = getNodeAndAddItems(new String[] { "0" });
+		assertNull(node.getEndpoint("GET"));
+		assertNull(node.getEndpoint("POST"));
+		assertNull(node.getEndpoint("PUT"));
+		assertNotNull(node.getEndpoint("PATCH"));
+		assertNull(node.getEndpoint("DELETE"));
+		assertTrue(node.getVarMethodNames().isEmpty());
+		assertEquals(List.of("0"), itemList);
+		node = getNodeAndAddItems(new String[] { "0", "1" });
+		assertNull(node.getEndpoint("GET"));
+		assertNotNull(node.getEndpoint("POST"));
+		assertNotNull(node.getEndpoint("PUT"));
+		assertNull(node.getEndpoint("PATCH"));
+		assertNull(node.getEndpoint("DELETE"));
+		assertEquals(Set.of("POST"), node.getVarMethodNames());
+		assertEquals(List.of("0", "1"), itemList);
+		node = getNodeAndAddItems(1, new String[] { "0", "1", "2" });
+		assertNull(node.getEndpoint("GET"));
+		assertNotNull(node.getEndpoint("POST"));
+		assertNotNull(node.getEndpoint("PUT"));
+		assertNull(node.getEndpoint("PATCH"));
+		assertNull(node.getEndpoint("DELETE"));
+		assertEquals(Set.of("POST"), node.getVarMethodNames());
 		assertEquals(List.of("0", "1", "2"), itemList);
 	}
 
 	@Test
 	void doesNotPutEndpointsFromOptions() {
 		Exception exception = assertThrows(ReflectionException.class, () -> {
-			putNode(Options.class);
+			putNodesAndEndpoints(Options.class);
 		});
 		assertEquals("br.pro.hashi.sdx.rest.server.tree.mock.endpoint.Options cannot have OPTIONS endpoints", exception.getMessage());
 	}
@@ -203,32 +343,50 @@ class TreeTest {
 	@Test
 	void doesNotPutEndpointsFromHead() {
 		Exception exception = assertThrows(ReflectionException.class, () -> {
-			putNode(Head.class);
+			putNodesAndEndpoints(Head.class);
 		});
 		assertEquals("br.pro.hashi.sdx.rest.server.tree.mock.endpoint.Head cannot have HEAD endpoints", exception.getMessage());
 	}
 
 	@Test
-	void doesNotPutEndpointsFromMultiple() {
+	void doesNotPutEndpointsFromShadowing() {
+		putNodesAndEndpoints(ShadowVarArgs.class);
 		Exception exception = assertThrows(ReflectionException.class, () -> {
-			putNode(Multiple.class);
+			putNodesAndEndpoints(ShadowOneItem.class);
 		});
-		assertEquals("br.pro.hashi.sdx.rest.server.tree.mock.endpoint.Multiple has multiple GET endpoints in the same path", exception.getMessage());
+		assertEquals("br.pro.hashi.sdx.rest.server.tree.mock.endpoint.ShadowOneItem has a GET endpoint that shadows a varargs endpoint", exception.getMessage());
+	}
+
+	@Test
+	void doesNotPutEndpointsFromShadowed() {
+		putNodesAndEndpoints(ShadowOneItem.class);
+		Exception exception = assertThrows(ReflectionException.class, () -> {
+			putNodesAndEndpoints(ShadowVarArgs.class);
+		});
+		assertEquals("br.pro.hashi.sdx.rest.server.tree.mock.endpoint.ShadowVarArgs has a POST varargs endpoint shadowed by another endpoint", exception.getMessage());
+	}
+
+	@Test
+	void doesNotPutEndpointsFromSameResource() {
+		Exception exception = assertThrows(ReflectionException.class, () -> {
+			putNodesAndEndpoints(Same.class);
+		});
+		assertEquals("br.pro.hashi.sdx.rest.server.tree.mock.endpoint.Same has multiple GET endpoints in the same path", exception.getMessage());
 	}
 
 	@Test
 	void doesNotPutEndpointsFromSamePath() {
-		putNode(NestedReaches.class);
+		putNodesAndEndpoints(SameOneItem.class);
 		Exception exception = assertThrows(ReflectionException.class, () -> {
-			putNode(SamePath.class);
+			putNodesAndEndpoints(SameVarArgs.class);
 		});
-		assertEquals("br.pro.hashi.sdx.rest.server.tree.mock.endpoint.SamePath and br.pro.hashi.sdx.rest.server.tree.mock.endpoint.NestedReaches have POST endpoints in the same path", exception.getMessage());
+		assertEquals("br.pro.hashi.sdx.rest.server.tree.mock.endpoint.SameOneItem and br.pro.hashi.sdx.rest.server.tree.mock.endpoint.SameVarArgs have GET endpoints in the same path", exception.getMessage());
 	}
 
 	@Test
 	void putsNodeFromEnclosing() {
 		try (MockedConstruction<Endpoint> construction = mockEndpointConstruction()) {
-			putNode(Enclosing.class);
+			putNodesAndEndpoints(Enclosing.class);
 			assertDistance(0);
 			List<Endpoint> endpoints = construction.constructed();
 			assertEndpoint(endpoints.get(0), new String[] { "a", "b" });
@@ -239,7 +397,7 @@ class TreeTest {
 	@Test
 	void putsNodeFromZero() {
 		try (MockedConstruction<Endpoint> construction = mockEndpointConstruction()) {
-			putNode(Zero.class);
+			putNodesAndEndpoints(Zero.class);
 			assertDistance(0);
 			List<Endpoint> endpoints = construction.constructed();
 			assertEndpoint(endpoints.get(0), new String[] { "a", "b", "a0", "b0" });
@@ -250,7 +408,7 @@ class TreeTest {
 	@Test
 	void putsNodeFromOne() {
 		try (MockedConstruction<Endpoint> construction = mockEndpointConstruction()) {
-			putNode(One.class);
+			putNodesAndEndpoints(One.class);
 			assertDistance(1);
 			List<Endpoint> endpoints = construction.constructed();
 			assertEndpoint(endpoints.get(0), new String[] { "a", "b", "0", "a1", "b1" });
@@ -261,7 +419,7 @@ class TreeTest {
 	@Test
 	void putsNodeFromTwo() {
 		try (MockedConstruction<Endpoint> construction = mockEndpointConstruction()) {
-			putNode(Two.class);
+			putNodesAndEndpoints(Two.class);
 			assertDistance(2);
 			List<Endpoint> endpoints = construction.constructed();
 			assertEndpoint(endpoints.get(0), new String[] { "a", "b", "0", "1", "a2", "b2" });
@@ -272,11 +430,11 @@ class TreeTest {
 	@Test
 	void putsNodeFromAll() {
 		try (MockedConstruction<Endpoint> construction = mockEndpointConstruction()) {
-			putNode(Zero.class);
+			putNodesAndEndpoints(Zero.class);
 			assertDistance(0, 0);
-			putNode(One.class);
+			putNodesAndEndpoints(One.class);
 			assertDistance(1, 1);
-			putNode(Two.class);
+			putNodesAndEndpoints(Two.class);
 			assertDistance(2, 2);
 			List<Endpoint> endpoints = construction.constructed();
 			assertEndpoint(endpoints.get(0), new String[] { "a", "b", "a0", "b0" });
@@ -291,7 +449,7 @@ class TreeTest {
 	@Test
 	void putsNodeFromZeroInZero() {
 		try (MockedConstruction<Endpoint> construction = mockEndpointConstruction()) {
-			putNode(ZeroInZero.class);
+			putNodesAndEndpoints(ZeroInZero.class);
 			assertDistance(0);
 			List<Endpoint> endpoints = construction.constructed();
 			assertEndpoint(endpoints.get(0), new String[] { "a", "b", "a0", "b0", "a00", "b00" });
@@ -302,7 +460,7 @@ class TreeTest {
 	@Test
 	void putsNodeFromOneInZero() {
 		try (MockedConstruction<Endpoint> construction = mockEndpointConstruction()) {
-			putNode(OneInZero.class);
+			putNodesAndEndpoints(OneInZero.class);
 			assertDistance(1);
 			List<Endpoint> endpoints = construction.constructed();
 			assertEndpoint(endpoints.get(0), new String[] { "a", "b", "a0", "b0", "0", "a10", "b10" });
@@ -313,7 +471,7 @@ class TreeTest {
 	@Test
 	void putsNodeFromTwoInZero() {
 		try (MockedConstruction<Endpoint> construction = mockEndpointConstruction()) {
-			putNode(TwoInZero.class);
+			putNodesAndEndpoints(TwoInZero.class);
 			assertDistance(2);
 			List<Endpoint> endpoints = construction.constructed();
 			assertEndpoint(endpoints.get(0), new String[] { "a", "b", "a0", "b0", "0", "1", "a20", "b20" });
@@ -324,11 +482,11 @@ class TreeTest {
 	@Test
 	void putsNodeFromAllInZero() {
 		try (MockedConstruction<Endpoint> construction = mockEndpointConstruction()) {
-			putNode(ZeroInZero.class);
+			putNodesAndEndpoints(ZeroInZero.class);
 			assertDistance(0, 0);
-			putNode(OneInZero.class);
+			putNodesAndEndpoints(OneInZero.class);
 			assertDistance(1, 1);
-			putNode(TwoInZero.class);
+			putNodesAndEndpoints(TwoInZero.class);
 			assertDistance(2, 2);
 			List<Endpoint> endpoints = construction.constructed();
 			assertEndpoint(endpoints.get(0), new String[] { "a", "b", "a0", "b0", "a00", "b00" });
@@ -343,7 +501,7 @@ class TreeTest {
 	@Test
 	void putsNodeFromZeroInOne() {
 		try (MockedConstruction<Endpoint> construction = mockEndpointConstruction()) {
-			putNode(ZeroInOne.class);
+			putNodesAndEndpoints(ZeroInOne.class);
 			assertDistance(1);
 			List<Endpoint> endpoints = construction.constructed();
 			assertEndpoint(endpoints.get(0), new String[] { "a", "b", "0", "a1", "b1", "a01", "b01" });
@@ -354,7 +512,7 @@ class TreeTest {
 	@Test
 	void putsNodeFromOneInOne() {
 		try (MockedConstruction<Endpoint> construction = mockEndpointConstruction()) {
-			putNode(OneInOne.class);
+			putNodesAndEndpoints(OneInOne.class);
 			assertDistance(2);
 			List<Endpoint> endpoints = construction.constructed();
 			assertEndpoint(endpoints.get(0), new String[] { "a", "b", "0", "a1", "b1", "1", "a11", "b11" });
@@ -365,7 +523,7 @@ class TreeTest {
 	@Test
 	void putsNodeFromTwoInOne() {
 		try (MockedConstruction<Endpoint> construction = mockEndpointConstruction()) {
-			putNode(TwoInOne.class);
+			putNodesAndEndpoints(TwoInOne.class);
 			assertDistance(3);
 			List<Endpoint> endpoints = construction.constructed();
 			assertEndpoint(endpoints.get(0), new String[] { "a", "b", "0", "a1", "b1", "1", "2", "a21", "b21" });
@@ -376,11 +534,11 @@ class TreeTest {
 	@Test
 	void putsNodeFromAllInOne() {
 		try (MockedConstruction<Endpoint> construction = mockEndpointConstruction()) {
-			putNode(ZeroInOne.class);
+			putNodesAndEndpoints(ZeroInOne.class);
 			assertDistance(1, 0);
-			putNode(OneInOne.class);
+			putNodesAndEndpoints(OneInOne.class);
 			assertDistance(2, 1);
-			putNode(TwoInOne.class);
+			putNodesAndEndpoints(TwoInOne.class);
 			assertDistance(3, 2);
 			List<Endpoint> endpoints = construction.constructed();
 			assertEndpoint(endpoints.get(0), new String[] { "a", "b", "0", "a1", "b1", "a01", "b01" });
@@ -395,7 +553,7 @@ class TreeTest {
 	@Test
 	void putsNodeFromZeroInTwo() {
 		try (MockedConstruction<Endpoint> construction = mockEndpointConstruction()) {
-			putNode(ZeroInTwo.class);
+			putNodesAndEndpoints(ZeroInTwo.class);
 			assertDistance(2);
 			List<Endpoint> endpoints = construction.constructed();
 			assertEndpoint(endpoints.get(0), new String[] { "a", "b", "0", "1", "a2", "b2", "a02", "b02" });
@@ -406,7 +564,7 @@ class TreeTest {
 	@Test
 	void putsNodeFromOneInTwo() {
 		try (MockedConstruction<Endpoint> construction = mockEndpointConstruction()) {
-			putNode(OneInTwo.class);
+			putNodesAndEndpoints(OneInTwo.class);
 			assertDistance(3);
 			List<Endpoint> endpoints = construction.constructed();
 			assertEndpoint(endpoints.get(0), new String[] { "a", "b", "0", "1", "a2", "b2", "2", "a12", "b12" });
@@ -417,7 +575,7 @@ class TreeTest {
 	@Test
 	void putsNodeFromTwoInTwo() {
 		try (MockedConstruction<Endpoint> construction = mockEndpointConstruction()) {
-			putNode(TwoInTwo.class);
+			putNodesAndEndpoints(TwoInTwo.class);
 			assertDistance(4);
 			List<Endpoint> endpoints = construction.constructed();
 			assertEndpoint(endpoints.get(0), new String[] { "a", "b", "0", "1", "a2", "b2", "2", "3", "a22", "b22" });
@@ -428,11 +586,11 @@ class TreeTest {
 	@Test
 	void putsNodeFromAllInTwo() {
 		try (MockedConstruction<Endpoint> construction = mockEndpointConstruction()) {
-			putNode(ZeroInTwo.class);
+			putNodesAndEndpoints(ZeroInTwo.class);
 			assertDistance(2, 0);
-			putNode(OneInTwo.class);
+			putNodesAndEndpoints(OneInTwo.class);
 			assertDistance(3, 1);
-			putNode(TwoInTwo.class);
+			putNodesAndEndpoints(TwoInTwo.class);
 			assertDistance(4, 2);
 			List<Endpoint> endpoints = construction.constructed();
 			assertEndpoint(endpoints.get(0), new String[] { "a", "b", "0", "1", "a2", "b2", "a02", "b02" });
@@ -451,7 +609,7 @@ class TreeTest {
 		});
 	}
 
-	private void putNode(Class<? extends RestResource> type) {
+	private void putNodesAndEndpoints(Class<? extends RestResource> type) {
 		t.putNodesAndEndpoints(type, type.getName(), itemMap);
 	}
 
@@ -464,13 +622,19 @@ class TreeTest {
 	}
 
 	private void assertEndpoint(Endpoint expected, String[] actual) {
-		Node node = getNode(actual);
+		Node node = getNodeAndAddItems(actual);
 		assertSame(expected, node.getEndpoint("GET"));
 	}
 
-	private Node getNode(String[] items) {
+	private Node getNodeAndAddItems(String[] items) {
+		return getNodeAndAddItems(0, items);
+	}
+
+	private Node getNodeAndAddItems(int varSize, String[] items) {
 		itemList = new ArrayList<>();
-		return t.getNodeAndAddItems(items, itemList);
+		Leaf leaf = t.getLeafAndAddItems(items, itemList);
+		assertEquals(varSize, leaf.varSize());
+		return leaf.node();
 	}
 
 	@Test

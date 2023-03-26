@@ -59,6 +59,7 @@ import br.pro.hashi.sdx.rest.server.tree.Data;
 import br.pro.hashi.sdx.rest.server.tree.Endpoint;
 import br.pro.hashi.sdx.rest.server.tree.Node;
 import br.pro.hashi.sdx.rest.server.tree.Tree;
+import br.pro.hashi.sdx.rest.server.tree.Tree.Leaf;
 import br.pro.hashi.sdx.rest.transform.Assembler;
 import br.pro.hashi.sdx.rest.transform.Serializer;
 import br.pro.hashi.sdx.rest.transform.facade.Facade;
@@ -228,18 +229,16 @@ class HandlerTest {
 	}
 
 	private void mockNodeWithExtension() {
-		when(tree.getNodeAndAddItems(new String[] { "b.txt" }, List.of())).thenAnswer((invocation) -> {
-			loadNode(invocation);
-			return node;
+		when(tree.getLeafAndAddItems(new String[] { "b.txt" }, List.of())).thenAnswer((invocation) -> {
+			return loadNode(invocation);
 		});
 	}
 
 	@Test
 	void handlesWithWrongExtension() {
 		when(request.getRequestURI()).thenReturn("/b.json");
-		when(tree.getNodeAndAddItems(new String[] { "b.json" }, List.of())).thenAnswer((invocation) -> {
-			loadNode(invocation);
-			return node;
+		when(tree.getLeafAndAddItems(new String[] { "b.json" }, List.of())).thenAnswer((invocation) -> {
+			return loadNode(invocation);
 		});
 		mockMethodNames();
 		mockMethod();
@@ -258,9 +257,8 @@ class HandlerTest {
 	@Test
 	void handlesWithEmptyExtension() {
 		when(request.getRequestURI()).thenReturn("/b.");
-		when(tree.getNodeAndAddItems(new String[] { "b." }, List.of())).thenAnswer((invocation) -> {
-			loadNode(invocation);
-			return node;
+		when(tree.getLeafAndAddItems(new String[] { "b." }, List.of())).thenAnswer((invocation) -> {
+			return loadNode(invocation);
 		});
 		mockMethodNames();
 		mockMethod();
@@ -294,7 +292,7 @@ class HandlerTest {
 	@Test
 	void handlesWithoutNode() {
 		mockRequestUri();
-		when(tree.getNodeAndAddItems(new String[] { "b" }, List.of())).thenThrow(new NotFoundException());
+		when(tree.getLeafAndAddItems(new String[] { "b" }, List.of())).thenThrow(new NotFoundException());
 		mockMethodNames();
 		mockMethod();
 		mockEndpoint();
@@ -303,25 +301,6 @@ class HandlerTest {
 		mockCall();
 		mockReturnType();
 		handle();
-		assertNotFound();
-	}
-
-	@Test
-	void handlesWithoutMethodNames() {
-		mockRequestUri();
-		mockNode();
-		when(node.getMethodNames()).thenReturn(Set.of());
-		mockMethod();
-		mockEndpoint();
-		mockContentType();
-		mockResourceType();
-		mockCall();
-		mockReturnType();
-		handle();
-		assertNotFound();
-	}
-
-	private void assertNotFound() {
 		assertMessageResponse(404, "Endpoint not found");
 	}
 
@@ -355,7 +334,47 @@ class HandlerTest {
 		mockCall();
 		mockReturnType();
 		handle();
-		verify(response).addHeader("Allow", "GET, POST");
+		assertOptions("GET, POST");
+	}
+
+	@Test
+	void handlesWithOptionsAndOneVarArg() {
+		String[] items = new String[] { "2" };
+		mockRequestUri();
+		mockNode(items);
+		mockVarMethodNames();
+		when(request.getMethod()).thenReturn("OPTIONS");
+		mockEndpoint();
+		mockContentType();
+		mockResourceType();
+		mockCall();
+		mockReturnType();
+		handle();
+		assertOptionsWithVarArgs();
+	}
+
+	@Test
+	void handlesWithOptionsAndTwoVarArgs() {
+		String[] items = new String[] { "2", "3" };
+		mockRequestUri();
+		mockNode(items);
+		mockVarMethodNames();
+		when(request.getMethod()).thenReturn("OPTIONS");
+		mockEndpoint();
+		mockContentType();
+		mockResourceType();
+		mockCall();
+		mockReturnType();
+		handle();
+		assertOptionsWithVarArgs();
+	}
+
+	private void assertOptionsWithVarArgs() {
+		assertOptions("PUT, PATCH");
+	}
+
+	private void assertOptions(String allow) {
+		verify(response).addHeader("Allow", allow);
 		verify(response).setStatus(200);
 		verifyNotLength();
 		verifyNoServletWrite();
@@ -377,6 +396,44 @@ class HandlerTest {
 		mockReturnType();
 		handle();
 		assertMessageResponse(405, "GET not allowed");
+	}
+
+	@Test
+	void handlesWithOneVarArg() {
+		String[] items = new String[] { "2" };
+		mockRequestUri();
+		mockNode(items);
+		mockMethodNames();
+		mockMethod();
+		mockEndpoint();
+		mockContentType();
+		ServletInputStream stream = mockInputStream();
+		mockResourceType();
+		mockCall(items);
+		mockReturnType();
+		handle();
+		assertItemList(items);
+		assertBody(stream);
+		assertOk();
+	}
+
+	@Test
+	void handlesWithTwoVarArgs() {
+		String[] items = new String[] { "2", "3" };
+		mockRequestUri();
+		mockNode(items);
+		mockMethodNames();
+		mockMethod();
+		mockEndpoint();
+		mockContentType();
+		ServletInputStream stream = mockInputStream();
+		mockResourceType();
+		mockCall(items);
+		mockReturnType();
+		handle();
+		assertItemList(items);
+		assertBody(stream);
+		assertOk();
 	}
 
 	@Test
@@ -1054,20 +1111,35 @@ class HandlerTest {
 	}
 
 	private void mockNode() {
-		when(tree.getNodeAndAddItems(new String[] { "b" }, List.of())).thenAnswer((invocation) -> {
-			loadNode(invocation);
-			return node;
+		mockNode(new String[] {});
+	}
+
+	private void mockNode(String[] items) {
+		when(tree.getLeafAndAddItems(new String[] { "b" }, List.of())).thenAnswer((invocation) -> {
+			return loadNode(invocation, items);
 		});
 	}
 
-	private void loadNode(InvocationOnMock invocation) {
+	private Leaf loadNode(InvocationOnMock invocation) {
+		return loadNode(invocation, new String[] {});
+	}
+
+	private Leaf loadNode(InvocationOnMock invocation, String[] items) {
 		List<String> itemList = invocation.getArgument(1);
 		itemList.add("0");
 		itemList.add("1");
+		for (String item : items) {
+			itemList.add(item);
+		}
+		return new Leaf(node, items.length);
 	}
 
 	private void mockMethodNames() {
 		when(node.getMethodNames()).thenReturn(new LinkedHashSet<>(List.of("GET", "POST")));
+	}
+
+	private void mockVarMethodNames() {
+		when(node.getVarMethodNames()).thenReturn(new LinkedHashSet<>(List.of("PUT", "PATCH")));
 	}
 
 	private void mockMethod() {
@@ -1097,7 +1169,17 @@ class HandlerTest {
 	}
 
 	private void mockCall() {
-		when(endpoint.call(any(), eq(List.of("0", "1")), any(), any())).thenAnswer((invocation) -> {
+		mockCall(new String[] {});
+	}
+
+	private void mockCall(String[] items) {
+		List<String> itemList = new ArrayList<>();
+		itemList.add("0");
+		itemList.add("1");
+		for (String item : items) {
+			itemList.add(item);
+		}
+		when(endpoint.call(any(), eq(itemList), any(), any())).thenAnswer((invocation) -> {
 			saveCall(invocation);
 			return new Object();
 		});
@@ -1119,7 +1201,17 @@ class HandlerTest {
 	}
 
 	private void assertItemList() {
-		assertEquals(List.of("0", "1"), callItemList);
+		assertItemList(new String[] {});
+	}
+
+	private void assertItemList(String[] items) {
+		List<String> itemList = new ArrayList<>();
+		itemList.add("0");
+		itemList.add("1");
+		for (String item : items) {
+			itemList.add(item);
+		}
+		assertEquals(itemList, callItemList);
 	}
 
 	private void assertBody(ServletInputStream stream) {

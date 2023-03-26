@@ -7,20 +7,23 @@ import br.pro.hashi.sdx.rest.server.annotation.Body;
 import br.pro.hashi.sdx.rest.server.annotation.Part;
 
 public class Signatures extends RestResource {
+	public boolean withReturn() {
+		return true;
+	}
+
 	public void withNothing() {
 	}
 
-	public boolean withReturn() {
-		return true;
+	public void withVarArgs(int... args) {
 	}
 
 	public void withOneItem(int i) {
 	}
 
-	public void withTwoItems(int i, double d) {
+	public void withOneItemAndVarArgs(int i, double... args) {
 	}
 
-	public void withOneItemAndVarArgs(int i, double... args) {
+	public void withTwoItems(int i, double d) {
 	}
 
 	public void withOneItemAndOnePart(int i, @Part("name") Object part) {
@@ -29,16 +32,13 @@ public class Signatures extends RestResource {
 	public void withOneItemAndOneBody(int i, @Body Object body) {
 	}
 
-	public void withVarArgs(int... args) {
-	}
-
 	public void withOnePart(@Part("name") Object part) {
 	}
 
-	public void withOnePartAndOneItem(@Part("name") Object part, int i) {
+	public void withOnePartAndVarArgs(@Part("name") Object part, int... args) {
 	}
 
-	public void withOnePartAndVarArgs(@Part("name") Object part, int... args) {
+	public void withOnePartAndOneItem(@Part("name") Object part, int i) {
 	}
 
 	public void withTwoPartsAndOneName(@Part("name") Object part0, @Part("name") String part1) {
@@ -53,10 +53,10 @@ public class Signatures extends RestResource {
 	public void withOneBody(@Body Object body) {
 	}
 
-	public void withOneBodyAndOneItem(@Body Object body, int i) {
+	public void withOneBodyAndVarArgs(@Body Object body, int... args) {
 	}
 
-	public void withOneBodyAndVarArgs(@Body Object body, int... args) {
+	public void withOneBodyAndOneItem(@Body Object body, int i) {
 	}
 
 	public void withOneBodyAndOnePart(@Body Object body, @Part("name") String part) {
@@ -69,11 +69,11 @@ public class Signatures extends RestResource {
 		return true;
 	}
 
-	public boolean withEverythingAndOneBody(int i, @Body Object body, double d) {
+	public boolean withEverythingAndVarArgs(int i, @Body Object body, double... args) {
 		return true;
 	}
 
-	public boolean withEverythingAndVarArgs(int i, @Body Object body, double... args) {
+	public boolean withEverythingAndOneBody(int i, @Body Object body, double d) {
 		return true;
 	}
 

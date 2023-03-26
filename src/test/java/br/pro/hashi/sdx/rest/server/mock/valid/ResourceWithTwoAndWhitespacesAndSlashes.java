@@ -6,4 +6,7 @@ public class ResourceWithTwoAndWhitespacesAndSlashes extends RestResource {
 	public ResourceWithTwoAndWhitespacesAndSlashes() {
 		super(" \t\n/c/d/// \t\n");
 	}
+
+	public void get() {
+	}
 }

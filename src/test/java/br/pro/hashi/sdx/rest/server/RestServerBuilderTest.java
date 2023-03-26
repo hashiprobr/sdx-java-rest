@@ -392,13 +392,13 @@ class RestServerBuilderTest extends BuilderTest {
 		assertTrue(handler.isCors());
 		Tree tree = handler.getTree();
 		List<String> itemList = new ArrayList<>();
-		assertNotNull(tree.getNodeAndAddItems(new String[] { "one" }, itemList));
-		assertNotNull(tree.getNodeAndAddItems(new String[] { "one-two" }, itemList));
-		assertNotNull(tree.getNodeAndAddItems(new String[] { "one-two-three" }, itemList));
-		assertNotNull(tree.getNodeAndAddItems(new String[] { "b" }, itemList));
-		assertNotNull(tree.getNodeAndAddItems(new String[] { "c" }, itemList));
-		assertNotNull(tree.getNodeAndAddItems(new String[] { "b", "c" }, itemList));
-		assertNotNull(tree.getNodeAndAddItems(new String[] { "c", "d" }, itemList));
+		assertNotNull(tree.getLeafAndAddItems(new String[] { "one" }, itemList));
+		assertNotNull(tree.getLeafAndAddItems(new String[] { "one-two" }, itemList));
+		assertNotNull(tree.getLeafAndAddItems(new String[] { "one-two-three" }, itemList));
+		assertNotNull(tree.getLeafAndAddItems(new String[] { "b" }, itemList));
+		assertNotNull(tree.getLeafAndAddItems(new String[] { "c" }, itemList));
+		assertNotNull(tree.getLeafAndAddItems(new String[] { "b", "c" }, itemList));
+		assertNotNull(tree.getLeafAndAddItems(new String[] { "c", "d" }, itemList));
 	}
 
 	@Test
