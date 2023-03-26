@@ -63,6 +63,7 @@ public non-sealed class RestServerBuilder extends Builder<RestServerBuilder> {
 	private int port3;
 	private boolean http3;
 	private boolean http2;
+	private boolean http1;
 	private boolean cors;
 
 	/**
@@ -83,6 +84,7 @@ public non-sealed class RestServerBuilder extends Builder<RestServerBuilder> {
 		this.port3 = 8843;
 		this.http3 = false;
 		this.http2 = true;
+		this.http1 = true;
 		this.cors = true;
 	}
 
@@ -144,6 +146,10 @@ public non-sealed class RestServerBuilder extends Builder<RestServerBuilder> {
 
 	boolean isHttp2() {
 		return http2;
+	}
+
+	boolean isHttp1() {
+		return http1;
 	}
 
 	boolean isCors() {
@@ -356,9 +362,27 @@ public non-sealed class RestServerBuilder extends Builder<RestServerBuilder> {
 	 * Disables HTTP/2 support.
 	 * 
 	 * @return this builder, for chaining
+	 * @throws IllegalArgumentException if HTTP/1.1 is also disabled
 	 */
 	public final RestServerBuilder withoutHttp2() {
+		if (!http1) {
+			throw new IllegalArgumentException("Either HTTP/1.1 or HTTP/2 needs to be enabled");
+		}
 		this.http2 = false;
+		return self();
+	}
+
+	/**
+	 * Disables HTTP/1.1 support.
+	 * 
+	 * @return this builder, for chaining
+	 * @throws IllegalArgumentException if HTTP/2 is also disabled
+	 */
+	public final RestServerBuilder withoutHttp1() {
+		if (!http2) {
+			throw new IllegalArgumentException("Either HTTP/2 or HTTP/1.1 needs to be enabled");
+		}
+		this.http1 = false;
 		return self();
 	}
 
@@ -436,11 +460,21 @@ public non-sealed class RestServerBuilder extends Builder<RestServerBuilder> {
 			configuration.setSecurePort(mainPort);
 		}
 
-		HttpConnectionFactory h11 = new HttpConnectionFactory(configuration);
+		HttpConnectionFactory h11;
+		if (http1) {
+			h11 = new HttpConnectionFactory(configuration);
+		} else {
+			h11 = null;
+		}
+
 		ServerConnector connector;
 		if (http2) {
 			HTTP2CServerConnectionFactory h2c = new HTTP2CServerConnectionFactory(configuration);
-			connector = new ServerConnector(server, h11, h2c);
+			if (h11 == null) {
+				connector = new ServerConnector(server, h2c);
+			} else {
+				connector = new ServerConnector(server, h11, h2c);
+			}
 		} else {
 			connector = new ServerConnector(server, h11);
 		}
@@ -454,10 +488,15 @@ public non-sealed class RestServerBuilder extends Builder<RestServerBuilder> {
 			SslConnectionFactory tls;
 			if (http2) {
 				HTTP2ServerConnectionFactory h2 = new HTTP2ServerConnectionFactory(configuration);
-				ALPNServerConnectionFactory alpn = new ALPNServerConnectionFactory();
-				alpn.setDefaultProtocol(h11.getProtocol());
-				tls = new SslConnectionFactory(factory, alpn.getProtocol());
-				connector = new ServerConnector(server, tls, alpn, h2, h11);
+				if (h11 == null) {
+					tls = new SslConnectionFactory(factory, h2.getProtocol());
+					connector = new ServerConnector(server, tls, h2);
+				} else {
+					ALPNServerConnectionFactory alpn = new ALPNServerConnectionFactory();
+					alpn.setDefaultProtocol(h11.getProtocol());
+					tls = new SslConnectionFactory(factory, alpn.getProtocol());
+					connector = new ServerConnector(server, tls, alpn, h2, h11);
+				}
 			} else {
 				tls = new SslConnectionFactory(factory, h11.getProtocol());
 				connector = new ServerConnector(server, tls, h11);

@@ -135,6 +135,11 @@ class RestServerBuilderTest extends BuilderTest {
 	}
 
 	@Test
+	void initializesWithHttp1() {
+		assertTrue(b.isHttp1());
+	}
+
+	@Test
 	void initializesWithCors() {
 		assertTrue(b.isCors());
 	}
@@ -349,6 +354,30 @@ class RestServerBuilderTest extends BuilderTest {
 	void setsHttp2() {
 		assertSame(b, b.withoutHttp2());
 		assertFalse(b.isHttp2());
+	}
+
+	@Test
+	void doesNotSetsHttp2() {
+		b.withoutHttp1();
+		assertThrows(IllegalArgumentException.class, () -> {
+			b.withoutHttp2();
+		});
+		assertTrue(b.isHttp2());
+	}
+
+	@Test
+	void setsHttp1() {
+		assertSame(b, b.withoutHttp1());
+		assertFalse(b.isHttp1());
+	}
+
+	@Test
+	void doesNotSetsHttp1() {
+		b.withoutHttp2();
+		assertThrows(IllegalArgumentException.class, () -> {
+			b.withoutHttp1();
+		});
+		assertTrue(b.isHttp1());
 	}
 
 	@Test
@@ -669,6 +698,27 @@ class RestServerBuilderTest extends BuilderTest {
 	}
 
 	@Test
+	void buildsWithoutHttp1() {
+		b.withoutHttp1();
+		RestServer server = b.build(VALID_PACKAGE);
+		assertEquals("http", server.getScheme());
+		assertEquals(8080, server.getClearPort());
+		assertEquals(8080, server.getMainPort());
+		assertEquals(-1, server.getAltPort());
+		Server jettyServer = server.getJettyServer();
+		Connector[] connectors = jettyServer.getConnectors();
+		assertEquals(1, connectors.length);
+		ServerConnector connector = (ServerConnector) connectors[0];
+		assertEquals(8080, connector.getPort());
+		Iterator<ConnectionFactory> iterator = connector.getConnectionFactories().iterator();
+		HTTP2CServerConnectionFactory h2c = (HTTP2CServerConnectionFactory) iterator.next();
+		HttpConfiguration configuration = h2c.getHttpConfiguration();
+		assertEquals(HttpCompliance.RFC7230, configuration.getHttpCompliance());
+		assertEquals(UriCompliance.RFC3986_UNAMBIGUOUS, configuration.getUriCompliance());
+		assertFalse(iterator.hasNext());
+	}
+
+	@Test
 	void buildsWithHttpsWithoutHttp2() {
 		b.withKeyStore("path", "password");
 		b.withoutHttp2();
@@ -699,6 +749,41 @@ class RestServerBuilderTest extends BuilderTest {
 		assertSame(b.getFactory(), tls.getSslContextFactory());
 		assertEquals("HTTP/1.1", tls.getNextProtocol());
 		assertSame(h11, iterator.next());
+		assertFalse(iterator.hasNext());
+	}
+
+	@Test
+	void buildsWithHttpsWithoutHttp1() {
+		b.withKeyStore("path", "password");
+		b.withoutHttp1();
+		RestServer server = b.build(VALID_PACKAGE);
+		assertEquals("https", server.getScheme());
+		assertEquals(8080, server.getClearPort());
+		assertEquals(8443, server.getMainPort());
+		assertEquals(-1, server.getAltPort());
+		Connector[] connectors = server.getJettyServer().getConnectors();
+		assertEquals(2, connectors.length);
+		ServerConnector connector = (ServerConnector) connectors[0];
+		assertEquals(8080, connector.getPort());
+		Iterator<ConnectionFactory> iterator = connector.getConnectionFactories().iterator();
+		HTTP2CServerConnectionFactory h2c = (HTTP2CServerConnectionFactory) iterator.next();
+		HttpConfiguration configuration = h2c.getHttpConfiguration();
+		assertEquals(HttpCompliance.RFC7230, configuration.getHttpCompliance());
+		assertEquals(UriCompliance.RFC3986_UNAMBIGUOUS, configuration.getUriCompliance());
+		List<Customizer> customizers = configuration.getCustomizers();
+		assertEquals(1, customizers.size());
+		assertInstanceOf(SecureRequestCustomizer.class, customizers.get(0));
+		assertEquals("https", configuration.getSecureScheme());
+		assertEquals(8443, configuration.getSecurePort());
+		assertFalse(iterator.hasNext());
+		connector = (ServerConnector) connectors[1];
+		assertEquals(8443, connector.getPort());
+		iterator = connector.getConnectionFactories().iterator();
+		SslConnectionFactory tls = (SslConnectionFactory) iterator.next();
+		assertSame(b.getFactory(), tls.getSslContextFactory());
+		assertEquals("h2", tls.getNextProtocol());
+		HTTP2ServerConnectionFactory h2 = (HTTP2ServerConnectionFactory) iterator.next();
+		assertSame(configuration, h2.getHttpConfiguration());
 		assertFalse(iterator.hasNext());
 	}
 
@@ -734,6 +819,49 @@ class RestServerBuilderTest extends BuilderTest {
 		assertSame(b.getFactory(), tls.getSslContextFactory());
 		assertEquals("HTTP/1.1", tls.getNextProtocol());
 		assertSame(h11, iterator.next());
+		assertFalse(iterator.hasNext());
+		HTTP3ServerConnector connector3 = (HTTP3ServerConnector) connectors[2];
+		assertEquals(8843, connector3.getPort());
+		assertSame(b.getFactory(), connector3.getBean(SslContextFactory.Server.class));
+		iterator = connector3.getConnectionFactories().iterator();
+		HTTP3ServerConnectionFactory h3 = (HTTP3ServerConnectionFactory) iterator.next();
+		assertSame(configuration, h3.getHttpConfiguration());
+		assertFalse(iterator.hasNext());
+	}
+
+	@Test
+	void buildsWithHttp3WithoutHttp1() {
+		b.withKeyStore("path", "password");
+		b.withHttp3();
+		b.withoutHttp1();
+		RestServer server = b.build(VALID_PACKAGE);
+		assertEquals("https", server.getScheme());
+		assertEquals(8080, server.getClearPort());
+		assertEquals(8443, server.getMainPort());
+		assertEquals(8843, server.getAltPort());
+		Connector[] connectors = server.getJettyServer().getConnectors();
+		assertEquals(3, connectors.length);
+		ServerConnector connector = (ServerConnector) connectors[0];
+		assertEquals(8080, connector.getPort());
+		Iterator<ConnectionFactory> iterator = connector.getConnectionFactories().iterator();
+		HTTP2CServerConnectionFactory h2c = (HTTP2CServerConnectionFactory) iterator.next();
+		HttpConfiguration configuration = h2c.getHttpConfiguration();
+		assertEquals(HttpCompliance.RFC7230, configuration.getHttpCompliance());
+		assertEquals(UriCompliance.RFC3986_UNAMBIGUOUS, configuration.getUriCompliance());
+		List<Customizer> customizers = configuration.getCustomizers();
+		assertEquals(2, customizers.size());
+		assertInstanceOf(SecureRequestCustomizer.class, customizers.get(0));
+		assertEquals("https", configuration.getSecureScheme());
+		assertEquals(8443, configuration.getSecurePort());
+		assertFalse(iterator.hasNext());
+		connector = (ServerConnector) connectors[1];
+		assertEquals(8443, connector.getPort());
+		iterator = connector.getConnectionFactories().iterator();
+		SslConnectionFactory tls = (SslConnectionFactory) iterator.next();
+		assertSame(b.getFactory(), tls.getSslContextFactory());
+		assertEquals("h2", tls.getNextProtocol());
+		HTTP2ServerConnectionFactory h2 = (HTTP2ServerConnectionFactory) iterator.next();
+		assertSame(configuration, h2.getHttpConfiguration());
 		assertFalse(iterator.hasNext());
 		HTTP3ServerConnector connector3 = (HTTP3ServerConnector) connectors[2];
 		assertEquals(8843, connector3.getPort());
