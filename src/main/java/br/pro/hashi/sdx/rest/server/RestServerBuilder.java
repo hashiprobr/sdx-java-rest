@@ -408,7 +408,7 @@ public non-sealed class RestServerBuilder extends Builder<RestServerBuilder> {
 			gzipHandler.setHandler(handler);
 			handler = gzipHandler;
 		}
-		if (redirection) {
+		if (redirection && factory != null) {
 			SecuredRedirectHandler redirectHandler = new SecuredRedirectHandler();
 			redirectHandler.setHandler(handler);
 			handler = redirectHandler;
