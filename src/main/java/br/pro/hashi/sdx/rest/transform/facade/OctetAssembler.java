@@ -29,12 +29,6 @@ class OctetAssembler implements Assembler {
 			throw new SupportException("Body must be instance of byte[] or InputStream");
 		} catch (IOException exception) {
 			throw new UncheckedIOException(exception);
-		} finally {
-			try {
-				stream.close();
-			} catch (IOException exception) {
-				throw new UncheckedIOException(exception);
-			}
 		}
 	}
 }

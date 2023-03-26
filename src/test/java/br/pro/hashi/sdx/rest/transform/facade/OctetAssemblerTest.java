@@ -2,10 +2,7 @@ package br.pro.hashi.sdx.rest.transform.facade;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
-import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.spy;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -111,18 +108,6 @@ class OctetAssemblerTest {
 	}
 
 	@Test
-	void doesNotWriteIfBodyIsByteArrayButCloseThrows() throws IOException {
-		byte[] body = newByteArray();
-		OutputStream stream = spy(OutputStream.nullOutputStream());
-		Throwable cause = new IOException();
-		doThrow(cause).when(stream).close();
-		Exception exception = assertThrows(UncheckedIOException.class, () -> {
-			a.write(body, byte[].class, stream);
-		});
-		assertSame(cause, exception.getCause());
-	}
-
-	@Test
 	void doesNotWriteIfBodyIsInputStreamButWriteThrows() throws IOException {
 		InputStream body = newInputStream();
 		OutputStream stream = OutputStream.nullOutputStream();
@@ -131,18 +116,6 @@ class OctetAssemblerTest {
 			a.write(body, InputStream.class, stream);
 		});
 		assertInstanceOf(IOException.class, exception.getCause());
-	}
-
-	@Test
-	void doesNotWriteIfBodyIsInputStreamButCloseThrows() throws IOException {
-		InputStream body = newInputStream();
-		OutputStream stream = spy(OutputStream.nullOutputStream());
-		Throwable cause = new IOException();
-		doThrow(cause).when(stream).close();
-		Exception exception = assertThrows(UncheckedIOException.class, () -> {
-			a.write(body, InputStream.class, stream);
-		});
-		assertSame(cause, exception.getCause());
 	}
 
 	private InputStream newInputStream() {

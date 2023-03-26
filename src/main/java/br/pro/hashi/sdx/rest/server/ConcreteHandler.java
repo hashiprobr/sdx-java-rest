@@ -91,36 +91,29 @@ class ConcreteHandler extends ErrorHandler {
 
 	@Override
 	public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws IOException {
-		OutputStream stream = response.getOutputStream();
-		boolean withoutWrites = true;
-		try {
-			String message = (String) request.getAttribute(Dispatcher.ERROR_MESSAGE);
-			if (message == null) {
-				message = baseRequest.getResponse().getReason();
-			}
-
-			Object actual = formatter.format(response.getStatus(), message);
-			String contentType = this.contentType;
-
-			contentType = facade.cleanForSerializing(this.contentType, actual);
-			Serializer serializer = facade.getSerializer(contentType);
-			contentType = "%s;charset=%s".formatted(contentType, charset.name());
-			if (base64) {
-				contentType = "%s;base64".formatted(contentType);
-			}
-
-			response.setContentType(contentType);
-			if (base64) {
-				stream = Media.encode(stream);
-			}
-			OutputStreamWriter writer = new OutputStreamWriter(stream, charset);
-
-			withoutWrites = false;
-			serializer.write(actual, type, writer);
-		} catch (RuntimeException exception) {
-			if (withoutWrites) {
-				stream.close();
-			}
+		String message = (String) request.getAttribute(Dispatcher.ERROR_MESSAGE);
+		if (message == null) {
+			message = baseRequest.getResponse().getReason();
 		}
+
+		Object actual = formatter.format(response.getStatus(), message);
+		String contentType = this.contentType;
+
+		contentType = facade.cleanForSerializing(this.contentType, actual);
+		Serializer serializer = facade.getSerializer(contentType);
+		contentType = "%s;charset=%s".formatted(contentType, charset.name());
+		if (base64) {
+			contentType = "%s;base64".formatted(contentType);
+		}
+
+		response.setContentType(contentType);
+		OutputStream stream = response.getOutputStream();
+		if (base64) {
+			stream = Media.encode(stream);
+		}
+		OutputStreamWriter writer = new OutputStreamWriter(stream, charset);
+
+		serializer.write(actual, type, writer);
+		writer.close();
 	}
 }

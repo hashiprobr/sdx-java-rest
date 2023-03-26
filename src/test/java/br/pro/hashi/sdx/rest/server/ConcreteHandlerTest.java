@@ -2,6 +2,7 @@ package br.pro.hashi.sdx.rest.server;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
@@ -132,13 +133,6 @@ class ConcreteHandlerTest {
 	@Test
 	void handlesWithException() {
 		mockMessage();
-		doThrow(RuntimeException.class).when(response).setContentType("type/subtype;charset=UTF-8");
-		assertHandles("");
-	}
-
-	@Test
-	void handlesWithCommittedException() {
-		mockMessage();
 		h = newConcreteHandler();
 		when(response.getStatus()).thenReturn(400);
 		ServletOutputStream output = mock(ServletOutputStream.class);
@@ -147,11 +141,12 @@ class ConcreteHandlerTest {
 			doThrow(RuntimeException.class).when(output).write(any(byte[].class));
 			doThrow(RuntimeException.class).when(output).write(any(byte[].class), any(int.class), any(int.class));
 			when(response.getOutputStream()).thenReturn(output);
-			handle();
-			verify(output, times(0)).close();
 		} catch (IOException exception) {
 			throw new AssertionError(exception);
 		}
+		assertThrows(RuntimeException.class, () -> {
+			handle();
+		});
 	}
 
 	private void mockMessage() {
@@ -168,11 +163,7 @@ class ConcreteHandlerTest {
 	}
 
 	private void assertHandles() {
-		assertHandles(BODY);
-	}
-
-	private void assertHandles(String expected) {
-		assertHandles(expected, StandardCharsets.UTF_8, false);
+		assertHandles(BODY, StandardCharsets.UTF_8, false);
 	}
 
 	private void assertHandles(String expected, Charset charset, boolean base64) {

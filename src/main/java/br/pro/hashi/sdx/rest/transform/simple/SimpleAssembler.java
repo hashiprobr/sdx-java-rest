@@ -31,12 +31,6 @@ public interface SimpleAssembler extends Assembler {
 			stream.write(bytes);
 		} catch (IOException exception) {
 			throw new UncheckedIOException(exception);
-		} finally {
-			try {
-				stream.close();
-			} catch (IOException exception) {
-				throw new UncheckedIOException(exception);
-			}
 		}
 	}
 

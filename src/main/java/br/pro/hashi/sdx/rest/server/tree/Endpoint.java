@@ -238,7 +238,7 @@ public class Endpoint {
 		try {
 			argument = function.apply(item);
 		} catch (RuntimeException error) {
-			String message = "Argument '%s' could not be understood".formatted(item);
+			String message = "Argument '%s' does not seem to be valid".formatted(item);
 			logger.error(message, error);
 			throw new BadRequestException(message);
 		}
@@ -254,7 +254,7 @@ public class Endpoint {
 			logger.error(message, error);
 			throw new RestException(HttpStatus.UNSUPPORTED_MEDIA_TYPE_415, message);
 		} catch (DisassemblingException | DeserializingException error) {
-			String message = "%s could not be understood".formatted(description);
+			String message = "%s does not seem to be valid".formatted(description);
 			logger.error(message, error);
 			throw new BadRequestException(message);
 		}

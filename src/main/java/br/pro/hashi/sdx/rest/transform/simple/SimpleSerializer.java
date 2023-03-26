@@ -31,12 +31,6 @@ public interface SimpleSerializer extends Serializer {
 			writer.write(content);
 		} catch (IOException exception) {
 			throw new UncheckedIOException(exception);
-		} finally {
-			try {
-				writer.close();
-			} catch (IOException exception) {
-				throw new UncheckedIOException(exception);
-			}
 		}
 	}
 

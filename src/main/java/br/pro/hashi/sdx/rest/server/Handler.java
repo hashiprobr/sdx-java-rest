@@ -287,7 +287,6 @@ class Handler extends AbstractHandler {
 	}
 
 	boolean write(HttpServletResponse response, RestResource resource, Object actual, Type type, String extensionType, OutputStream stream) {
-		boolean withoutWrites = true;
 		boolean withoutLength;
 		try {
 			String contentType;
@@ -304,6 +303,11 @@ class Handler extends AbstractHandler {
 				Assembler assembler = facade.getAssembler(contentType);
 				consumer = (output) -> {
 					assembler.write(actual, type, output);
+					try {
+						output.close();
+					} catch (IOException exception) {
+						throw new UncheckedIOException(exception);
+					}
 				};
 				withoutLength = actual instanceof InputStream;
 			} else {
@@ -313,6 +317,11 @@ class Handler extends AbstractHandler {
 				consumer = (output) -> {
 					OutputStreamWriter writer = new OutputStreamWriter(output, charset);
 					serializer.write(actual, type, writer);
+					try {
+						writer.close();
+					} catch (IOException exception) {
+						throw new UncheckedIOException(exception);
+					}
 				};
 				withoutLength = actual instanceof Reader;
 				contentType = "%s;charset=%s".formatted(contentType, charset.name());
@@ -333,18 +342,10 @@ class Handler extends AbstractHandler {
 				stream = Media.encode(stream);
 			}
 
-			withoutWrites = false;
 			consumer.accept(stream);
 		} catch (RuntimeException exception) {
 			if (!response.isCommitted()) {
 				throw exception;
-			}
-			if (withoutWrites) {
-				try {
-					stream.close();
-				} catch (IOException error) {
-					logger.warn("Could not close stream", error);
-				}
 			}
 			withoutLength = true;
 		}

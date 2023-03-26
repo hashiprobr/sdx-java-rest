@@ -1040,6 +1040,18 @@ class RestClientTest {
 		}
 	}
 
+	@Test
+	void proxyAddsTaskAndGetsContentWithException() {
+		Throwable cause = new IOException();
+		try (MockedConstruction<OutputStreamRequestContent> construction = mockContentConstructionWithException(cause)) {
+			RestBody body = new RestBody(SPECIAL_BODY).in(StandardCharsets.ISO_8859_1);
+			Exception exception = assertThrows(UncheckedIOException.class, () -> {
+				mockContent(body);
+			});
+			assertSame(cause, exception.getCause());
+		}
+	}
+
 	private Content mockContent(RestBody body) {
 		p = newProxy();
 		List<Task> tasks = new ArrayList<>();
@@ -1049,7 +1061,6 @@ class RestClientTest {
 			String str = invocation.getArgument(0);
 			Writer writer = invocation.getArgument(2);
 			writer.write(str);
-			writer.close();
 			return null;
 		}).when(serializer).write(eq(actual), eq(String.class), any());
 		when(facade.isBinary(String.class)).thenReturn(false);
@@ -1084,6 +1095,18 @@ class RestClientTest {
 		}
 	}
 
+	@Test
+	void proxyAddsTaskAndGetsBinaryContentWithException() {
+		Throwable cause = new IOException();
+		try (MockedConstruction<OutputStreamRequestContent> construction = mockContentConstructionWithException(cause)) {
+			RestBody body = new RestBody(USASCII_BODY);
+			Exception exception = assertThrows(UncheckedIOException.class, () -> {
+				mockBinaryContent(body);
+			});
+			assertSame(cause, exception.getCause());
+		}
+	}
+
 	private Content mockBinaryContent(RestBody body) {
 		p = newProxy();
 		List<Task> tasks = new ArrayList<>();
@@ -1093,7 +1116,6 @@ class RestClientTest {
 			String str = invocation.getArgument(0);
 			OutputStream stream = invocation.getArgument(2);
 			stream.write(str.getBytes(StandardCharsets.US_ASCII));
-			stream.close();
 			return null;
 		}).when(assembler).write(eq(actual), eq(String.class), any());
 		when(facade.isBinary(String.class)).thenReturn(true);
@@ -1110,6 +1132,15 @@ class RestClientTest {
 		return mockConstruction(OutputStreamRequestContent.class, (mock, context) -> {
 			when(mock.getContentType()).thenReturn((String) context.arguments().get(0));
 			when(mock.getOutputStream()).thenReturn(new ByteArrayOutputStream());
+		});
+	}
+
+	private MockedConstruction<OutputStreamRequestContent> mockContentConstructionWithException(Throwable cause) {
+		return mockConstruction(OutputStreamRequestContent.class, (mock, context) -> {
+			OutputStream stream = spy(OutputStream.nullOutputStream());
+			doThrow(cause).when(stream).close();
+			when(mock.getContentType()).thenReturn((String) context.arguments().get(0));
+			when(mock.getOutputStream()).thenReturn(stream);
 		});
 	}
 
@@ -1151,22 +1182,6 @@ class RestClientTest {
 			when(mock.get(RestClient.TIMEOUT, TimeUnit.SECONDS)).thenReturn(response);
 			when(mock.getInputStream()).thenReturn(InputStream.nullInputStream());
 		});
-	}
-
-	@Test
-	void proxyDoesNotSendIfCloseThrows() throws IOException {
-		try (MockedConstruction<InputStreamResponseListener> construction = mockConstruction(InputStreamResponseListener.class)) {
-			p = newProxy();
-			Consumer<OutputStream> consumer = (stream) -> {};
-			OutputStream stream = spy(OutputStream.nullOutputStream());
-			IOException cause = new IOException();
-			doThrow(cause).when(stream).close();
-			List<Task> tasks = List.of(new Task(consumer, stream));
-			Exception exception = assertThrows(UncheckedIOException.class, () -> {
-				p.send(request, tasks);
-			});
-			assertSame(cause, exception.getCause());
-		}
 	}
 
 	@Test

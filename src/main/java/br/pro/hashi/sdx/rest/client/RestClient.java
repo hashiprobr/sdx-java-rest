@@ -1013,6 +1013,11 @@ public final class RestClient {
 				Assembler assembler = facade.getAssembler(contentType);
 				consumer = (output) -> {
 					assembler.write(actual, type, output);
+					try {
+						output.close();
+					} catch (IOException exception) {
+						throw new UncheckedIOException(exception);
+					}
 				};
 			} else {
 				contentType = facade.cleanForSerializing(contentType, actual);
@@ -1021,6 +1026,11 @@ public final class RestClient {
 				consumer = (output) -> {
 					OutputStreamWriter writer = new OutputStreamWriter(output, charset);
 					serializer.write(actual, type, writer);
+					try {
+						writer.close();
+					} catch (IOException exception) {
+						throw new UncheckedIOException(exception);
+					}
 				};
 				contentType = "%s;charset=%s".formatted(contentType, charset.name());
 			}
@@ -1046,11 +1056,8 @@ public final class RestClient {
 
 			for (Task task : tasks) {
 				Consumer<OutputStream> consumer = task.consumer();
-				try (OutputStream stream = task.stream()) {
-					consumer.accept(stream);
-				} catch (IOException exception) {
-					throw new UncheckedIOException(exception);
-				}
+				OutputStream stream = task.stream();
+				consumer.accept(stream);
 			}
 
 			Response response;

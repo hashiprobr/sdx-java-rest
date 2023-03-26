@@ -2,10 +2,7 @@ package br.pro.hashi.sdx.rest.transform.simple;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
-import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.spy;
 
 import java.io.IOException;
 import java.io.StringWriter;
@@ -108,23 +105,12 @@ class SimpleSerializerTest {
 	}
 
 	@Test
-	void doesNotWriteIfWriteThrows() throws IOException {
+	void doesNotWrite() throws IOException {
 		Writer writer = Writer.nullWriter();
 		writer.close();
 		Exception exception = assertThrows(UncheckedIOException.class, () -> {
 			s.write(body, writer);
 		});
 		assertInstanceOf(IOException.class, exception.getCause());
-	}
-
-	@Test
-	void doesNotWriteIfCloseThrows() throws IOException {
-		Writer writer = spy(Writer.nullWriter());
-		Throwable cause = new IOException();
-		doThrow(cause).when(writer).close();
-		Exception exception = assertThrows(UncheckedIOException.class, () -> {
-			s.write(body, writer);
-		});
-		assertSame(cause, exception.getCause());
 	}
 }

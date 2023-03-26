@@ -29,12 +29,6 @@ class PlainSerializer implements Serializer {
 			throw new SupportException("Body must be instance of String or Reader");
 		} catch (IOException exception) {
 			throw new UncheckedIOException(exception);
-		} finally {
-			try {
-				writer.close();
-			} catch (IOException exception) {
-				throw new UncheckedIOException(exception);
-			}
 		}
 	}
 }

@@ -2,10 +2,7 @@ package br.pro.hashi.sdx.rest.transform.facade;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
-import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.spy;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -110,18 +107,6 @@ class PlainSerializerTest {
 	}
 
 	@Test
-	void doesNotWriteIfBodyIsStringButCloseThrows() throws IOException {
-		String body = newString();
-		Writer writer = spy(Writer.nullWriter());
-		Throwable cause = new IOException();
-		doThrow(cause).when(writer).close();
-		Exception exception = assertThrows(UncheckedIOException.class, () -> {
-			s.write(body, String.class, writer);
-		});
-		assertSame(cause, exception.getCause());
-	}
-
-	@Test
 	void doesNotWriteIfBodyIsReaderButWriteThrows() throws IOException {
 		Reader body = newReader();
 		Writer writer = Writer.nullWriter();
@@ -130,18 +115,6 @@ class PlainSerializerTest {
 			s.write(body, Reader.class, writer);
 		});
 		assertInstanceOf(IOException.class, exception.getCause());
-	}
-
-	@Test
-	void doesNotWriteIfBodyIsReaderButCloseThrows() throws IOException {
-		Reader body = newReader();
-		Writer writer = spy(Writer.nullWriter());
-		Throwable cause = new IOException();
-		doThrow(cause).when(writer).close();
-		Exception exception = assertThrows(UncheckedIOException.class, () -> {
-			s.write(body, Reader.class, writer);
-		});
-		assertSame(cause, exception.getCause());
 	}
 
 	private Reader newReader() {
