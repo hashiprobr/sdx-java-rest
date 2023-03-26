@@ -36,6 +36,7 @@ import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.server.SslConnectionFactory;
 import org.eclipse.jetty.server.handler.SecuredRedirectHandler;
+import org.eclipse.jetty.server.handler.ThreadLimitHandler;
 import org.eclipse.jetty.server.handler.gzip.GzipHandler;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.junit.jupiter.api.Test;
@@ -381,7 +382,8 @@ class RestServerBuilderTest extends BuilderTest {
 		assertNull(errorHandler.getContentType());
 		assertEquals(Coding.CHARSET, errorHandler.getCharset());
 		assertFalse(errorHandler.isBase64());
-		GzipHandler gzipHandler = (GzipHandler) jettyServer.getHandler();
+		ThreadLimitHandler limitHandler = (ThreadLimitHandler) jettyServer.getHandler();
+		GzipHandler gzipHandler = (GzipHandler) limitHandler.getHandler();
 		Handler handler = (Handler) gzipHandler.getHandler();
 		assertSame(b.getCache(), handler.getCache());
 		assertSame(b.getFacade(), handler.getFacade());
@@ -405,7 +407,8 @@ class RestServerBuilderTest extends BuilderTest {
 	void buildsWithUrlCharset() {
 		b.withUrlCharset(StandardCharsets.ISO_8859_1);
 		RestServer server = b.build(VALID_PACKAGE);
-		GzipHandler gzipHandler = (GzipHandler) server.getJettyServer().getHandler();
+		ThreadLimitHandler limitHandler = (ThreadLimitHandler) server.getJettyServer().getHandler();
+		GzipHandler gzipHandler = (GzipHandler) limitHandler.getHandler();
 		Handler handler = (Handler) gzipHandler.getHandler();
 		assertEquals(StandardCharsets.ISO_8859_1, handler.getUrlCharset());
 	}
@@ -414,7 +417,8 @@ class RestServerBuilderTest extends BuilderTest {
 	void buildsWithRedirection() {
 		b.withRedirection();
 		RestServer server = b.build(VALID_PACKAGE);
-		SecuredRedirectHandler redirectHandler = (SecuredRedirectHandler) server.getJettyServer().getHandler();
+		ThreadLimitHandler limitHandler = (ThreadLimitHandler) server.getJettyServer().getHandler();
+		SecuredRedirectHandler redirectHandler = (SecuredRedirectHandler) limitHandler.getHandler();
 		GzipHandler gzipHandler = (GzipHandler) redirectHandler.getHandler();
 		assertInstanceOf(Handler.class, gzipHandler.getHandler());
 	}
@@ -423,7 +427,8 @@ class RestServerBuilderTest extends BuilderTest {
 	void buildsWithoutCompression() {
 		b.withoutCompression();
 		RestServer server = b.build(VALID_PACKAGE);
-		assertInstanceOf(Handler.class, server.getJettyServer().getHandler());
+		ThreadLimitHandler limitHandler = (ThreadLimitHandler) server.getJettyServer().getHandler();
+		assertInstanceOf(Handler.class, limitHandler.getHandler());
 	}
 
 	@Test
@@ -431,7 +436,8 @@ class RestServerBuilderTest extends BuilderTest {
 		b.withRedirection();
 		b.withoutCompression();
 		RestServer server = b.build(VALID_PACKAGE);
-		SecuredRedirectHandler redirectHandler = (SecuredRedirectHandler) server.getJettyServer().getHandler();
+		ThreadLimitHandler limitHandler = (ThreadLimitHandler) server.getJettyServer().getHandler();
+		SecuredRedirectHandler redirectHandler = (SecuredRedirectHandler) limitHandler.getHandler();
 		assertInstanceOf(Handler.class, redirectHandler.getHandler());
 	}
 
@@ -480,7 +486,8 @@ class RestServerBuilderTest extends BuilderTest {
 	void buildsWithoutCors() {
 		b.withoutCors();
 		RestServer server = b.build(VALID_PACKAGE);
-		GzipHandler gzipHandler = (GzipHandler) server.getJettyServer().getHandler();
+		ThreadLimitHandler limitHandler = (ThreadLimitHandler) server.getJettyServer().getHandler();
+		GzipHandler gzipHandler = (GzipHandler) limitHandler.getHandler();
 		Handler handler = (Handler) gzipHandler.getHandler();
 		assertFalse(handler.isCors());
 	}

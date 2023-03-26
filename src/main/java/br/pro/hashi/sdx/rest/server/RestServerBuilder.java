@@ -26,6 +26,7 @@ import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.server.SslConnectionFactory;
 import org.eclipse.jetty.server.handler.AbstractHandler;
 import org.eclipse.jetty.server.handler.SecuredRedirectHandler;
+import org.eclipse.jetty.server.handler.ThreadLimitHandler;
 import org.eclipse.jetty.server.handler.gzip.GzipHandler;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.slf4j.Logger;
@@ -412,7 +413,9 @@ public non-sealed class RestServerBuilder extends Builder<RestServerBuilder> {
 			redirectHandler.setHandler(handler);
 			handler = redirectHandler;
 		}
-		server.setHandler(handler);
+		ThreadLimitHandler limitHandler = new ThreadLimitHandler();
+		limitHandler.setHandler(handler);
+		server.setHandler(limitHandler);
 
 		String scheme;
 		int mainPort;
