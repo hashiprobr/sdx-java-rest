@@ -35,6 +35,7 @@ import br.pro.hashi.sdx.rest.reflection.Queries;
 import br.pro.hashi.sdx.rest.reflection.Reflection;
 import br.pro.hashi.sdx.rest.server.exception.BadRequestException;
 import br.pro.hashi.sdx.rest.server.exception.MessageRestException;
+import br.pro.hashi.sdx.rest.server.exception.NotFoundException;
 import br.pro.hashi.sdx.rest.server.tree.Data;
 import br.pro.hashi.sdx.rest.server.tree.Endpoint;
 import br.pro.hashi.sdx.rest.server.tree.Node;
@@ -289,11 +290,13 @@ class Handler extends AbstractHandler {
 	boolean write(HttpServletResponse response, RestResource resource, Object actual, Type type, String extensionType, OutputStream stream) {
 		boolean withoutLength;
 		try {
-			String contentType;
-			if (extensionType == null) {
-				contentType = resource.getContentType();
-			} else {
+			String contentType = resource.getContentType();
+			if (contentType == null) {
 				contentType = extensionType;
+			} else {
+				if (extensionType != null && contentType != extensionType) {
+					throw new NotFoundException();
+				}
 			}
 			boolean base64 = resource.isBase64();
 

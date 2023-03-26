@@ -1367,7 +1367,7 @@ class HandlerTest {
 	}
 
 	private boolean serializeWithException() {
-		Serializer serializer = mockSerializer(SPECIAL_BODY);
+		Serializer serializer = mockSerializer(SPECIAL_BODY, "type/subtype");
 		doThrow(RuntimeException.class).when(serializer).write(eq(SPECIAL_BODY), eq(String.class), any());
 		return write(SPECIAL_BODY, String.class);
 	}
@@ -1423,11 +1423,11 @@ class HandlerTest {
 	}
 
 	private boolean writeLarge() {
-		return serialize(new StringReader(SPECIAL_BODY), Reader.class);
+		return serialize(mockReader(), Reader.class);
 	}
 
 	private boolean serialize(Object actual, Type type) {
-		mockSerializerWithoutException(actual);
+		mockSerializerWithoutException(actual, "type/subtype");
 		return write(actual, type);
 	}
 
@@ -1450,6 +1450,30 @@ class HandlerTest {
 		assertTrue(serializeDirectlyWithExtension(SPECIAL_BODY, String.class));
 		verify(response).setContentType("text/plain;charset=UTF-8");
 		assertEqualsBytes();
+		verifyNoFlush();
+	}
+
+	@Test
+	void writesDirectlyWithValidExtension() {
+		mockCharset();
+		mockWithoutBase64();
+		mockWithoutCommitted();
+		assertTrue(serializeDirectlyWithValidExtension(SPECIAL_BODY, String.class));
+		verify(response).setContentType("type/subtype;charset=UTF-8");
+		assertEqualsBytes();
+		verifyNoFlush();
+	}
+
+	@Test
+	void writesDirectlyWithInvalidExtension() {
+		mockCharset();
+		mockWithoutBase64();
+		mockWithoutCommitted();
+		assertThrows(NotFoundException.class, () -> {
+			serializeDirectlyWithInvalidExtension(SPECIAL_BODY, String.class);
+		});
+		verify(response, times(0)).setContentType(any());
+		verifyNoWrite();
 		verifyNoFlush();
 	}
 
@@ -1484,35 +1508,73 @@ class HandlerTest {
 		mockCharset();
 		mockWithoutBase64();
 		mockWithoutCommitted();
-		assertFalse(serializeDirectly(new StringReader(SPECIAL_BODY), Reader.class));
+		assertFalse(serializeDirectly(mockReader(), Reader.class));
 		verify(response).setContentType("type/subtype;charset=UTF-8");
 		assertEqualsBytes();
 		verifyNoFlush();
 	}
 
 	@Test
-	void writesDirectlyWithExtensionLarge() {
+	void writesDirectlyLargeWithExtension() {
 		mockCharset();
 		mockWithoutBase64();
 		mockWithoutCommitted();
-		assertFalse(serializeDirectlyWithExtension(new StringReader(SPECIAL_BODY), Reader.class));
+		assertFalse(serializeDirectlyWithExtension(mockReader(), Reader.class));
 		verify(response).setContentType("text/plain;charset=UTF-8");
 		assertEqualsBytes();
 		verifyNoFlush();
 	}
 
+	@Test
+	void writesDirectlyLargeWithValidExtension() {
+		mockCharset();
+		mockWithoutBase64();
+		mockWithoutCommitted();
+		assertFalse(serializeDirectlyWithValidExtension(mockReader(), Reader.class));
+		verify(response).setContentType("type/subtype;charset=UTF-8");
+		assertEqualsBytes();
+		verifyNoFlush();
+	}
+
+	@Test
+	void writesDirectlyLargeWithInvalidExtension() {
+		mockCharset();
+		mockWithoutBase64();
+		mockWithoutCommitted();
+		assertThrows(NotFoundException.class, () -> {
+			serializeDirectlyWithInvalidExtension(mockReader(), Reader.class);
+		});
+		verify(response, times(0)).setContentType(any());
+		verifyNoWrite();
+		verifyNoFlush();
+	}
+
+	private Object mockReader() {
+		return new StringReader(SPECIAL_BODY);
+	}
+
 	private boolean serializeDirectly(Object actual, Type type) {
-		mockSerializerWithoutException(actual);
-		return writeDirectly(actual, type);
+		mockSerializerWithoutException(actual, "type/subtype");
+		return writeDirectly(actual, type, null);
 	}
 
 	private boolean serializeDirectlyWithExtension(Object actual, Type type) {
-		mockSerializerWithoutException(actual);
-		return writeDirectlyWithExtension(actual, type);
+		mockSerializerWithoutException(actual, null);
+		return writeDirectly(actual, type, "text/plain");
 	}
 
-	private void mockSerializerWithoutException(Object actual) {
-		Serializer serializer = mockSerializer(actual);
+	private boolean serializeDirectlyWithValidExtension(Object actual, Type type) {
+		mockSerializerWithoutException(actual, "type/subtype");
+		return writeDirectly(actual, type, "type/subtype");
+	}
+
+	private boolean serializeDirectlyWithInvalidExtension(Object actual, Type type) {
+		mockSerializerWithoutException(actual, "type/subtype");
+		return writeDirectly(actual, type, "text/plain");
+	}
+
+	private void mockSerializerWithoutException(Object actual, String contentType) {
+		Serializer serializer = mockSerializer(actual, contentType);
 		doAnswer((invocation) -> {
 			String str = invocation.getArgument(0);
 			Writer writer = invocation.getArgument(2);
@@ -1527,11 +1589,11 @@ class HandlerTest {
 		}).when(serializer).write(eq(actual), eq(Reader.class), any());
 	}
 
-	private Serializer mockSerializer(Object actual) {
+	private Serializer mockSerializer(Object actual, String contentType) {
 		Serializer serializer = mock(Serializer.class);
-		when(resource.getContentType()).thenReturn(null);
+		when(resource.getContentType()).thenReturn(contentType);
 		when(facade.isBinary(any())).thenReturn(false);
-		when(facade.cleanForSerializing(null, actual)).thenReturn("type/subtype");
+		when(facade.cleanForSerializing("type/subtype", actual)).thenReturn("type/subtype");
 		when(facade.cleanForSerializing("text/plain", actual)).thenReturn("text/plain");
 		when(facade.getSerializer("type/subtype")).thenReturn(serializer);
 		when(facade.getSerializer("text/plain")).thenReturn(serializer);
@@ -1611,7 +1673,7 @@ class HandlerTest {
 	}
 
 	private boolean assembleWithException() {
-		Assembler assembler = mockAssembler(USASCII_BODY);
+		Assembler assembler = mockAssembler(USASCII_BODY, "type/subtype");
 		doThrow(RuntimeException.class).when(assembler).write(eq(USASCII_BODY), eq(String.class), any());
 		return write(USASCII_BODY, String.class);
 	}
@@ -1667,11 +1729,11 @@ class HandlerTest {
 	}
 
 	private boolean writeLargeBinary() {
-		return assemble(new ByteArrayInputStream(USASCII_BODY.getBytes(StandardCharsets.US_ASCII)), InputStream.class);
+		return assemble(mockStream(), InputStream.class);
 	}
 
 	private boolean assemble(Object actual, Type type) {
-		mockAssemblerWithoutException(actual);
+		mockAssemblerWithoutException(actual, "type/subtype");
 		return write(actual, type);
 	}
 
@@ -1698,6 +1760,30 @@ class HandlerTest {
 	}
 
 	@Test
+	void writesDirectlyBinaryWithValidExtension() {
+		mockCharset();
+		mockWithoutBase64();
+		mockWithoutCommitted();
+		assertTrue(assembleDirectlyWithValidExtension(USASCII_BODY, String.class));
+		verify(response).setContentType("type/subtype");
+		assertBinaryEqualsBytes();
+		verifyNoFlush();
+	}
+
+	@Test
+	void writesDirectlyBinaryWithInvalidExtension() {
+		mockCharset();
+		mockWithoutBase64();
+		mockWithoutCommitted();
+		assertThrows(NotFoundException.class, () -> {
+			assembleDirectlyWithInvalidExtension(USASCII_BODY, String.class);
+		});
+		verify(response, times(0)).setContentType(any());
+		verifyNoWrite();
+		verifyNoFlush();
+	}
+
+	@Test
 	void writesDirectlyBinaryWithBase64() {
 		mockCharset();
 		mockWithBase64();
@@ -1717,7 +1803,7 @@ class HandlerTest {
 		mockCharset();
 		mockWithoutBase64();
 		mockWithoutCommitted();
-		assertFalse(assembleDirectly(new ByteArrayInputStream(USASCII_BODY.getBytes(StandardCharsets.US_ASCII)), InputStream.class));
+		assertFalse(assembleDirectly(mockStream(), InputStream.class));
 		verify(response).setContentType("type/subtype");
 		assertBinaryEqualsBytes();
 		verifyNoFlush();
@@ -1728,24 +1814,62 @@ class HandlerTest {
 		mockCharset();
 		mockWithoutBase64();
 		mockWithoutCommitted();
-		assertFalse(assembleDirectlyWithExtension(new ByteArrayInputStream(USASCII_BODY.getBytes(StandardCharsets.US_ASCII)), InputStream.class));
+		assertFalse(assembleDirectlyWithExtension(mockStream(), InputStream.class));
 		verify(response).setContentType("text/plain");
 		assertBinaryEqualsBytes();
 		verifyNoFlush();
 	}
 
+	@Test
+	void writesDirectlyLargeBinaryWithValidExtension() {
+		mockCharset();
+		mockWithoutBase64();
+		mockWithoutCommitted();
+		assertFalse(assembleDirectlyWithValidExtension(mockStream(), InputStream.class));
+		verify(response).setContentType("type/subtype");
+		assertBinaryEqualsBytes();
+		verifyNoFlush();
+	}
+
+	@Test
+	void writesDirectlyLargeBinaryWithInvalidExtension() {
+		mockCharset();
+		mockWithoutBase64();
+		mockWithoutCommitted();
+		assertThrows(NotFoundException.class, () -> {
+			assembleDirectlyWithInvalidExtension(mockStream(), InputStream.class);
+		});
+		verify(response, times(0)).setContentType(any());
+		verifyNoWrite();
+		verifyNoFlush();
+	}
+
+	private Object mockStream() {
+		return new ByteArrayInputStream(USASCII_BODY.getBytes(StandardCharsets.US_ASCII));
+	}
+
 	private boolean assembleDirectly(Object actual, Type type) {
-		mockAssemblerWithoutException(actual);
-		return writeDirectly(actual, type);
+		mockAssemblerWithoutException(actual, "type/subtype");
+		return writeDirectly(actual, type, null);
 	}
 
 	private boolean assembleDirectlyWithExtension(Object actual, Type type) {
-		mockAssemblerWithoutException(actual);
-		return writeDirectlyWithExtension(actual, type);
+		mockAssemblerWithoutException(actual, null);
+		return writeDirectly(actual, type, "text/plain");
 	}
 
-	private void mockAssemblerWithoutException(Object actual) {
-		Assembler assembler = mockAssembler(actual);
+	private boolean assembleDirectlyWithValidExtension(Object actual, Type type) {
+		mockAssemblerWithoutException(actual, "type/subtype");
+		return writeDirectly(actual, type, "type/subtype");
+	}
+
+	private boolean assembleDirectlyWithInvalidExtension(Object actual, Type type) {
+		mockAssemblerWithoutException(actual, "type/subtype");
+		return writeDirectly(actual, type, "text/plain");
+	}
+
+	private void mockAssemblerWithoutException(Object actual, String contentType) {
+		Assembler assembler = mockAssembler(actual, contentType);
 		doAnswer((invocation) -> {
 			String str = invocation.getArgument(0);
 			OutputStream output = invocation.getArgument(2);
@@ -1760,25 +1884,11 @@ class HandlerTest {
 		}).when(assembler).write(eq(actual), eq(InputStream.class), any());
 	}
 
-	private Assembler mockAssembler(Object actual) {
+	private Assembler mockAssembler(Object actual, String contentType) {
 		Assembler assembler = mock(Assembler.class);
-		doAnswer((invocation) -> {
-			String str = invocation.getArgument(0);
-			OutputStream output = invocation.getArgument(2);
-			output.write(str.getBytes(StandardCharsets.US_ASCII));
-			output.close();
-			return null;
-		}).when(assembler).write(eq(actual), eq(String.class), any());
-		doAnswer((invocation) -> {
-			InputStream input = invocation.getArgument(0);
-			OutputStream output = invocation.getArgument(2);
-			input.transferTo(output);
-			output.close();
-			return null;
-		}).when(assembler).write(eq(actual), eq(InputStream.class), any());
-		when(resource.getContentType()).thenReturn(null);
+		when(resource.getContentType()).thenReturn(contentType);
 		when(facade.isBinary(any())).thenReturn(true);
-		when(facade.cleanForAssembling(null, actual)).thenReturn("type/subtype");
+		when(facade.cleanForAssembling("type/subtype", actual)).thenReturn("type/subtype");
 		when(facade.cleanForAssembling("text/plain", actual)).thenReturn("text/plain");
 		when(facade.getAssembler("type/subtype")).thenReturn(assembler);
 		when(facade.getAssembler("text/plain")).thenReturn(assembler);
@@ -1864,12 +1974,8 @@ class HandlerTest {
 		return write(actual, type, null, output);
 	}
 
-	private boolean writeDirectly(Object actual, Type type) {
-		return write(actual, type, null, stream);
-	}
-
-	private boolean writeDirectlyWithExtension(Object actual, Type type) {
-		return write(actual, type, "text/plain", stream);
+	private boolean writeDirectly(Object actual, Type type, String extensionType) {
+		return write(actual, type, extensionType, stream);
 	}
 
 	private boolean write(Object actual, Type type, String extensionType, OutputStream output) {
