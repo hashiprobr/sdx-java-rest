@@ -420,6 +420,9 @@ public non-sealed class RestServerBuilder extends Builder<RestServerBuilder> {
 		String scheme;
 		int mainPort;
 		HttpConfiguration configuration = new HttpConfiguration();
+		configuration.setSendDateHeader(false);
+		configuration.setSendServerVersion(false);
+		configuration.setSendXPoweredBy(false);
 		configuration.setHttpCompliance(HttpCompliance.RFC7230);
 		configuration.setUriCompliance(compliance);
 		if (factory == null) {
