@@ -17,6 +17,7 @@ module br.pro.hashi.sdx.rest {
 	exports br.pro.hashi.sdx.rest;
 	exports br.pro.hashi.sdx.rest.client;
 	exports br.pro.hashi.sdx.rest.server;
+	exports br.pro.hashi.sdx.rest.server.annotation;
 	exports br.pro.hashi.sdx.rest.transform;
 	exports br.pro.hashi.sdx.rest.transform.exception;
 	exports br.pro.hashi.sdx.rest.transform.extension;

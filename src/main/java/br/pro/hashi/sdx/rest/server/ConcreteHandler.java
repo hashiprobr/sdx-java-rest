@@ -116,4 +116,9 @@ class ConcreteHandler extends ErrorHandler {
 		serializer.write(actual, type, writer);
 		writer.close();
 	}
+
+	@Override
+	public boolean errorPageForMethod(String method) {
+		return true;
+	}
 }
