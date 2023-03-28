@@ -280,7 +280,7 @@ public abstract class RestResource {
 	 * @param args   convenience parameters to call the other methods
 	 * @throws IllegalArgumentException if the status is invalid
 	 */
-	protected void response(int status, Void... args) {
+	protected void status(int status, Void... args) {
 		if (status < 100 || status > 399) {
 			throw new IllegalArgumentException("Status must be between 100 and 399");
 		}
@@ -305,7 +305,7 @@ public abstract class RestResource {
 	 * @return the second parameter, for wrapping
 	 */
 	protected <T> T response(int status, T body, Void... args) {
-		response(status);
+		status(status);
 		return body;
 	}
 
