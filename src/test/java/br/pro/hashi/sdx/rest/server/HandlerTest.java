@@ -54,6 +54,9 @@ import br.pro.hashi.sdx.rest.reflection.PartHeaders;
 import br.pro.hashi.sdx.rest.reflection.Queries;
 import br.pro.hashi.sdx.rest.server.exception.NotFoundException;
 import br.pro.hashi.sdx.rest.server.mock.valid.ConcreteResource;
+import br.pro.hashi.sdx.rest.server.mock.valid.ConcreteResourceWithAll;
+import br.pro.hashi.sdx.rest.server.mock.valid.ConcreteResourceWithoutNull;
+import br.pro.hashi.sdx.rest.server.mock.valid.ConcreteResourceWithoutPlain;
 import br.pro.hashi.sdx.rest.server.mock.valid.NullableResource;
 import br.pro.hashi.sdx.rest.server.tree.Data;
 import br.pro.hashi.sdx.rest.server.tree.Endpoint;
@@ -107,6 +110,9 @@ class HandlerTest {
 		formatter = mock(ErrorFormatter.class);
 		constructors = new HashMap<>();
 		constructors.put(ConcreteResource.class, ConcreteResource.class.getConstructor());
+		constructors.put(ConcreteResourceWithAll.class, ConcreteResourceWithAll.class.getConstructor());
+		constructors.put(ConcreteResourceWithoutPlain.class, ConcreteResourceWithoutPlain.class.getConstructor());
+		constructors.put(ConcreteResourceWithoutNull.class, ConcreteResourceWithoutNull.class.getConstructor());
 		constructors.put(NullableResource.class, NullableResource.class.getConstructor());
 		element = mock(MultipartConfigElement.class);
 		gatewayTypes = new HashSet<>();
@@ -128,10 +134,10 @@ class HandlerTest {
 
 	@Test
 	void handles() {
+		mockMethod();
 		mockRequestUri();
 		mockNode();
 		mockMethodNames();
-		mockMethod();
 		mockEndpoint();
 		mockContentType();
 		ServletInputStream stream = mockInputStream();
@@ -146,10 +152,10 @@ class HandlerTest {
 
 	@Test
 	void handlesWithoutCors() {
+		mockMethod();
 		mockRequestUri();
 		mockNode();
 		mockMethodNames();
-		mockMethod();
 		mockEndpoint();
 		mockContentType();
 		ServletInputStream stream = mockInputStream();
@@ -167,11 +173,27 @@ class HandlerTest {
 	}
 
 	@Test
-	void handlesWithExtension() {
-		when(request.getRequestURI()).thenReturn("/b.txt");
+	void handlesWithoutMethod() {
+		when(request.getMethod()).thenReturn("GET");
+		when(tree.getMethodNames()).thenReturn(Set.of());
+		mockRequestUri();
 		mockNode();
 		mockMethodNames();
+		mockEndpoint();
+		mockContentType();
+		mockResourceType();
+		mockCall();
+		mockReturnType();
+		handle();
+		assertMessageResponse(501, "GET not implemented");
+	}
+
+	@Test
+	void handlesWithExtensionAndNullNotAcceptable() {
 		mockMethod();
+		mockRequestUriWithExtension();
+		mockNode();
+		mockMethodNames();
 		mockEndpoint();
 		mockContentType();
 		ServletInputStream stream = mockInputStream();
@@ -181,6 +203,28 @@ class HandlerTest {
 		handle();
 		assertItemList();
 		assertBody(stream);
+		assertOkWithExtension();
+	}
+
+	@Test
+	void handlesWithExtensionAndEmptyNotAcceptable() {
+		mockMethod();
+		mockRequestUriWithExtension();
+		mockNode();
+		mockMethodNames();
+		mockEndpoint();
+		mockContentType();
+		ServletInputStream stream = mockInputStream();
+		mockResourceType(ConcreteResourceWithAll.class);
+		mockCall();
+		mockReturnType();
+		handle();
+		assertItemList();
+		assertBody(stream);
+		assertOkWithExtension();
+	}
+
+	private void assertOkWithExtension() {
 		assertHeaders();
 		assertFields();
 		verify(response).setStatus(200);
@@ -189,15 +233,48 @@ class HandlerTest {
 		verifyNoCountWrite();
 		verifyNoResponseClose();
 		verifyNoError();
+	}
 
+	@Test
+	void handlesWithoutPlainExtension() {
+		mockMethod();
+		mockRequestUriWithExtension();
+		mockNode();
+		mockMethodNames();
+		mockEndpoint();
+		mockContentType();
+		mockResourceType(ConcreteResourceWithoutPlain.class);
+		mockCall();
+		mockReturnType();
+		handle();
+		assertMessageResponse(406, "Extension txt is not acceptable");
+	}
+
+	private void mockRequestUriWithExtension() {
+		when(request.getRequestURI()).thenReturn("/b.txt");
+	}
+
+	@Test
+	void handlesWithoutNullExtension() {
+		mockMethod();
+		mockRequestUri();
+		mockNode();
+		mockMethodNames();
+		mockEndpoint();
+		mockContentType();
+		mockResourceType(ConcreteResourceWithoutNull.class);
+		mockCall();
+		mockReturnType();
+		handle();
+		assertMessageResponse(406, "URI must have an extension");
 	}
 
 	@Test
 	void handlesWithEncodedExtension() {
+		mockMethod();
 		when(request.getRequestURI()).thenReturn("/b%2Etxt");
 		mockNodeWithExtension();
 		mockMethodNames();
-		mockMethod();
 		mockEndpoint();
 		mockContentType();
 		ServletInputStream stream = mockInputStream();
@@ -212,10 +289,10 @@ class HandlerTest {
 
 	@Test
 	void handlesWithSlashedExtension() {
+		mockMethod();
 		when(request.getRequestURI()).thenReturn("/b.txt///");
 		mockNodeWithExtension();
 		mockMethodNames();
-		mockMethod();
 		mockEndpoint();
 		mockContentType();
 		ServletInputStream stream = mockInputStream();
@@ -236,12 +313,12 @@ class HandlerTest {
 
 	@Test
 	void handlesWithWrongExtension() {
+		mockMethod();
 		when(request.getRequestURI()).thenReturn("/b.json");
 		when(tree.getLeafAndAddItems(new String[] { "b.json" }, List.of())).thenAnswer((invocation) -> {
 			return loadNode(invocation);
 		});
 		mockMethodNames();
-		mockMethod();
 		mockEndpoint();
 		mockContentType();
 		ServletInputStream stream = mockInputStream();
@@ -256,12 +333,12 @@ class HandlerTest {
 
 	@Test
 	void handlesWithEmptyExtension() {
+		mockMethod();
 		when(request.getRequestURI()).thenReturn("/b.");
 		when(tree.getLeafAndAddItems(new String[] { "b." }, List.of())).thenAnswer((invocation) -> {
 			return loadNode(invocation);
 		});
 		mockMethodNames();
-		mockMethod();
 		mockEndpoint();
 		mockContentType();
 		ServletInputStream stream = mockInputStream();
@@ -276,10 +353,10 @@ class HandlerTest {
 
 	@Test
 	void handlesWithoutRequestUri() {
+		mockMethod();
 		when(request.getRequestURI()).thenReturn("/%b");
 		mockNode();
 		mockMethodNames();
-		mockMethod();
 		mockEndpoint();
 		mockContentType();
 		mockResourceType();
@@ -291,10 +368,10 @@ class HandlerTest {
 
 	@Test
 	void handlesWithoutNode() {
+		mockMethod();
 		mockRequestUri();
 		when(tree.getLeafAndAddItems(new String[] { "b" }, List.of())).thenThrow(new NotFoundException());
 		mockMethodNames();
-		mockMethod();
 		mockEndpoint();
 		mockContentType();
 		mockResourceType();
@@ -306,10 +383,10 @@ class HandlerTest {
 
 	@Test
 	void handlesWithPost() {
+		mockMethod("POST");
 		mockRequestUri();
 		mockNode();
 		mockMethodNames();
-		when(request.getMethod()).thenReturn("POST");
 		when(node.getEndpoint("POST")).thenReturn(endpoint);
 		mockContentType();
 		ServletInputStream stream = mockInputStream();
@@ -324,10 +401,10 @@ class HandlerTest {
 
 	@Test
 	void handlesWithOptions() {
+		mockMethod("OPTIONS");
 		mockRequestUri();
 		mockNode();
 		mockMethodNames();
-		when(request.getMethod()).thenReturn("OPTIONS");
 		mockEndpoint();
 		mockContentType();
 		mockResourceType();
@@ -340,10 +417,10 @@ class HandlerTest {
 	@Test
 	void handlesWithOptionsAndOneVarArg() {
 		String[] items = new String[] { "2" };
+		mockMethod("OPTIONS");
 		mockRequestUri();
 		mockNode(items);
 		mockVarMethodNames();
-		when(request.getMethod()).thenReturn("OPTIONS");
 		mockEndpoint();
 		mockContentType();
 		mockResourceType();
@@ -356,10 +433,10 @@ class HandlerTest {
 	@Test
 	void handlesWithOptionsAndTwoVarArgs() {
 		String[] items = new String[] { "2", "3" };
+		mockMethod("OPTIONS");
 		mockRequestUri();
 		mockNode(items);
 		mockVarMethodNames();
-		when(request.getMethod()).thenReturn("OPTIONS");
 		mockEndpoint();
 		mockContentType();
 		mockResourceType();
@@ -385,10 +462,10 @@ class HandlerTest {
 
 	@Test
 	void handlesWithoutEndpoint() {
+		mockMethod();
 		mockRequestUri();
 		mockNode();
 		mockMethodNames();
-		mockMethod();
 		when(node.getEndpoint("GET")).thenReturn(null);
 		mockContentType();
 		mockResourceType();
@@ -401,10 +478,10 @@ class HandlerTest {
 	@Test
 	void handlesWithOneVarArg() {
 		String[] items = new String[] { "2" };
+		mockMethod();
 		mockRequestUri();
 		mockNode(items);
 		mockMethodNames();
-		mockMethod();
 		mockEndpoint();
 		mockContentType();
 		ServletInputStream stream = mockInputStream();
@@ -420,10 +497,10 @@ class HandlerTest {
 	@Test
 	void handlesWithTwoVarArgs() {
 		String[] items = new String[] { "2", "3" };
+		mockMethod();
 		mockRequestUri();
 		mockNode(items);
 		mockMethodNames();
-		mockMethod();
 		mockEndpoint();
 		mockContentType();
 		ServletInputStream stream = mockInputStream();
@@ -438,10 +515,10 @@ class HandlerTest {
 
 	@Test
 	void handlesWithNullContentType() {
+		mockMethod();
 		mockRequestUri();
 		mockNode();
 		mockMethodNames();
-		mockMethod();
 		mockEndpoint();
 		when(request.getContentType()).thenReturn(null);
 		ServletInputStream stream = mockInputStream();
@@ -456,10 +533,10 @@ class HandlerTest {
 
 	@Test
 	void handlesWithMultipartContentType() {
+		mockMethod();
 		mockRequestUri();
 		mockNode();
 		mockMethodNames();
-		mockMethod();
 		mockEndpoint();
 		mockMultipartContentType();
 		mockParts();
@@ -477,10 +554,10 @@ class HandlerTest {
 
 	@Test
 	void handlesWithOnePart() {
+		mockMethod();
 		mockRequestUri();
 		mockNode();
 		mockMethodNames();
-		mockMethod();
 		mockEndpoint();
 		mockMultipartContentType();
 		Part part = mock(Part.class);
@@ -510,10 +587,10 @@ class HandlerTest {
 
 	@Test
 	void handlesWithTwoParts() {
+		mockMethod();
 		mockRequestUri();
 		mockNode();
 		mockMethodNames();
-		mockMethod();
 		mockEndpoint();
 		mockMultipartContentType();
 		Part part0 = mock(Part.class);
@@ -555,10 +632,10 @@ class HandlerTest {
 
 	@Test
 	void handlesWithOnePartAndOneNamedPart() {
+		mockMethod();
 		mockRequestUri();
 		mockNode();
 		mockMethodNames();
-		mockMethod();
 		mockEndpoint();
 		mockMultipartContentType();
 		Part part0 = mock(Part.class);
@@ -600,10 +677,10 @@ class HandlerTest {
 
 	@Test
 	void handlesWithOneNamedPart() {
+		mockMethod();
 		mockRequestUri();
 		mockNode();
 		mockMethodNames();
-		mockMethod();
 		mockEndpoint();
 		mockMultipartContentType();
 		Part part = mock(Part.class);
@@ -633,10 +710,10 @@ class HandlerTest {
 
 	@Test
 	void handlesWithOneNamedPartAndOnePart() {
+		mockMethod();
 		mockRequestUri();
 		mockNode();
 		mockMethodNames();
-		mockMethod();
 		mockEndpoint();
 		mockMultipartContentType();
 		Part part0 = mock(Part.class);
@@ -678,10 +755,10 @@ class HandlerTest {
 
 	@Test
 	void handlesWithTwoNamedParts() {
+		mockMethod();
 		mockRequestUri();
 		mockNode();
 		mockMethodNames();
-		mockMethod();
 		mockEndpoint();
 		mockMultipartContentType();
 		Part part0 = mock(Part.class);
@@ -741,10 +818,10 @@ class HandlerTest {
 
 	@Test
 	void handlesWithInvalidParts() {
+		mockMethod();
 		mockRequestUri();
 		mockNode();
 		mockMethodNames();
-		mockMethod();
 		mockEndpoint();
 		mockMultipartContentType();
 		try {
@@ -779,10 +856,10 @@ class HandlerTest {
 
 	@Test
 	void handlesWithRestException() {
+		mockMethod();
 		mockRequestUri();
 		mockNode();
 		mockMethodNames();
-		mockMethod();
 		mockEndpoint();
 		mockContentType();
 		ServletInputStream stream = mockInputStream();
@@ -797,10 +874,10 @@ class HandlerTest {
 
 	@Test
 	void handlesWithMessageRestException() {
+		mockMethod();
 		mockRequestUri();
 		mockNode();
 		mockMethodNames();
-		mockMethod();
 		mockEndpoint();
 		mockContentType();
 		ServletInputStream stream = mockInputStream();
@@ -823,10 +900,10 @@ class HandlerTest {
 
 	@Test
 	void handlesWithVoid() {
+		mockMethod();
 		mockRequestUri();
 		mockNode();
 		mockMethodNames();
-		mockMethod();
 		mockEndpoint();
 		mockContentType();
 		ServletInputStream stream = mockInputStream();
@@ -841,10 +918,10 @@ class HandlerTest {
 
 	@Test
 	void handlesWithVoidWrapper() {
+		mockMethod();
 		mockRequestUri();
 		mockNode();
 		mockMethodNames();
-		mockMethod();
 		mockEndpoint();
 		mockContentType();
 		ServletInputStream stream = mockInputStream();
@@ -859,10 +936,10 @@ class HandlerTest {
 
 	@Test
 	void handlesWithoutNull() {
+		mockMethod();
 		mockRequestUri();
 		mockNode();
 		mockMethodNames();
-		mockMethod();
 		mockEndpoint();
 		mockContentType();
 		ServletInputStream stream = mockInputStream();
@@ -877,10 +954,10 @@ class HandlerTest {
 
 	@Test
 	void handlesWithNull() {
+		mockMethod();
 		mockRequestUri();
 		mockNode();
 		mockMethodNames();
-		mockMethod();
 		mockEndpoint();
 		mockContentType();
 		ServletInputStream stream = mockInputStream();
@@ -914,10 +991,11 @@ class HandlerTest {
 
 	@Test
 	void handlesWithHead() {
+		mockHead();
 		mockRequestUri();
 		mockNode();
 		mockMethodNames();
-		mockHead();
+		mockHeadEndpoint();
 		mockContentType();
 		ServletInputStream stream = mockInputStream();
 		mockResourceType();
@@ -938,10 +1016,11 @@ class HandlerTest {
 
 	@Test
 	void handlesWithHeadWithoutContent() {
+		mockHead();
 		mockRequestUri();
 		mockNode();
 		mockMethodNames();
-		mockHead();
+		mockHeadEndpoint();
 		mockContentType();
 		ServletInputStream stream = mockInputStream();
 		mockResourceType();
@@ -973,10 +1052,11 @@ class HandlerTest {
 
 	@Test
 	void handlesWithHeadWithoutWrite() {
+		mockHead();
 		mockRequestUri();
 		mockNode();
 		mockMethodNames();
-		mockHead();
+		mockHeadEndpoint();
 		mockContentType();
 		ServletInputStream stream = mockInputStream();
 		mockResourceType();
@@ -998,7 +1078,10 @@ class HandlerTest {
 	}
 
 	private void mockHead() {
-		when(request.getMethod()).thenReturn("HEAD");
+		mockMethod("HEAD");
+	}
+
+	private void mockHeadEndpoint() {
 		when(node.getEndpoint("HEAD")).thenReturn(endpoint);
 	}
 
@@ -1016,10 +1099,10 @@ class HandlerTest {
 
 	@Test
 	void handlesWithGatewayException() {
+		mockMethod();
 		mockRequestUri();
 		mockNode();
 		mockMethodNames();
-		mockMethod();
 		mockEndpoint();
 		mockContentType();
 		ServletInputStream stream = mockInputStream();
@@ -1034,10 +1117,10 @@ class HandlerTest {
 
 	@Test
 	void handlesWithSingleException() {
+		mockMethod();
 		mockRequestUri();
 		mockNode();
 		mockMethodNames();
-		mockMethod();
 		mockEndpoint();
 		mockContentType();
 		ServletInputStream stream = mockInputStream();
@@ -1052,10 +1135,10 @@ class HandlerTest {
 
 	@Test
 	void handlesWithDoubleException() throws IOException {
+		mockMethod();
 		mockRequestUri();
 		mockNode();
 		mockMethodNames();
-		mockMethod();
 		mockEndpoint();
 		mockContentType();
 		ServletInputStream stream = mockInputStream();
@@ -1106,6 +1189,15 @@ class HandlerTest {
 		verify(h).sendError(response, status, message);
 	}
 
+	private void mockMethod() {
+		mockMethod("GET");
+	}
+
+	private void mockMethod(String methodName) {
+		when(request.getMethod()).thenReturn(methodName);
+		when(tree.getMethodNames()).thenReturn(Set.of(methodName));
+	}
+
 	private void mockRequestUri() {
 		when(request.getRequestURI()).thenReturn("/b///");
 	}
@@ -1142,10 +1234,6 @@ class HandlerTest {
 		when(node.getVarMethodNames()).thenReturn(new LinkedHashSet<>(List.of("PUT", "PATCH")));
 	}
 
-	private void mockMethod() {
-		when(request.getMethod()).thenReturn("GET");
-	}
-
 	private void mockEndpoint() {
 		when(node.getEndpoint("GET")).thenReturn(endpoint);
 	}
@@ -1165,7 +1253,11 @@ class HandlerTest {
 	}
 
 	private void mockResourceType() {
-		doReturn(ConcreteResource.class).when(endpoint).getResourceType();
+		mockResourceType(ConcreteResource.class);
+	}
+
+	private void mockResourceType(Class<? extends RestResource> type) {
+		doReturn(type).when(endpoint).getResourceType();
 	}
 
 	private void mockCall() {
@@ -1367,7 +1459,7 @@ class HandlerTest {
 	}
 
 	private boolean serializeWithException() {
-		Serializer serializer = mockSerializer(SPECIAL_BODY, "type/subtype");
+		Serializer serializer = mockSerializer(SPECIAL_BODY);
 		doThrow(RuntimeException.class).when(serializer).write(eq(SPECIAL_BODY), eq(String.class), any());
 		return write(SPECIAL_BODY, String.class);
 	}
@@ -1427,7 +1519,7 @@ class HandlerTest {
 	}
 
 	private boolean serialize(Object actual, Type type) {
-		mockSerializerWithoutException(actual, "type/subtype");
+		mockSerializerWithoutException(actual);
 		return write(actual, type);
 	}
 
@@ -1450,30 +1542,6 @@ class HandlerTest {
 		assertTrue(serializeDirectlyWithExtension(SPECIAL_BODY, String.class));
 		verify(response).setContentType("text/plain;charset=UTF-8");
 		assertEqualsBytes();
-		verifyNoFlush();
-	}
-
-	@Test
-	void writesDirectlyWithValidExtension() {
-		mockCharset();
-		mockWithoutBase64();
-		mockWithoutCommitted();
-		assertTrue(serializeDirectlyWithValidExtension(SPECIAL_BODY, String.class));
-		verify(response).setContentType("type/subtype;charset=UTF-8");
-		assertEqualsBytes();
-		verifyNoFlush();
-	}
-
-	@Test
-	void writesDirectlyWithInvalidExtension() {
-		mockCharset();
-		mockWithoutBase64();
-		mockWithoutCommitted();
-		assertThrows(NotFoundException.class, () -> {
-			serializeDirectlyWithInvalidExtension(SPECIAL_BODY, String.class);
-		});
-		verify(response, times(0)).setContentType(any());
-		verifyNoWrite();
 		verifyNoFlush();
 	}
 
@@ -1525,56 +1593,22 @@ class HandlerTest {
 		verifyNoFlush();
 	}
 
-	@Test
-	void writesDirectlyLargeWithValidExtension() {
-		mockCharset();
-		mockWithoutBase64();
-		mockWithoutCommitted();
-		assertFalse(serializeDirectlyWithValidExtension(mockReader(), Reader.class));
-		verify(response).setContentType("type/subtype;charset=UTF-8");
-		assertEqualsBytes();
-		verifyNoFlush();
-	}
-
-	@Test
-	void writesDirectlyLargeWithInvalidExtension() {
-		mockCharset();
-		mockWithoutBase64();
-		mockWithoutCommitted();
-		assertThrows(NotFoundException.class, () -> {
-			serializeDirectlyWithInvalidExtension(mockReader(), Reader.class);
-		});
-		verify(response, times(0)).setContentType(any());
-		verifyNoWrite();
-		verifyNoFlush();
-	}
-
 	private Object mockReader() {
 		return new StringReader(SPECIAL_BODY);
 	}
 
 	private boolean serializeDirectly(Object actual, Type type) {
-		mockSerializerWithoutException(actual, "type/subtype");
+		mockSerializerWithoutException(actual);
 		return writeDirectly(actual, type, null);
 	}
 
 	private boolean serializeDirectlyWithExtension(Object actual, Type type) {
-		mockSerializerWithoutException(actual, null);
+		mockSerializerWithoutException(actual);
 		return writeDirectly(actual, type, "text/plain");
 	}
 
-	private boolean serializeDirectlyWithValidExtension(Object actual, Type type) {
-		mockSerializerWithoutException(actual, "type/subtype");
-		return writeDirectly(actual, type, "type/subtype");
-	}
-
-	private boolean serializeDirectlyWithInvalidExtension(Object actual, Type type) {
-		mockSerializerWithoutException(actual, "type/subtype");
-		return writeDirectly(actual, type, "text/plain");
-	}
-
-	private void mockSerializerWithoutException(Object actual, String contentType) {
-		Serializer serializer = mockSerializer(actual, contentType);
+	private void mockSerializerWithoutException(Object actual) {
+		Serializer serializer = mockSerializer(actual);
 		doAnswer((invocation) -> {
 			String str = invocation.getArgument(0);
 			Writer writer = invocation.getArgument(2);
@@ -1589,11 +1623,11 @@ class HandlerTest {
 		}).when(serializer).write(eq(actual), eq(Reader.class), any());
 	}
 
-	private Serializer mockSerializer(Object actual, String contentType) {
+	private Serializer mockSerializer(Object actual) {
 		Serializer serializer = mock(Serializer.class);
-		when(resource.getContentType()).thenReturn(contentType);
+		when(resource.getContentType()).thenReturn(null);
 		when(facade.isBinary(any())).thenReturn(false);
-		when(facade.cleanForSerializing("type/subtype", actual)).thenReturn("type/subtype");
+		when(facade.cleanForSerializing(null, actual)).thenReturn("type/subtype");
 		when(facade.cleanForSerializing("text/plain", actual)).thenReturn("text/plain");
 		when(facade.getSerializer("type/subtype")).thenReturn(serializer);
 		when(facade.getSerializer("text/plain")).thenReturn(serializer);
@@ -1673,7 +1707,7 @@ class HandlerTest {
 	}
 
 	private boolean assembleWithException() {
-		Assembler assembler = mockAssembler(USASCII_BODY, "type/subtype");
+		Assembler assembler = mockAssembler(USASCII_BODY);
 		doThrow(RuntimeException.class).when(assembler).write(eq(USASCII_BODY), eq(String.class), any());
 		return write(USASCII_BODY, String.class);
 	}
@@ -1733,7 +1767,7 @@ class HandlerTest {
 	}
 
 	private boolean assemble(Object actual, Type type) {
-		mockAssemblerWithoutException(actual, "type/subtype");
+		mockAssemblerWithoutException(actual);
 		return write(actual, type);
 	}
 
@@ -1756,30 +1790,6 @@ class HandlerTest {
 		assertTrue(assembleDirectlyWithExtension(USASCII_BODY, String.class));
 		verify(response).setContentType("text/plain");
 		assertBinaryEqualsBytes();
-		verifyNoFlush();
-	}
-
-	@Test
-	void writesDirectlyBinaryWithValidExtension() {
-		mockCharset();
-		mockWithoutBase64();
-		mockWithoutCommitted();
-		assertTrue(assembleDirectlyWithValidExtension(USASCII_BODY, String.class));
-		verify(response).setContentType("type/subtype");
-		assertBinaryEqualsBytes();
-		verifyNoFlush();
-	}
-
-	@Test
-	void writesDirectlyBinaryWithInvalidExtension() {
-		mockCharset();
-		mockWithoutBase64();
-		mockWithoutCommitted();
-		assertThrows(NotFoundException.class, () -> {
-			assembleDirectlyWithInvalidExtension(USASCII_BODY, String.class);
-		});
-		verify(response, times(0)).setContentType(any());
-		verifyNoWrite();
 		verifyNoFlush();
 	}
 
@@ -1820,56 +1830,22 @@ class HandlerTest {
 		verifyNoFlush();
 	}
 
-	@Test
-	void writesDirectlyLargeBinaryWithValidExtension() {
-		mockCharset();
-		mockWithoutBase64();
-		mockWithoutCommitted();
-		assertFalse(assembleDirectlyWithValidExtension(mockStream(), InputStream.class));
-		verify(response).setContentType("type/subtype");
-		assertBinaryEqualsBytes();
-		verifyNoFlush();
-	}
-
-	@Test
-	void writesDirectlyLargeBinaryWithInvalidExtension() {
-		mockCharset();
-		mockWithoutBase64();
-		mockWithoutCommitted();
-		assertThrows(NotFoundException.class, () -> {
-			assembleDirectlyWithInvalidExtension(mockStream(), InputStream.class);
-		});
-		verify(response, times(0)).setContentType(any());
-		verifyNoWrite();
-		verifyNoFlush();
-	}
-
 	private Object mockStream() {
 		return new ByteArrayInputStream(USASCII_BODY.getBytes(StandardCharsets.US_ASCII));
 	}
 
 	private boolean assembleDirectly(Object actual, Type type) {
-		mockAssemblerWithoutException(actual, "type/subtype");
+		mockAssemblerWithoutException(actual);
 		return writeDirectly(actual, type, null);
 	}
 
 	private boolean assembleDirectlyWithExtension(Object actual, Type type) {
-		mockAssemblerWithoutException(actual, null);
+		mockAssemblerWithoutException(actual);
 		return writeDirectly(actual, type, "text/plain");
 	}
 
-	private boolean assembleDirectlyWithValidExtension(Object actual, Type type) {
-		mockAssemblerWithoutException(actual, "type/subtype");
-		return writeDirectly(actual, type, "type/subtype");
-	}
-
-	private boolean assembleDirectlyWithInvalidExtension(Object actual, Type type) {
-		mockAssemblerWithoutException(actual, "type/subtype");
-		return writeDirectly(actual, type, "text/plain");
-	}
-
-	private void mockAssemblerWithoutException(Object actual, String contentType) {
-		Assembler assembler = mockAssembler(actual, contentType);
+	private void mockAssemblerWithoutException(Object actual) {
+		Assembler assembler = mockAssembler(actual);
 		doAnswer((invocation) -> {
 			String str = invocation.getArgument(0);
 			OutputStream output = invocation.getArgument(2);
@@ -1884,11 +1860,11 @@ class HandlerTest {
 		}).when(assembler).write(eq(actual), eq(InputStream.class), any());
 	}
 
-	private Assembler mockAssembler(Object actual, String contentType) {
+	private Assembler mockAssembler(Object actual) {
 		Assembler assembler = mock(Assembler.class);
-		when(resource.getContentType()).thenReturn(contentType);
+		when(resource.getContentType()).thenReturn(null);
 		when(facade.isBinary(any())).thenReturn(true);
-		when(facade.cleanForAssembling("type/subtype", actual)).thenReturn("type/subtype");
+		when(facade.cleanForAssembling(null, actual)).thenReturn("type/subtype");
 		when(facade.cleanForAssembling("text/plain", actual)).thenReturn("text/plain");
 		when(facade.getAssembler("type/subtype")).thenReturn(assembler);
 		when(facade.getAssembler("text/plain")).thenReturn(assembler);

@@ -27,6 +27,118 @@ class PlainSerializerTest {
 	}
 
 	@Test
+	void writesIfBodyIsBoolean() {
+		boolean body = false;
+		StringWriter writer = new StringWriter();
+		s.write(body, boolean.class, writer);
+		assertEquals("false", writer.toString());
+	}
+
+	@Test
+	void writesIfBodyIsBooleanWithHint() {
+		Boolean body = false;
+		StringWriter writer = new StringWriter();
+		s.write(body, new Hint<Boolean>() {}.getType(), writer);
+		assertEquals("false", writer.toString());
+	}
+
+	@Test
+	void writesIfBodyIsByte() {
+		byte body = 0;
+		StringWriter writer = new StringWriter();
+		s.write(body, byte.class, writer);
+		assertEquals("0", writer.toString());
+	}
+
+	@Test
+	void writesIfBodyIsByteWithHint() {
+		Byte body = 0;
+		StringWriter writer = new StringWriter();
+		s.write(body, new Hint<Byte>() {}.getType(), writer);
+		assertEquals("0", writer.toString());
+	}
+
+	@Test
+	void writesIfBodyIsShort() {
+		short body = 1;
+		StringWriter writer = new StringWriter();
+		s.write(body, short.class, writer);
+		assertEquals("1", writer.toString());
+	}
+
+	@Test
+	void writesIfBodyIsShortWithHint() {
+		Short body = 1;
+		StringWriter writer = new StringWriter();
+		s.write(body, new Hint<Short>() {}.getType(), writer);
+		assertEquals("1", writer.toString());
+	}
+
+	@Test
+	void writesIfBodyIsInteger() {
+		int body = 2;
+		StringWriter writer = new StringWriter();
+		s.write(body, int.class, writer);
+		assertEquals("2", writer.toString());
+	}
+
+	@Test
+	void writesIfBodyIsIntegerWithHint() {
+		Integer body = 2;
+		StringWriter writer = new StringWriter();
+		s.write(body, new Hint<Integer>() {}.getType(), writer);
+		assertEquals("2", writer.toString());
+	}
+
+	@Test
+	void writesIfBodyIsLong() {
+		long body = 3L;
+		StringWriter writer = new StringWriter();
+		s.write(body, long.class, writer);
+		assertEquals("3", writer.toString());
+	}
+
+	@Test
+	void writesIfBodyIsLongWithHint() {
+		Long body = 3L;
+		StringWriter writer = new StringWriter();
+		s.write(body, new Hint<Long>() {}.getType(), writer);
+		assertEquals("3", writer.toString());
+	}
+
+	@Test
+	void writesIfBodyIsFloat() {
+		float body = 4.5F;
+		StringWriter writer = new StringWriter();
+		s.write(body, float.class, writer);
+		assertEquals("4.5", writer.toString());
+	}
+
+	@Test
+	void writesIfBodyIsFloatWithHint() {
+		Float body = 4.5F;
+		StringWriter writer = new StringWriter();
+		s.write(body, new Hint<Float>() {}.getType(), writer);
+		assertEquals("4.5", writer.toString());
+	}
+
+	@Test
+	void writesIfBodyIsDouble() {
+		double body = 6.7;
+		StringWriter writer = new StringWriter();
+		s.write(body, double.class, writer);
+		assertEquals("6.7", writer.toString());
+	}
+
+	@Test
+	void writesIfBodyIsDoubleWithHint() {
+		Double body = 6.7;
+		StringWriter writer = new StringWriter();
+		s.write(body, new Hint<Double>() {}.getType(), writer);
+		assertEquals("6.7", writer.toString());
+	}
+
+	@Test
 	void writesIfBodyIsString() {
 		String body = newString();
 		StringWriter writer = new StringWriter();
@@ -96,7 +208,7 @@ class PlainSerializerTest {
 	}
 
 	@Test
-	void doesNotWriteIfBodyIsStringButWriteThrows() throws IOException {
+	void doesNotWriteIfBodyIsStringButThrows() throws IOException {
 		String body = newString();
 		Writer writer = Writer.nullWriter();
 		writer.close();
@@ -107,7 +219,7 @@ class PlainSerializerTest {
 	}
 
 	@Test
-	void doesNotWriteIfBodyIsReaderButWriteThrows() throws IOException {
+	void doesNotWriteIfBodyIsReaderButThrows() throws IOException {
 		Reader body = newReader();
 		Writer writer = Writer.nullWriter();
 		writer.close();

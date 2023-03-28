@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Set;
 
 import br.pro.hashi.sdx.rest.coding.Media;
+import br.pro.hashi.sdx.rest.reflection.Cache;
 import br.pro.hashi.sdx.rest.transform.Assembler;
 import br.pro.hashi.sdx.rest.transform.Deserializer;
 import br.pro.hashi.sdx.rest.transform.Disassembler;
@@ -21,6 +22,22 @@ public class Facade {
 	private static final String OCTET_TYPE = "application/octet-stream";
 	private static final String PLAIN_TYPE = "text/plain";
 
+	static final Set<Class<?>> PRIMITIVE_TYPES = Set.of(
+			boolean.class,
+			byte.class,
+			short.class,
+			int.class,
+			long.class,
+			float.class,
+			double.class,
+			Boolean.class,
+			Byte.class,
+			Short.class,
+			Integer.class,
+			Long.class,
+			Float.class,
+			Double.class);
+
 	private final Set<Class<?>> binaryClasses;
 	private final Set<ParameterizedType> binaryParameterizedTypes;
 	private final Map<String, String> extensions;
@@ -31,7 +48,7 @@ public class Facade {
 	private String fallbackByteType;
 	private String fallbackTextType;
 
-	public Facade() {
+	public Facade(Cache cache) {
 		this.binaryClasses = new HashSet<>();
 		this.binaryClasses.addAll(Set.of(byte[].class, InputStream.class));
 
@@ -50,7 +67,7 @@ public class Facade {
 		this.serializers.put(PLAIN_TYPE, new PlainSerializer());
 
 		this.deserializers = new HashMap<>();
-		this.deserializers.put(PLAIN_TYPE, new PlainDeserializer());
+		this.deserializers.put(PLAIN_TYPE, new PlainDeserializer(cache));
 
 		this.fallbackByteType = null;
 		this.fallbackTextType = null;
@@ -145,11 +162,11 @@ public class Facade {
 
 	public String cleanForSerializing(String contentType, Object body) {
 		if (contentType == null) {
-			if (body instanceof String || body instanceof Reader) {
+			if ((body != null && Facade.PRIMITIVE_TYPES.contains(body.getClass())) || body instanceof String || body instanceof Reader) {
 				contentType = PLAIN_TYPE;
 			} else {
 				if (fallbackTextType == null) {
-					throw new IllegalArgumentException("Content type is null, body is not instance of String or Reader, and no fallback text type was specified");
+					throw new IllegalArgumentException("Content type is null, body is not a primitive or an instance of String or Reader, and no fallback text type was specified");
 				}
 				contentType = fallbackTextType;
 			}
@@ -159,11 +176,11 @@ public class Facade {
 
 	public String cleanForDeserializing(String contentType, Type type) {
 		if (contentType == null) {
-			if (type.equals(String.class) || type.equals(Reader.class)) {
+			if (Facade.PRIMITIVE_TYPES.contains(type) || type.equals(String.class) || type.equals(Reader.class)) {
 				contentType = PLAIN_TYPE;
 			} else {
 				if (fallbackTextType == null) {
-					throw new IllegalArgumentException("Content type is null, type is not equal to String or Reader, and no fallback text type was specified");
+					throw new IllegalArgumentException("Content type is null, type is not primitive or equal to String or Reader, and no fallback text type was specified");
 				}
 				contentType = fallbackTextType;
 			}

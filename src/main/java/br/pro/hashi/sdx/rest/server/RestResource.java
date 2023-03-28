@@ -5,6 +5,7 @@ import java.nio.charset.CharsetEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import br.pro.hashi.sdx.rest.Fields;
 import br.pro.hashi.sdx.rest.coding.Coding;
@@ -103,6 +104,19 @@ public abstract class RestResource {
 		this.queries = queries;
 		this.encoder = encoder;
 		this.response = response;
+	}
+
+	/**
+	 * Override this method to indicate which extensions are not accepted by this
+	 * resource. Default is {@code null}.
+	 * 
+	 * @implNote The implementation should return {@code null} or a static field to
+	 *           maximize efficiency.
+	 * 
+	 * @return a set with the not accepted extensions
+	 */
+	protected Set<String> notAcceptableExtensions() {
+		return null;
 	}
 
 	/**

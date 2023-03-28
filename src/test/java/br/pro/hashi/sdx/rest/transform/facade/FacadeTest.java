@@ -27,6 +27,7 @@ import org.mockito.MockedConstruction;
 import org.mockito.MockedStatic;
 
 import br.pro.hashi.sdx.rest.coding.Media;
+import br.pro.hashi.sdx.rest.reflection.Cache;
 import br.pro.hashi.sdx.rest.transform.Assembler;
 import br.pro.hashi.sdx.rest.transform.Deserializer;
 import br.pro.hashi.sdx.rest.transform.Disassembler;
@@ -47,7 +48,7 @@ class FacadeTest {
 		disassemblerConstruction = mockConstruction(OctetDisassembler.class);
 		serializerConstruction = mockConstruction(PlainSerializer.class);
 		deserializerConstruction = mockConstruction(PlainDeserializer.class);
-		f = new Facade();
+		f = new Facade(new Cache());
 	}
 
 	@AfterEach
@@ -428,6 +429,41 @@ class FacadeTest {
 	}
 
 	@Test
+	void cleansForSerializingIfBodyIsBoolean() {
+		assertEquals("text/plain", f.cleanForSerializing(null, false));
+	}
+
+	@Test
+	void cleansForSerializingIfBodyIsByte() {
+		assertEquals("text/plain", f.cleanForSerializing(null, (byte) 0));
+	}
+
+	@Test
+	void cleansForSerializingIfBodyIsShort() {
+		assertEquals("text/plain", f.cleanForSerializing(null, (short) 1));
+	}
+
+	@Test
+	void cleansForSerializingIfBodyIsInteger() {
+		assertEquals("text/plain", f.cleanForSerializing(null, (int) 2));
+	}
+
+	@Test
+	void cleansForSerializingIfBodyIsLong() {
+		assertEquals("text/plain", f.cleanForSerializing(null, 3L));
+	}
+
+	@Test
+	void cleansForSerializingIfBodyIsFloat() {
+		assertEquals("text/plain", f.cleanForSerializing(null, 4.5F));
+	}
+
+	@Test
+	void cleansForSerializingIfBodyIsDouble() {
+		assertEquals("text/plain", f.cleanForSerializing(null, 6.7));
+	}
+
+	@Test
 	void cleansForSerializingIfBodyIsString() {
 		assertEquals("text/plain", f.cleanForSerializing(null, ""));
 	}
@@ -448,7 +484,7 @@ class FacadeTest {
 	}
 
 	@Test
-	void doesNotCleanForSerializing() {
+	void doesNotCleanForSerializingIfBodyIsNeither() {
 		Object body = new Object();
 		assertThrows(IllegalArgumentException.class, () -> {
 			f.cleanForSerializing(null, body);
@@ -456,9 +492,86 @@ class FacadeTest {
 	}
 
 	@Test
+	void doesNotCleanForSerializingIfBodyIsNull() {
+		assertThrows(IllegalArgumentException.class, () -> {
+			f.cleanForSerializing(null, null);
+		});
+	}
+
+	@Test
 	void cleansForDeserializing() {
 		String contentType = "application/xml";
 		assertEquals(contentType, f.cleanForDeserializing(contentType, null));
+	}
+
+	@Test
+	void cleansForDeserializingIfTypeEqualsBoolean() {
+		assertEquals("text/plain", f.cleanForDeserializing(null, boolean.class));
+	}
+
+	@Test
+	void cleansForDeserializingIfTypeEqualsBooleanWithHint() {
+		assertEquals("text/plain", f.cleanForDeserializing(null, new Hint<Boolean>() {}.getType()));
+	}
+
+	@Test
+	void cleansForDeserializingIfTypeEqualsByte() {
+		assertEquals("text/plain", f.cleanForDeserializing(null, byte.class));
+	}
+
+	@Test
+	void cleansForDeserializingIfTypeEqualsByteWithHint() {
+		assertEquals("text/plain", f.cleanForDeserializing(null, new Hint<Byte>() {}.getType()));
+	}
+
+	@Test
+	void cleansForDeserializingIfTypeEqualsShort() {
+		assertEquals("text/plain", f.cleanForDeserializing(null, short.class));
+	}
+
+	@Test
+	void cleansForDeserializingIfTypeEqualsShortWithHint() {
+		assertEquals("text/plain", f.cleanForDeserializing(null, new Hint<Short>() {}.getType()));
+	}
+
+	@Test
+	void cleansForDeserializingIfTypeEqualsInteger() {
+		assertEquals("text/plain", f.cleanForDeserializing(null, int.class));
+	}
+
+	@Test
+	void cleansForDeserializingIfTypeEqualsIntegerWithHint() {
+		assertEquals("text/plain", f.cleanForDeserializing(null, new Hint<Integer>() {}.getType()));
+	}
+
+	@Test
+	void cleansForDeserializingIfTypeEqualsLong() {
+		assertEquals("text/plain", f.cleanForDeserializing(null, long.class));
+	}
+
+	@Test
+	void cleansForDeserializingIfTypeEqualsLongWithHint() {
+		assertEquals("text/plain", f.cleanForDeserializing(null, new Hint<Long>() {}.getType()));
+	}
+
+	@Test
+	void cleansForDeserializingIfTypeEqualsFloat() {
+		assertEquals("text/plain", f.cleanForDeserializing(null, float.class));
+	}
+
+	@Test
+	void cleansForDeserializingIfTypeEqualsFloatWithHint() {
+		assertEquals("text/plain", f.cleanForDeserializing(null, new Hint<Float>() {}.getType()));
+	}
+
+	@Test
+	void cleansForDeserializingIfTypeEqualsDouble() {
+		assertEquals("text/plain", f.cleanForDeserializing(null, double.class));
+	}
+
+	@Test
+	void cleansForDeserializingIfTypeEqualsDoubleWithHint() {
+		assertEquals("text/plain", f.cleanForDeserializing(null, new Hint<Double>() {}.getType()));
 	}
 
 	@Test

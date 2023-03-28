@@ -73,6 +73,16 @@ class SimpleSerializerTest {
 	}
 
 	@Test
+	void doesNotWrite() throws IOException {
+		Writer writer = Writer.nullWriter();
+		writer.close();
+		Exception exception = assertThrows(UncheckedIOException.class, () -> {
+			s.write(body, writer);
+		});
+		assertInstanceOf(IOException.class, exception.getCause());
+	}
+
+	@Test
 	void returnsString() {
 		String content = s.toString(body);
 		assertEqualsBody(content);
@@ -102,15 +112,5 @@ class SimpleSerializerTest {
 
 	private void assertEqualsNull(String content) {
 		assertEquals("null", content);
-	}
-
-	@Test
-	void doesNotWrite() throws IOException {
-		Writer writer = Writer.nullWriter();
-		writer.close();
-		Exception exception = assertThrows(UncheckedIOException.class, () -> {
-			s.write(body, writer);
-		});
-		assertInstanceOf(IOException.class, exception.getCause());
 	}
 }

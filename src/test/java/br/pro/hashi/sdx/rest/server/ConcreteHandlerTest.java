@@ -3,6 +3,7 @@ package br.pro.hashi.sdx.rest.server;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
@@ -211,6 +212,18 @@ class ConcreteHandlerTest {
 			bytes = Base64.getDecoder().decode(new String(bytes, StandardCharsets.US_ASCII));
 		}
 		assertEquals(expected, new String(bytes, charset));
+	}
+
+	@Test
+	void hasErrorPage() {
+		h = newConcreteHandler();
+		assertTrue(h.errorPageForMethod("GET"));
+		assertTrue(h.errorPageForMethod("HEAD"));
+		assertTrue(h.errorPageForMethod("POST"));
+		assertTrue(h.errorPageForMethod("PUT"));
+		assertTrue(h.errorPageForMethod("PATCH"));
+		assertTrue(h.errorPageForMethod("DELETE"));
+		assertTrue(h.errorPageForMethod("OPTIONS"));
 	}
 
 	private ConcreteHandler newConcreteHandler() {

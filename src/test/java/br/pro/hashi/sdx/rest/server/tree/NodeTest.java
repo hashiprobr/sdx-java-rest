@@ -39,16 +39,16 @@ class NodeTest {
 
 	@Test
 	void requiresChild() {
-		Node getNullChild = n.requireChild("GET");
+		Node getNullChild = n.requireChild(null);
 		assertEquals(1, n.getChildren().size());
-		assertSame(getNullChild, n.requireChild("GET"));
+		assertSame(getNullChild, n.requireChild(null));
 		assertEquals(1, n.getChildren().size());
-		assertSame(getNullChild, n.getChild("GET"));
-		Node postItemChild = n.requireChild("POST");
+		assertSame(getNullChild, n.getChild(null));
+		Node postItemChild = n.requireChild("item");
 		assertEquals(2, n.getChildren().size());
-		assertSame(postItemChild, n.requireChild("POST"));
+		assertSame(postItemChild, n.requireChild("item"));
 		assertEquals(2, n.getChildren().size());
-		assertSame(postItemChild, n.getChild("POST"));
+		assertSame(postItemChild, n.getChild("item"));
 	}
 
 	@Test

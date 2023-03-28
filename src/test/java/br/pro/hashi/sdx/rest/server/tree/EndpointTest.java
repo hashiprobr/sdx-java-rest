@@ -7,9 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.AdditionalMatchers.eq;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
@@ -753,37 +751,25 @@ class EndpointTest {
 	@Test
 	void callsWithOneItemAndZeroVarArgs() {
 		e = newEndpoint(0, "withOneItemAndVarArgs", int.class, double[].class);
-		doAnswer((invocation) -> {
-			return null;
-		}).when(resource).withOneItemAndVarArgs(eq(1), any(double[].class));
 		assertNull(e.call(resource, List.of("1"), Map.of(), null));
 		assertArrayEquals(new Object[] { null, null }, e.getArguments());
-		verify(resource).withOneItemAndVarArgs(eq(1));
+		verify(resource).withOneItemAndVarArgs(1);
 	}
 
 	@Test
 	void callsWithOneItemAndOneVarArg() {
 		e = newEndpoint(0, "withOneItemAndVarArgs", int.class, double[].class);
-		doAnswer((invocation) -> {
-			assertEquals(2.3, invocation.getArgument(1), DELTA);
-			return null;
-		}).when(resource).withOneItemAndVarArgs(eq(1), any(double[].class));
 		assertNull(e.call(resource, List.of("1", "2.3"), Map.of(), null));
 		assertArrayEquals(new Object[] { null, null }, e.getArguments());
-		verify(resource).withOneItemAndVarArgs(eq(1), any(double[].class));
+		verify(resource).withOneItemAndVarArgs(eq(1), eq(2.3, DELTA));
 	}
 
 	@Test
 	void callsWithOneItemAndTwoVarArgs() {
 		e = newEndpoint(0, "withOneItemAndVarArgs", int.class, double[].class);
-		doAnswer((invocation) -> {
-			assertEquals(2.3, invocation.getArgument(1), DELTA);
-			assertEquals(4.5, invocation.getArgument(2), DELTA);
-			return null;
-		}).when(resource).withOneItemAndVarArgs(eq(1), any(double[].class));
 		assertNull(e.call(resource, List.of("1", "2.3", "4.5"), Map.of(), null));
 		assertArrayEquals(new Object[] { null, null }, e.getArguments());
-		verify(resource).withOneItemAndVarArgs(eq(1), any(double[].class));
+		verify(resource).withOneItemAndVarArgs(eq(1), eq(2.3, DELTA), eq(4.5, DELTA));
 	}
 
 	@Test
@@ -1090,7 +1076,7 @@ class EndpointTest {
 	void doesNotCallWithOneMissingPartAndVarArgs() {
 		e = newEndpoint(0, "withOnePartAndVarArgs", Object.class, int[].class);
 		assertThrows(BadRequestException.class, () -> {
-			e.call(resource, List.of("1"), Map.of(), null);
+			e.call(resource, List.of("1", "2"), Map.of(), null);
 		});
 		assertArrayEquals(new Object[] { null, null }, e.getArguments());
 	}
@@ -1401,38 +1387,28 @@ class EndpointTest {
 	@Test
 	void callsWithEverythingAndZeroVarArgs() {
 		e = newEndpoint(0, "withEverythingAndVarArgs", int.class, Object.class, double[].class);
-		doAnswer((invocation) -> {
-			assertEquals(2.3, invocation.getArgument(1), DELTA);
-			return null;
-		}).when(resource).withEverythingAndVarArgs(eq(1), any(double[].class));
 		Object body = new Object();
 		assertTrue((boolean) e.call(resource, List.of("1"), Map.of(), mockData(body)));
 		assertArrayEquals(new Object[] { null, null, null }, e.getArguments());
+		verify(resource).withEverythingAndVarArgs(1, body);
 	}
 
 	@Test
 	void callsWithEverythingAndOneVarArg() {
 		e = newEndpoint(0, "withEverythingAndVarArgs", int.class, Object.class, double[].class);
-		doAnswer((invocation) -> {
-			assertEquals(2.3, invocation.getArgument(1), DELTA);
-			return null;
-		}).when(resource).withEverythingAndVarArgs(eq(1), any(double[].class));
 		Object body = new Object();
 		assertTrue((boolean) e.call(resource, List.of("1", "2.3"), Map.of(), mockData(body)));
 		assertArrayEquals(new Object[] { null, null, null }, e.getArguments());
+		verify(resource).withEverythingAndVarArgs(eq(1), eq(body), eq(2.3, DELTA));
 	}
 
 	@Test
 	void callsWithEverythingAndTwoVarArgs() {
 		e = newEndpoint(0, "withEverythingAndVarArgs", int.class, Object.class, double[].class);
-		doAnswer((invocation) -> {
-			assertEquals(2.3, invocation.getArgument(1), DELTA);
-			assertEquals(4.5, invocation.getArgument(2), DELTA);
-			return null;
-		}).when(resource).withEverythingAndVarArgs(eq(1), any(double[].class));
 		Object body = new Object();
 		assertTrue((boolean) e.call(resource, List.of("1", "2.3", "4.5"), Map.of(), mockData(body)));
 		assertArrayEquals(new Object[] { null, null, null }, e.getArguments());
+		verify(resource).withEverythingAndVarArgs(eq(1), eq(body), eq(2.3, DELTA), eq(4.5, DELTA));
 	}
 
 	@Test

@@ -97,7 +97,7 @@ class OctetAssemblerTest {
 	}
 
 	@Test
-	void doesNotWriteIfBodyIsByteArrayButWriteThrows() throws IOException {
+	void doesNotWriteIfBodyIsByteArrayButThrows() throws IOException {
 		byte[] body = newByteArray();
 		OutputStream stream = OutputStream.nullOutputStream();
 		stream.close();
@@ -108,7 +108,7 @@ class OctetAssemblerTest {
 	}
 
 	@Test
-	void doesNotWriteIfBodyIsInputStreamButWriteThrows() throws IOException {
+	void doesNotWriteIfBodyIsInputStreamButThrows() throws IOException {
 		InputStream body = newInputStream();
 		OutputStream stream = OutputStream.nullOutputStream();
 		stream.close();

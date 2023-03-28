@@ -21,11 +21,17 @@ public class Tree {
 	private final Cache cache;
 	private final Locale locale;
 	private final Node root;
+	private final Set<String> methodNames;
 
 	public Tree(Cache cache, Locale locale) {
 		this.cache = cache;
 		this.locale = locale;
 		this.root = new Node();
+		this.methodNames = new HashSet<>();
+	}
+
+	public Set<String> getMethodNames() {
+		return methodNames;
 	}
 
 	public Leaf getLeafAndAddItems(String[] items, List<String> itemList) {
@@ -109,6 +115,14 @@ public class Tree {
 					throw new ReflectionException("%s and %s have %s endpoints in the same path".formatted(existingType.getName(), typeName, methodName));
 				}
 				node.putEndpoint(methodName, endpoint);
+				methodNames.add(methodName);
+			}
+		}
+
+		if (!methodNames.isEmpty()) {
+			methodNames.add("OPTIONS");
+			if (methodNames.contains("GET")) {
+				methodNames.add("HEAD");
 			}
 		}
 	}

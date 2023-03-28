@@ -14,7 +14,8 @@ public interface Disassembler {
 	 * Transforms an {@link InputStream} representation back into an object if
 	 * possible.
 	 * 
-	 * @implNote The implementation can assume that the type is correct.
+	 * @implNote The implementation can assume that the type is correct and must
+	 *           close the stream unless it returns the stream itself.
 	 * 
 	 * @param <T>    the type of the object
 	 * @param stream the representation

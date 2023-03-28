@@ -13,7 +13,8 @@ public interface Deserializer {
 	/**
 	 * Transforms a {@link Reader} representation back into an object if possible.
 	 * 
-	 * @implNote The implementation can assume that the type is correct.
+	 * @implNote The implementation can assume that the type is correct and must
+	 *           close the reader unless it returns the reader itself.
 	 * 
 	 * @param <T>    the type of the object
 	 * @param reader the representation

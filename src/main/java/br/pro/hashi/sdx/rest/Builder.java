@@ -72,7 +72,7 @@ public sealed abstract class Builder<T extends Builder<T>> permits RestClientBui
 	 */
 	protected Builder() {
 		this.cache = new Cache();
-		this.facade = new Facade();
+		this.facade = new Facade(this.cache);
 		this.urlCharset = StandardCharsets.UTF_8;
 		this.locale = Coding.LOCALE;
 		this.redirection = false;

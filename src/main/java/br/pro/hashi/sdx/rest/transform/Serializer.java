@@ -35,7 +35,8 @@ public interface Serializer {
 	/**
 	 * Writes the representation of a typed object to a {@link Writer} if possible.
 	 * 
-	 * @implNote The implementation can assume that the type is correct.
+	 * @implNote The implementation can assume that the type is correct and must not
+	 *           close the writer.
 	 * 
 	 * @param body   the object
 	 * @param type   the type of the object

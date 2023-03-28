@@ -74,6 +74,16 @@ class SimpleAssemblerTest {
 	}
 
 	@Test
+	void doesNotWrite() throws IOException {
+		OutputStream stream = OutputStream.nullOutputStream();
+		stream.close();
+		Exception exception = assertThrows(UncheckedIOException.class, () -> {
+			a.write(body, stream);
+		});
+		assertInstanceOf(IOException.class, exception.getCause());
+	}
+
+	@Test
 	void returnsBytes() {
 		byte[] bytes = a.toBytes(body);
 		assertEqualsBody(bytes);
@@ -103,15 +113,5 @@ class SimpleAssemblerTest {
 
 	private void assertEqualsNull(byte[] bytes) {
 		assertEquals("null", new String(bytes, StandardCharsets.US_ASCII));
-	}
-
-	@Test
-	void doesNotWrite() throws IOException {
-		OutputStream stream = OutputStream.nullOutputStream();
-		stream.close();
-		Exception exception = assertThrows(UncheckedIOException.class, () -> {
-			a.write(body, stream);
-		});
-		assertInstanceOf(IOException.class, exception.getCause());
 	}
 }

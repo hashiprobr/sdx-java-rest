@@ -35,7 +35,6 @@ import br.pro.hashi.sdx.rest.reflection.Queries;
 import br.pro.hashi.sdx.rest.reflection.Reflection;
 import br.pro.hashi.sdx.rest.server.exception.BadRequestException;
 import br.pro.hashi.sdx.rest.server.exception.MessageRestException;
-import br.pro.hashi.sdx.rest.server.exception.NotFoundException;
 import br.pro.hashi.sdx.rest.server.tree.Data;
 import br.pro.hashi.sdx.rest.server.tree.Endpoint;
 import br.pro.hashi.sdx.rest.server.tree.Node;
@@ -118,16 +117,23 @@ class Handler extends AbstractHandler {
 				response.addHeader("Access-Control-Allow-Credentials", "true");
 			}
 
+			String methodName = request.getMethod();
+			if (!tree.getMethodNames().contains(methodName)) {
+				throw new MessageRestException(HttpStatus.NOT_IMPLEMENTED_501, "%s not implemented".formatted(methodName));
+			}
+
 			String uri = request.getRequestURI();
+			String extension;
 			String extensionType;
 			int length = uri.lastIndexOf('.') + 1;
 			if (length > 0 && length < uri.length() && uri.indexOf('/', length) == -1) {
-				String extension = uri.substring(length);
+				extension = uri.substring(length);
 				extensionType = facade.getExtensionType(extension);
 				if (extensionType != null) {
 					uri = uri.substring(0, length - 1);
 				}
 			} else {
+				extension = null;
 				extensionType = null;
 			}
 
@@ -146,7 +152,6 @@ class Handler extends AbstractHandler {
 			Node node = leaf.node();
 			int varSize = leaf.varSize();
 
-			String methodName = request.getMethod();
 			OutputStream responseStream = response.getOutputStream();
 			if (methodName.equals("OPTIONS")) {
 				Set<String> methodNames;
@@ -210,6 +215,17 @@ class Handler extends AbstractHandler {
 			Class<? extends RestResource> resourceType = endpoint.getResourceType();
 			Constructor<? extends RestResource> constructor = constructors.get(resourceType);
 			RestResource resource = Reflection.newNoArgsInstance(constructor);
+
+			Set<String> notAcceptableExtensions = resource.notAcceptableExtensions();
+			if (notAcceptableExtensions != null && notAcceptableExtensions.contains(extension)) {
+				String message;
+				if (extension == null) {
+					message = "URI must have an extension";
+				} else {
+					message = "Extension %s is not acceptable".formatted(extension);
+				}
+				throw new MessageRestException(HttpStatus.NOT_ACCEPTABLE_406, message);
+			}
 			resource.setFields(partHeadersMap, headers, queries, encoder, response);
 
 			Object responseBody;
@@ -290,13 +306,11 @@ class Handler extends AbstractHandler {
 	boolean write(HttpServletResponse response, RestResource resource, Object actual, Type type, String extensionType, OutputStream stream) {
 		boolean withoutLength;
 		try {
-			String contentType = resource.getContentType();
-			if (contentType == null) {
-				contentType = extensionType;
+			String contentType;
+			if (extensionType == null) {
+				contentType = resource.getContentType();
 			} else {
-				if (extensionType != null && contentType != extensionType) {
-					throw new NotFoundException();
-				}
+				contentType = extensionType;
 			}
 			boolean base64 = resource.isBase64();
 
@@ -346,7 +360,9 @@ class Handler extends AbstractHandler {
 			}
 
 			consumer.accept(stream);
-		} catch (RuntimeException exception) {
+		} catch (
+
+		RuntimeException exception) {
 			if (!response.isCommitted()) {
 				throw exception;
 			}
