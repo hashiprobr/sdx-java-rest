@@ -216,15 +216,11 @@ class Handler extends AbstractHandler {
 			Constructor<? extends RestResource> constructor = constructors.get(resourceType);
 			RestResource resource = Reflection.newNoArgsInstance(constructor);
 
-			Set<String> notAcceptableExtensions = resource.notAcceptableExtensions();
-			if (notAcceptableExtensions != null && notAcceptableExtensions.contains(extension)) {
-				String message;
-				if (extension == null) {
-					message = "URI must have an extension";
-				} else {
-					message = "Extension %s is not acceptable".formatted(extension);
+			if (extension != null) {
+				Set<String> notAcceptableExtensions = resource.notAcceptableExtensions();
+				if (notAcceptableExtensions != null && notAcceptableExtensions.contains(extension)) {
+					throw new MessageRestException(HttpStatus.NOT_ACCEPTABLE_406, "Extension %s is not acceptable".formatted(extension));
 				}
-				throw new MessageRestException(HttpStatus.NOT_ACCEPTABLE_406, message);
 			}
 			resource.setFields(partHeadersMap, headers, queries, encoder, response);
 

@@ -4,7 +4,7 @@ import java.util.Set;
 
 import br.pro.hashi.sdx.rest.server.RestResource;
 
-public class ConcreteResourceWithAll extends RestResource {
+public class ConcreteResourceWithoutEmpty extends RestResource {
 	private static final Set<String> NOT_ACCEPTABLE_EXTENSIONS = Set.of();
 
 	@Override
