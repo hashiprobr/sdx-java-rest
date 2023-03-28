@@ -268,6 +268,27 @@ public abstract class RestResource {
 
 	/**
 	 * <p>
+	 * Sets the status of the response.
+	 * </p>
+	 * <p>
+	 * The convenience parameter {@code args} can be used to call the other methods.
+	 * This ensures that the response and its details are syntactically related and
+	 * improves autocomplete accuracy.
+	 * </p>
+	 * 
+	 * @param status the response status
+	 * @param args   convenience parameters to call the other methods
+	 * @throws IllegalArgumentException if the status is invalid
+	 */
+	protected void response(int status, Void... args) {
+		if (status < 100 || status > 399) {
+			throw new IllegalArgumentException("Status must be between 100 and 399");
+		}
+		this.status = status;
+	}
+
+	/**
+	 * <p>
 	 * Wrap the response body with this method to set the status.
 	 * </p>
 	 * <p>
@@ -284,10 +305,7 @@ public abstract class RestResource {
 	 * @return the second parameter, for wrapping
 	 */
 	protected <T> T response(int status, T body, Void... args) {
-		if (status < 100 || status > 399) {
-			throw new IllegalArgumentException("Status must be between 100 and 399");
-		}
-		this.status = status;
+		response(status);
 		return body;
 	}
 
