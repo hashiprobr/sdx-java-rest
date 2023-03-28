@@ -253,6 +253,21 @@ class HandlerTest {
 	}
 
 	@Test
+	void handlesWithoutDotfileExtension() {
+		mockMethod();
+		when(request.getRequestURI()).thenReturn("/b/.txt");
+		when(tree.getLeafAndAddItems(new String[] { "b", "" }, List.of())).thenThrow(new NotFoundException());
+		mockMethodNames();
+		mockEndpoint();
+		mockContentType();
+		mockResourceType();
+		mockCall();
+		mockReturnType();
+		handle();
+		assertNotFound();
+	}
+
+	@Test
 	void handlesWithEncodedExtension() {
 		mockMethod();
 		when(request.getRequestURI()).thenReturn("/b%2Etxt");
@@ -361,6 +376,10 @@ class HandlerTest {
 		mockCall();
 		mockReturnType();
 		handle();
+		assertNotFound();
+	}
+
+	private void assertNotFound() {
 		assertMessageResponse(404, "Endpoint not found");
 	}
 

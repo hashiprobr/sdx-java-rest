@@ -129,15 +129,17 @@ class Handler extends AbstractHandler {
 			if (length > 0 && length < uri.length() && uri.indexOf('/', length) == -1) {
 				extension = uri.substring(length);
 				extensionType = facade.getExtensionType(extension);
-				if (extensionType != null) {
+				if (extensionType == null) {
+					extension = null;
+				} else {
 					uri = uri.substring(0, length - 1);
 				}
 			} else {
+				uri = Percent.stripEndingSlashes(uri);
 				extension = null;
 				extensionType = null;
 			}
 
-			uri = Percent.stripEndingSlashes(uri);
 			String[] items;
 			try {
 				items = Percent.splitAndDecode(uri, urlCharset);
