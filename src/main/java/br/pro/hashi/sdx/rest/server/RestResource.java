@@ -268,7 +268,7 @@ public abstract class RestResource {
 
 	/**
 	 * <p>
-	 * Sets the status of the response.
+	 * Wrap the response body with this method to construct an exception.
 	 * </p>
 	 * <p>
 	 * The convenience parameter {@code args} can be used to call the other methods.
@@ -276,15 +276,15 @@ public abstract class RestResource {
 	 * improves autocomplete accuracy.
 	 * </p>
 	 * 
+	 * @param <T>    the type of the response body
 	 * @param status the response status
+	 * @param body   the response body
 	 * @param args   convenience parameters to call the other methods
 	 * @throws IllegalArgumentException if the status is invalid
+	 * @return the second parameter, for wrapping
 	 */
-	protected void status(int status, Void... args) {
-		if (status < 100 || status > 399) {
-			throw new IllegalArgumentException("Status must be between 100 and 399");
-		}
-		this.status = status;
+	protected <T> RestException error(int status, T body, Void... args) {
+		return new RestException(status, body);
 	}
 
 	/**
@@ -311,7 +311,7 @@ public abstract class RestResource {
 
 	/**
 	 * <p>
-	 * Wrap the response body with this method to construct an exception.
+	 * Sets the status of the response.
 	 * </p>
 	 * <p>
 	 * The convenience parameter {@code args} can be used to call the other methods.
@@ -319,14 +319,29 @@ public abstract class RestResource {
 	 * improves autocomplete accuracy.
 	 * </p>
 	 * 
-	 * @param <T>    the type of the response body
 	 * @param status the response status
-	 * @param body   the response body
 	 * @param args   convenience parameters to call the other methods
 	 * @throws IllegalArgumentException if the status is invalid
-	 * @return the second parameter, for wrapping
 	 */
-	protected <T> RestException error(int status, T body, Void... args) {
-		return new RestException(status, body);
+	protected void status(int status, Void... args) {
+		if (status < 100 || status > 399) {
+			throw new IllegalArgumentException("Status must be between 100 and 399");
+		}
+		this.status = status;
+	}
+
+	/**
+	 * If you wrap the response body with this method, the convenience parameter
+	 * {@code args} can be used to call the other methods. This ensures that the
+	 * response and its details are syntactically related and improves autocomplete
+	 * accuracy.
+	 * 
+	 * @param <T>  the type of the response body
+	 * @param body the response body
+	 * @param args convenience parameters to call the other methods
+	 * @return the first parameter, for wrapping
+	 */
+	protected <T> T body(T body, Void... args) {
+		return body;
 	}
 }
