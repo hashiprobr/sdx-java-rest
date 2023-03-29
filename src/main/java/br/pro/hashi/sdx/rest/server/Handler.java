@@ -276,7 +276,7 @@ class Handler extends AbstractHandler {
 			}
 		} catch (MessageRestException exception) {
 			int status = exception.getStatus();
-			String message = exception.getBody();
+			String message = (String) exception.getBody();
 			sendError(response, status, message);
 		} catch (Exception exception) {
 			response.reset();
