@@ -120,8 +120,8 @@ public abstract class RestResource {
 	}
 
 	/**
-	 * Wrap the response body with this method to indicate that it should be
-	 * serialized even if it is null.
+	 * Wrap the response body with this method to indicate that it should be sent
+	 * even if it is null.
 	 * 
 	 * @param <T>  the type of the response body
 	 * @param body the response body
@@ -336,8 +336,8 @@ public abstract class RestResource {
 	 * response and its details are syntactically related and improves autocomplete
 	 * accuracy.
 	 * 
-	 * @param <T>  the type of the response body
-	 * @param body the response body
+	 * @param <T>  the type of the actual body
+	 * @param body the actual body
 	 * @param args convenience parameters to call the other methods
 	 * @return the first parameter, for wrapping
 	 */
