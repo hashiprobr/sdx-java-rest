@@ -90,7 +90,7 @@ public class RestException extends RuntimeException {
 	 * 
 	 * @return the status
 	 */
-	public int getStatus() {
+	public final int getStatus() {
 		return status;
 	}
 
@@ -99,7 +99,7 @@ public class RestException extends RuntimeException {
 	 * 
 	 * @return the body
 	 */
-	public Object getBody() {
+	public final Object getBody() {
 		return body;
 	}
 
@@ -108,7 +108,7 @@ public class RestException extends RuntimeException {
 	 * 
 	 * @return the type
 	 */
-	public Type getType() {
+	public final Type getType() {
 		return type;
 	}
 }

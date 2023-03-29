@@ -283,7 +283,7 @@ public abstract class RestResource {
 	 * @throws IllegalArgumentException if the status is invalid
 	 * @return the second parameter, for wrapping
 	 */
-	protected <T> RestException error(int status, T body, Void... args) {
+	protected final <T> RestException error(int status, T body, Void... args) {
 		return new RestException(status, body);
 	}
 
@@ -304,7 +304,7 @@ public abstract class RestResource {
 	 * @throws IllegalArgumentException if the status is invalid
 	 * @return the second parameter, for wrapping
 	 */
-	protected <T> T response(int status, T body, Void... args) {
+	protected final <T> T response(int status, T body, Void... args) {
 		status(status);
 		return body;
 	}
@@ -323,7 +323,7 @@ public abstract class RestResource {
 	 * @param args   convenience parameters to call the other methods
 	 * @throws IllegalArgumentException if the status is invalid
 	 */
-	protected void status(int status, Void... args) {
+	protected final void status(int status, Void... args) {
 		if (status < 100 || status > 399) {
 			throw new IllegalArgumentException("Status must be between 100 and 399");
 		}
@@ -337,11 +337,11 @@ public abstract class RestResource {
 	 * accuracy.
 	 * 
 	 * @param <T>  the type of the actual body
-	 * @param body the actual body
+	 * @param actual the actual body
 	 * @param args convenience parameters to call the other methods
 	 * @return the first parameter, for wrapping
 	 */
-	protected <T> T body(T body, Void... args) {
-		return body;
+	protected final <T> T body(T actual, Void... args) {
+		return actual;
 	}
 }
