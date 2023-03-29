@@ -389,7 +389,7 @@ class HandlerTest {
 		mockRequestUri();
 		mockNode();
 		mockMethodNames();
-		when(node.getEndpoint("POST")).thenReturn(endpoint);
+		mockEndpoint("POST");
 		mockContentType();
 		ServletInputStream stream = mockInputStream();
 		mockResourceType();
@@ -468,7 +468,7 @@ class HandlerTest {
 		mockRequestUri();
 		mockNode();
 		mockMethodNames();
-		when(node.getEndpoint("GET")).thenReturn(null);
+		when(node.getEndpoint("GET", 0)).thenReturn(null);
 		mockContentType();
 		mockResourceType();
 		mockCall();
@@ -484,7 +484,7 @@ class HandlerTest {
 		mockRequestUri();
 		mockNode(items);
 		mockMethodNames();
-		mockEndpoint();
+		mockEndpoint(1);
 		mockContentType();
 		ServletInputStream stream = mockInputStream();
 		mockResourceType();
@@ -503,7 +503,7 @@ class HandlerTest {
 		mockRequestUri();
 		mockNode(items);
 		mockMethodNames();
-		mockEndpoint();
+		mockEndpoint(2);
 		mockContentType();
 		ServletInputStream stream = mockInputStream();
 		mockResourceType();
@@ -993,7 +993,7 @@ class HandlerTest {
 
 	@Test
 	void handlesWithHead() {
-		mockHead();
+		mockHeadMethod();
 		mockRequestUri();
 		mockNode();
 		mockMethodNames();
@@ -1018,7 +1018,7 @@ class HandlerTest {
 
 	@Test
 	void handlesWithHeadWithoutContent() {
-		mockHead();
+		mockHeadMethod();
 		mockRequestUri();
 		mockNode();
 		mockMethodNames();
@@ -1054,7 +1054,7 @@ class HandlerTest {
 
 	@Test
 	void handlesWithHeadWithoutWrite() {
-		mockHead();
+		mockHeadMethod();
 		mockRequestUri();
 		mockNode();
 		mockMethodNames();
@@ -1079,12 +1079,12 @@ class HandlerTest {
 		verifyNoError();
 	}
 
-	private void mockHead() {
+	private void mockHeadMethod() {
 		mockMethod("HEAD");
 	}
 
 	private void mockHeadEndpoint() {
-		when(node.getEndpoint("HEAD")).thenReturn(endpoint);
+		mockEndpoint("HEAD");
 	}
 
 	private void verifyCountWrite() {
@@ -1237,7 +1237,19 @@ class HandlerTest {
 	}
 
 	private void mockEndpoint() {
-		when(node.getEndpoint("GET")).thenReturn(endpoint);
+		mockEndpoint(0);
+	}
+
+	private void mockEndpoint(String methodName) {
+		mockEndpoint(methodName, 0);
+	}
+
+	private void mockEndpoint(int varSize) {
+		mockEndpoint("GET", varSize);
+	}
+
+	private void mockEndpoint(String methodName, int varSize) {
+		when(node.getEndpoint(methodName, varSize)).thenReturn(endpoint);
 	}
 
 	private void mockContentType() {

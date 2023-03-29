@@ -30,9 +30,15 @@ class NodeTest {
 	@Test
 	void initializesWithoutEndpoints() {
 		assertTrue(n.getEndpoints().isEmpty());
-		assertNull(n.getEndpoint("GET"));
-		assertNull(n.getEndpoint("HEAD"));
-		assertNull(n.getEndpoint("POST"));
+		assertNull(n.getEndpoint("GET", 0));
+		assertNull(n.getEndpoint("GET", 1));
+		assertNull(n.getEndpoint("GET", 2));
+		assertNull(n.getEndpoint("HEAD", 0));
+		assertNull(n.getEndpoint("HEAD", 1));
+		assertNull(n.getEndpoint("HEAD", 2));
+		assertNull(n.getEndpoint("POST", 0));
+		assertNull(n.getEndpoint("POST", 1));
+		assertNull(n.getEndpoint("POST", 2));
 		assertTrue(n.getMethodNames().isEmpty());
 		assertTrue(n.getVarMethodNames().isEmpty());
 	}
@@ -57,18 +63,30 @@ class NodeTest {
 		doReturn(null).when(getEndpoint).getVarType();
 		n.putEndpoint("GET", getEndpoint);
 		assertEquals(1, n.getEndpoints().size());
-		assertSame(getEndpoint, n.getEndpoint("GET"));
-		assertSame(getEndpoint, n.getEndpoint("HEAD"));
-		assertNull(n.getEndpoint("POST"));
+		assertSame(getEndpoint, n.getEndpoint("GET", 0));
+		assertNull(n.getEndpoint("GET", 1));
+		assertNull(n.getEndpoint("GET", 2));
+		assertSame(getEndpoint, n.getEndpoint("HEAD", 0));
+		assertNull(n.getEndpoint("HEAD", 1));
+		assertNull(n.getEndpoint("HEAD", 2));
+		assertNull(n.getEndpoint("POST", 0));
+		assertNull(n.getEndpoint("POST", 1));
+		assertNull(n.getEndpoint("POST", 2));
 		assertEquals(Set.of("GET"), n.getMethodNames());
 		assertTrue(n.getVarMethodNames().isEmpty());
 		Endpoint postEndpoint = mock(Endpoint.class);
 		doReturn(Object.class).when(postEndpoint).getVarType();
 		n.putEndpoint("POST", postEndpoint);
 		assertEquals(2, n.getEndpoints().size());
-		assertSame(getEndpoint, n.getEndpoint("GET"));
-		assertSame(getEndpoint, n.getEndpoint("HEAD"));
-		assertSame(postEndpoint, n.getEndpoint("POST"));
+		assertSame(getEndpoint, n.getEndpoint("GET", 0));
+		assertNull(n.getEndpoint("GET", 1));
+		assertNull(n.getEndpoint("GET", 2));
+		assertSame(getEndpoint, n.getEndpoint("HEAD", 0));
+		assertNull(n.getEndpoint("HEAD", 1));
+		assertNull(n.getEndpoint("HEAD", 2));
+		assertSame(postEndpoint, n.getEndpoint("POST", 0));
+		assertSame(postEndpoint, n.getEndpoint("POST", 1));
+		assertSame(postEndpoint, n.getEndpoint("POST", 2));
 		assertEquals(Set.of("GET", "POST"), n.getMethodNames());
 		assertEquals(Set.of("POST"), n.getVarMethodNames());
 	}

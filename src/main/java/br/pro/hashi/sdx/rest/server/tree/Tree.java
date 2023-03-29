@@ -106,7 +106,7 @@ public class Tree {
 				if (endpoint.getVarType() != null && node.getChild(null) != null) {
 					throw new ReflectionException("%s has a %s varargs endpoint shadowed by another endpoint".formatted(typeName, methodName));
 				}
-				Endpoint existing = node.getEndpoint(methodName);
+				Endpoint existing = node.getEndpoint(methodName, 0);
 				if (existing != null) {
 					Class<? extends RestResource> existingType = existing.getResourceType();
 					if (type.equals(existingType)) {

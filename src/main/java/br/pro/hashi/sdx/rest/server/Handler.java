@@ -168,7 +168,7 @@ class Handler extends AbstractHandler {
 				return;
 			}
 
-			Endpoint endpoint = node.getEndpoint(methodName);
+			Endpoint endpoint = node.getEndpoint(methodName, varSize);
 			if (endpoint == null) {
 				throw new MessageRestException(HttpStatus.METHOD_NOT_ALLOWED_405, "%s not allowed".formatted(methodName));
 			}

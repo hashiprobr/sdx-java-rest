@@ -52,9 +52,12 @@ public class Node {
 		return varMethodNames;
 	}
 
-	public Endpoint getEndpoint(String methodName) {
+	public Endpoint getEndpoint(String methodName, int varSize) {
 		if (methodName.equals("HEAD")) {
 			methodName = "GET";
+		}
+		if (varSize > 0 && !varMethodNames.contains(methodName)) {
+			return null;
 		}
 		return endpoints.get(methodName);
 	}
