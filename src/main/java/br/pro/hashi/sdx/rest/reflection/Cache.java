@@ -1,6 +1,8 @@
 package br.pro.hashi.sdx.rest.reflection;
 
-import java.lang.reflect.InvocationTargetException;
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodHandles.Lookup;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.math.BigDecimal;
@@ -12,9 +14,11 @@ import java.util.function.Function;
 import br.pro.hashi.sdx.rest.reflection.exception.ReflectionException;
 
 public class Cache {
+	private final Lookup lookup;
 	private final Map<Class<?>, Function<String, ?>> functions;
 
 	public Cache() {
+		this.lookup = MethodHandles.lookup();
 		this.functions = new HashMap<>(Map.of(
 				boolean.class, Boolean::parseBoolean,
 				byte.class, Byte::parseByte,
@@ -54,26 +58,33 @@ public class Cache {
 					throw new ReflectionException("Type valueOf method can only throw unchecked exceptions");
 				}
 			}
+			MethodHandle handle = unreflect(method);
 			function = (valueString) -> {
-				return invoke(method, valueString);
+				return invoke(handle, valueString);
 			};
 			functions.put(type, function);
 		}
 		return function;
 	}
 
-	@SuppressWarnings("unchecked")
-	<T> T invoke(Method method, String valueString) {
+	MethodHandle unreflect(Method method) {
+		MethodHandle handle;
+		try {
+			handle = lookup.unreflect(method);
+		} catch (IllegalAccessException exception) {
+			throw new AssertionError(exception);
+		}
+		return handle;
+	}
+
+	<T> T invoke(MethodHandle handle, String valueString) {
 		T value;
 		try {
-			value = (T) method.invoke(null, valueString);
-		} catch (InvocationTargetException exception) {
-			Throwable cause = exception.getCause();
-			if (cause instanceof RuntimeException) {
-				throw (RuntimeException) cause;
+			value = (T) handle.invoke(valueString);
+		} catch (Throwable exception) {
+			if (exception instanceof RuntimeException) {
+				throw (RuntimeException) exception;
 			}
-			throw new AssertionError(cause);
-		} catch (IllegalAccessException exception) {
 			throw new AssertionError(exception);
 		}
 		return value;

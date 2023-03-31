@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.lang.invoke.MethodHandle;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -184,24 +185,29 @@ class CacheTest {
 	}
 
 	@Test
-	void doesNotInvokeIfMethodThrowsCheckedException() {
-		assertDoesNotInvoke(WithCheckedException.class);
+	void doesNotUnreflectIfMethodIsInaccessible() {
+		Method method = getDeclaredMethod(WithNonPublicMethod.class);
+		assertThrows(AssertionError.class, () -> {
+			c.unreflect(method);
+		});
 	}
 
 	@Test
-	void doesNotInvokeIfMethodIsInaccessible() {
-		assertDoesNotInvoke(WithNonPublicMethod.class);
+	void doesNotInvokeIfMethodThrowsCheckedException() {
+		Method method = getDeclaredMethod(WithCheckedException.class);
+		MethodHandle handle = c.unreflect(method);
+		assertThrows(AssertionError.class, () -> {
+			c.invoke(handle, "valueString");
+		});
 	}
 
-	private void assertDoesNotInvoke(Class<?> type) {
+	private Method getDeclaredMethod(Class<?> type) {
 		Method method;
 		try {
 			method = type.getDeclaredMethod("valueOf", String.class);
 		} catch (NoSuchMethodException exception) {
 			throw new AssertionError(exception);
 		}
-		assertThrows(AssertionError.class, () -> {
-			c.invoke(method, null);
-		});
+		return method;
 	}
 }
