@@ -69,8 +69,8 @@ public abstract class BuilderTest {
 	}
 
 	@Test
-	void initializesWithoutRedirection() {
-		assertFalse(b.redirection);
+	void initializesWithRedirection() {
+		assertTrue(b.redirection);
 	}
 
 	@Test
@@ -172,8 +172,8 @@ public abstract class BuilderTest {
 
 	@Test
 	void setsRedirection() {
-		assertSame(b, b.withRedirection());
-		assertTrue(b.redirection);
+		assertSame(b, b.withoutRedirection());
+		assertFalse(b.redirection);
 	}
 
 	@Test

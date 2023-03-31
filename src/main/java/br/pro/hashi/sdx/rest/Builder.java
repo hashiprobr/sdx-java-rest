@@ -75,7 +75,7 @@ public sealed abstract class Builder<T extends Builder<T>> permits RestClientBui
 		this.facade = new Facade(this.cache);
 		this.urlCharset = StandardCharsets.UTF_8;
 		this.locale = Coding.LOCALE;
-		this.redirection = false;
+		this.redirection = true;
 		this.compression = true;
 	}
 
@@ -291,12 +291,12 @@ public sealed abstract class Builder<T extends Builder<T>> permits RestClientBui
 	}
 
 	/**
-	 * Enables automatic redirection.
+	 * Disables automatic redirection.
 	 * 
 	 * @return this builder, for chaining
 	 */
-	public final T withRedirection() {
-		this.redirection = true;
+	public final T withoutRedirection() {
+		this.redirection = false;
 		return self();
 	}
 

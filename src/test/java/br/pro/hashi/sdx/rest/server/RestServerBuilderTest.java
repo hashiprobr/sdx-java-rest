@@ -494,20 +494,20 @@ class RestServerBuilderTest extends BuilderTest {
 	}
 
 	@Test
+	void buildsWithoutRedirection() {
+		b.withoutRedirection();
+		RestServer server = b.build(VALID_PACKAGE);
+		ThreadLimitHandler limitHandler = (ThreadLimitHandler) server.getJettyServer().getHandler();
+		GzipHandler gzipHandler = (GzipHandler) limitHandler.getHandler();
+		assertInstanceOf(Handler.class, gzipHandler.getHandler());
+	}
+
+	@Test
 	void buildsWithoutCompression() {
 		b.withoutCompression();
 		RestServer server = b.build(VALID_PACKAGE);
 		ThreadLimitHandler limitHandler = (ThreadLimitHandler) server.getJettyServer().getHandler();
 		assertInstanceOf(Handler.class, limitHandler.getHandler());
-	}
-
-	@Test
-	void buildsWithRedirectionWithoutHttps() {
-		b.withRedirection();
-		RestServer server = b.build(VALID_PACKAGE);
-		ThreadLimitHandler limitHandler = (ThreadLimitHandler) server.getJettyServer().getHandler();
-		GzipHandler gzipHandler = (GzipHandler) limitHandler.getHandler();
-		assertInstanceOf(Handler.class, gzipHandler.getHandler());
 	}
 
 	@Test
@@ -518,7 +518,8 @@ class RestServerBuilderTest extends BuilderTest {
 		assertEquals(8080, server.getClearPort());
 		assertEquals(8443, server.getMainPort());
 		assertEquals(-1, server.getAltPort());
-		Connector[] connectors = server.getJettyServer().getConnectors();
+		Server jettyServer = server.getJettyServer();
+		Connector[] connectors = jettyServer.getConnectors();
 		assertEquals(2, connectors.length);
 		ServerConnector connector = (ServerConnector) connectors[0];
 		assertEquals(8080, connector.getPort());
@@ -547,23 +548,25 @@ class RestServerBuilderTest extends BuilderTest {
 		assertSame(configuration, h2.getHttpConfiguration());
 		assertSame(h11, iterator.next());
 		assertFalse(iterator.hasNext());
-	}
-
-	@Test
-	void buildsWithRedirection() {
-		b.withKeyStore("path", "password");
-		b.withRedirection();
-		RestServer server = b.build(VALID_PACKAGE);
-		ThreadLimitHandler limitHandler = (ThreadLimitHandler) server.getJettyServer().getHandler();
+		ThreadLimitHandler limitHandler = (ThreadLimitHandler) jettyServer.getHandler();
 		SecuredRedirectHandler redirectHandler = (SecuredRedirectHandler) limitHandler.getHandler();
 		GzipHandler gzipHandler = (GzipHandler) redirectHandler.getHandler();
 		assertInstanceOf(Handler.class, gzipHandler.getHandler());
 	}
 
 	@Test
-	void buildsWithRedirectionWithoutCompression() {
+	void buildsWithHttpsWithoutRedirection() {
 		b.withKeyStore("path", "password");
-		b.withRedirection();
+		b.withoutRedirection();
+		RestServer server = b.build(VALID_PACKAGE);
+		ThreadLimitHandler limitHandler = (ThreadLimitHandler) server.getJettyServer().getHandler();
+		GzipHandler gzipHandler = (GzipHandler) limitHandler.getHandler();
+		assertInstanceOf(Handler.class, gzipHandler.getHandler());
+	}
+
+	@Test
+	void buildsWithHttpsWithoutCompression() {
+		b.withKeyStore("path", "password");
 		b.withoutCompression();
 		RestServer server = b.build(VALID_PACKAGE);
 		ThreadLimitHandler limitHandler = (ThreadLimitHandler) server.getJettyServer().getHandler();

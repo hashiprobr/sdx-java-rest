@@ -97,7 +97,7 @@ class RestClientBuilderTest extends BuilderTest {
 		assertEquals("http://a", client.getUrlPrefix());
 		HttpClient jettyClient = client.getJettyClient();
 		assertInstanceOf(HttpCookieStore.Empty.class, jettyClient.getCookieStore());
-		assertFalse(jettyClient.isFollowRedirects());
+		assertTrue(jettyClient.isFollowRedirects());
 		List<ContentDecoder.Factory> factories = new ArrayList<>();
 		for (ContentDecoder.Factory factory : jettyClient.getContentDecoderFactories()) {
 			factories.add(factory);
@@ -116,10 +116,10 @@ class RestClientBuilderTest extends BuilderTest {
 	}
 
 	@Test
-	void buildsWithRedirection() {
-		b.withRedirection();
+	void buildsWithoutRedirection() {
+		b.withoutRedirection();
 		RestClient client = b.build("http://a");
-		assertTrue(client.getJettyClient().isFollowRedirects());
+		assertFalse(client.getJettyClient().isFollowRedirects());
 	}
 
 	@Test
