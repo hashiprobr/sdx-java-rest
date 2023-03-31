@@ -107,8 +107,14 @@ public abstract class RestResource {
 	}
 
 	/**
+	 * <p>
 	 * Override this method to indicate which extensions are not accepted by this
 	 * resource. Default is {@code null}.
+	 * </p>
+	 * <p>
+	 * The value {@code ""} can be included to indicate that the URI must have an
+	 * extension.
+	 * </p>
 	 * 
 	 * @implNote The implementation should return {@code null} or a static field to
 	 *           maximize efficiency.
@@ -336,9 +342,9 @@ public abstract class RestResource {
 	 * response and its details are syntactically related and improves autocomplete
 	 * accuracy.
 	 * 
-	 * @param <T>  the type of the actual body
+	 * @param <T>    the type of the actual body
 	 * @param actual the actual body
-	 * @param args convenience parameters to call the other methods
+	 * @param args   convenience parameters to call the other methods
 	 * @return the first parameter, for wrapping
 	 */
 	protected final <T> T body(T actual, Void... args) {

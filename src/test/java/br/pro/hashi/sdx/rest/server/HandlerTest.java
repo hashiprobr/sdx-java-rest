@@ -54,6 +54,7 @@ import br.pro.hashi.sdx.rest.reflection.PartHeaders;
 import br.pro.hashi.sdx.rest.reflection.Queries;
 import br.pro.hashi.sdx.rest.server.exception.NotFoundException;
 import br.pro.hashi.sdx.rest.server.mock.valid.ConcreteResource;
+import br.pro.hashi.sdx.rest.server.mock.valid.ConcreteResourceWithoutBlank;
 import br.pro.hashi.sdx.rest.server.mock.valid.ConcreteResourceWithoutEmpty;
 import br.pro.hashi.sdx.rest.server.mock.valid.ConcreteResourceWithoutPlain;
 import br.pro.hashi.sdx.rest.server.mock.valid.NullableResource;
@@ -110,6 +111,7 @@ class HandlerTest {
 		constructors = new HashMap<>();
 		constructors.put(ConcreteResource.class, ConcreteResource.class.getConstructor());
 		constructors.put(ConcreteResourceWithoutEmpty.class, ConcreteResourceWithoutEmpty.class.getConstructor());
+		constructors.put(ConcreteResourceWithoutBlank.class, ConcreteResourceWithoutBlank.class.getConstructor());
 		constructors.put(ConcreteResourceWithoutPlain.class, ConcreteResourceWithoutPlain.class.getConstructor());
 		constructors.put(NullableResource.class, NullableResource.class.getConstructor());
 		element = mock(MultipartConfigElement.class);
@@ -231,6 +233,21 @@ class HandlerTest {
 		verifyNoCountWrite();
 		verifyNoResponseClose();
 		verifyNoError();
+	}
+
+	@Test
+	void handlesWithoutBlankExtension() {
+		mockMethod();
+		mockRequestUri();
+		mockNode();
+		mockMethodNames();
+		mockEndpoint();
+		mockContentType();
+		mockResourceType(ConcreteResourceWithoutBlank.class);
+		mockCall();
+		mockReturnType();
+		handle();
+		assertMessageResponse(406, "URI must have an extension");
 	}
 
 	@Test
