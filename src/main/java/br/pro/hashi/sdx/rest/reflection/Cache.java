@@ -1,8 +1,6 @@
 package br.pro.hashi.sdx.rest.reflection;
 
 import java.lang.invoke.MethodHandle;
-import java.lang.invoke.MethodHandles;
-import java.lang.invoke.MethodHandles.Lookup;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.math.BigDecimal;
@@ -14,11 +12,9 @@ import java.util.function.Function;
 import br.pro.hashi.sdx.rest.reflection.exception.ReflectionException;
 
 public class Cache {
-	private final Lookup lookup;
 	private final Map<Class<?>, Function<String, ?>> functions;
 
 	public Cache() {
-		this.lookup = MethodHandles.lookup();
 		this.functions = new HashMap<>(Map.of(
 				boolean.class, Boolean::parseBoolean,
 				byte.class, Byte::parseByte,
@@ -70,7 +66,7 @@ public class Cache {
 	MethodHandle unreflect(Method method) {
 		MethodHandle handle;
 		try {
-			handle = lookup.unreflect(method);
+			handle = Reflection.LOOKUP.unreflect(method);
 		} catch (IllegalAccessException exception) {
 			throw new AssertionError(exception);
 		}

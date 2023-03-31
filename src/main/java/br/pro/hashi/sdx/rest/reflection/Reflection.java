@@ -1,5 +1,7 @@
 package br.pro.hashi.sdx.rest.reflection;
 
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodHandles.Lookup;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
@@ -14,6 +16,8 @@ import org.reflections.Reflections;
 import br.pro.hashi.sdx.rest.reflection.exception.ReflectionException;
 
 public final class Reflection {
+	public static final Lookup LOOKUP = MethodHandles.lookup();
+
 	public static <T> Constructor<T> getNoArgsConstructor(Class<T> type) {
 		return getNoArgsConstructor(type, type.getName());
 	}

@@ -1,7 +1,7 @@
 package br.pro.hashi.sdx.rest.server.tree;
 
+import java.lang.invoke.MethodHandle;
 import java.lang.reflect.Array;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.lang.reflect.ParameterizedType;
@@ -21,6 +21,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import br.pro.hashi.sdx.rest.reflection.Cache;
+import br.pro.hashi.sdx.rest.reflection.Reflection;
 import br.pro.hashi.sdx.rest.reflection.exception.ReflectionException;
 import br.pro.hashi.sdx.rest.server.RestException;
 import br.pro.hashi.sdx.rest.server.RestResource;
@@ -36,7 +37,7 @@ public class Endpoint {
 
 	private final Logger logger;
 	private final Class<? extends RestResource> resourceType;
-	private final Method method;
+	private final MethodHandle handle;
 	private final Type returnType;
 	private final Class<?> varType;
 	private final ItemParameter[] itemParameters;
@@ -81,7 +82,7 @@ public class Endpoint {
 						varType = rawType;
 					}
 					Function<String, ?> function = cache.get(rawType);
-					itemList.add(new ItemParameter(index, function, parameter.getName()));
+					itemList.add(new ItemParameter(index + 1, function, parameter.getName()));
 				} else {
 					if (!partMap.isEmpty()) {
 						throw new ReflectionException("Method %s cannot have both parts and body".formatted(methodName));
@@ -89,7 +90,7 @@ public class Endpoint {
 					if (bodyParameter != null) {
 						throw new ReflectionException("Method %s cannot have more than one body".formatted(methodName));
 					}
-					bodyParameter = new DataParameter(index, type);
+					bodyParameter = new DataParameter(index + 1, type);
 				}
 			} else {
 				if (bodyAnnotation != null) {
@@ -104,7 +105,7 @@ public class Endpoint {
 					partList = new ArrayList<>();
 					partMap.put(name, partList);
 				}
-				partList.add(new DataParameter(index, type));
+				partList.add(new DataParameter(index + 1, type));
 			}
 			index++;
 		}
@@ -116,7 +117,7 @@ public class Endpoint {
 
 		this.logger = LoggerFactory.getLogger(Endpoint.class);
 		this.resourceType = resourceType;
-		this.method = method;
+		this.handle = unreflect(method).asFixedArity();
 		this.returnType = method.getGenericReturnType();
 		this.varType = varType;
 		this.itemParameters = itemList.toArray(new ItemParameter[itemList.size()]);
@@ -126,7 +127,7 @@ public class Endpoint {
 			this.partParameters.put(name, partList.toArray(new DataParameter[partList.size()]));
 		}
 		this.bodyParameter = bodyParameter;
-		this.arguments = new Object[types.length];
+		this.arguments = new Object[types.length + 1];
 		this.reach = itemParameters.length - varSize - distance;
 	}
 
@@ -226,7 +227,8 @@ public class Endpoint {
 					}
 				}
 			}
-			result = invoke(method, resource, arguments);
+			arguments[0] = resource;
+			result = invoke(handle, arguments);
 		} finally {
 			Arrays.fill(arguments, null);
 		}
@@ -261,17 +263,24 @@ public class Endpoint {
 		return argument;
 	}
 
-	Object invoke(Method method, RestResource resource, Object... arguments) {
+	MethodHandle unreflect(Method method) {
+		MethodHandle handle;
+		try {
+			handle = Reflection.LOOKUP.unreflect(method);
+		} catch (IllegalAccessException exception) {
+			throw new AssertionError(exception);
+		}
+		return handle;
+	}
+
+	Object invoke(MethodHandle handle, Object... arguments) {
 		Object result;
 		try {
-			result = method.invoke(resource, arguments);
-		} catch (InvocationTargetException exception) {
-			Throwable cause = exception.getCause();
-			if (cause instanceof RuntimeException) {
-				throw (RuntimeException) cause;
+			result = handle.invokeWithArguments(arguments);
+		} catch (Throwable exception) {
+			if (exception instanceof RuntimeException) {
+				throw (RuntimeException) exception;
 			}
-			throw new AssertionError(cause);
-		} catch (IllegalAccessException exception) {
 			throw new AssertionError(exception);
 		}
 		return result;
