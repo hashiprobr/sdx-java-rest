@@ -6,7 +6,7 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.UncheckedIOException;
-import java.lang.reflect.Constructor;
+import java.lang.invoke.MethodHandle;
 import java.lang.reflect.Type;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
@@ -32,7 +32,6 @@ import br.pro.hashi.sdx.rest.reflection.Cache;
 import br.pro.hashi.sdx.rest.reflection.Headers;
 import br.pro.hashi.sdx.rest.reflection.PartHeaders;
 import br.pro.hashi.sdx.rest.reflection.Queries;
-import br.pro.hashi.sdx.rest.reflection.Reflection;
 import br.pro.hashi.sdx.rest.server.exception.BadRequestException;
 import br.pro.hashi.sdx.rest.server.exception.MessageRestException;
 import br.pro.hashi.sdx.rest.server.tree.Data;
@@ -56,19 +55,19 @@ class Handler extends AbstractHandler {
 	private final Facade facade;
 	private final Tree tree;
 	private final ErrorFormatter formatter;
-	private final Map<Class<? extends RestResource>, Constructor<? extends RestResource>> constructors;
+	private final Map<Class<? extends RestResource>, MethodHandle> handles;
 	private final MultipartConfigElement element;
 	private final Set<Class<? extends RuntimeException>> gatewayTypes;
 	private final Charset urlCharset;
 	private final boolean cors;
 
-	Handler(Cache cache, Facade facade, Tree tree, ErrorFormatter formatter, Map<Class<? extends RestResource>, Constructor<? extends RestResource>> constructors, MultipartConfigElement element, Set<Class<? extends RuntimeException>> gatewayTypes, Charset urlCharset, boolean cors) {
+	Handler(Cache cache, Facade facade, Tree tree, ErrorFormatter formatter, Map<Class<? extends RestResource>, MethodHandle> handles, MultipartConfigElement element, Set<Class<? extends RuntimeException>> gatewayTypes, Charset urlCharset, boolean cors) {
 		this.logger = LoggerFactory.getLogger(Handler.class);
 		this.cache = cache;
 		this.facade = facade;
 		this.tree = tree;
 		this.formatter = formatter;
-		this.constructors = constructors;
+		this.handles = handles;
 		this.element = element;
 		this.gatewayTypes = gatewayTypes;
 		this.urlCharset = urlCharset;
@@ -215,8 +214,8 @@ class Handler extends AbstractHandler {
 			CharsetEncoder encoder = StandardCharsets.US_ASCII.newEncoder();
 
 			Class<? extends RestResource> resourceType = endpoint.getResourceType();
-			Constructor<? extends RestResource> constructor = constructors.get(resourceType);
-			RestResource resource = Reflection.newNoArgsInstance(constructor);
+			MethodHandle handle = handles.get(resourceType);
+			RestResource resource = invoke(handle);
 
 			Set<String> notAcceptableExtensions = resource.notAcceptableExtensions();
 			if (notAcceptableExtensions != null && notAcceptableExtensions.contains(extension)) {
@@ -303,6 +302,16 @@ class Handler extends AbstractHandler {
 		} finally {
 			baseRequest.setHandled(true);
 		}
+	}
+
+	RestResource invoke(MethodHandle handle) {
+		RestResource resource;
+		try {
+			resource = (RestResource) handle.invoke();
+		} catch (Throwable exception) {
+			throw new AssertionError(exception);
+		}
+		return resource;
 	}
 
 	boolean write(HttpServletResponse response, RestResource resource, Object actual, Type type, String extensionType, OutputStream stream) {

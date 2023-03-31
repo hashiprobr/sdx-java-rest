@@ -13,6 +13,7 @@ import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.lang.reflect.Constructor;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -52,6 +53,7 @@ import br.pro.hashi.sdx.rest.server.exception.ResourceException;
 import br.pro.hashi.sdx.rest.server.mock.invalid.ResourceWithBlank;
 import br.pro.hashi.sdx.rest.server.mock.invalid.ResourceWithNull;
 import br.pro.hashi.sdx.rest.server.mock.invalid.ResourceWithoutCompliance;
+import br.pro.hashi.sdx.rest.server.mock.invalid.ResourceWithoutConstructor;
 import br.pro.hashi.sdx.rest.server.mock.invalid.ResourceWithoutDecoding;
 import br.pro.hashi.sdx.rest.server.mock.invalid.ResourceWithoutSlash;
 import br.pro.hashi.sdx.rest.server.tree.Tree;
@@ -923,6 +925,19 @@ class RestServerBuilderTest extends BuilderTest {
 	private MockedConstruction<Reflections> mockReflectionsConstruction(Class<? extends RestResource> type) {
 		return mockConstruction(Reflections.class, (mock, context) -> {
 			when(mock.getSubTypesOf(RestResource.class)).thenReturn(Set.of(type));
+		});
+	}
+
+	@Test
+	void doesNotUnreflect() {
+		Constructor<? extends RestResource> constructor;
+		try {
+			constructor = ResourceWithoutConstructor.class.getDeclaredConstructor();
+		} catch (NoSuchMethodException exception) {
+			throw new AssertionError(exception);
+		}
+		assertThrows(AssertionError.class, () -> {
+			b.unreflect(constructor);
 		});
 	}
 }

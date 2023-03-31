@@ -1,5 +1,6 @@
 package br.pro.hashi.sdx.rest.server;
 
+import java.lang.invoke.MethodHandle;
 import java.lang.reflect.Constructor;
 import java.nio.charset.Charset;
 import java.util.HashMap;
@@ -403,13 +404,13 @@ public non-sealed class RestServerBuilder extends Builder<RestServerBuilder> {
 	 * @return the REST server
 	 */
 	public final RestServer build(String packageName) {
-		Map<Class<? extends RestResource>, Constructor<? extends RestResource>> constructors = new HashMap<>();
+		Map<Class<? extends RestResource>, MethodHandle> handles = new HashMap<>();
 		Map<Class<? extends RestResource>, String[]> itemMap = new HashMap<>();
 		for (Class<? extends RestResource> type : Reflection.getConcreteSubTypes(packageName, RestResource.class)) {
 			String typeName = type.getName();
 			Constructor<? extends RestResource> constructor = Reflection.getNoArgsConstructor(type, typeName);
 			String[] items = getItems(constructor, typeName);
-			constructors.put(type, constructor);
+			handles.put(type, unreflect(constructor));
 			itemMap.put(type, items);
 			logger.info("Constructed %s".formatted(typeName));
 		}
@@ -426,7 +427,7 @@ public non-sealed class RestServerBuilder extends Builder<RestServerBuilder> {
 		ConcreteHandler errorHandler = new ConcreteHandler(facade, formatter, contentType, charset, base64);
 		server.setErrorHandler(errorHandler);
 
-		AbstractHandler handler = new Handler(cache, facade, tree, formatter, constructors, element, gatewayTypes, urlCharset, cors);
+		AbstractHandler handler = new Handler(cache, facade, tree, formatter, handles, element, gatewayTypes, urlCharset, cors);
 		if (compression) {
 			GzipHandler gzipHandler = new GzipHandler();
 			gzipHandler.setHandler(handler);
@@ -558,6 +559,16 @@ public non-sealed class RestServerBuilder extends Builder<RestServerBuilder> {
 			throw new ResourceException(typeName, message);
 		}
 		return Percent.splitAndDecode(base, urlCharset);
+	}
+
+	MethodHandle unreflect(Constructor<? extends RestResource> constructor) {
+		MethodHandle handle;
+		try {
+			handle = Reflection.LOOKUP.unreflectConstructor(constructor);
+		} catch (IllegalAccessException exception) {
+			throw new AssertionError(exception);
+		}
+		return handle;
 	}
 
 	/**

@@ -26,6 +26,9 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.io.UncheckedIOException;
 import java.io.Writer;
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodHandles.Lookup;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Type;
@@ -53,6 +56,7 @@ import br.pro.hashi.sdx.rest.reflection.Headers;
 import br.pro.hashi.sdx.rest.reflection.PartHeaders;
 import br.pro.hashi.sdx.rest.reflection.Queries;
 import br.pro.hashi.sdx.rest.server.exception.NotFoundException;
+import br.pro.hashi.sdx.rest.server.mock.invalid.ResourceWithException;
 import br.pro.hashi.sdx.rest.server.mock.valid.ConcreteResource;
 import br.pro.hashi.sdx.rest.server.mock.valid.ConcreteResourceWithoutBlank;
 import br.pro.hashi.sdx.rest.server.mock.valid.ConcreteResourceWithoutEmpty;
@@ -82,7 +86,7 @@ class HandlerTest {
 	private Facade facade;
 	private Tree tree;
 	private ErrorFormatter formatter;
-	private Map<Class<? extends RestResource>, Constructor<? extends RestResource>> constructors;
+	private Map<Class<? extends RestResource>, MethodHandle> handles;
 	private MultipartConfigElement element;
 	private Set<Class<? extends RuntimeException>> gatewayTypes;
 	private Handler h;
@@ -108,12 +112,13 @@ class HandlerTest {
 		when(facade.getExtensionType("txt")).thenReturn("text/plain");
 		tree = mock(Tree.class);
 		formatter = mock(ErrorFormatter.class);
-		constructors = new HashMap<>();
-		constructors.put(ConcreteResource.class, ConcreteResource.class.getConstructor());
-		constructors.put(ConcreteResourceWithoutEmpty.class, ConcreteResourceWithoutEmpty.class.getConstructor());
-		constructors.put(ConcreteResourceWithoutBlank.class, ConcreteResourceWithoutBlank.class.getConstructor());
-		constructors.put(ConcreteResourceWithoutPlain.class, ConcreteResourceWithoutPlain.class.getConstructor());
-		constructors.put(NullableResource.class, NullableResource.class.getConstructor());
+		handles = new HashMap<>();
+		Lookup lookup = MethodHandles.lookup();
+		putHandle(lookup, ConcreteResource.class);
+		putHandle(lookup, ConcreteResourceWithoutEmpty.class);
+		putHandle(lookup, ConcreteResourceWithoutBlank.class);
+		putHandle(lookup, ConcreteResourceWithoutPlain.class);
+		putHandle(lookup, NullableResource.class);
 		element = mock(MultipartConfigElement.class);
 		gatewayTypes = new HashSet<>();
 		fields = mock(HttpFields.class);
@@ -130,6 +135,22 @@ class HandlerTest {
 		parts = new ArrayList<>();
 		resource = mock(RestResource.class);
 		stream = spy(new ByteArrayOutputStream());
+	}
+
+	private void putHandle(Lookup lookup, Class<? extends RestResource> type) {
+		Constructor<? extends RestResource> constructor;
+		try {
+			constructor = type.getConstructor();
+		} catch (NoSuchMethodException exception) {
+			throw new AssertionError(exception);
+		}
+		MethodHandle handle;
+		try {
+			handle = lookup.unreflectConstructor(constructor);
+		} catch (IllegalAccessException exception) {
+			throw new AssertionError(exception);
+		}
+		handles.put(type, handle);
 	}
 
 	@Test
@@ -1402,7 +1423,7 @@ class HandlerTest {
 	}
 
 	private void handle(boolean cors, Answer<Boolean> answer) {
-		h = spy(new Handler(cache, facade, tree, formatter, constructors, element, gatewayTypes, StandardCharsets.UTF_8, cors));
+		h = spy(newHandler(cors));
 		doAnswer(answer).when(h).write(eq(response), any(), any(), eq(Object.class), any(), any());
 		h.handle("target", baseRequest, request, response);
 		verify(baseRequest).setHandled(true);
@@ -1412,6 +1433,27 @@ class HandlerTest {
 		return (invocation) -> {
 			return true;
 		};
+	}
+
+	@Test
+	void doesNotInvoke() {
+		h = newHandler();
+		Lookup lookup = MethodHandles.lookup();
+		Constructor<? extends RestResource> constructor;
+		try {
+			constructor = ResourceWithException.class.getDeclaredConstructor();
+		} catch (NoSuchMethodException exception) {
+			throw new AssertionError();
+		}
+		MethodHandle handle;
+		try {
+			handle = lookup.unreflectConstructor(constructor);
+		} catch (IllegalAccessException exception) {
+			throw new AssertionError();
+		}
+		assertThrows(AssertionError.class, () -> {
+			h.invoke(handle);
+		});
 	}
 
 	@Test
@@ -1986,7 +2028,7 @@ class HandlerTest {
 	}
 
 	private boolean write(Object actual, Type type, String extensionType, OutputStream output) {
-		h = new Handler(cache, facade, tree, formatter, constructors, element, gatewayTypes, StandardCharsets.UTF_8, false);
+		h = newHandler();
 		return h.write(response, resource, actual, type, extensionType, output);
 	}
 
@@ -2028,5 +2070,13 @@ class HandlerTest {
 		} catch (IOException exception) {
 			throw new AssertionError(exception);
 		}
+	}
+
+	private Handler newHandler() {
+		return newHandler(false);
+	}
+
+	private Handler newHandler(boolean cors) {
+		return new Handler(cache, facade, tree, formatter, handles, element, gatewayTypes, StandardCharsets.UTF_8, cors);
 	}
 }

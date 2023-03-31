@@ -219,6 +219,13 @@ class RestResourceTest {
 	}
 
 	@Test
+	void returnsBody() {
+		r = newRestResource();
+		Object actual = new Object();
+		assertSame(actual, r.body(actual));
+	}
+
+	@Test
 	void returnsInformationResponse() {
 		r = newRestResource();
 		Object body = new Object();
