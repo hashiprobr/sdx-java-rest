@@ -213,6 +213,14 @@ class EndpointTest {
 	}
 
 	@ParameterizedTest
+	@ValueSource(ints = { 0, 1, 2 })
+	void doesNotConstructWithOneItemAndVarBody(int distance) {
+		assertThrows(ReflectionException.class, () -> {
+			newEndpoint(distance, "withOneItemAndVarBody", int.class, Object[].class);
+		});
+	}
+
+	@ParameterizedTest
 	@ValueSource(ints = { 0, 1 })
 	void constructsWithOneItemAndOneBody(int distance) {
 		e = newEndpoint(distance, "withOneItemAndOneBody", int.class, Object.class);
@@ -370,9 +378,25 @@ class EndpointTest {
 
 	@ParameterizedTest
 	@ValueSource(ints = { 0, 1, 2 })
+	void doesNotConstructWithOnePartAndVarBody(int distance) {
+		assertThrows(ReflectionException.class, () -> {
+			newEndpoint(distance, "withOnePartAndVarBody", Object.class, String[].class);
+		});
+	}
+
+	@ParameterizedTest
+	@ValueSource(ints = { 0, 1, 2 })
 	void doesNotConstructWithOnePartAndOneBody(int distance) {
 		assertThrows(ReflectionException.class, () -> {
 			newEndpoint(distance, "withOnePartAndOneBody", Object.class, String.class);
+		});
+	}
+
+	@ParameterizedTest
+	@ValueSource(ints = { 0, 1, 2 })
+	void doesNotConstructWithVarBody(int distance) {
+		assertThrows(ReflectionException.class, () -> {
+			newEndpoint(distance, "withVarBody", Object[].class);
 		});
 	}
 
@@ -448,6 +472,14 @@ class EndpointTest {
 	void doesNotConstructWithOneBodyAndOnePart(int distance) {
 		assertThrows(ReflectionException.class, () -> {
 			newEndpoint(distance, "withOneBodyAndOnePart", Object.class, String.class);
+		});
+	}
+
+	@ParameterizedTest
+	@ValueSource(ints = { 0, 1, 2 })
+	void doesNotConstructWithOneBodyAndVarBody(int distance) {
+		assertThrows(ReflectionException.class, () -> {
+			newEndpoint(distance, "withOneBodyAndVarBody", Object.class, String[].class);
 		});
 	}
 

@@ -90,6 +90,9 @@ public class Endpoint {
 					if (bodyParameter != null) {
 						throw new ReflectionException("Method %s cannot have more than one body".formatted(methodName));
 					}
+					if (index == start) {
+						throw new ReflectionException("Method %s cannot have a varargs body".formatted(methodName));
+					}
 					bodyParameter = new DataParameter(index + 1, type);
 				}
 			} else {

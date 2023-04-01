@@ -29,6 +29,9 @@ public class Signatures extends RestResource {
 	public void withOneItemAndOnePart(int i, @Part("name") Object part) {
 	}
 
+	public void withOneItemAndVarBody(int i, @Body Object... body) {
+	}
+
 	public void withOneItemAndOneBody(int i, @Body Object body) {
 	}
 
@@ -47,7 +50,13 @@ public class Signatures extends RestResource {
 	public void withTwoPartsAndTwoNames(@Part("name0") Object part0, @Part("name1") String part1) {
 	}
 
+	public void withOnePartAndVarBody(@Part("name") Object part, @Body String... body) {
+	}
+
 	public void withOnePartAndOneBody(@Part("name") Object part, @Body String body) {
+	}
+
+	public void withVarBody(@Body Object... body) {
 	}
 
 	public void withOneBody(@Body Object body) {
@@ -60,6 +69,9 @@ public class Signatures extends RestResource {
 	}
 
 	public void withOneBodyAndOnePart(@Body Object body, @Part("name") String part) {
+	}
+
+	public void withOneBodyAndVarBody(@Body Object body0, @Body String... body1) {
 	}
 
 	public void withTwoBodies(@Body Object body0, @Body String body1) {
