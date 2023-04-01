@@ -102,6 +102,9 @@ public class Endpoint {
 				if (bodyParameter != null) {
 					throw new ReflectionException("Method %s cannot have both body and parts".formatted(methodName));
 				}
+				if (index == start) {
+					throw new ReflectionException("Method %s cannot have a varargs part".formatted(methodName));
+				}
 				String name = partAnnotation.value();
 				List<DataParameter> partList = partMap.get(name);
 				if (partList == null) {
