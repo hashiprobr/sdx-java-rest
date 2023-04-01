@@ -27,10 +27,9 @@ public abstract class RestResource {
 	private CharsetEncoder encoder;
 
 	/**
-	 * Maps each part name to its headers. If the request is not multipart, this map
-	 * is empty.
+	 * The part headers map.
 	 */
-	protected Map<String, List<Fields>> partHeaders;
+	protected PartHeadersMap partHeadersMap;
 
 	/**
 	 * The request headers.
@@ -98,8 +97,8 @@ public abstract class RestResource {
 		return base64;
 	}
 
-	void setFields(Map<String, List<Fields>> partHeaders, Fields headers, Fields queries, CharsetEncoder encoder, HttpServletResponse response) {
-		this.partHeaders = partHeaders;
+	void setFields(Map<String, List<Fields>> map, Fields headers, Fields queries, CharsetEncoder encoder, HttpServletResponse response) {
+		this.partHeadersMap = new PartHeadersMap(map);
 		this.headers = headers;
 		this.queries = queries;
 		this.encoder = encoder;
