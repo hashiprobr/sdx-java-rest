@@ -1064,7 +1064,7 @@ class RestClientTest {
 			return null;
 		}).when(serializer).write(eq(actual), eq(String.class), any());
 		when(facade.isBinary(String.class)).thenReturn(false);
-		when(facade.cleanForSerializing(null, actual)).thenReturn("type/subtype");
+		when(facade.cleanForSerializing(null, actual, String.class)).thenReturn("type/subtype");
 		when(facade.getSerializer("type/subtype")).thenReturn(serializer);
 		Content content = p.addTaskAndGetContent(tasks, body);
 		assertEquals(1, tasks.size());
@@ -1076,7 +1076,7 @@ class RestClientTest {
 	@Test
 	void proxyAddsTaskAndGetsBinaryContent() {
 		try (MockedConstruction<OutputStreamRequestContent> construction = mockContentConstruction()) {
-			RestBody body = new RestBody(USASCII_BODY);
+			RestBody body = new RestBody(mockActual());
 			OutputStreamRequestContent content = (OutputStreamRequestContent) mockBinaryContent(body);
 			assertEquals("type/subtype", content.getContentType());
 			byte[] bytes = ((ByteArrayOutputStream) content.getOutputStream()).toByteArray();
@@ -1087,7 +1087,7 @@ class RestClientTest {
 	@Test
 	void proxyAddsTaskAndGetsBinaryContentInBase64() {
 		try (MockedConstruction<OutputStreamRequestContent> construction = mockContentConstruction()) {
-			RestBody body = new RestBody(USASCII_BODY).inBase64();
+			RestBody body = new RestBody(mockActual()).inBase64();
 			OutputStreamRequestContent content = (OutputStreamRequestContent) mockBinaryContent(body);
 			assertEquals("type/subtype;base64", content.getContentType());
 			byte[] bytes = ((ByteArrayOutputStream) content.getOutputStream()).toByteArray();
@@ -1099,12 +1099,16 @@ class RestClientTest {
 	void proxyAddsTaskAndGetsBinaryContentWithException() {
 		Throwable cause = new IOException();
 		try (MockedConstruction<OutputStreamRequestContent> construction = mockContentConstructionWithException(cause)) {
-			RestBody body = new RestBody(USASCII_BODY);
+			RestBody body = new RestBody(mockActual());
 			Exception exception = assertThrows(UncheckedIOException.class, () -> {
 				mockBinaryContent(body);
 			});
 			assertSame(cause, exception.getCause());
 		}
+	}
+
+	private byte[] mockActual() {
+		return USASCII_BODY.getBytes(StandardCharsets.US_ASCII);
 	}
 
 	private Content mockBinaryContent(RestBody body) {
@@ -1113,13 +1117,13 @@ class RestClientTest {
 		Object actual = body.getActual();
 		Assembler assembler = mock(Assembler.class);
 		doAnswer((invocation) -> {
-			String str = invocation.getArgument(0);
+			byte[] b = invocation.getArgument(0);
 			OutputStream stream = invocation.getArgument(2);
-			stream.write(str.getBytes(StandardCharsets.US_ASCII));
+			stream.write(b);
 			return null;
-		}).when(assembler).write(eq(actual), eq(String.class), any());
-		when(facade.isBinary(String.class)).thenReturn(true);
-		when(facade.cleanForAssembling(null, actual)).thenReturn("type/subtype");
+		}).when(assembler).write(eq(actual), eq(byte[].class), any());
+		when(facade.isBinary(byte[].class)).thenReturn(true);
+		when(facade.cleanForAssembling(null, actual, byte[].class)).thenReturn("type/subtype");
 		when(facade.getAssembler("type/subtype")).thenReturn(assembler);
 		Content content = p.addTaskAndGetContent(tasks, body);
 		assertEquals(1, tasks.size());

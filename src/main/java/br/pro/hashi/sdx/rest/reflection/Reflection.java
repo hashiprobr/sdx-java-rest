@@ -22,12 +22,12 @@ public final class Reflection {
 		return getNoArgsConstructor(type, type.getName());
 	}
 
-	public static <T> Constructor<T> getNoArgsConstructor(Class<T> type, String name) {
+	public static <T> Constructor<T> getNoArgsConstructor(Class<T> type, String typeName) {
 		Constructor<T> constructor;
 		try {
 			constructor = type.getDeclaredConstructor();
 		} catch (NoSuchMethodException exception) {
-			throw new ReflectionException("Class %s must have a no-args constructor (but not necessarily public)".formatted(name));
+			throw new ReflectionException("Class %s must have a no-args constructor (but not necessarily public)".formatted(typeName));
 		}
 		if (!Modifier.isPublic(constructor.getModifiers())) {
 			constructor.setAccessible(true);

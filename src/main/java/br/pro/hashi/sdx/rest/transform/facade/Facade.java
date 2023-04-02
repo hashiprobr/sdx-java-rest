@@ -1,13 +1,16 @@
 package br.pro.hashi.sdx.rest.transform.facade;
 
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.Reader;
+import java.io.Writer;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Consumer;
 
 import br.pro.hashi.sdx.rest.coding.Media;
 import br.pro.hashi.sdx.rest.reflection.Cache;
@@ -38,6 +41,8 @@ public class Facade {
 			Float.class,
 			Double.class);
 
+	private final Type streamConsumerType;
+	private final Type writerConsumerType;
 	private final Set<Class<?>> binaryClasses;
 	private final Set<ParameterizedType> binaryParameterizedTypes;
 	private final Map<String, String> extensions;
@@ -49,6 +54,9 @@ public class Facade {
 	private String fallbackTextType;
 
 	public Facade(Cache cache) {
+		this.streamConsumerType = new Hint<Consumer<OutputStream>>() {}.getType();
+		this.writerConsumerType = new Hint<Consumer<Writer>>() {}.getType();
+
 		this.binaryClasses = new HashSet<>();
 		this.binaryClasses.addAll(Set.of(byte[].class, InputStream.class));
 
@@ -132,13 +140,13 @@ public class Facade {
 		extensions.put(extension, contentType);
 	}
 
-	public String cleanForAssembling(String contentType, Object body) {
+	public String cleanForAssembling(String contentType, Object body, Type type) {
 		if (contentType == null) {
-			if (body instanceof byte[] || body instanceof InputStream) {
+			if (body instanceof byte[] || body instanceof InputStream || type.equals(streamConsumerType)) {
 				contentType = OCTET_TYPE;
 			} else {
 				if (fallbackByteType == null) {
-					throw new IllegalArgumentException("Content type is null, body is not instance of byte[] or InputStream, and no fallback byte type was specified");
+					throw new IllegalArgumentException("Content type is null, body is not instance of byte[], InputStream or Consumer<OutputStream>, and no fallback byte type was specified");
 				}
 				contentType = fallbackByteType;
 			}
@@ -160,13 +168,13 @@ public class Facade {
 		return contentType;
 	}
 
-	public String cleanForSerializing(String contentType, Object body) {
+	public String cleanForSerializing(String contentType, Object body, Type type) {
 		if (contentType == null) {
-			if ((body != null && Facade.PRIMITIVE_TYPES.contains(body.getClass())) || body instanceof String || body instanceof Reader) {
+			if ((body != null && Facade.PRIMITIVE_TYPES.contains(type)) || body instanceof String || body instanceof Reader || type.equals(writerConsumerType)) {
 				contentType = PLAIN_TYPE;
 			} else {
 				if (fallbackTextType == null) {
-					throw new IllegalArgumentException("Content type is null, body is not a primitive or an instance of String or Reader, and no fallback text type was specified");
+					throw new IllegalArgumentException("Content type is null, body is not a primitive or an instance of String, Reader or Consumer<Writer>, and no fallback text type was specified");
 				}
 				contentType = fallbackTextType;
 			}

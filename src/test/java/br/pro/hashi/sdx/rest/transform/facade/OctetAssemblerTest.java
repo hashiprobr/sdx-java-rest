@@ -11,6 +11,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
+import java.util.function.Consumer;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -75,7 +76,26 @@ class OctetAssemblerTest {
 		assertEqualsBody(stream);
 	}
 
+	@Test
+	void writesIfBodyIsConsumer() {
+		Consumer<OutputStream> body = (stream) -> {
+			try {
+				stream.write(newByteArray());
+			} catch (IOException exception) {
+				throw new AssertionError(exception);
+			}
+		};
+		ByteArrayOutputStream stream = new ByteArrayOutputStream();
+		a.write(body, new Hint<Consumer<OutputStream>>() {}.getType(), stream);
+		assertEqualsBody(stream);
+	}
+
 	private void assertEqualsBody(ByteArrayOutputStream stream) {
+		try {
+			stream.close();
+		} catch (IOException exception) {
+			throw new AssertionError(exception);
+		}
 		assertEquals("body", new String(stream.toByteArray(), StandardCharsets.US_ASCII));
 	}
 

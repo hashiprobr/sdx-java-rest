@@ -15,7 +15,7 @@ public interface Disassembler {
 	 * possible.
 	 * 
 	 * @implNote The implementation can assume that the type is correct and must
-	 *           close the stream unless it returns the stream itself.
+	 *           close the stream unless it also returns a stream.
 	 * 
 	 * @param <T>    the type of the object
 	 * @param stream the representation

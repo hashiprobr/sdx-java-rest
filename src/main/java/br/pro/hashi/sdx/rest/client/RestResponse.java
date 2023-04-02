@@ -16,7 +16,7 @@ import br.pro.hashi.sdx.rest.transform.facade.Facade;
 /**
  * Represents the response to a REST request.
  */
-public class RestResponse {
+public final class RestResponse {
 	private final Facade facade;
 	private final int status;
 	private final Headers headers;

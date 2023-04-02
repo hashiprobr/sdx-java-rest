@@ -5,20 +5,24 @@ import java.io.Reader;
 import java.io.UncheckedIOException;
 import java.io.Writer;
 import java.lang.reflect.Type;
+import java.util.function.Consumer;
 
+import br.pro.hashi.sdx.rest.transform.Hint;
 import br.pro.hashi.sdx.rest.transform.Serializer;
 import br.pro.hashi.sdx.rest.transform.facade.exception.SupportException;
 
 class PlainSerializer implements Serializer {
-	@Override
-	public void write(Object body, Type type, Writer writer) {
-		write(body, writer);
+	private final Type consumerType;
+
+	public PlainSerializer() {
+		this.consumerType = new Hint<Consumer<Writer>>() {}.getType();
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
-	public void write(Object body, Writer writer) {
+	public void write(Object body, Type type, Writer writer) {
 		try {
-			if (body != null && Facade.PRIMITIVE_TYPES.contains(body.getClass())) {
+			if (body != null && Facade.PRIMITIVE_TYPES.contains(type)) {
 				writer.write(body.toString());
 				return;
 			}
@@ -30,7 +34,12 @@ class PlainSerializer implements Serializer {
 				((Reader) body).transferTo(writer);
 				return;
 			}
-			throw new SupportException("Body must be a primitive or an instance of String or Reader");
+			if (type.equals(consumerType)) {
+				Consumer<Writer> consumer = (Consumer<Writer>) body;
+				consumer.accept(writer);
+				return;
+			}
+			throw new SupportException("Body must be a primitive or an instance of String, Reader or Consumer<Writer>");
 		} catch (IOException exception) {
 			throw new UncheckedIOException(exception);
 		}

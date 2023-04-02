@@ -16,17 +16,17 @@ import org.junit.jupiter.api.Test;
 import br.pro.hashi.sdx.rest.Fields;
 import br.pro.hashi.sdx.rest.reflection.Headers;
 
-class PartHeadersMapTest {
+class HeadersMapTest {
 	private Fields fields;
 	private Map<String, List<Fields>> map;
-	private PartHeadersMap m;
+	private HeadersMap m;
 
 	@BeforeEach
 	void setUp() {
 		fields = mock(Headers.class);
 		map = new HashMap<>();
 		map.put("name", List.of(fields));
-		m = new PartHeadersMap(map);
+		m = new HeadersMap(map);
 	}
 
 	@Test
@@ -50,9 +50,9 @@ class PartHeadersMapTest {
 
 	@Test
 	void getsList() {
-		List<Fields> partHeadersList = m.getList("name");
-		assertEquals(1, partHeadersList.size());
-		assertSame(fields, partHeadersList.get(0));
+		List<Fields> headersList = m.getList("name");
+		assertEquals(1, headersList.size());
+		assertSame(fields, headersList.get(0));
 	}
 
 	@Test

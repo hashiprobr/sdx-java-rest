@@ -22,7 +22,7 @@ public abstract class Hint<T> {
 	/**
 	 * Constructs a new hint.
 	 */
-	public Hint() {
+	protected Hint() {
 		this.type = Reflection.getSpecificType(Hint.class, 0, this);
 	}
 

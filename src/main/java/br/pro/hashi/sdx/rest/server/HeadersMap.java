@@ -10,10 +10,10 @@ import br.pro.hashi.sdx.rest.Fields;
  * Maps each part name to its headers. If the request is not multipart, this map
  * is empty.
  */
-public class PartHeadersMap {
+public final class HeadersMap {
 	private Map<String, List<Fields>> map;
 
-	PartHeadersMap(Map<String, List<Fields>> map) {
+	HeadersMap(Map<String, List<Fields>> map) {
 		this.map = map;
 	}
 
@@ -33,11 +33,11 @@ public class PartHeadersMap {
 	 * @throws IllegalArgumentException if the name is not available
 	 */
 	public Fields get(String name) {
-		List<Fields> partHeadersList = doGetList(name);
-		if (partHeadersList == null) {
+		List<Fields> headersList = doGetList(name);
+		if (headersList == null) {
 			throw new IllegalArgumentException("Name '%s' is not available".formatted(name));
 		}
-		return partHeadersList.get(0);
+		return headersList.get(0);
 	}
 
 	/**
@@ -53,11 +53,11 @@ public class PartHeadersMap {
 	 * @throws NullPointerException if the name is null
 	 */
 	public List<Fields> getList(String name) {
-		List<Fields> partHeadersList = doGetList(name);
-		if (partHeadersList == null) {
+		List<Fields> headersList = doGetList(name);
+		if (headersList == null) {
 			return List.of();
 		}
-		return partHeadersList;
+		return headersList;
 	}
 
 	/**

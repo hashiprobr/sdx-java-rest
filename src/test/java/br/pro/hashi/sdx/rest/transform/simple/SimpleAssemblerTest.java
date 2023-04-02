@@ -52,6 +52,11 @@ class SimpleAssemblerTest {
 	}
 
 	private void assertEqualsBody(ByteArrayOutputStream stream) {
+		try {
+			stream.close();
+		} catch (IOException exception) {
+			throw new AssertionError(exception);
+		}
 		assertEqualsBody(stream.toByteArray());
 	}
 
@@ -70,6 +75,11 @@ class SimpleAssemblerTest {
 	}
 
 	private void assertEqualsNull(ByteArrayOutputStream stream) {
+		try {
+			stream.close();
+		} catch (IOException exception) {
+			throw new AssertionError(exception);
+		}
 		assertEqualsNull(stream.toByteArray());
 	}
 

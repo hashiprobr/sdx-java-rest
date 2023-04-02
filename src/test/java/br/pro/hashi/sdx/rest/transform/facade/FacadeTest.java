@@ -13,10 +13,13 @@ import static org.mockito.Mockito.mockStatic;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.Reader;
 import java.io.StringReader;
+import java.io.Writer;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -358,17 +361,23 @@ class FacadeTest {
 	@Test
 	void cleansForAssembling() {
 		String contentType = "image/png";
-		assertEquals(contentType, f.cleanForAssembling(contentType, null));
+		assertEquals(contentType, f.cleanForAssembling(contentType, null, Object.class));
 	}
 
 	@Test
 	void cleansForAssemblingIfBodyIsByteArray() {
-		assertEquals("application/octet-stream", f.cleanForAssembling(null, new byte[] {}));
+		assertEquals("application/octet-stream", cleanForAssembling(null, new byte[] {}));
 	}
 
 	@Test
 	void cleansForAssemblingIfBodyIsInputStream() {
-		assertEquals("application/octet-stream", f.cleanForAssembling(null, new ByteArrayInputStream(new byte[] {})));
+		assertEquals("application/octet-stream", cleanForAssembling(null, new ByteArrayInputStream(new byte[] {})));
+	}
+
+	@Test
+	void cleansForAssemblingIfBodyIsConsumer() {
+		Consumer<OutputStream> consumer = (stream) -> {};
+		assertEquals("application/octet-stream", f.cleanForAssembling(null, consumer, new Hint<Consumer<OutputStream>>() {}.getType()));
 	}
 
 	@Test
@@ -377,7 +386,7 @@ class FacadeTest {
 			String fallbackByteType = "image/png";
 			media.when(() -> Media.strip(fallbackByteType)).thenReturn(fallbackByteType);
 			f.setFallbackByteType(fallbackByteType);
-			assertEquals(fallbackByteType, f.cleanForAssembling(null, new Object()));
+			assertEquals(fallbackByteType, cleanForAssembling(null, new Object()));
 		}
 	}
 
@@ -385,8 +394,12 @@ class FacadeTest {
 	void doesNotCleanForAssembling() {
 		Object body = new Object();
 		assertThrows(IllegalArgumentException.class, () -> {
-			f.cleanForAssembling(null, body);
+			cleanForAssembling(null, body);
 		});
+	}
+
+	private String cleanForAssembling(String contentType, Object body) {
+		return f.cleanForAssembling(contentType, body, body.getClass());
 	}
 
 	@Test
@@ -425,52 +438,58 @@ class FacadeTest {
 	@Test
 	void cleansForSerializing() {
 		String contentType = "application/xml";
-		assertEquals(contentType, f.cleanForSerializing(contentType, null));
+		assertEquals(contentType, f.cleanForSerializing(contentType, null, Object.class));
 	}
 
 	@Test
 	void cleansForSerializingIfBodyIsBoolean() {
-		assertEquals("text/plain", f.cleanForSerializing(null, false));
+		assertEquals("text/plain", cleanForSerializing(null, false));
 	}
 
 	@Test
 	void cleansForSerializingIfBodyIsByte() {
-		assertEquals("text/plain", f.cleanForSerializing(null, (byte) 0));
+		assertEquals("text/plain", cleanForSerializing(null, (byte) 0));
 	}
 
 	@Test
 	void cleansForSerializingIfBodyIsShort() {
-		assertEquals("text/plain", f.cleanForSerializing(null, (short) 1));
+		assertEquals("text/plain", cleanForSerializing(null, (short) 1));
 	}
 
 	@Test
 	void cleansForSerializingIfBodyIsInteger() {
-		assertEquals("text/plain", f.cleanForSerializing(null, (int) 2));
+		assertEquals("text/plain", cleanForSerializing(null, (int) 2));
 	}
 
 	@Test
 	void cleansForSerializingIfBodyIsLong() {
-		assertEquals("text/plain", f.cleanForSerializing(null, 3L));
+		assertEquals("text/plain", cleanForSerializing(null, 3L));
 	}
 
 	@Test
 	void cleansForSerializingIfBodyIsFloat() {
-		assertEquals("text/plain", f.cleanForSerializing(null, 4.5F));
+		assertEquals("text/plain", cleanForSerializing(null, 4.5F));
 	}
 
 	@Test
 	void cleansForSerializingIfBodyIsDouble() {
-		assertEquals("text/plain", f.cleanForSerializing(null, 6.7));
+		assertEquals("text/plain", cleanForSerializing(null, 6.7));
 	}
 
 	@Test
 	void cleansForSerializingIfBodyIsString() {
-		assertEquals("text/plain", f.cleanForSerializing(null, ""));
+		assertEquals("text/plain", cleanForSerializing(null, ""));
 	}
 
 	@Test
 	void cleansForSerializingIfBodyIsReader() {
-		assertEquals("text/plain", f.cleanForSerializing(null, new StringReader("")));
+		assertEquals("text/plain", cleanForSerializing(null, new StringReader("")));
+	}
+
+	@Test
+	void cleansForSerializingIfBodyIsConsumer() {
+		Consumer<Writer> consumer = (writer) -> {};
+		assertEquals("text/plain", f.cleanForSerializing(null, consumer, new Hint<Consumer<Writer>>() {}.getType()));
 	}
 
 	@Test
@@ -479,7 +498,7 @@ class FacadeTest {
 			String fallbackTextType = "application/xml";
 			media.when(() -> Media.strip(fallbackTextType)).thenReturn(fallbackTextType);
 			f.setFallbackTextType(fallbackTextType);
-			assertEquals(fallbackTextType, f.cleanForSerializing(null, new Object()));
+			assertEquals(fallbackTextType, cleanForSerializing(null, new Object()));
 		}
 	}
 
@@ -487,15 +506,19 @@ class FacadeTest {
 	void doesNotCleanForSerializingIfBodyIsNeither() {
 		Object body = new Object();
 		assertThrows(IllegalArgumentException.class, () -> {
-			f.cleanForSerializing(null, body);
+			cleanForSerializing(null, body);
 		});
 	}
 
 	@Test
 	void doesNotCleanForSerializingIfBodyIsNull() {
 		assertThrows(IllegalArgumentException.class, () -> {
-			f.cleanForSerializing(null, null);
+			f.cleanForSerializing(null, null, Object.class);
 		});
+	}
+
+	private String cleanForSerializing(String contentType, Object body) {
+		return f.cleanForSerializing(contentType, body, body.getClass());
 	}
 
 	@Test

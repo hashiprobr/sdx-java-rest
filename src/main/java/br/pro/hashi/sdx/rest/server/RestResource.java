@@ -27,9 +27,9 @@ public abstract class RestResource {
 	private CharsetEncoder encoder;
 
 	/**
-	 * The part headers map.
+	 * The multipart headers map.
 	 */
-	protected PartHeadersMap partHeadersMap;
+	protected HeadersMap headersMap;
 
 	/**
 	 * The request headers.
@@ -98,7 +98,7 @@ public abstract class RestResource {
 	}
 
 	void setFields(Map<String, List<Fields>> map, Fields headers, Fields queries, CharsetEncoder encoder, HttpServletResponse response) {
-		this.partHeadersMap = new PartHeadersMap(map);
+		this.headersMap = new HeadersMap(map);
 		this.headers = headers;
 		this.queries = queries;
 		this.encoder = encoder;

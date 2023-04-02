@@ -6,6 +6,7 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.UncheckedIOException;
+import java.io.Writer;
 import java.lang.invoke.MethodHandle;
 import java.lang.reflect.Type;
 import java.nio.charset.Charset;
@@ -40,6 +41,7 @@ import br.pro.hashi.sdx.rest.server.tree.Node;
 import br.pro.hashi.sdx.rest.server.tree.Tree;
 import br.pro.hashi.sdx.rest.server.tree.Tree.Leaf;
 import br.pro.hashi.sdx.rest.transform.Assembler;
+import br.pro.hashi.sdx.rest.transform.Hint;
 import br.pro.hashi.sdx.rest.transform.Serializer;
 import br.pro.hashi.sdx.rest.transform.facade.Facade;
 import jakarta.servlet.MultipartConfigElement;
@@ -50,6 +52,8 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.Part;
 
 class Handler extends AbstractHandler {
+	private final Type streamConsumerType;
+	private final Type writerConsumerType;
 	private final Logger logger;
 	private final Cache cache;
 	private final Facade facade;
@@ -62,6 +66,8 @@ class Handler extends AbstractHandler {
 	private final boolean cors;
 
 	Handler(Cache cache, Facade facade, Tree tree, ErrorFormatter formatter, Map<Class<? extends RestResource>, MethodHandle> handles, MultipartConfigElement element, Set<Class<? extends RuntimeException>> gatewayTypes, Charset urlCharset, boolean cors) {
+		this.streamConsumerType = new Hint<Consumer<OutputStream>>() {}.getType();
+		this.writerConsumerType = new Hint<Consumer<Writer>>() {}.getType();
 		this.logger = LoggerFactory.getLogger(Handler.class);
 		this.cache = cache;
 		this.facade = facade;
@@ -173,7 +179,7 @@ class Handler extends AbstractHandler {
 			}
 
 			String requestType = request.getContentType();
-			Map<String, List<Fields>> partHeadersMap = new HashMap<>();
+			Map<String, List<Fields>> headersMap = new HashMap<>();
 			Map<String, List<Data>> partMap = new HashMap<>();
 			Data requestBody;
 			if (requestType != null && requestType.startsWith("multipart/form-data")) {
@@ -191,17 +197,17 @@ class Handler extends AbstractHandler {
 					if (name == null) {
 						name = "";
 					}
-					List<Fields> partHeadersList = partHeadersMap.get(name);
-					if (partHeadersList == null) {
-						partHeadersList = new ArrayList<>();
-						partHeadersMap.put(name, partHeadersList);
+					List<Fields> headersList = headersMap.get(name);
+					if (headersList == null) {
+						headersList = new ArrayList<>();
+						headersMap.put(name, headersList);
 					}
 					List<Data> partList = partMap.get(name);
 					if (partList == null) {
 						partList = new ArrayList<>();
 						partMap.put(name, partList);
 					}
-					partHeadersList.add(new PartHeaders(cache, part));
+					headersList.add(new PartHeaders(cache, part));
 					partList.add(new Data(facade, part.getContentType(), part.getInputStream()));
 				}
 				requestBody = null;
@@ -227,7 +233,7 @@ class Handler extends AbstractHandler {
 				}
 				throw new MessageRestException(HttpStatus.NOT_ACCEPTABLE_406, message);
 			}
-			resource.setFields(partHeadersMap, headers, queries, encoder, response);
+			resource.setFields(headersMap, headers, queries, encoder, response);
 
 			Object responseBody;
 			Type returnType;
@@ -327,7 +333,7 @@ class Handler extends AbstractHandler {
 
 			Consumer<OutputStream> consumer;
 			if (facade.isBinary(type)) {
-				contentType = facade.cleanForAssembling(contentType, actual);
+				contentType = facade.cleanForAssembling(contentType, actual, type);
 				Assembler assembler = facade.getAssembler(contentType);
 				consumer = (output) -> {
 					assembler.write(actual, type, output);
@@ -337,9 +343,9 @@ class Handler extends AbstractHandler {
 						throw new UncheckedIOException(exception);
 					}
 				};
-				withoutLength = actual instanceof InputStream;
+				withoutLength = actual instanceof InputStream || type.equals(streamConsumerType);
 			} else {
-				contentType = facade.cleanForSerializing(contentType, actual);
+				contentType = facade.cleanForSerializing(contentType, actual, type);
 				Serializer serializer = facade.getSerializer(contentType);
 				Charset charset = resource.getCharset();
 				consumer = (output) -> {
@@ -351,7 +357,7 @@ class Handler extends AbstractHandler {
 						throw new UncheckedIOException(exception);
 					}
 				};
-				withoutLength = actual instanceof Reader;
+				withoutLength = actual instanceof Reader || type.equals(writerConsumerType);
 				contentType = "%s;charset=%s".formatted(contentType, charset.name());
 			}
 			if (base64) {

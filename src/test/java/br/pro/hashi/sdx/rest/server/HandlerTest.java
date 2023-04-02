@@ -42,6 +42,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Consumer;
 
 import org.eclipse.jetty.http.HttpFields;
 import org.eclipse.jetty.server.Request;
@@ -68,6 +69,7 @@ import br.pro.hashi.sdx.rest.server.tree.Node;
 import br.pro.hashi.sdx.rest.server.tree.Tree;
 import br.pro.hashi.sdx.rest.server.tree.Tree.Leaf;
 import br.pro.hashi.sdx.rest.transform.Assembler;
+import br.pro.hashi.sdx.rest.transform.Hint;
 import br.pro.hashi.sdx.rest.transform.Serializer;
 import br.pro.hashi.sdx.rest.transform.facade.Facade;
 import jakarta.servlet.MultipartConfigElement;
@@ -585,8 +587,8 @@ class HandlerTest {
 		mockReturnType();
 		handle();
 		assertItemList();
-		PartHeadersMap partHeadersMap = callResource.partHeadersMap;
-		assertTrue(partHeadersMap.names().isEmpty());
+		HeadersMap headersMap = callResource.headersMap;
+		assertTrue(headersMap.names().isEmpty());
 		assertTrue(callPartMap.isEmpty());
 		assertNull(callBody);
 		assertOk();
@@ -611,9 +613,9 @@ class HandlerTest {
 		mockReturnType();
 		handle();
 		assertItemList();
-		PartHeadersMap partHeadersMap = callResource.partHeadersMap;
-		assertEquals(1, partHeadersMap.names().size());
-		PartHeaders partHeaders = (PartHeaders) partHeadersMap.get("");
+		HeadersMap headersMap = callResource.headersMap;
+		assertEquals(1, headersMap.names().size());
+		PartHeaders partHeaders = (PartHeaders) headersMap.get("");
 		assertSame(part, partHeaders.getPart());
 		assertEquals(1, callPartMap.size());
 		List<Data> partList = callPartMap.get("");
@@ -649,13 +651,13 @@ class HandlerTest {
 		mockReturnType();
 		handle();
 		assertItemList();
-		PartHeadersMap partHeadersMap = callResource.partHeadersMap;
-		assertEquals(1, partHeadersMap.names().size());
-		List<Fields> partHeadersList = partHeadersMap.getList("");
-		assertEquals(2, partHeadersList.size());
-		PartHeaders partHeaders = (PartHeaders) partHeadersList.get(0);
+		HeadersMap headersMap = callResource.headersMap;
+		assertEquals(1, headersMap.names().size());
+		List<Fields> headersList = headersMap.getList("");
+		assertEquals(2, headersList.size());
+		PartHeaders partHeaders = (PartHeaders) headersList.get(0);
 		assertSame(part0, partHeaders.getPart());
-		partHeaders = (PartHeaders) partHeadersList.get(1);
+		partHeaders = (PartHeaders) headersList.get(1);
 		assertSame(part1, partHeaders.getPart());
 		assertEquals(1, callPartMap.size());
 		List<Data> partList = callPartMap.get("");
@@ -694,11 +696,11 @@ class HandlerTest {
 		mockReturnType();
 		handle();
 		assertItemList();
-		PartHeadersMap partHeadersMap = callResource.partHeadersMap;
-		assertEquals(2, partHeadersMap.names().size());
-		PartHeaders partHeaders = (PartHeaders) partHeadersMap.get("");
+		HeadersMap headersMap = callResource.headersMap;
+		assertEquals(2, headersMap.names().size());
+		PartHeaders partHeaders = (PartHeaders) headersMap.get("");
 		assertSame(part0, partHeaders.getPart());
-		partHeaders = (PartHeaders) partHeadersMap.get("name");
+		partHeaders = (PartHeaders) headersMap.get("name");
 		assertSame(part1, partHeaders.getPart());
 		assertEquals(2, callPartMap.size());
 		List<Data> partList = callPartMap.get("");
@@ -734,9 +736,9 @@ class HandlerTest {
 		mockReturnType();
 		handle();
 		assertItemList();
-		PartHeadersMap partHeadersMap = callResource.partHeadersMap;
-		assertEquals(1, partHeadersMap.names().size());
-		PartHeaders partHeaders = (PartHeaders) partHeadersMap.get("name");
+		HeadersMap headersMap = callResource.headersMap;
+		assertEquals(1, headersMap.names().size());
+		PartHeaders partHeaders = (PartHeaders) headersMap.get("name");
 		assertSame(part, partHeaders.getPart());
 		assertEquals(1, callPartMap.size());
 		List<Data> partList = callPartMap.get("name");
@@ -772,11 +774,11 @@ class HandlerTest {
 		mockReturnType();
 		handle();
 		assertItemList();
-		PartHeadersMap partHeadersMap = callResource.partHeadersMap;
-		assertEquals(2, partHeadersMap.names().size());
-		PartHeaders partHeaders = (PartHeaders) partHeadersMap.get("name");
+		HeadersMap headersMap = callResource.headersMap;
+		assertEquals(2, headersMap.names().size());
+		PartHeaders partHeaders = (PartHeaders) headersMap.get("name");
 		assertSame(part0, partHeaders.getPart());
-		partHeaders = (PartHeaders) partHeadersMap.get("");
+		partHeaders = (PartHeaders) headersMap.get("");
 		assertSame(part1, partHeaders.getPart());
 		assertEquals(2, callPartMap.size());
 		List<Data> partList = callPartMap.get("name");
@@ -817,11 +819,11 @@ class HandlerTest {
 		mockReturnType();
 		handle();
 		assertItemList();
-		PartHeadersMap partHeadersMap = callResource.partHeadersMap;
-		assertEquals(2, partHeadersMap.names().size());
-		PartHeaders partHeaders = (PartHeaders) partHeadersMap.get("name0");
+		HeadersMap headersMap = callResource.headersMap;
+		assertEquals(2, headersMap.names().size());
+		PartHeaders partHeaders = (PartHeaders) headersMap.get("name0");
 		assertSame(part0, partHeaders.getPart());
-		partHeaders = (PartHeaders) partHeadersMap.get("name1");
+		partHeaders = (PartHeaders) headersMap.get("name1");
 		assertSame(part1, partHeaders.getPart());
 		assertEquals(2, callPartMap.size());
 		List<Data> partList = callPartMap.get("name0");
@@ -1538,6 +1540,24 @@ class HandlerTest {
 	}
 
 	@Test
+	void writesConsumer() {
+		mockCharset();
+		mockWithoutBase64();
+		mockWithoutCommitted();
+		Consumer<Writer> consumer = (output) -> {
+			try {
+				output.write(SPECIAL_BODY);
+			} catch (IOException exception) {
+				throw new AssertionError(exception);
+			}
+		};
+		assertFalse(serialize(consumer, new Hint<Consumer<Writer>>() {}.getType()));
+		verify(response).setContentType("type/subtype;charset=UTF-8");
+		assertEqualsBytes();
+		verifyFlush();
+	}
+
+	@Test
 	void writesLarge() {
 		mockCharset();
 		mockWithoutBase64();
@@ -1694,14 +1714,20 @@ class HandlerTest {
 			reader.transferTo(writer);
 			return null;
 		}).when(serializer).write(eq(actual), eq(Reader.class), any());
+		doAnswer((invocation) -> {
+			Consumer<Writer> consumer = invocation.getArgument(0);
+			Writer writer = invocation.getArgument(2);
+			consumer.accept(writer);
+			return null;
+		}).when(serializer).write(eq(actual), eq(new Hint<Consumer<Writer>>() {}.getType()), any());
 	}
 
 	private Serializer mockSerializer(Object actual) {
 		Serializer serializer = mock(Serializer.class);
 		when(resource.getContentType()).thenReturn(null);
 		when(facade.isBinary(any())).thenReturn(false);
-		when(facade.cleanForSerializing(null, actual)).thenReturn("type/subtype");
-		when(facade.cleanForSerializing("text/plain", actual)).thenReturn("text/plain");
+		when(facade.cleanForSerializing(eq(null), eq(actual), any())).thenReturn("type/subtype");
+		when(facade.cleanForSerializing(eq("text/plain"), eq(actual), any())).thenReturn("text/plain");
 		when(facade.getSerializer("type/subtype")).thenReturn(serializer);
 		when(facade.getSerializer("text/plain")).thenReturn(serializer);
 		return serializer;
@@ -1783,6 +1809,24 @@ class HandlerTest {
 		Assembler assembler = mockAssembler(USASCII_BODY);
 		doThrow(RuntimeException.class).when(assembler).write(eq(USASCII_BODY), eq(String.class), any());
 		return write(USASCII_BODY, String.class);
+	}
+
+	@Test
+	void writesConsumerBinary() {
+		mockCharset();
+		mockWithoutBase64();
+		mockWithoutCommitted();
+		Consumer<OutputStream> consumer = (output) -> {
+			try {
+				output.write(mockBytes());
+			} catch (IOException exception) {
+				throw new AssertionError(exception);
+			}
+		};
+		assertFalse(assemble(consumer, new Hint<Consumer<OutputStream>>() {}.getType()));
+		verify(response).setContentType("type/subtype");
+		assertBinaryEqualsBytes();
+		verifyFlush();
 	}
 
 	@Test
@@ -1904,7 +1948,11 @@ class HandlerTest {
 	}
 
 	private Object mockStream() {
-		return new ByteArrayInputStream(USASCII_BODY.getBytes(StandardCharsets.US_ASCII));
+		return new ByteArrayInputStream(mockBytes());
+	}
+
+	private byte[] mockBytes() {
+		return USASCII_BODY.getBytes(StandardCharsets.US_ASCII);
 	}
 
 	private boolean assembleDirectly(Object actual, Type type) {
@@ -1931,14 +1979,20 @@ class HandlerTest {
 			input.transferTo(output);
 			return null;
 		}).when(assembler).write(eq(actual), eq(InputStream.class), any());
+		doAnswer((invocation) -> {
+			Consumer<OutputStream> consumer = invocation.getArgument(0);
+			OutputStream output = invocation.getArgument(2);
+			consumer.accept(output);
+			return null;
+		}).when(assembler).write(eq(actual), eq(new Hint<Consumer<OutputStream>>() {}.getType()), any());
 	}
 
 	private Assembler mockAssembler(Object actual) {
 		Assembler assembler = mock(Assembler.class);
 		when(resource.getContentType()).thenReturn(null);
 		when(facade.isBinary(any())).thenReturn(true);
-		when(facade.cleanForAssembling(null, actual)).thenReturn("type/subtype");
-		when(facade.cleanForAssembling("text/plain", actual)).thenReturn("text/plain");
+		when(facade.cleanForAssembling(eq(null), eq(actual), any())).thenReturn("type/subtype");
+		when(facade.cleanForAssembling(eq("text/plain"), eq(actual), any())).thenReturn("text/plain");
 		when(facade.getAssembler("type/subtype")).thenReturn(assembler);
 		when(facade.getAssembler("text/plain")).thenReturn(assembler);
 		return assembler;

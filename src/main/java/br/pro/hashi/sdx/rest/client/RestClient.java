@@ -1009,7 +1009,7 @@ public final class RestClient {
 
 			Consumer<OutputStream> consumer;
 			if (facade.isBinary(type)) {
-				contentType = facade.cleanForAssembling(contentType, actual);
+				contentType = facade.cleanForAssembling(contentType, actual, type);
 				Assembler assembler = facade.getAssembler(contentType);
 				consumer = (output) -> {
 					assembler.write(actual, type, output);
@@ -1020,7 +1020,7 @@ public final class RestClient {
 					}
 				};
 			} else {
-				contentType = facade.cleanForSerializing(contentType, actual);
+				contentType = facade.cleanForSerializing(contentType, actual, type);
 				Serializer serializer = facade.getSerializer(contentType);
 				Charset charset = body.getCharset();
 				consumer = (output) -> {

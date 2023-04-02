@@ -51,6 +51,11 @@ class SimpleSerializerTest {
 	}
 
 	private void assertEqualsBody(StringWriter writer) {
+		try {
+			writer.close();
+		} catch (IOException exception) {
+			throw new AssertionError(exception);
+		}
 		assertEqualsBody(writer.toString());
 	}
 
@@ -69,6 +74,11 @@ class SimpleSerializerTest {
 	}
 
 	private void assertEqualsNull(StringWriter writer) {
+		try {
+			writer.close();
+		} catch (IOException exception) {
+			throw new AssertionError(exception);
+		}
 		assertEqualsNull(writer.toString());
 	}
 

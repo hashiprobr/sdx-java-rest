@@ -10,6 +10,7 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.UncheckedIOException;
 import java.io.Writer;
+import java.util.function.Consumer;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -186,7 +187,26 @@ class PlainSerializerTest {
 		assertEqualsBody(writer);
 	}
 
+	@Test
+	void writesIfBodyIsConsumer() {
+		Consumer<Writer> body = (writer) -> {
+			try {
+				writer.write(newString());
+			} catch (IOException exception) {
+				throw new AssertionError(exception);
+			}
+		};
+		StringWriter writer = new StringWriter();
+		s.write(body, new Hint<Consumer<Writer>>() {}.getType(), writer);
+		assertEqualsBody(writer);
+	}
+
 	private void assertEqualsBody(StringWriter writer) {
+		try {
+			writer.close();
+		} catch (IOException exception) {
+			throw new AssertionError(exception);
+		}
 		assertEquals("body", writer.toString());
 	}
 
