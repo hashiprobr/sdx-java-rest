@@ -28,10 +28,10 @@ public class Data {
 		return stream;
 	}
 
-	Object getBody(Type type) {
+	Object getBody(Type type, long maxSize) {
 		Object body;
 		String contentType = this.contentType;
-		InputStream stream = Media.decode(this.stream, contentType);
+		InputStream stream = Media.decode(limit(this.stream, maxSize), contentType);
 		if (facade.isBinary(type)) {
 			contentType = strip(contentType);
 			contentType = facade.cleanForDisassembling(contentType, type);
@@ -45,6 +45,13 @@ public class Data {
 			body = deserializer.read(reader, type);
 		}
 		return body;
+	}
+
+	private InputStream limit(InputStream stream, long maxSize) {
+		if (maxSize > 0) {
+			stream = new LimitInputStream(stream, maxSize);
+		}
+		return stream;
 	}
 
 	private String strip(String contentType) {

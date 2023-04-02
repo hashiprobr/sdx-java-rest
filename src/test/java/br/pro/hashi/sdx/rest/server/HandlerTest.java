@@ -122,6 +122,8 @@ class HandlerTest {
 		putHandle(lookup, ConcreteResourceWithoutPlain.class);
 		putHandle(lookup, NullableResource.class);
 		element = mock(MultipartConfigElement.class);
+		when(element.getMaxRequestSize()).thenReturn(10L);
+		when(element.getMaxFileSize()).thenReturn(5L);
 		gatewayTypes = new HashSet<>();
 		fields = mock(HttpFields.class);
 		baseRequest = mock(Request.class);
@@ -866,11 +868,7 @@ class HandlerTest {
 		mockMethodNames();
 		mockEndpoint();
 		mockMultipartContentType();
-		try {
-			when(request.getParts()).thenThrow(ServletException.class);
-		} catch (ServletException | IOException exception) {
-			throw new AssertionError(exception);
-		}
+		mockMultipartException(ServletException.class);
 		mockResourceType();
 		mockCall();
 		mockReturnType();
@@ -878,8 +876,32 @@ class HandlerTest {
 		assertBadRequest("Parts could not be parsed");
 	}
 
+	@Test
+	void handlesWithLargeParts() {
+		mockMethod();
+		mockRequestUri();
+		mockNode();
+		mockMethodNames();
+		mockEndpoint();
+		mockMultipartContentType();
+		mockMultipartException(IllegalStateException.class);
+		mockResourceType();
+		mockCall();
+		mockReturnType();
+		handle();
+		assertMessageResponse(413, "Multipart request exceeds 10 bytes or one of the parts exceeds 5 bytes");
+	}
+
 	private void mockMultipartContentType() {
 		when(request.getContentType()).thenReturn("multipart/form-data");
+	}
+
+	private void mockMultipartException(Class<? extends Exception> type) {
+		try {
+			when(request.getParts()).thenThrow(type);
+		} catch (ServletException | IOException exception) {
+			throw new AssertionError(exception);
+		}
 	}
 
 	private void assertBadRequest(String message) {

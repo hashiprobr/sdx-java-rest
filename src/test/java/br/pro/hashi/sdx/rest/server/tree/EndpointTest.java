@@ -7,9 +7,11 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.AdditionalMatchers.eq;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -207,7 +209,7 @@ class EndpointTest {
 		assertEquals(1, partParameters.size());
 		DataParameter[] partArray = partParameters.get("name");
 		assertEquals(1, partArray.length);
-		assertData(1, Object.class, partArray[0]);
+		assertData(1, Object.class, 0, partArray[0]);
 		assertNull(e.getBodyParameter());
 		assertArrayEquals(new Object[] { null, null, null }, e.getArguments());
 		assertEquals(1 - distance, e.getReach());
@@ -239,7 +241,7 @@ class EndpointTest {
 		assertEquals(1, itemParameters.length);
 		assertItem(0, intFunction, "arg0", itemParameters[0]);
 		assertTrue(e.getPartParameters().isEmpty());
-		assertData(1, Object.class, e.getBodyParameter());
+		assertData(1, Object.class, 200000, e.getBodyParameter());
 		assertArrayEquals(new Object[] { null, null, null }, e.getArguments());
 		assertEquals(1 - distance, e.getReach());
 	}
@@ -270,7 +272,7 @@ class EndpointTest {
 		assertEquals(1, partParameters.size());
 		DataParameter[] partArray = partParameters.get("name");
 		assertEquals(1, partArray.length);
-		assertData(0, Object.class, partArray[0]);
+		assertData(0, Object.class, 0, partArray[0]);
 		assertNull(e.getBodyParameter());
 		assertArrayEquals(new Object[] { null, null }, e.getArguments());
 		assertEquals(0, e.getReach());
@@ -297,7 +299,7 @@ class EndpointTest {
 		assertEquals(1, partParameters.size());
 		DataParameter[] partArray = partParameters.get("name");
 		assertEquals(1, partArray.length);
-		assertData(0, Object.class, partArray[0]);
+		assertData(0, Object.class, 0, partArray[0]);
 		assertNull(e.getBodyParameter());
 		assertArrayEquals(new Object[] { null, null, null }, e.getArguments());
 		assertEquals(0, e.getReach());
@@ -325,7 +327,7 @@ class EndpointTest {
 		assertEquals(1, partParameters.size());
 		DataParameter[] partArray = partParameters.get("name");
 		assertEquals(1, partArray.length);
-		assertData(0, Object.class, partArray[0]);
+		assertData(0, Object.class, 0, partArray[0]);
 		assertNull(e.getBodyParameter());
 		assertArrayEquals(new Object[] { null, null, null }, e.getArguments());
 		assertEquals(1 - distance, e.getReach());
@@ -349,8 +351,8 @@ class EndpointTest {
 		assertEquals(1, partParameters.size());
 		DataParameter[] partArray = partParameters.get("name");
 		assertEquals(2, partArray.length);
-		assertData(0, Object.class, partArray[0]);
-		assertData(1, String.class, partArray[1]);
+		assertData(0, Object.class, 0, partArray[0]);
+		assertData(1, String.class, 0, partArray[1]);
 		assertNull(e.getBodyParameter());
 		assertArrayEquals(new Object[] { null, null, null }, e.getArguments());
 		assertEquals(0, e.getReach());
@@ -375,10 +377,10 @@ class EndpointTest {
 		assertEquals(2, partParameters.size());
 		DataParameter[] partArray = partParameters.get("name0");
 		assertEquals(1, partArray.length);
-		assertData(0, Object.class, partArray[0]);
+		assertData(0, Object.class, 0, partArray[0]);
 		partArray = partParameters.get("name1");
 		assertEquals(1, partArray.length);
-		assertData(1, String.class, partArray[0]);
+		assertData(1, String.class, 0, partArray[0]);
 		assertNull(e.getBodyParameter());
 		assertArrayEquals(new Object[] { null, null, null }, e.getArguments());
 		assertEquals(0, e.getReach());
@@ -424,7 +426,7 @@ class EndpointTest {
 		assertNull(e.getVarType());
 		assertEquals(0, e.getItemParameters().length);
 		assertTrue(e.getPartParameters().isEmpty());
-		assertData(0, Object.class, e.getBodyParameter());
+		assertData(0, Object.class, 200000, e.getBodyParameter());
 		assertArrayEquals(new Object[] { null, null }, e.getArguments());
 		assertEquals(0, e.getReach());
 	}
@@ -447,7 +449,7 @@ class EndpointTest {
 		assertEquals(1, itemParameters.length);
 		assertItem(1, intFunction, "arg1", itemParameters[0]);
 		assertTrue(e.getPartParameters().isEmpty());
-		assertData(0, Object.class, e.getBodyParameter());
+		assertData(0, Object.class, 200000, e.getBodyParameter());
 		assertArrayEquals(new Object[] { null, null, null }, e.getArguments());
 		assertEquals(0, e.getReach());
 	}
@@ -471,7 +473,7 @@ class EndpointTest {
 		assertEquals(1, itemParameters.length);
 		assertItem(1, intFunction, "arg1", itemParameters[0]);
 		assertTrue(e.getPartParameters().isEmpty());
-		assertData(0, Object.class, e.getBodyParameter());
+		assertData(0, Object.class, 200000, e.getBodyParameter());
 		assertArrayEquals(new Object[] { null, null, null }, e.getArguments());
 		assertEquals(1 - distance, e.getReach());
 	}
@@ -530,10 +532,10 @@ class EndpointTest {
 		assertEquals(2, partParameters.size());
 		DataParameter[] partArray = partParameters.get("name0");
 		assertEquals(1, partArray.length);
-		assertData(1, Object.class, partArray[0]);
+		assertData(1, Object.class, 0, partArray[0]);
 		partArray = partParameters.get("name1");
 		assertEquals(1, partArray.length);
-		assertData(3, String.class, partArray[0]);
+		assertData(3, String.class, 0, partArray[0]);
 		assertNull(e.getBodyParameter());
 		assertArrayEquals(new Object[] { null, null, null, null, null }, e.getArguments());
 		assertEquals(2 - distance, e.getReach());
@@ -552,7 +554,7 @@ class EndpointTest {
 		assertItem(2, doubleFunction, "arg2", itemParameters[1]);
 		Map<String, DataParameter[]> partParameters = e.getPartParameters();
 		assertEquals(0, partParameters.size());
-		assertData(1, Object.class, e.getBodyParameter());
+		assertData(1, Object.class, 200000, e.getBodyParameter());
 		assertArrayEquals(new Object[] { null, null, null, null }, e.getArguments());
 		assertEquals(1 - distance, e.getReach());
 	}
@@ -577,7 +579,7 @@ class EndpointTest {
 		assertItem(2, doubleFunction, "arg2", itemParameters[1]);
 		Map<String, DataParameter[]> partParameters = e.getPartParameters();
 		assertEquals(0, partParameters.size());
-		assertData(1, Object.class, e.getBodyParameter());
+		assertData(1, Object.class, 200000, e.getBodyParameter());
 		assertArrayEquals(new Object[] { null, null, null, null }, e.getArguments());
 		assertEquals(2 - distance, e.getReach());
 	}
@@ -637,7 +639,7 @@ class EndpointTest {
 		assertEquals(1, partParameters.size());
 		DataParameter[] partArray = partParameters.get("name");
 		assertEquals(1, partArray.length);
-		assertData(0, new Hint<List<Object>>() {}.getType(), partArray[0]);
+		assertData(0, new Hint<List<Object>>() {}.getType(), 0, partArray[0]);
 		assertNull(e.getBodyParameter());
 		assertArrayEquals(new Object[] { null, null }, e.getArguments());
 		assertEquals(0, e.getReach());
@@ -659,7 +661,7 @@ class EndpointTest {
 		assertNull(e.getVarType());
 		assertEquals(0, e.getItemParameters().length);
 		assertTrue(e.getPartParameters().isEmpty());
-		assertData(0, new Hint<List<Object>>() {}.getType(), e.getBodyParameter());
+		assertData(0, new Hint<List<Object>>() {}.getType(), 200000, e.getBodyParameter());
 		assertArrayEquals(new Object[] { null, null }, e.getArguments());
 		assertEquals(0, e.getReach());
 	}
@@ -707,9 +709,10 @@ class EndpointTest {
 		assertEquals(name, parameter.name());
 	}
 
-	private void assertData(int index, Type type, DataParameter parameter) {
+	private void assertData(int index, Type type, long maxSize, DataParameter parameter) {
 		assertEquals(index, parameter.index() - 1);
 		assertEquals(type, parameter.type());
+		assertEquals(maxSize, parameter.maxSize());
 	}
 
 	@Test
@@ -731,10 +734,11 @@ class EndpointTest {
 	@Test
 	void callsWithNothingAndOneExtraBody() {
 		e = newEndpoint(0, "withNothing");
-		Object body = new Object();
-		assertNull(e.call(resource, List.of(), Map.of(), mockData(body)));
+		Data data = mockData(new Object());
+		assertNull(e.call(resource, List.of(), Map.of(), data));
 		assertArrayEquals(new Object[] { null }, e.getArguments());
 		verify(resource).withNothing();
+		verify(data, times(0)).getBody(eq(Object.class), any(long.class));
 	}
 
 	@Test
@@ -764,10 +768,11 @@ class EndpointTest {
 	@Test
 	void callsWithVarArgsAndOneExtraBody() {
 		e = newEndpoint(0, "withVarArgs", int[].class);
-		Object body = new Object();
-		assertNull(e.call(resource, List.of("1", "2"), Map.of(), mockData(body)));
+		Data data = mockData(new Object());
+		assertNull(e.call(resource, List.of("1", "2"), Map.of(), data));
 		assertArrayEquals(new Object[] { null, null }, e.getArguments());
 		verify(resource).withVarArgs(1, 2);
+		verify(data, times(0)).getBody(eq(Object.class), any(long.class));
 	}
 
 	@Test
@@ -790,10 +795,11 @@ class EndpointTest {
 	@Test
 	void callsWithOneItemAndOneExtraBody() {
 		e = newEndpoint(0, "withOneItem", int.class);
-		Object body = new Object();
-		assertNull(e.call(resource, List.of("1"), Map.of(), mockData(body)));
+		Data data = mockData(new Object());
+		assertNull(e.call(resource, List.of("1"), Map.of(), data));
 		assertArrayEquals(new Object[] { null, null }, e.getArguments());
 		verify(resource).withOneItem(1);
+		verify(data, times(0)).getBody(eq(Object.class), any(long.class));
 	}
 
 	@Test
@@ -858,10 +864,11 @@ class EndpointTest {
 	@Test
 	void callsWithTwoItemsAndOneExtraBody() {
 		e = newEndpoint(0, "withTwoItems", int.class, double.class);
-		Object body = new Object();
-		assertNull(e.call(resource, List.of("1", "2.3"), Map.of(), mockData(body)));
+		Data data = mockData(new Object());
+		assertNull(e.call(resource, List.of("1", "2.3"), Map.of(), data));
 		assertArrayEquals(new Object[] { null, null, null }, e.getArguments());
 		verify(resource).withTwoItems(eq(1), eq(2.3, DELTA));
+		verify(data, times(0)).getBody(eq(Object.class), any(long.class));
 	}
 
 	@Test
@@ -886,29 +893,35 @@ class EndpointTest {
 	void callsWithOneItemAndOnePart() {
 		e = newEndpoint(0, "withOneItemAndOnePart", int.class, Object.class);
 		Object body = new Object();
-		assertNull(e.call(resource, List.of("1"), Map.of("name", List.of(mockData(body))), null));
+		Data data = mockData(body);
+		assertNull(e.call(resource, List.of("1"), Map.of("name", List.of(data)), null));
 		assertArrayEquals(new Object[] { null, null, null }, e.getArguments());
 		verify(resource).withOneItemAndOnePart(1, body);
+		verify(data).getBody(Object.class, 0);
 	}
 
 	@Test
 	void doesNotCallWithOneInvalidItemAndOnePart() {
 		e = newEndpoint(0, "withOneItemAndOnePart", int.class, Object.class);
-		Object body = new Object();
+		Data data = mockData(new Object());
 		assertThrows(BadRequestException.class, () -> {
-			e.call(resource, List.of("s"), Map.of("name", List.of(mockData(body))), null);
+			e.call(resource, List.of("s"), Map.of("name", List.of(data)), null);
 		});
 		assertArrayEquals(new Object[] { null, null, null }, e.getArguments());
+		verify(data, times(0)).getBody(eq(Object.class), any(long.class));
 	}
 
 	@Test
 	void doesNotCallWithOneItemAndOneExtraPart() {
 		e = newEndpoint(0, "withOneItemAndOnePart", int.class, Object.class);
-		Object body = new Object();
+		Data data = mockData(new Object());
+		Data stringData = mockStringData();
 		assertThrows(BadRequestException.class, () -> {
-			e.call(resource, List.of("1"), Map.of("name", List.of(mockData(body), mockStringData())), null);
+			e.call(resource, List.of("1"), Map.of("name", List.of(data, stringData)), null);
 		});
 		assertArrayEquals(new Object[] { null, null, null }, e.getArguments());
+		verify(data, times(0)).getBody(eq(Object.class), any(long.class));
+		verify(stringData, times(0)).getBody(eq(String.class), any(long.class));
 	}
 
 	@Test
@@ -933,11 +946,12 @@ class EndpointTest {
 	@Test
 	void doesNotCallWithOneItemAndOneReplacedPart() {
 		e = newEndpoint(0, "withOneItemAndOnePart", int.class, Object.class);
-		Object body = new Object();
+		Data data = mockData(new Object());
 		assertThrows(BadRequestException.class, () -> {
-			e.call(resource, List.of("1"), Map.of(), mockData(body));
+			e.call(resource, List.of("1"), Map.of(), data);
 		});
 		assertArrayEquals(new Object[] { null, null, null }, e.getArguments());
+		verify(data, times(0)).getBody(eq(Object.class), any(long.class));
 	}
 
 	@Test
@@ -953,19 +967,22 @@ class EndpointTest {
 	void callsWithOneItemAndOneBody() {
 		e = newEndpoint(0, "withOneItemAndOneBody", int.class, Object.class);
 		Object body = new Object();
-		assertNull(e.call(resource, List.of("1"), Map.of(), mockData(body)));
+		Data data = mockData(body);
+		assertNull(e.call(resource, List.of("1"), Map.of(), data));
 		assertArrayEquals(new Object[] { null, null, null }, e.getArguments());
 		verify(resource).withOneItemAndOneBody(1, body);
+		verify(data).getBody(Object.class, 200000);
 	}
 
 	@Test
 	void doesNotCallWithOneInvalidItemAndOneBody() {
 		e = newEndpoint(0, "withOneItemAndOneBody", int.class, Object.class);
-		Object body = new Object();
+		Data data = mockData(new Object());
 		assertThrows(BadRequestException.class, () -> {
-			e.call(resource, List.of("s"), Map.of(), mockData(body));
+			e.call(resource, List.of("s"), Map.of(), data);
 		});
 		assertArrayEquals(new Object[] { null, null, null }, e.getArguments());
+		verify(data, times(0)).getBody(eq(Object.class), any(long.class));
 	}
 
 	@Test
@@ -990,11 +1007,12 @@ class EndpointTest {
 	@Test
 	void doesNotCallWithOneItemAndOneReplacedBody() {
 		e = newEndpoint(0, "withOneItemAndOneBody", int.class, Object.class);
-		Object body = new Object();
+		Data data = mockData(new Object());
 		assertThrows(BadRequestException.class, () -> {
-			e.call(resource, List.of("1"), Map.of("name", List.of(mockData(body))), null);
+			e.call(resource, List.of("1"), Map.of("name", List.of(data)), null);
 		});
 		assertArrayEquals(new Object[] { null, null, null }, e.getArguments());
+		verify(data, times(0)).getBody(eq(Object.class), any(long.class));
 	}
 
 	@Test
@@ -1010,19 +1028,25 @@ class EndpointTest {
 	void callsWithOnePart() {
 		e = newEndpoint(0, "withOnePart", Object.class);
 		Object body = new Object();
-		assertNull(e.call(resource, List.of(), Map.of("name", List.of(mockData(body))), null));
+		Data data = mockData(body);
+		assertNull(e.call(resource, List.of(), Map.of("name", List.of(data)), null));
 		assertArrayEquals(new Object[] { null, null }, e.getArguments());
 		verify(resource).withOnePart(body);
+		verify(data).getBody(Object.class, 0);
 	}
 
 	@Test
 	void doesNotCallWithOneExtraPart() {
 		e = newEndpoint(0, "withOnePart", Object.class);
 		Object body = new Object();
+		Data data = mockData(body);
+		Data stringData = mockStringData();
 		assertThrows(BadRequestException.class, () -> {
-			e.call(resource, List.of(), Map.of("name", List.of(mockData(body), mockStringData())), null);
+			e.call(resource, List.of(), Map.of("name", List.of(data, stringData)), null);
 		});
 		assertArrayEquals(new Object[] { null, null }, e.getArguments());
+		verify(data, times(0)).getBody(eq(Object.class), any(long.class));
+		verify(stringData, times(0)).getBody(eq(String.class), any(long.class));
 	}
 
 	@Test
@@ -1047,11 +1071,12 @@ class EndpointTest {
 	@Test
 	void doesNotCallWithOneReplacedPart() {
 		e = newEndpoint(0, "withOnePart", Object.class);
-		Object body = new Object();
+		Data data = mockData(new Object());
 		assertThrows(BadRequestException.class, () -> {
-			e.call(resource, List.of(), Map.of(), mockData(body));
+			e.call(resource, List.of(), Map.of(), data);
 		});
 		assertArrayEquals(new Object[] { null, null }, e.getArguments());
+		verify(data, times(0)).getBody(eq(Object.class), any(long.class));
 	}
 
 	@Test
@@ -1067,37 +1092,46 @@ class EndpointTest {
 	void callsWithOnePartAndZeroVarArgs() {
 		e = newEndpoint(0, "withOnePartAndVarArgs", Object.class, int[].class);
 		Object body = new Object();
-		assertNull(e.call(resource, List.of(), Map.of("name", List.of(mockData(body))), null));
+		Data data = mockData(body);
+		assertNull(e.call(resource, List.of(), Map.of("name", List.of(data)), null));
 		assertArrayEquals(new Object[] { null, null, null }, e.getArguments());
 		verify(resource).withOnePartAndVarArgs(body);
+		verify(data).getBody(Object.class, 0);
 	}
 
 	@Test
 	void callsWithOnePartAndOneVarArg() {
 		e = newEndpoint(0, "withOnePartAndVarArgs", Object.class, int[].class);
 		Object body = new Object();
-		assertNull(e.call(resource, List.of("1"), Map.of("name", List.of(mockData(body))), null));
+		Data data = mockData(body);
+		assertNull(e.call(resource, List.of("1"), Map.of("name", List.of(data)), null));
 		assertArrayEquals(new Object[] { null, null, null }, e.getArguments());
 		verify(resource).withOnePartAndVarArgs(body, 1);
+		verify(data).getBody(Object.class, 0);
 	}
 
 	@Test
 	void callsWithOnePartAndTwoVarArgs() {
 		e = newEndpoint(0, "withOnePartAndVarArgs", Object.class, int[].class);
 		Object body = new Object();
-		assertNull(e.call(resource, List.of("1", "2"), Map.of("name", List.of(mockData(body))), null));
+		Data data = mockData(body);
+		assertNull(e.call(resource, List.of("1", "2"), Map.of("name", List.of(data)), null));
 		assertArrayEquals(new Object[] { null, null, null }, e.getArguments());
 		verify(resource).withOnePartAndVarArgs(body, 1, 2);
+		verify(data).getBody(Object.class, 0);
 	}
 
 	@Test
 	void doesNotCallWithOneExtraPartAndVarArgs() {
 		e = newEndpoint(0, "withOnePartAndVarArgs", Object.class, int[].class);
-		Object body = new Object();
+		Data data = mockData(new Object());
+		Data stringData = mockStringData();
 		assertThrows(BadRequestException.class, () -> {
-			e.call(resource, List.of("1", "2"), Map.of("name", List.of(mockData(body), mockStringData())), null);
+			e.call(resource, List.of("1", "2"), Map.of("name", List.of(data, stringData)), null);
 		});
 		assertArrayEquals(new Object[] { null, null, null }, e.getArguments());
+		verify(data, times(0)).getBody(eq(Object.class), any(long.class));
+		verify(stringData, times(0)).getBody(eq(String.class), any(long.class));
 	}
 
 	@Test
@@ -1122,11 +1156,12 @@ class EndpointTest {
 	@Test
 	void doesNotCallWithOneReplacedPartAndVarArgs() {
 		e = newEndpoint(0, "withOnePartAndVarArgs", Object.class, int[].class);
-		Object body = new Object();
+		Data data = mockData(new Object());
 		assertThrows(BadRequestException.class, () -> {
-			e.call(resource, List.of("1", "2"), Map.of(), mockData(body));
+			e.call(resource, List.of("1", "2"), Map.of(), data);
 		});
 		assertArrayEquals(new Object[] { null, null, null }, e.getArguments());
+		verify(data, times(0)).getBody(eq(Object.class), any(long.class));
 	}
 
 	@Test
@@ -1141,30 +1176,36 @@ class EndpointTest {
 	@Test
 	void doesNotCallWithOnePartAndInvalidVarArgs() {
 		e = newEndpoint(0, "withOnePartAndVarArgs", Object.class, int[].class);
-		Object body = new Object();
+		Data data = mockData(new Object());
 		assertThrows(BadRequestException.class, () -> {
-			e.call(resource, List.of("1", "s"), Map.of("name", List.of(mockData(body))), null);
+			e.call(resource, List.of("1", "s"), Map.of("name", List.of(data)), null);
 		});
 		assertArrayEquals(new Object[] { null, null, null }, e.getArguments());
+		verify(data, times(0)).getBody(eq(Object.class), any(long.class));
 	}
 
 	@Test
 	void callsWithOnePartAndOneItem() {
 		e = newEndpoint(0, "withOnePartAndOneItem", Object.class, int.class);
 		Object body = new Object();
-		assertNull(e.call(resource, List.of("1"), Map.of("name", List.of(mockData(body))), null));
+		Data data = mockData(body);
+		assertNull(e.call(resource, List.of("1"), Map.of("name", List.of(data)), null));
 		assertArrayEquals(new Object[] { null, null, null }, e.getArguments());
 		verify(resource).withOnePartAndOneItem(body, 1);
+		verify(data).getBody(Object.class, 0);
 	}
 
 	@Test
 	void doesNotCallWithOneExtraPartAndOneItem() {
 		e = newEndpoint(0, "withOnePartAndOneItem", Object.class, int.class);
-		Object body = new Object();
+		Data data = mockData(new Object());
+		Data stringData = mockStringData();
 		assertThrows(BadRequestException.class, () -> {
-			e.call(resource, List.of("1"), Map.of("name", List.of(mockData(body), mockStringData())), null);
+			e.call(resource, List.of("1"), Map.of("name", List.of(data, stringData)), null);
 		});
 		assertArrayEquals(new Object[] { null, null, null }, e.getArguments());
+		verify(data, times(0)).getBody(eq(Object.class), any(long.class));
+		verify(stringData, times(0)).getBody(eq(String.class), any(long.class));
 	}
 
 	@Test
@@ -1189,11 +1230,12 @@ class EndpointTest {
 	@Test
 	void doesNotCallWithOneReplacedPartAndOneItem() {
 		e = newEndpoint(0, "withOnePartAndOneItem", Object.class, int.class);
-		Object body = new Object();
+		Data data = mockData(new Object());
 		assertThrows(BadRequestException.class, () -> {
-			e.call(resource, List.of("1"), Map.of(), mockData(body));
+			e.call(resource, List.of("1"), Map.of(), data);
 		});
 		assertArrayEquals(new Object[] { null, null, null }, e.getArguments());
+		verify(data, times(0)).getBody(eq(Object.class), any(long.class));
 	}
 
 	@Test
@@ -1208,58 +1250,71 @@ class EndpointTest {
 	@Test
 	void doesNotCallWithOnePartAndOneInvalidItem() {
 		e = newEndpoint(0, "withOnePartAndOneItem", Object.class, int.class);
-		Object body = new Object();
+		Data data = mockData(new Object());
 		assertThrows(BadRequestException.class, () -> {
-			e.call(resource, List.of("s"), Map.of("name", List.of(mockData(body))), null);
+			e.call(resource, List.of("s"), Map.of("name", List.of(data)), null);
 		});
 		assertArrayEquals(new Object[] { null, null, null }, e.getArguments());
+		verify(data, times(0)).getBody(eq(Object.class), any(long.class));
 	}
 
 	@Test
 	void callsWithTwoPartsAndOneName() {
 		e = newEndpoint(0, "withTwoPartsAndOneName", Object.class, String.class);
 		Object body = new Object();
-		assertNull(e.call(resource, List.of(), Map.of("name", List.of(mockData(body), mockStringData())), null));
+		Data data = mockData(body);
+		Data stringData = mockStringData();
+		assertNull(e.call(resource, List.of(), Map.of("name", List.of(data, stringData)), null));
 		assertArrayEquals(new Object[] { null, null, null }, e.getArguments());
 		verify(resource).withTwoPartsAndOneName(body, "body");
+		verify(data).getBody(Object.class, 0);
+		verify(stringData).getBody(String.class, 0);
 	}
 
 	@Test
 	void doesNotCallWithTwoPartsAndOneName() {
 		e = newEndpoint(0, "withTwoPartsAndOneName", Object.class, String.class);
-		Object body = new Object();
+		Data data = mockData(new Object());
 		assertThrows(BadRequestException.class, () -> {
-			e.call(resource, List.of(), Map.of("name", List.of(mockData(body))), null);
+			e.call(resource, List.of(), Map.of("name", List.of(data)), null);
 		});
 		assertArrayEquals(new Object[] { null, null, null }, e.getArguments());
+		verify(data, times(0)).getBody(eq(Object.class), any(long.class));
 	}
 
 	@Test
 	void callsWithTwoPartsAndTwoNames() {
 		e = newEndpoint(0, "withTwoPartsAndTwoNames", Object.class, String.class);
 		Object body = new Object();
-		assertNull(e.call(resource, List.of(), Map.of("name0", List.of(mockData(body)), "name1", List.of(mockStringData())), null));
+		Data data = mockData(body);
+		Data stringData = mockStringData();
+		assertNull(e.call(resource, List.of(), Map.of("name0", List.of(data), "name1", List.of(stringData)), null));
 		assertArrayEquals(new Object[] { null, null, null }, e.getArguments());
 		verify(resource).withTwoPartsAndTwoNames(body, "body");
+		verify(data).getBody(Object.class, 0);
+		verify(stringData).getBody(String.class, 0);
 	}
 
 	@Test
 	void doesNotCallWithTwoPartsAndTwoNames() {
 		e = newEndpoint(0, "withTwoPartsAndTwoNames", Object.class, String.class);
-		Object body = new Object();
+		Data data = mockData(new Object());
 		assertThrows(BadRequestException.class, () -> {
-			e.call(resource, List.of(), Map.of("name0", List.of(mockData(body))), null);
+			e.call(resource, List.of(), Map.of("name0", List.of(data)), null);
 		});
 		assertArrayEquals(new Object[] { null, null, null }, e.getArguments());
+		verify(data, times(0)).getBody(eq(Object.class), any(long.class));
 	}
 
 	@Test
 	void callsWithOneBody() {
 		e = newEndpoint(0, "withOneBody", Object.class);
 		Object body = new Object();
-		assertNull(e.call(resource, List.of(), Map.of(), mockData(body)));
+		Data data = mockData(body);
+		assertNull(e.call(resource, List.of(), Map.of(), data));
 		assertArrayEquals(new Object[] { null, null }, e.getArguments());
 		verify(resource).withOneBody(body);
+		verify(data).getBody(Object.class, 200000);
 	}
 
 	@Test
@@ -1284,11 +1339,12 @@ class EndpointTest {
 	@Test
 	void doesNotCallWithOneReplacedBody() {
 		e = newEndpoint(0, "withOneBody", Object.class);
-		Object body = new Object();
+		Data data = mockData(new Object());
 		assertThrows(BadRequestException.class, () -> {
-			e.call(resource, List.of(), Map.of("name", List.of(mockData(body))), null);
+			e.call(resource, List.of(), Map.of("name", List.of(data)), null);
 		});
 		assertArrayEquals(new Object[] { null, null }, e.getArguments());
+		verify(data, times(0)).getBody(eq(Object.class), any(long.class));
 	}
 
 	@Test
@@ -1304,27 +1360,33 @@ class EndpointTest {
 	void callsWithOneBodyAndZeroVarArgs() {
 		e = newEndpoint(0, "withOneBodyAndVarArgs", Object.class, int[].class);
 		Object body = new Object();
-		assertNull(e.call(resource, List.of(), Map.of(), mockData(body)));
+		Data data = mockData(body);
+		assertNull(e.call(resource, List.of(), Map.of(), data));
 		assertArrayEquals(new Object[] { null, null, null }, e.getArguments());
 		verify(resource).withOneBodyAndVarArgs(body);
+		verify(data).getBody(Object.class, 200000);
 	}
 
 	@Test
 	void callsWithOneBodyAndOneVarArg() {
 		e = newEndpoint(0, "withOneBodyAndVarArgs", Object.class, int[].class);
 		Object body = new Object();
-		assertNull(e.call(resource, List.of("1"), Map.of(), mockData(body)));
+		Data data = mockData(body);
+		assertNull(e.call(resource, List.of("1"), Map.of(), data));
 		assertArrayEquals(new Object[] { null, null, null }, e.getArguments());
 		verify(resource).withOneBodyAndVarArgs(body, 1);
+		verify(data).getBody(Object.class, 200000);
 	}
 
 	@Test
 	void callsWithOneBodyAndTwoVarArgs() {
 		e = newEndpoint(0, "withOneBodyAndVarArgs", Object.class, int[].class);
 		Object body = new Object();
-		assertNull(e.call(resource, List.of("1", "2"), Map.of(), mockData(body)));
+		Data data = mockData(body);
+		assertNull(e.call(resource, List.of("1", "2"), Map.of(), data));
 		assertArrayEquals(new Object[] { null, null, null }, e.getArguments());
 		verify(resource).withOneBodyAndVarArgs(body, 1, 2);
+		verify(data).getBody(Object.class, 200000);
 	}
 
 	@Test
@@ -1349,11 +1411,12 @@ class EndpointTest {
 	@Test
 	void doesNotCallWithOneReplacedBodyAndVarArgs() {
 		e = newEndpoint(0, "withOneBodyAndVarArgs", Object.class, int[].class);
-		Object body = new Object();
+		Data data = mockData(new Object());
 		assertThrows(BadRequestException.class, () -> {
-			e.call(resource, List.of("1", "2"), Map.of("name", List.of(mockData(body))), null);
+			e.call(resource, List.of("1", "2"), Map.of("name", List.of(data)), null);
 		});
 		assertArrayEquals(new Object[] { null, null, null }, e.getArguments());
+		verify(data, times(0)).getBody(eq(Object.class), any(long.class));
 	}
 
 	@Test
@@ -1368,20 +1431,23 @@ class EndpointTest {
 	@Test
 	void doesNotCallWithOneBodyAndInvalidVarArgs() {
 		e = newEndpoint(0, "withOneBodyAndVarArgs", Object.class, int[].class);
-		Object body = new Object();
+		Data data = mockData(new Object());
 		assertThrows(BadRequestException.class, () -> {
-			e.call(resource, List.of("1", "s"), Map.of(), mockData(body));
+			e.call(resource, List.of("1", "s"), Map.of(), data);
 		});
 		assertArrayEquals(new Object[] { null, null, null }, e.getArguments());
+		verify(data, times(0)).getBody(eq(Object.class), any(long.class));
 	}
 
 	@Test
 	void callsWithOneBodyAndOneItem() {
 		e = newEndpoint(0, "withOneBodyAndOneItem", Object.class, int.class);
 		Object body = new Object();
-		assertNull(e.call(resource, List.of("1"), Map.of(), mockData(body)));
+		Data data = mockData(body);
+		assertNull(e.call(resource, List.of("1"), Map.of(), data));
 		assertArrayEquals(new Object[] { null, null, null }, e.getArguments());
 		verify(resource).withOneBodyAndOneItem(body, 1);
+		verify(data).getBody(Object.class, 200000);
 	}
 
 	@Test
@@ -1406,11 +1472,12 @@ class EndpointTest {
 	@Test
 	void doesNotCallWithOneReplacedBodyAndOneItem() {
 		e = newEndpoint(0, "withOneBodyAndOneItem", Object.class, int.class);
-		Object body = new Object();
+		Data data = mockData(new Object());
 		assertThrows(BadRequestException.class, () -> {
-			e.call(resource, List.of("1"), Map.of("name", List.of(mockData(body))), null);
+			e.call(resource, List.of("1"), Map.of("name", List.of(data)), null);
 		});
 		assertArrayEquals(new Object[] { null, null, null }, e.getArguments());
+		verify(data, times(0)).getBody(eq(Object.class), any(long.class));
 	}
 
 	@Test
@@ -1425,79 +1492,92 @@ class EndpointTest {
 	@Test
 	void doesNotCallWithOneBodyAndOneInvalidItem() {
 		e = newEndpoint(0, "withOneBodyAndOneItem", Object.class, int.class);
-		Object body = new Object();
+		Data data = mockData(new Object());
 		assertThrows(BadRequestException.class, () -> {
-			e.call(resource, List.of("s"), Map.of(), mockData(body));
+			e.call(resource, List.of("s"), Map.of(), data);
 		});
 		assertArrayEquals(new Object[] { null, null, null }, e.getArguments());
+		verify(data, times(0)).getBody(eq(Object.class), any(long.class));
 	}
 
 	@Test
 	void callsWithEverythingAndTwoParts() {
 		e = newEndpoint(0, "withEverythingAndTwoParts", int.class, Object.class, double.class, String.class);
 		Object body = new Object();
-		assertTrue((boolean) e.call(resource, List.of("1", "2.3"), Map.of("name0", List.of(mockData(body)), "name1", List.of(mockStringData())), null));
+		Data data = mockData(body);
+		Data stringData = mockStringData();
+		assertTrue((boolean) e.call(resource, List.of("1", "2.3"), Map.of("name0", List.of(data), "name1", List.of(stringData)), null));
 		assertArrayEquals(new Object[] { null, null, null, null, null }, e.getArguments());
 		verify(resource).withEverythingAndTwoParts(eq(1), eq(body), eq(2.3, DELTA), eq("body"));
+		verify(data).getBody(Object.class, 0);
+		verify(stringData).getBody(String.class, 0);
 	}
 
 	@Test
 	void callsWithEverythingAndZeroVarArgs() {
 		e = newEndpoint(0, "withEverythingAndVarArgs", int.class, Object.class, double[].class);
 		Object body = new Object();
-		assertTrue((boolean) e.call(resource, List.of("1"), Map.of(), mockData(body)));
+		Data data = mockData(body);
+		assertTrue((boolean) e.call(resource, List.of("1"), Map.of(), data));
 		assertArrayEquals(new Object[] { null, null, null, null }, e.getArguments());
 		verify(resource).withEverythingAndVarArgs(1, body);
+		verify(data).getBody(Object.class, 200000);
 	}
 
 	@Test
 	void callsWithEverythingAndOneVarArg() {
 		e = newEndpoint(0, "withEverythingAndVarArgs", int.class, Object.class, double[].class);
 		Object body = new Object();
-		assertTrue((boolean) e.call(resource, List.of("1", "2.3"), Map.of(), mockData(body)));
+		Data data = mockData(body);
+		assertTrue((boolean) e.call(resource, List.of("1", "2.3"), Map.of(), data));
 		assertArrayEquals(new Object[] { null, null, null, null }, e.getArguments());
 		verify(resource).withEverythingAndVarArgs(eq(1), eq(body), eq(2.3, DELTA));
+		verify(data).getBody(Object.class, 200000);
 	}
 
 	@Test
 	void callsWithEverythingAndTwoVarArgs() {
 		e = newEndpoint(0, "withEverythingAndVarArgs", int.class, Object.class, double[].class);
 		Object body = new Object();
-		assertTrue((boolean) e.call(resource, List.of("1", "2.3", "4.5"), Map.of(), mockData(body)));
+		Data data = mockData(body);
+		assertTrue((boolean) e.call(resource, List.of("1", "2.3", "4.5"), Map.of(), data));
 		assertArrayEquals(new Object[] { null, null, null, null }, e.getArguments());
 		verify(resource).withEverythingAndVarArgs(eq(1), eq(body), eq(2.3, DELTA), eq(4.5, DELTA));
+		verify(data).getBody(Object.class, 200000);
 	}
 
 	@Test
 	void callsWithEverythingAndOneBody() {
 		e = newEndpoint(0, "withEverythingAndOneBody", int.class, Object.class, double.class);
 		Object body = new Object();
-		assertTrue((boolean) e.call(resource, List.of("1", "2.3"), Map.of(), mockData(body)));
+		Data data = mockData(body);
+		assertTrue((boolean) e.call(resource, List.of("1", "2.3"), Map.of(), data));
 		assertArrayEquals(new Object[] { null, null, null, null }, e.getArguments());
 		verify(resource).withEverythingAndOneBody(eq(1), eq(body), eq(2.3, DELTA));
+		verify(data).getBody(Object.class, 200000);
 	}
 
 	private Data mockData(Object body) {
 		Data data = mock(Data.class);
-		when(data.getBody(Object.class)).thenReturn(body);
+		when(data.getBody(eq(Object.class), any(long.class))).thenReturn(body);
 		return data;
 	}
 
 	private Data mockStringData() {
 		Data data = mock(Data.class);
-		when(data.getBody(String.class)).thenReturn("body");
+		when(data.getBody(eq(String.class), any(long.class))).thenReturn("body");
 		return data;
 	}
 
 	private Data mockUnsupportedData() {
 		Data data = mock(Data.class);
-		when(data.getBody(Object.class)).thenThrow(SupportException.class);
+		when(data.getBody(eq(Object.class), any(long.class))).thenThrow(SupportException.class);
 		return data;
 	}
 
 	private Data mockInvalidData() {
 		Data data = mock(Data.class);
-		when(data.getBody(Object.class)).thenThrow(DisassemblingException.class);
+		when(data.getBody(eq(Object.class), any(long.class))).thenThrow(DisassemblingException.class);
 		return data;
 	}
 
@@ -1529,7 +1609,7 @@ class EndpointTest {
 
 	private Data mockGenericData(List<Object> body) {
 		Data data = mock(Data.class);
-		when(data.getBody(new Hint<List<Object>>() {}.getType())).thenReturn(body);
+		when(data.getBody(eq(new Hint<List<Object>>() {}.getType()), any(long.class))).thenReturn(body);
 		return data;
 	}
 
@@ -1566,7 +1646,7 @@ class EndpointTest {
 	private Endpoint newEndpoint(int distance, String methodName, Class<?>... types) {
 		Class<? extends RestResource> subType = Signatures.class;
 		Method method = getDeclaredMethod(subType, methodName, types);
-		return new Endpoint(cache, distance, subType, subType.getName(), method, methodName);
+		return new Endpoint(cache, 200000, distance, subType, subType.getName(), method, methodName);
 	}
 
 	private Method getDeclaredMethod(Class<?> subType, String methodName, Class<?>... types) {

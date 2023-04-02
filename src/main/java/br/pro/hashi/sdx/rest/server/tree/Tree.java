@@ -22,16 +22,22 @@ public class Tree {
 	private final Locale locale;
 	private final Node root;
 	private final Set<String> methodNames;
+	private final long maxBodySize;
 
-	public Tree(Cache cache, Locale locale) {
+	public Tree(Cache cache, Locale locale, long maxBodySize) {
 		this.cache = cache;
 		this.locale = locale;
 		this.root = new Node();
 		this.methodNames = new HashSet<>();
+		this.maxBodySize = maxBodySize;
 	}
 
 	public Set<String> getMethodNames() {
 		return methodNames;
+	}
+
+	public long getMaxBodySize() {
+		return maxBodySize;
 	}
 
 	public Leaf getLeafAndAddItems(String[] items, List<String> itemList) {
@@ -90,7 +96,7 @@ public class Tree {
 		for (Method method : type.getMethods()) {
 			if (RestResource.class.isAssignableFrom(method.getDeclaringClass()) && !Modifier.isStatic(method.getModifiers())) {
 				String methodName = method.getName();
-				Endpoint endpoint = new Endpoint(cache, distance, type, typeName, method, methodName);
+				Endpoint endpoint = new Endpoint(cache, maxBodySize, distance, type, typeName, method, methodName);
 				methodName = methodName.toUpperCase(locale);
 				if (methodName.equals("OPTIONS") || methodName.equals("HEAD")) {
 					throw new ReflectionException("%s cannot have %s endpoints".formatted(typeName, methodName));

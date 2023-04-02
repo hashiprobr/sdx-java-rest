@@ -93,7 +93,7 @@ class TreeTest {
 	@BeforeEach
 	void setUp() {
 		cache = mock(Cache.class);
-		t = new Tree(cache, Coding.LOCALE);
+		t = new Tree(cache, Coding.LOCALE, 200000);
 		itemMap = new HashMap<>();
 		itemMap.put(Enclosing.class, new String[] { "a", "b" });
 		itemMap.put(Zero.class, new String[] { "a0", "b0" });
@@ -712,7 +712,7 @@ class TreeTest {
 	private MockedConstruction<Endpoint> mockEndpointConstruction() {
 		distances = new ArrayList<>();
 		return mockConstruction(Endpoint.class, (mock, context) -> {
-			distances.add((int) context.arguments().get(1));
+			distances.add((int) context.arguments().get(2));
 		});
 	}
 

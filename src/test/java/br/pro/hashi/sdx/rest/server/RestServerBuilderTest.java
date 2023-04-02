@@ -32,6 +32,7 @@ import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.HttpConfiguration;
 import org.eclipse.jetty.server.HttpConfiguration.Customizer;
 import org.eclipse.jetty.server.HttpConnectionFactory;
+import org.eclipse.jetty.server.MultiPartFormDataCompliance;
 import org.eclipse.jetty.server.SecureRequestCustomizer;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
@@ -103,12 +104,21 @@ class RestServerBuilderTest extends BuilderTest {
 
 	@Test
 	void initializesWithDefaultConfig() {
-		assertEquals("", b.getElement().getLocation());
+		MultipartConfigElement element = b.getElement();
+		assertEquals("", element.getLocation());
+		assertEquals(0, element.getMaxFileSize());
+		assertEquals(200000, element.getMaxRequestSize());
+		assertEquals(1, element.getFileSizeThreshold());
 	}
 
 	@Test
 	void initializesWithUnambiguousCompliance() {
 		assertEquals(UriCompliance.RFC3986_UNAMBIGUOUS, b.getCompliance());
+	}
+
+	@Test
+	void initializesWithDefaultMaxBodySize() {
+		assertEquals(200000, b.getMaxBodySize());
 	}
 
 	@Test
@@ -303,7 +313,11 @@ class RestServerBuilderTest extends BuilderTest {
 	@Test
 	void setsMultipartConfig() {
 		assertSame(b, b.withMultipartConfig(new MultipartConfigElement("location")));
-		assertEquals("location", b.getElement().getLocation());
+		MultipartConfigElement element = b.getElement();
+		assertEquals("location", element.getLocation());
+		assertEquals(-1, element.getMaxFileSize());
+		assertEquals(-1, element.getMaxRequestSize());
+		assertEquals(0, element.getFileSizeThreshold());
 	}
 
 	@Test
@@ -403,7 +417,11 @@ class RestServerBuilderTest extends BuilderTest {
 		Iterator<ConnectionFactory> iterator = connector.getConnectionFactories().iterator();
 		HttpConnectionFactory h11 = (HttpConnectionFactory) iterator.next();
 		HttpConfiguration configuration = h11.getHttpConfiguration();
+		assertFalse(configuration.getSendDateHeader());
+		assertFalse(configuration.getSendServerVersion());
+		assertFalse(configuration.getSendXPoweredBy());
 		assertEquals(HttpCompliance.RFC7230, configuration.getHttpCompliance());
+		assertEquals(MultiPartFormDataCompliance.RFC7578, configuration.getMultipartFormDataCompliance());
 		assertEquals(UriCompliance.RFC3986_UNAMBIGUOUS, configuration.getUriCompliance());
 		HTTP2CServerConnectionFactory h2c = (HTTP2CServerConnectionFactory) iterator.next();
 		assertSame(configuration, h2c.getHttpConfiguration());
@@ -424,6 +442,7 @@ class RestServerBuilderTest extends BuilderTest {
 		assertSame(b.getElement(), handler.getElement());
 		assertTrue(handler.isCors());
 		Tree tree = handler.getTree();
+		assertEquals(200000, tree.getMaxBodySize());
 		List<String> itemList = new ArrayList<>();
 		assertNotNull(tree.getLeafAndAddItems(new String[] { "one" }, itemList));
 		assertNotNull(tree.getLeafAndAddItems(new String[] { "one-two" }, itemList));
@@ -483,6 +502,17 @@ class RestServerBuilderTest extends BuilderTest {
 		ServerConnector connector = (ServerConnector) connectors[0];
 		HttpConnectionFactory h11 = (HttpConnectionFactory) connector.getConnectionFactories().iterator().next();
 		assertEquals(UriCompliance.UNSAFE, h11.getHttpConfiguration().getUriCompliance());
+	}
+
+	@Test
+	void buildsWithMaxBodySize() {
+		b.withMaxBodySize(0);
+		RestServer server = b.build(VALID_PACKAGE);
+		ThreadLimitHandler limitHandler = (ThreadLimitHandler) server.getJettyServer().getHandler();
+		GzipHandler gzipHandler = (GzipHandler) limitHandler.getHandler();
+		Handler handler = (Handler) gzipHandler.getHandler();
+		Tree tree = handler.getTree();
+		assertEquals(0, tree.getMaxBodySize());
 	}
 
 	@Test

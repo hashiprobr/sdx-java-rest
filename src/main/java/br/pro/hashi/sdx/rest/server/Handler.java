@@ -35,6 +35,7 @@ import br.pro.hashi.sdx.rest.reflection.PartHeaders;
 import br.pro.hashi.sdx.rest.reflection.Queries;
 import br.pro.hashi.sdx.rest.server.exception.BadRequestException;
 import br.pro.hashi.sdx.rest.server.exception.MessageRestException;
+import br.pro.hashi.sdx.rest.server.exception.PayloadTooLargeException;
 import br.pro.hashi.sdx.rest.server.tree.Data;
 import br.pro.hashi.sdx.rest.server.tree.Endpoint;
 import br.pro.hashi.sdx.rest.server.tree.Node;
@@ -187,10 +188,14 @@ class Handler extends AbstractHandler {
 				Collection<Part> parts;
 				try {
 					parts = request.getParts();
-				} catch (ServletException error) {
+				} catch (ServletException | IOException exception) {
 					String message = "Parts could not be parsed";
-					logger.error(message, error);
+					logger.error(message, exception);
 					throw new BadRequestException(message);
+				} catch (IllegalStateException exception) {
+					String message = "Multipart request exceeds %d bytes or one of the parts exceeds %d bytes".formatted(element.getMaxRequestSize(), element.getMaxFileSize());
+					logger.error(message, exception);
+					throw new PayloadTooLargeException(message);
 				}
 				for (Part part : parts) {
 					String name = part.getName();

@@ -46,7 +46,7 @@ public class Endpoint {
 	private final Object[] arguments;
 	private final int reach;
 
-	Endpoint(Cache cache, int distance, Class<? extends RestResource> resourceType, String typeName, Method method, String methodName) {
+	Endpoint(Cache cache, long maxBodySize, int distance, Class<? extends RestResource> resourceType, String typeName, Method method, String methodName) {
 		Matcher matcher = METHOD_PATTERN.matcher(methodName);
 		methodName = "%s.%s".formatted(typeName, methodName);
 		if (!matcher.matches()) {
@@ -93,7 +93,11 @@ public class Endpoint {
 					if (index == start) {
 						throw new ReflectionException("Method %s cannot have a varargs body".formatted(methodName));
 					}
-					bodyParameter = new DataParameter(index + 1, type);
+					long maxSize = bodyAnnotation.value();
+					if (maxSize < 1) {
+						maxSize = maxBodySize;
+					}
+					bodyParameter = new DataParameter(index + 1, type, maxSize);
 				}
 			} else {
 				if (bodyAnnotation != null) {
@@ -111,7 +115,7 @@ public class Endpoint {
 					partList = new ArrayList<>();
 					partMap.put(name, partList);
 				}
-				partList.add(new DataParameter(index + 1, type));
+				partList.add(new DataParameter(index + 1, type, 0));
 			}
 			index++;
 		}
@@ -203,8 +207,9 @@ public class Endpoint {
 						throw new BadRequestException("Endpoint expects a body");
 					}
 					Type type = bodyParameter.type();
+					long maxSize = bodyParameter.maxSize();
 					String description = "Body";
-					arguments[bodyParameter.index()] = getBody(body, type, description);
+					arguments[bodyParameter.index()] = getBody(body, type, maxSize, description);
 				}
 			} else {
 				if (partMap.isEmpty()) {
@@ -227,8 +232,9 @@ public class Endpoint {
 					for (Data part : parts) {
 						DataParameter parameter = partArray[index];
 						Type type = parameter.type();
+						long maxSize = parameter.maxSize();
 						String description = "Part %d with name '%s'".formatted(index, name);
-						arguments[parameter.index()] = getBody(part, type, description);
+						arguments[parameter.index()] = getBody(part, type, maxSize, description);
 						index++;
 					}
 				}
@@ -253,10 +259,10 @@ public class Endpoint {
 		return argument;
 	}
 
-	private Object getBody(Data data, Type type, String description) {
+	private Object getBody(Data data, Type type, long maxSize, String description) {
 		Object argument;
 		try {
-			argument = data.getBody(type);
+			argument = data.getBody(type, maxSize);
 		} catch (SupportException error) {
 			String message = "%s does not have a supported content type".formatted(description);
 			logger.error(message, error);
@@ -295,6 +301,6 @@ public class Endpoint {
 	record ItemParameter(int index, Function<String, ?> function, String name) {
 	}
 
-	record DataParameter(int index, Type type) {
+	record DataParameter(int index, Type type, long maxSize) {
 	}
 }

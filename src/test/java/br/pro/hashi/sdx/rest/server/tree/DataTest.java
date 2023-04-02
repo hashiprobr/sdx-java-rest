@@ -1,8 +1,11 @@
 package br.pro.hashi.sdx.rest.server.tree;
 
 import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
 
 import java.io.InputStream;
@@ -45,7 +48,7 @@ class DataTest {
 	@ValueSource(strings = { CONTENT_TYPE })
 	void getsBody(String contentType) {
 		Reader reader = mock(Reader.class);
-		media.when(() -> Media.decode(stream, contentType)).thenReturn(stream);
+		media.when(() -> Media.decode(any(), eq(contentType))).thenReturn(stream);
 		media.when(() -> Media.reader(stream, contentType)).thenReturn(reader);
 		media.when(() -> Media.strip(contentType)).thenReturn(null);
 		d = newData(contentType);
@@ -55,14 +58,16 @@ class DataTest {
 		when(facade.isBinary(Object.class)).thenReturn(false);
 		when(facade.cleanForDeserializing(null, Object.class)).thenReturn(CONTENT_TYPE);
 		when(facade.getDeserializer(CONTENT_TYPE)).thenReturn(deserializer);
-		assertSame(body, d.getBody(Object.class));
+		assertSame(body, d.getBody(Object.class, 200000));
+		media.verify(() -> Media.decode(any(LimitInputStream.class), eq(contentType)));
+		media.verify(() -> Media.decode(stream, contentType), times(0));
 	}
 
 	@ParameterizedTest
 	@NullSource
 	@ValueSource(strings = { CONTENT_TYPE })
 	void getsBinaryBody(String contentType) {
-		media.when(() -> Media.decode(stream, contentType)).thenReturn(stream);
+		media.when(() -> Media.decode(any(), eq(contentType))).thenReturn(stream);
 		media.when(() -> Media.strip(contentType)).thenReturn(null);
 		d = newData(contentType);
 		Object body = new Object();
@@ -71,7 +76,9 @@ class DataTest {
 		when(facade.isBinary(Object.class)).thenReturn(true);
 		when(facade.cleanForDisassembling(null, Object.class)).thenReturn(CONTENT_TYPE);
 		when(facade.getDisassembler(CONTENT_TYPE)).thenReturn(disassembler);
-		assertSame(body, d.getBody(Object.class));
+		assertSame(body, d.getBody(Object.class, 0));
+		media.verify(() -> Media.decode(any(LimitInputStream.class), eq(contentType)), times(0));
+		media.verify(() -> Media.decode(stream, contentType));
 	}
 
 	private Data newData(String contentType) {

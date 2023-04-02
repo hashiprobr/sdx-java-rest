@@ -21,6 +21,7 @@ import org.eclipse.jetty.http3.server.HTTP3ServerConnectionFactory;
 import org.eclipse.jetty.http3.server.HTTP3ServerConnector;
 import org.eclipse.jetty.server.HttpConfiguration;
 import org.eclipse.jetty.server.HttpConnectionFactory;
+import org.eclipse.jetty.server.MultiPartFormDataCompliance;
 import org.eclipse.jetty.server.SecureRequestCustomizer;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
@@ -59,6 +60,7 @@ public non-sealed class RestServerBuilder extends Builder<RestServerBuilder> {
 	private SslContextFactory.Server factory;
 	private MultipartConfigElement element;
 	private UriCompliance compliance;
+	private long maxBodySize;
 	private int clearPort;
 	private int securePort;
 	private int port3;
@@ -78,8 +80,9 @@ public non-sealed class RestServerBuilder extends Builder<RestServerBuilder> {
 		this.charset = Coding.CHARSET;
 		this.base64 = false;
 		this.factory = null;
-		this.element = new MultipartConfigElement("");
+		this.element = new MultipartConfigElement("", 0, 200000, 1);
 		this.compliance = UriCompliance.RFC3986_UNAMBIGUOUS;
+		this.maxBodySize = 200000;
 		this.clearPort = 8080;
 		this.securePort = 8443;
 		this.port3 = 8843;
@@ -127,6 +130,10 @@ public non-sealed class RestServerBuilder extends Builder<RestServerBuilder> {
 
 	UriCompliance getCompliance() {
 		return compliance;
+	}
+
+	long getMaxBodySize() {
+		return maxBodySize;
 	}
 
 	int getClearPort() {
@@ -317,6 +324,18 @@ public non-sealed class RestServerBuilder extends Builder<RestServerBuilder> {
 	}
 
 	/**
+	 * Sets the maximum body size allowed in non-multipart requests. Default is
+	 * {@code 200000}.
+	 * 
+	 * @param maxBodySize the limit
+	 * @return this builder, for chaining
+	 */
+	public final RestServerBuilder withMaxBodySize(long maxBodySize) {
+		this.maxBodySize = maxBodySize;
+		return self();
+	}
+
+	/**
 	 * Sets the port for clear-text HTTP/1.1 and HTTP/2.
 	 * 
 	 * @param clearPort the port
@@ -415,7 +434,7 @@ public non-sealed class RestServerBuilder extends Builder<RestServerBuilder> {
 			logger.info("Constructed %s".formatted(typeName));
 		}
 
-		Tree tree = new Tree(cache, locale);
+		Tree tree = new Tree(cache, locale, maxBodySize);
 		for (Class<? extends RestResource> type : itemMap.keySet()) {
 			String typeName = type.getName();
 			tree.putNodesAndEndpoints(type, typeName, itemMap);
@@ -449,6 +468,7 @@ public non-sealed class RestServerBuilder extends Builder<RestServerBuilder> {
 		configuration.setSendServerVersion(false);
 		configuration.setSendXPoweredBy(false);
 		configuration.setHttpCompliance(HttpCompliance.RFC7230);
+		configuration.setMultiPartFormDataCompliance(MultiPartFormDataCompliance.RFC7578);
 		configuration.setUriCompliance(compliance);
 		if (factory == null) {
 			scheme = "http";
