@@ -193,7 +193,22 @@ class Handler extends AbstractHandler {
 					logger.error(message, exception);
 					throw new BadRequestException(message);
 				} catch (IllegalStateException exception) {
-					String message = "Multipart request exceeds %d bytes or one of the parts exceeds %d bytes".formatted(element.getMaxRequestSize(), element.getMaxFileSize());
+					long maxRequestSize = element.getMaxRequestSize();
+					long maxFileSize = element.getMaxFileSize();
+					String message;
+					if (maxRequestSize > 0) {
+						if (maxFileSize > 0) {
+							message = "Multipart request exceeds %d bytes or one of the parts exceeds %d bytes".formatted(maxRequestSize, maxFileSize);
+						} else {
+							message = "Multipart request exceeds %d bytes".formatted(maxRequestSize);
+						}
+					} else {
+						if (maxFileSize > 0) {
+							message = "One of the parts exceeds %d bytes".formatted(maxFileSize);
+						} else {
+							message = "Multipart request is too large or one of the parts is too large";
+						}
+					}
 					logger.error(message, exception);
 					throw new PayloadTooLargeException(message);
 				}

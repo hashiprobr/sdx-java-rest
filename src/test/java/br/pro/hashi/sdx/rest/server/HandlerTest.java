@@ -122,8 +122,6 @@ class HandlerTest {
 		putHandle(lookup, ConcreteResourceWithoutPlain.class);
 		putHandle(lookup, NullableResource.class);
 		element = mock(MultipartConfigElement.class);
-		when(element.getMaxRequestSize()).thenReturn(10L);
-		when(element.getMaxFileSize()).thenReturn(5L);
 		gatewayTypes = new HashSet<>();
 		fields = mock(HttpFields.class);
 		baseRequest = mock(Request.class);
@@ -877,23 +875,77 @@ class HandlerTest {
 	}
 
 	@Test
-	void handlesWithLargeParts() {
+	void handlesWithLargeBoth() {
 		mockMethod();
 		mockRequestUri();
 		mockNode();
 		mockMethodNames();
 		mockEndpoint();
 		mockMultipartContentType();
-		mockMultipartException(IllegalStateException.class);
+		mockMultipartException(10, 5);
 		mockResourceType();
 		mockCall();
 		mockReturnType();
 		handle();
-		assertMessageResponse(413, "Multipart request exceeds 10 bytes or one of the parts exceeds 5 bytes");
+		assertPayloadTooLarge("Multipart request exceeds 10 bytes or one of the parts exceeds 5 bytes");
+	}
+
+	@Test
+	void handlesWithLargeRequest() {
+		mockMethod();
+		mockRequestUri();
+		mockNode();
+		mockMethodNames();
+		mockEndpoint();
+		mockMultipartContentType();
+		mockMultipartException(10, 0);
+		mockResourceType();
+		mockCall();
+		mockReturnType();
+		handle();
+		assertPayloadTooLarge("Multipart request exceeds 10 bytes");
+	}
+
+	@Test
+	void handlesWithLargePart() {
+		mockMethod();
+		mockRequestUri();
+		mockNode();
+		mockMethodNames();
+		mockEndpoint();
+		mockMultipartContentType();
+		mockMultipartException(0, 5);
+		mockResourceType();
+		mockCall();
+		mockReturnType();
+		handle();
+		assertPayloadTooLarge("One of the parts exceeds 5 bytes");
+	}
+
+	@Test
+	void handlesWithLargeNeither() {
+		mockMethod();
+		mockRequestUri();
+		mockNode();
+		mockMethodNames();
+		mockEndpoint();
+		mockMultipartContentType();
+		mockMultipartException(0, 0);
+		mockResourceType();
+		mockCall();
+		mockReturnType();
+		handle();
+		assertPayloadTooLarge("Multipart request is too large or one of the parts is too large");
 	}
 
 	private void mockMultipartContentType() {
 		when(request.getContentType()).thenReturn("multipart/form-data");
+	}
+
+	private void mockMultipartException(long maxRequestSize, long maxFileSize) {
+		when(element.getMaxRequestSize()).thenReturn(maxRequestSize);
+		when(element.getMaxFileSize()).thenReturn(maxFileSize);
+		mockMultipartException(IllegalStateException.class);
 	}
 
 	private void mockMultipartException(Class<? extends Exception> type) {
@@ -906,6 +958,10 @@ class HandlerTest {
 
 	private void assertBadRequest(String message) {
 		assertMessageResponse(400, message);
+	}
+
+	private void assertPayloadTooLarge(String message) {
+		assertMessageResponse(413, message);
 	}
 
 	private void assertMessageResponse(int status, String message) {
