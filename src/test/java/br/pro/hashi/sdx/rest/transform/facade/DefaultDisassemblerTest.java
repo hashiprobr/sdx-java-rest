@@ -15,14 +15,14 @@ import br.pro.hashi.sdx.rest.transform.Disassembler;
 import br.pro.hashi.sdx.rest.transform.Hint;
 import br.pro.hashi.sdx.rest.transform.facade.exception.SupportException;
 
-class OctetDisassemblerTest {
+class DefaultDisassemblerTest {
 	private InputStream stream;
 	private Disassembler d;
 
 	@BeforeEach
 	void setUp() {
 		stream = new ByteArrayInputStream(newByteArray());
-		d = new OctetDisassembler();
+		d = new DefaultDisassembler();
 	}
 
 	@Test

@@ -15,14 +15,14 @@ import br.pro.hashi.sdx.rest.transform.Deserializer;
 import br.pro.hashi.sdx.rest.transform.Hint;
 import br.pro.hashi.sdx.rest.transform.facade.exception.SupportException;
 
-class PlainDeserializerTest {
+class DefaultDeserializerTest {
 	private Reader reader;
 	private Deserializer d;
 
 	@BeforeEach
 	void setUp() {
 		reader = new StringReader(newString());
-		d = new PlainDeserializer(new Cache());
+		d = new DefaultDeserializer(new Cache());
 	}
 
 	@Test

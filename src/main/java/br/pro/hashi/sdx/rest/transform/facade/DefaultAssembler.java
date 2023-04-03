@@ -11,10 +11,10 @@ import br.pro.hashi.sdx.rest.transform.Assembler;
 import br.pro.hashi.sdx.rest.transform.Hint;
 import br.pro.hashi.sdx.rest.transform.facade.exception.SupportException;
 
-class OctetAssembler implements Assembler {
+class DefaultAssembler implements Assembler {
 	private final Type consumerType;
 
-	public OctetAssembler() {
+	public DefaultAssembler() {
 		this.consumerType = new Hint<Consumer<OutputStream>>() {}.getType();
 	}
 

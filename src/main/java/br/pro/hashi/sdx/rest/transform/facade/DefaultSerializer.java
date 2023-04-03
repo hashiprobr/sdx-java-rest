@@ -11,10 +11,10 @@ import br.pro.hashi.sdx.rest.transform.Hint;
 import br.pro.hashi.sdx.rest.transform.Serializer;
 import br.pro.hashi.sdx.rest.transform.facade.exception.SupportException;
 
-class PlainSerializer implements Serializer {
+class DefaultSerializer implements Serializer {
 	private final Type consumerType;
 
-	public PlainSerializer() {
+	public DefaultSerializer() {
 		this.consumerType = new Hint<Consumer<Writer>>() {}.getType();
 	}
 

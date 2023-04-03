@@ -39,18 +39,18 @@ import br.pro.hashi.sdx.rest.transform.Serializer;
 import br.pro.hashi.sdx.rest.transform.facade.exception.SupportException;
 
 class FacadeTest {
-	private MockedConstruction<OctetAssembler> assemblerConstruction;
-	private MockedConstruction<OctetDisassembler> disassemblerConstruction;
-	private MockedConstruction<PlainSerializer> serializerConstruction;
-	private MockedConstruction<PlainDeserializer> deserializerConstruction;
+	private MockedConstruction<DefaultAssembler> assemblerConstruction;
+	private MockedConstruction<DefaultDisassembler> disassemblerConstruction;
+	private MockedConstruction<DefaultSerializer> serializerConstruction;
+	private MockedConstruction<DefaultDeserializer> deserializerConstruction;
 	private Facade f;
 
 	@BeforeEach
 	void setUp() {
-		assemblerConstruction = mockConstruction(OctetAssembler.class);
-		disassemblerConstruction = mockConstruction(OctetDisassembler.class);
-		serializerConstruction = mockConstruction(PlainSerializer.class);
-		deserializerConstruction = mockConstruction(PlainDeserializer.class);
+		assemblerConstruction = mockConstruction(DefaultAssembler.class);
+		disassemblerConstruction = mockConstruction(DefaultDisassembler.class);
+		serializerConstruction = mockConstruction(DefaultSerializer.class);
+		deserializerConstruction = mockConstruction(DefaultDeserializer.class);
 		f = new Facade(new Cache());
 	}
 
@@ -134,7 +134,7 @@ class FacadeTest {
 
 	@Test
 	void initializesWithOctetAssembler() {
-		assertInstanceOf(OctetAssembler.class, f.getAssembler("application/octet-stream"));
+		assertInstanceOf(DefaultAssembler.class, f.getAssembler("application/octet-stream"));
 	}
 
 	@Test
@@ -153,7 +153,7 @@ class FacadeTest {
 
 	@Test
 	void initializesWithOctetDisassembler() {
-		assertInstanceOf(OctetDisassembler.class, f.getDisassembler("application/octet-stream"));
+		assertInstanceOf(DefaultDisassembler.class, f.getDisassembler("application/octet-stream"));
 	}
 
 	@Test
@@ -172,7 +172,7 @@ class FacadeTest {
 
 	@Test
 	void initializesWithPlainSerializer() {
-		assertInstanceOf(PlainSerializer.class, f.getSerializer("text/plain"));
+		assertInstanceOf(DefaultSerializer.class, f.getSerializer("text/plain"));
 	}
 
 	@Test
@@ -191,7 +191,7 @@ class FacadeTest {
 
 	@Test
 	void initializesWithPlainDeserializer() {
-		assertInstanceOf(PlainDeserializer.class, f.getDeserializer("text/plain"));
+		assertInstanceOf(DefaultDeserializer.class, f.getDeserializer("text/plain"));
 	}
 
 	@Test
@@ -624,6 +624,17 @@ class FacadeTest {
 		});
 	}
 
+	@Test
+	void putsDefaultAssembler() {
+		try (MockedStatic<Media> media = mockStatic(Media.class)) {
+			String contentType = "image/png";
+			media.when(() -> Media.strip(contentType)).thenReturn(contentType);
+			Assembler assembler = f.getAssembler("application/octet-stream");
+			f.putDefaultAssembler(contentType);
+			assertSame(assembler, f.getAssembler(contentType));
+		}
+	}
+
 	@ParameterizedTest
 	@ValueSource(strings = {
 			"application/octet-stream",
@@ -674,6 +685,17 @@ class FacadeTest {
 			assertThrows(SupportException.class, () -> {
 				f.getAssembler(contentType);
 			});
+		}
+	}
+
+	@Test
+	void putsDefaultDisassembler() {
+		try (MockedStatic<Media> media = mockStatic(Media.class)) {
+			String contentType = "image/png";
+			media.when(() -> Media.strip(contentType)).thenReturn(contentType);
+			Disassembler disassembler = f.getDisassembler("application/octet-stream");
+			f.putDefaultDisassembler(contentType);
+			assertSame(disassembler, f.getDisassembler(contentType));
 		}
 	}
 
@@ -730,6 +752,17 @@ class FacadeTest {
 		}
 	}
 
+	@Test
+	void putsDefaultSerializer() {
+		try (MockedStatic<Media> media = mockStatic(Media.class)) {
+			String contentType = "application/xml";
+			media.when(() -> Media.strip(contentType)).thenReturn(contentType);
+			Serializer serializer = f.getSerializer("text/plain");
+			f.putDefaultSerializer(contentType);
+			assertSame(serializer, f.getSerializer(contentType));
+		}
+	}
+
 	@ParameterizedTest
 	@ValueSource(strings = {
 			"text/plain",
@@ -780,6 +813,17 @@ class FacadeTest {
 			assertThrows(SupportException.class, () -> {
 				f.getSerializer(contentType);
 			});
+		}
+	}
+
+	@Test
+	void putsDefaultDeserializer() {
+		try (MockedStatic<Media> media = mockStatic(Media.class)) {
+			String contentType = "application/xml";
+			media.when(() -> Media.strip(contentType)).thenReturn(contentType);
+			Deserializer deserializer = f.getDeserializer("text/plain");
+			f.putDefaultDeserializer(contentType);
+			assertSame(deserializer, f.getDeserializer(contentType));
 		}
 	}
 

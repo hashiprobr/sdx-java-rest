@@ -20,12 +20,12 @@ import br.pro.hashi.sdx.rest.transform.Assembler;
 import br.pro.hashi.sdx.rest.transform.Hint;
 import br.pro.hashi.sdx.rest.transform.facade.exception.SupportException;
 
-class OctetAssemblerTest {
+class DefaultAssemblerTest {
 	private Assembler a;
 
 	@BeforeEach
 	void setUp() {
-		a = new OctetAssembler();
+		a = new DefaultAssembler();
 	}
 
 	@Test

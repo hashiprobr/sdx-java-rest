@@ -92,11 +92,25 @@ public abstract class BuilderTest {
 	}
 
 	@Test
+	void putsDefaultAssembler() {
+		String contentType = "image/png";
+		assertSame(b, b.withDefaultAssembler(contentType));
+		verify(facade).putDefaultAssembler(contentType);
+	}
+
+	@Test
 	void putsAssembler() {
 		String contentType = "image/png";
 		Assembler assembler = mock(Assembler.class);
 		assertSame(b, b.withAssembler(contentType, assembler));
 		verify(facade).putAssembler(contentType, assembler);
+	}
+
+	@Test
+	void putsDefaultDisassembler() {
+		String contentType = "image/png";
+		assertSame(b, b.withDefaultDisassembler(contentType));
+		verify(facade).putDefaultDisassembler(contentType);
 	}
 
 	@Test
@@ -108,11 +122,25 @@ public abstract class BuilderTest {
 	}
 
 	@Test
+	void putsDefaultSerializer() {
+		String contentType = "application/xml";
+		assertSame(b, b.withDefaultSerializer(contentType));
+		verify(facade).putDefaultSerializer(contentType);
+	}
+
+	@Test
 	void putsSerializer() {
 		String contentType = "application/xml";
 		Serializer serializer = mock(Serializer.class);
 		assertSame(b, b.withSerializer(contentType, serializer));
 		verify(facade).putSerializer(contentType, serializer);
+	}
+
+	@Test
+	void putsDefaultDeserializer() {
+		String contentType = "application/xml";
+		assertSame(b, b.withDefaultDeserializer(contentType));
+		verify(facade).putDefaultDeserializer(contentType);
 	}
 
 	@Test

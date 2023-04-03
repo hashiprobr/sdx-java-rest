@@ -66,16 +66,16 @@ public class Facade {
 		this.extensions.put("txt", PLAIN_TYPE);
 
 		this.assemblers = new HashMap<>();
-		this.assemblers.put(OCTET_TYPE, new OctetAssembler());
+		this.assemblers.put(OCTET_TYPE, new DefaultAssembler());
 
 		this.disassemblers = new HashMap<>();
-		this.disassemblers.put(OCTET_TYPE, new OctetDisassembler());
+		this.disassemblers.put(OCTET_TYPE, new DefaultDisassembler());
 
 		this.serializers = new HashMap<>();
-		this.serializers.put(PLAIN_TYPE, new PlainSerializer());
+		this.serializers.put(PLAIN_TYPE, new DefaultSerializer());
 
 		this.deserializers = new HashMap<>();
-		this.deserializers.put(PLAIN_TYPE, new PlainDeserializer(cache));
+		this.deserializers.put(PLAIN_TYPE, new DefaultDeserializer(cache));
 
 		this.fallbackByteType = null;
 		this.fallbackTextType = null;
@@ -204,6 +204,10 @@ public class Facade {
 		return assembler;
 	}
 
+	public void putDefaultAssembler(String contentType) {
+		assemblers.put(contentType, assemblers.get(OCTET_TYPE));
+	}
+
 	public void putAssembler(String contentType, Assembler assembler) {
 		if (contentType == null) {
 			throw new NullPointerException("Assembler type cannot be null");
@@ -224,6 +228,10 @@ public class Facade {
 			throw new SupportException("No disassembler associated to %s".formatted(contentType));
 		}
 		return disassembler;
+	}
+
+	public void putDefaultDisassembler(String contentType) {
+		disassemblers.put(contentType, disassemblers.get(OCTET_TYPE));
 	}
 
 	public void putDisassembler(String contentType, Disassembler disassembler) {
@@ -248,6 +256,10 @@ public class Facade {
 		return serializer;
 	}
 
+	public void putDefaultSerializer(String contentType) {
+		serializers.put(contentType, serializers.get(PLAIN_TYPE));
+	}
+
 	public void putSerializer(String contentType, Serializer serializer) {
 		if (contentType == null) {
 			throw new NullPointerException("Serializer type cannot be null");
@@ -268,6 +280,10 @@ public class Facade {
 			throw new SupportException("No deserializer associated to %s".formatted(contentType));
 		}
 		return deserializer;
+	}
+
+	public void putDefaultDeserializer(String contentType) {
+		deserializers.put(contentType, deserializers.get(PLAIN_TYPE));
 	}
 
 	public void putDeserializer(String contentType, Deserializer deserializer) {

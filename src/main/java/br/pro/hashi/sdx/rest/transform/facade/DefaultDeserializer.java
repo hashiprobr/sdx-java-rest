@@ -8,10 +8,10 @@ import br.pro.hashi.sdx.rest.reflection.Cache;
 import br.pro.hashi.sdx.rest.transform.Deserializer;
 import br.pro.hashi.sdx.rest.transform.facade.exception.SupportException;
 
-class PlainDeserializer implements Deserializer {
+class DefaultDeserializer implements Deserializer {
 	private final Cache cache;
 
-	PlainDeserializer(Cache cache) {
+	DefaultDeserializer(Cache cache) {
 		this.cache = cache;
 	}
 

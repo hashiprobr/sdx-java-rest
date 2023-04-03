@@ -7,7 +7,7 @@ import br.pro.hashi.sdx.rest.coding.Media;
 import br.pro.hashi.sdx.rest.transform.Disassembler;
 import br.pro.hashi.sdx.rest.transform.facade.exception.SupportException;
 
-class OctetDisassembler implements Disassembler {
+class DefaultDisassembler implements Disassembler {
 	@SuppressWarnings("unchecked")
 	@Override
 	public <T> T read(InputStream stream, Type type) {

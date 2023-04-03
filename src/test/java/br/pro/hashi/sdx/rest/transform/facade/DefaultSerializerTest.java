@@ -19,12 +19,12 @@ import br.pro.hashi.sdx.rest.transform.Hint;
 import br.pro.hashi.sdx.rest.transform.Serializer;
 import br.pro.hashi.sdx.rest.transform.facade.exception.SupportException;
 
-class PlainSerializerTest {
+class DefaultSerializerTest {
 	private Serializer s;
 
 	@BeforeEach
 	void setUp() {
-		s = new PlainSerializer();
+		s = new DefaultSerializer();
 	}
 
 	@Test

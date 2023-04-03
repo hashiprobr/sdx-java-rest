@@ -134,6 +134,20 @@ public sealed abstract class Builder<T extends Builder<T>> permits RestClientBui
 	}
 
 	/**
+	 * Associates a content type to the same assembler associated to
+	 * {@code application/octet-stream}.
+	 * 
+	 * @param contentType the content type
+	 * @return this builder, for chaining
+	 * @throws NullPointerException     if the content type is null
+	 * @throws IllegalArgumentException if the content type is blank
+	 */
+	public final T withDefaultAssembler(String contentType) {
+		facade.putDefaultAssembler(contentType);
+		return self();
+	}
+
+	/**
 	 * <p>
 	 * Associates a content type to an assembler.
 	 * </p>
@@ -151,6 +165,20 @@ public sealed abstract class Builder<T extends Builder<T>> permits RestClientBui
 	 */
 	public final T withAssembler(String contentType, Assembler assembler) {
 		facade.putAssembler(contentType, assembler);
+		return self();
+	}
+
+	/**
+	 * Associates a content type to the same disassembler associated to
+	 * {@code application/octet-stream}.
+	 * 
+	 * @param contentType the content type
+	 * @return this builder, for chaining
+	 * @throws NullPointerException     if the content type is null
+	 * @throws IllegalArgumentException if the content type is blank
+	 */
+	public final T withDefaultDisassembler(String contentType) {
+		facade.putDefaultDisassembler(contentType);
 		return self();
 	}
 
@@ -176,6 +204,20 @@ public sealed abstract class Builder<T extends Builder<T>> permits RestClientBui
 	}
 
 	/**
+	 * Associates a content type to the same serializer associated to
+	 * {@code text/plain}.
+	 * 
+	 * @param contentType the content type
+	 * @return this builder, for chaining
+	 * @throws NullPointerException     if the content type is null
+	 * @throws IllegalArgumentException if the content type is blank
+	 */
+	public final T withDefaultSerializer(String contentType) {
+		facade.putDefaultSerializer(contentType);
+		return self();
+	}
+
+	/**
 	 * <p>
 	 * Associates a content type to a serializer.
 	 * </p>
@@ -193,6 +235,20 @@ public sealed abstract class Builder<T extends Builder<T>> permits RestClientBui
 	 */
 	public final T withSerializer(String contentType, Serializer serializer) {
 		facade.putSerializer(contentType, serializer);
+		return self();
+	}
+
+	/**
+	 * Associates a content type to the same deserializer associated to
+	 * {@code text/plain}.
+	 * 
+	 * @param contentType the content type
+	 * @return this builder, for chaining
+	 * @throws NullPointerException     if the content type is null
+	 * @throws IllegalArgumentException if the content type is blank
+	 */
+	public final T withDefaultDeserializer(String contentType) {
+		facade.putDefaultDeserializer(contentType);
 		return self();
 	}
 
