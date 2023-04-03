@@ -382,9 +382,7 @@ class Handler extends AbstractHandler {
 			}
 
 			consumer.accept(stream);
-		} catch (
-
-		RuntimeException exception) {
+		} catch (RuntimeException exception) {
 			if (!response.isCommitted()) {
 				throw exception;
 			}
