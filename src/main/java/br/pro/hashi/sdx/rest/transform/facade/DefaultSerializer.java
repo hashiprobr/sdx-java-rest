@@ -18,7 +18,6 @@ class DefaultSerializer implements Serializer {
 		this.consumerType = new Hint<Consumer<Writer>>() {}.getType();
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public void write(Object body, Type type, Writer writer) {
 		try {
@@ -35,6 +34,7 @@ class DefaultSerializer implements Serializer {
 				return;
 			}
 			if (type.equals(consumerType)) {
+				@SuppressWarnings("unchecked")
 				Consumer<Writer> consumer = (Consumer<Writer>) body;
 				consumer.accept(writer);
 				return;

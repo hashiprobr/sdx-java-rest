@@ -32,8 +32,8 @@ public class Cache {
 		return functions;
 	}
 
-	@SuppressWarnings("unchecked")
 	public synchronized <T> Function<String, T> get(Class<T> type) {
+		@SuppressWarnings("unchecked")
 		Function<String, T> function = (Function<String, T>) functions.get(type);
 		if (function == null) {
 			Method method;

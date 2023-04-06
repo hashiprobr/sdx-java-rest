@@ -18,7 +18,6 @@ class DefaultAssembler implements Assembler {
 		this.consumerType = new Hint<Consumer<OutputStream>>() {}.getType();
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public void write(Object body, Type type, OutputStream stream) {
 		try {
@@ -31,6 +30,7 @@ class DefaultAssembler implements Assembler {
 				return;
 			}
 			if (type.equals(consumerType)) {
+				@SuppressWarnings("unchecked")
 				Consumer<OutputStream> consumer = (Consumer<OutputStream>) body;
 				consumer.accept(stream);
 				return;
