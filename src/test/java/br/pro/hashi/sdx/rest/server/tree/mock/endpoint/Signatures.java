@@ -86,6 +86,9 @@ public class Signatures extends RestResource {
 	public void withTwoBodies(@Body Object body0, @Body String body1) {
 	}
 
+	public void withLargeBody(@Body(100000) Object body) {
+	}
+
 	public boolean withEverythingAndTwoParts(int i, @Part("name0") Object part0, double d, @Part("name1") String part1) {
 		return true;
 	}

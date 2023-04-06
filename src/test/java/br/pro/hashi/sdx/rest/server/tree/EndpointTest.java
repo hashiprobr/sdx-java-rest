@@ -517,6 +517,27 @@ class EndpointTest {
 		});
 	}
 
+	@Test
+	void constructsWithLargeBody() {
+		e = newEndpoint(0, "withLargeBody", Object.class);
+		assertEquals(Signatures.class, e.getResourceType());
+		assertEquals(void.class, e.getReturnType());
+		assertNull(e.getVarType());
+		assertEquals(0, e.getItemParameters().length);
+		assertTrue(e.getPartParameters().isEmpty());
+		assertData(0, Object.class, 100000, e.getBodyParameter());
+		assertArrayEquals(new Object[] { null, null }, e.getArguments());
+		assertEquals(0, e.getReach());
+	}
+
+	@ParameterizedTest
+	@ValueSource(ints = { 1, 2 })
+	void doesNotConstructWithLargeBody(int distance) {
+		assertThrows(ReflectionException.class, () -> {
+			newEndpoint(distance, "withLargeBody", Object.class);
+		});
+	}
+
 	@ParameterizedTest
 	@ValueSource(ints = { 0, 1, 2 })
 	void constructsWithEverythingAndTwoParts(int distance) {
@@ -1498,6 +1519,15 @@ class EndpointTest {
 		});
 		assertArrayEquals(new Object[] { null, null, null }, e.getArguments());
 		verify(data, times(0)).getBody(eq(Object.class), any(long.class));
+	}
+
+	@Test
+	void callsWithLargeBody() {
+		e = newEndpoint(0, "withLargeBody", Object.class);
+		Object body = new Object();
+		assertNull(e.call(resource, List.of(), Map.of(), mockData(body)));
+		assertArrayEquals(new Object[] { null, null }, e.getArguments());
+		verify(resource).withLargeBody(body);
 	}
 
 	@Test
