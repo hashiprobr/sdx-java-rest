@@ -205,10 +205,19 @@ public class Facade {
 	}
 
 	public void putDefaultAssembler(String contentType) {
+		contentType = cleanAssemblerType(contentType);
 		assemblers.put(contentType, assemblers.get(OCTET_TYPE));
 	}
 
 	public void putAssembler(String contentType, Assembler assembler) {
+		contentType = cleanAssemblerType(contentType);
+		if (assembler == null) {
+			throw new NullPointerException("Assembler cannot be null");
+		}
+		assemblers.put(contentType, assembler);
+	}
+
+	private String cleanAssemblerType(String contentType) {
 		if (contentType == null) {
 			throw new NullPointerException("Assembler type cannot be null");
 		}
@@ -216,10 +225,7 @@ public class Facade {
 		if (contentType == null) {
 			throw new IllegalArgumentException("Assembler type cannot be blank");
 		}
-		if (assembler == null) {
-			throw new NullPointerException("Assembler cannot be null");
-		}
-		assemblers.put(contentType, assembler);
+		return contentType;
 	}
 
 	public Disassembler getDisassembler(String contentType) {
@@ -231,10 +237,19 @@ public class Facade {
 	}
 
 	public void putDefaultDisassembler(String contentType) {
+		contentType = cleanDisassemblerType(contentType);
 		disassemblers.put(contentType, disassemblers.get(OCTET_TYPE));
 	}
 
 	public void putDisassembler(String contentType, Disassembler disassembler) {
+		contentType = cleanDisassemblerType(contentType);
+		if (disassembler == null) {
+			throw new NullPointerException("Disassembler cannot be null");
+		}
+		disassemblers.put(contentType, disassembler);
+	}
+
+	private String cleanDisassemblerType(String contentType) {
 		if (contentType == null) {
 			throw new NullPointerException("Disassembler type cannot be null");
 		}
@@ -242,10 +257,7 @@ public class Facade {
 		if (contentType == null) {
 			throw new IllegalArgumentException("Disassembler type cannot be blank");
 		}
-		if (disassembler == null) {
-			throw new NullPointerException("Disassembler cannot be null");
-		}
-		disassemblers.put(contentType, disassembler);
+		return contentType;
 	}
 
 	public Serializer getSerializer(String contentType) {
@@ -257,10 +269,19 @@ public class Facade {
 	}
 
 	public void putDefaultSerializer(String contentType) {
+		contentType = cleanSerializerType(contentType);
 		serializers.put(contentType, serializers.get(PLAIN_TYPE));
 	}
 
 	public void putSerializer(String contentType, Serializer serializer) {
+		contentType = cleanSerializerType(contentType);
+		if (serializer == null) {
+			throw new NullPointerException("Serializer cannot be null");
+		}
+		serializers.put(contentType, serializer);
+	}
+
+	private String cleanSerializerType(String contentType) {
 		if (contentType == null) {
 			throw new NullPointerException("Serializer type cannot be null");
 		}
@@ -268,10 +289,7 @@ public class Facade {
 		if (contentType == null) {
 			throw new IllegalArgumentException("Serializer type cannot be blank");
 		}
-		if (serializer == null) {
-			throw new NullPointerException("Serializer cannot be null");
-		}
-		serializers.put(contentType, serializer);
+		return contentType;
 	}
 
 	public Deserializer getDeserializer(String contentType) {
@@ -283,10 +301,19 @@ public class Facade {
 	}
 
 	public void putDefaultDeserializer(String contentType) {
+		contentType = cleanDeserializerType(contentType);
 		deserializers.put(contentType, deserializers.get(PLAIN_TYPE));
 	}
 
 	public void putDeserializer(String contentType, Deserializer deserializer) {
+		contentType = cleanDeserializerType(contentType);
+		if (deserializer == null) {
+			throw new NullPointerException("Deserializer cannot be null");
+		}
+		deserializers.put(contentType, deserializer);
+	}
+
+	private String cleanDeserializerType(String contentType) {
 		if (contentType == null) {
 			throw new NullPointerException("Deserializer type cannot be null");
 		}
@@ -294,10 +321,7 @@ public class Facade {
 		if (contentType == null) {
 			throw new IllegalArgumentException("Deserializer type cannot be blank");
 		}
-		if (deserializer == null) {
-			throw new NullPointerException("Deserializer cannot be null");
-		}
-		deserializers.put(contentType, deserializer);
+		return contentType;
 	}
 
 	public void setFallbackByteType(String fallbackByteType) {
