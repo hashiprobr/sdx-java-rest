@@ -63,7 +63,7 @@ class ConcreteHandler extends ErrorHandler {
 			Object actual = formatter.format(status, reason);
 			String contentType = this.contentType;
 
-			contentType = facade.cleanForSerializing(this.contentType, actual, type);
+			contentType = facade.getSerializerType(this.contentType, actual, type);
 			Serializer serializer = facade.getSerializer(contentType);
 			ByteArrayOutputStream output = new ByteArrayOutputStream();
 			contentType = "%s;charset=%s".formatted(contentType, charset.name());
@@ -99,7 +99,7 @@ class ConcreteHandler extends ErrorHandler {
 		Object actual = formatter.format(response.getStatus(), message);
 		String contentType = this.contentType;
 
-		contentType = facade.cleanForSerializing(this.contentType, actual, type);
+		contentType = facade.getSerializerType(this.contentType, actual, type);
 		Serializer serializer = facade.getSerializer(contentType);
 		contentType = "%s;charset=%s".formatted(contentType, charset.name());
 		if (base64) {

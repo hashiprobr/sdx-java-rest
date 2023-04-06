@@ -359,34 +359,34 @@ class FacadeTest {
 	}
 
 	@Test
-	void cleansForAssembling() {
+	void getsAssemblerType() {
 		String contentType = "image/png";
-		assertEquals(contentType, f.cleanForAssembling(contentType, null, Object.class));
+		assertEquals(contentType, f.getAssemblerType(contentType, null, Object.class));
 	}
 
 	@Test
-	void cleansForAssemblingIfBodyIsByteArray() {
-		assertEquals("application/octet-stream", cleanForAssembling(null, new byte[] {}));
+	void getsAssemblerTypeIfBodyIsByteArray() {
+		assertEquals("application/octet-stream", getAssemblerType(null, new byte[] {}));
 	}
 
 	@Test
-	void cleansForAssemblingIfBodyIsInputStream() {
-		assertEquals("application/octet-stream", cleanForAssembling(null, new ByteArrayInputStream(new byte[] {})));
+	void getsAssemblerTypeIfBodyIsInputStream() {
+		assertEquals("application/octet-stream", getAssemblerType(null, new ByteArrayInputStream(new byte[] {})));
 	}
 
 	@Test
-	void cleansForAssemblingIfBodyIsConsumer() {
+	void getsAssemblerTypeIfBodyIsConsumer() {
 		Consumer<OutputStream> consumer = (stream) -> {};
-		assertEquals("application/octet-stream", f.cleanForAssembling(null, consumer, new Hint<Consumer<OutputStream>>() {}.getType()));
+		assertEquals("application/octet-stream", f.getAssemblerType(null, consumer, new Hint<Consumer<OutputStream>>() {}.getType()));
 	}
 
 	@Test
-	void cleansForAssemblingIfBodyIsObject() {
+	void getsAssemblerTypeIfBodyIsObject() {
 		try (MockedStatic<Media> media = mockStatic(Media.class)) {
 			String fallbackByteType = "image/png";
 			media.when(() -> Media.strip(fallbackByteType)).thenReturn(fallbackByteType);
 			f.setFallbackByteType(fallbackByteType);
-			assertEquals(fallbackByteType, cleanForAssembling(null, new Object()));
+			assertEquals(fallbackByteType, getAssemblerType(null, new Object()));
 		}
 	}
 
@@ -394,111 +394,111 @@ class FacadeTest {
 	void doesNotCleanForAssembling() {
 		Object body = new Object();
 		assertThrows(IllegalArgumentException.class, () -> {
-			cleanForAssembling(null, body);
+			getAssemblerType(null, body);
 		});
 	}
 
-	private String cleanForAssembling(String contentType, Object body) {
-		return f.cleanForAssembling(contentType, body, body.getClass());
+	private String getAssemblerType(String contentType, Object body) {
+		return f.getAssemblerType(contentType, body, body.getClass());
 	}
 
 	@Test
-	void cleansForDisassembling() {
+	void getsDisassemblerType() {
 		String contentType = "image/png";
-		assertEquals(contentType, f.cleanForDisassembling(contentType, null));
+		assertEquals(contentType, f.getDisassemblerType(contentType, null));
 	}
 
 	@Test
-	void cleansForDisassemblingIfTypeEqualsByteArray() {
-		assertEquals("application/octet-stream", f.cleanForDisassembling(null, byte[].class));
+	void getsDisassemblerTypeIfTypeEqualsByteArray() {
+		assertEquals("application/octet-stream", f.getDisassemblerType(null, byte[].class));
 	}
 
 	@Test
-	void cleansForDisassemblingIfTypeEqualsInputStream() {
-		assertEquals("application/octet-stream", f.cleanForDisassembling(null, InputStream.class));
+	void getsDisassemblerTypeIfTypeEqualsInputStream() {
+		assertEquals("application/octet-stream", f.getDisassemblerType(null, InputStream.class));
 	}
 
 	@Test
-	void cleansForDisassemblingIfTypeEqualsObject() {
+	void getsDisassemblerTypeIfTypeEqualsObject() {
 		try (MockedStatic<Media> media = mockStatic(Media.class)) {
 			String fallbackByteType = "image/png";
 			media.when(() -> Media.strip(fallbackByteType)).thenReturn(fallbackByteType);
 			f.setFallbackByteType(fallbackByteType);
-			assertEquals(fallbackByteType, f.cleanForDisassembling(null, Object.class));
+			assertEquals(fallbackByteType, f.getDisassemblerType(null, Object.class));
 		}
 	}
 
 	@Test
 	void doesNotCleanForDisassembling() {
 		assertThrows(IllegalArgumentException.class, () -> {
-			f.cleanForDisassembling(null, Object.class);
+			f.getDisassemblerType(null, Object.class);
 		});
 	}
 
 	@Test
-	void cleansForSerializing() {
+	void getsSerializerType() {
 		String contentType = "application/xml";
-		assertEquals(contentType, f.cleanForSerializing(contentType, null, Object.class));
+		assertEquals(contentType, f.getSerializerType(contentType, null, Object.class));
 	}
 
 	@Test
-	void cleansForSerializingIfBodyIsBoolean() {
-		assertEquals("text/plain", cleanForSerializing(null, false));
+	void getsSerializerTypeIfBodyIsBoolean() {
+		assertEquals("text/plain", getSerializerType(null, false));
 	}
 
 	@Test
-	void cleansForSerializingIfBodyIsByte() {
-		assertEquals("text/plain", cleanForSerializing(null, (byte) 0));
+	void getsSerializerTypeIfBodyIsByte() {
+		assertEquals("text/plain", getSerializerType(null, (byte) 0));
 	}
 
 	@Test
-	void cleansForSerializingIfBodyIsShort() {
-		assertEquals("text/plain", cleanForSerializing(null, (short) 1));
+	void getsSerializerTypeIfBodyIsShort() {
+		assertEquals("text/plain", getSerializerType(null, (short) 1));
 	}
 
 	@Test
-	void cleansForSerializingIfBodyIsInteger() {
-		assertEquals("text/plain", cleanForSerializing(null, (int) 2));
+	void getsSerializerTypeIfBodyIsInteger() {
+		assertEquals("text/plain", getSerializerType(null, (int) 2));
 	}
 
 	@Test
-	void cleansForSerializingIfBodyIsLong() {
-		assertEquals("text/plain", cleanForSerializing(null, 3L));
+	void getsSerializerTypeIfBodyIsLong() {
+		assertEquals("text/plain", getSerializerType(null, 3L));
 	}
 
 	@Test
-	void cleansForSerializingIfBodyIsFloat() {
-		assertEquals("text/plain", cleanForSerializing(null, 4.5F));
+	void getsSerializerTypeIfBodyIsFloat() {
+		assertEquals("text/plain", getSerializerType(null, 4.5F));
 	}
 
 	@Test
-	void cleansForSerializingIfBodyIsDouble() {
-		assertEquals("text/plain", cleanForSerializing(null, 6.7));
+	void getsSerializerTypeIfBodyIsDouble() {
+		assertEquals("text/plain", getSerializerType(null, 6.7));
 	}
 
 	@Test
-	void cleansForSerializingIfBodyIsString() {
-		assertEquals("text/plain", cleanForSerializing(null, ""));
+	void getsSerializerTypeIfBodyIsString() {
+		assertEquals("text/plain", getSerializerType(null, ""));
 	}
 
 	@Test
-	void cleansForSerializingIfBodyIsReader() {
-		assertEquals("text/plain", cleanForSerializing(null, new StringReader("")));
+	void getsSerializerTypeIfBodyIsReader() {
+		assertEquals("text/plain", getSerializerType(null, new StringReader("")));
 	}
 
 	@Test
-	void cleansForSerializingIfBodyIsConsumer() {
+	void getsSerializerTypeIfBodyIsConsumer() {
 		Consumer<Writer> consumer = (writer) -> {};
-		assertEquals("text/plain", f.cleanForSerializing(null, consumer, new Hint<Consumer<Writer>>() {}.getType()));
+		assertEquals("text/plain", f.getSerializerType(null, consumer, new Hint<Consumer<Writer>>() {}.getType()));
 	}
 
 	@Test
-	void cleansForSerializingIfBodyIsObject() {
+	void getsSerializerTypeIfBodyIsObject() {
 		try (MockedStatic<Media> media = mockStatic(Media.class)) {
 			String fallbackTextType = "application/xml";
 			media.when(() -> Media.strip(fallbackTextType)).thenReturn(fallbackTextType);
 			f.setFallbackTextType(fallbackTextType);
-			assertEquals(fallbackTextType, cleanForSerializing(null, new Object()));
+			assertEquals(fallbackTextType, getSerializerType(null, new Object()));
 		}
 	}
 
@@ -506,121 +506,121 @@ class FacadeTest {
 	void doesNotCleanForSerializingIfBodyIsNeither() {
 		Object body = new Object();
 		assertThrows(IllegalArgumentException.class, () -> {
-			cleanForSerializing(null, body);
+			getSerializerType(null, body);
 		});
 	}
 
 	@Test
 	void doesNotCleanForSerializingIfBodyIsNull() {
 		assertThrows(IllegalArgumentException.class, () -> {
-			f.cleanForSerializing(null, null, Object.class);
+			f.getSerializerType(null, null, Object.class);
 		});
 	}
 
-	private String cleanForSerializing(String contentType, Object body) {
-		return f.cleanForSerializing(contentType, body, body.getClass());
+	private String getSerializerType(String contentType, Object body) {
+		return f.getSerializerType(contentType, body, body.getClass());
 	}
 
 	@Test
-	void cleansForDeserializing() {
+	void getsDeserializerType() {
 		String contentType = "application/xml";
-		assertEquals(contentType, f.cleanForDeserializing(contentType, null));
+		assertEquals(contentType, f.getDeserializerType(contentType, null));
 	}
 
 	@Test
-	void cleansForDeserializingIfTypeEqualsBoolean() {
-		assertEquals("text/plain", f.cleanForDeserializing(null, boolean.class));
+	void getsDeserializerTypeIfTypeEqualsBoolean() {
+		assertEquals("text/plain", f.getDeserializerType(null, boolean.class));
 	}
 
 	@Test
-	void cleansForDeserializingIfTypeEqualsBooleanWithHint() {
-		assertEquals("text/plain", f.cleanForDeserializing(null, new Hint<Boolean>() {}.getType()));
+	void getsDeserializerTypeIfTypeEqualsBooleanWithHint() {
+		assertEquals("text/plain", f.getDeserializerType(null, new Hint<Boolean>() {}.getType()));
 	}
 
 	@Test
-	void cleansForDeserializingIfTypeEqualsByte() {
-		assertEquals("text/plain", f.cleanForDeserializing(null, byte.class));
+	void getsDeserializerTypeIfTypeEqualsByte() {
+		assertEquals("text/plain", f.getDeserializerType(null, byte.class));
 	}
 
 	@Test
-	void cleansForDeserializingIfTypeEqualsByteWithHint() {
-		assertEquals("text/plain", f.cleanForDeserializing(null, new Hint<Byte>() {}.getType()));
+	void getsDeserializerTypeIfTypeEqualsByteWithHint() {
+		assertEquals("text/plain", f.getDeserializerType(null, new Hint<Byte>() {}.getType()));
 	}
 
 	@Test
-	void cleansForDeserializingIfTypeEqualsShort() {
-		assertEquals("text/plain", f.cleanForDeserializing(null, short.class));
+	void getsDeserializerTypeIfTypeEqualsShort() {
+		assertEquals("text/plain", f.getDeserializerType(null, short.class));
 	}
 
 	@Test
-	void cleansForDeserializingIfTypeEqualsShortWithHint() {
-		assertEquals("text/plain", f.cleanForDeserializing(null, new Hint<Short>() {}.getType()));
+	void getsDeserializerTypeIfTypeEqualsShortWithHint() {
+		assertEquals("text/plain", f.getDeserializerType(null, new Hint<Short>() {}.getType()));
 	}
 
 	@Test
-	void cleansForDeserializingIfTypeEqualsInteger() {
-		assertEquals("text/plain", f.cleanForDeserializing(null, int.class));
+	void getsDeserializerTypeIfTypeEqualsInteger() {
+		assertEquals("text/plain", f.getDeserializerType(null, int.class));
 	}
 
 	@Test
-	void cleansForDeserializingIfTypeEqualsIntegerWithHint() {
-		assertEquals("text/plain", f.cleanForDeserializing(null, new Hint<Integer>() {}.getType()));
+	void getsDeserializerTypeIfTypeEqualsIntegerWithHint() {
+		assertEquals("text/plain", f.getDeserializerType(null, new Hint<Integer>() {}.getType()));
 	}
 
 	@Test
-	void cleansForDeserializingIfTypeEqualsLong() {
-		assertEquals("text/plain", f.cleanForDeserializing(null, long.class));
+	void getsDeserializerTypeIfTypeEqualsLong() {
+		assertEquals("text/plain", f.getDeserializerType(null, long.class));
 	}
 
 	@Test
-	void cleansForDeserializingIfTypeEqualsLongWithHint() {
-		assertEquals("text/plain", f.cleanForDeserializing(null, new Hint<Long>() {}.getType()));
+	void getsDeserializerTypeIfTypeEqualsLongWithHint() {
+		assertEquals("text/plain", f.getDeserializerType(null, new Hint<Long>() {}.getType()));
 	}
 
 	@Test
-	void cleansForDeserializingIfTypeEqualsFloat() {
-		assertEquals("text/plain", f.cleanForDeserializing(null, float.class));
+	void getsDeserializerTypeIfTypeEqualsFloat() {
+		assertEquals("text/plain", f.getDeserializerType(null, float.class));
 	}
 
 	@Test
-	void cleansForDeserializingIfTypeEqualsFloatWithHint() {
-		assertEquals("text/plain", f.cleanForDeserializing(null, new Hint<Float>() {}.getType()));
+	void getsDeserializerTypeIfTypeEqualsFloatWithHint() {
+		assertEquals("text/plain", f.getDeserializerType(null, new Hint<Float>() {}.getType()));
 	}
 
 	@Test
-	void cleansForDeserializingIfTypeEqualsDouble() {
-		assertEquals("text/plain", f.cleanForDeserializing(null, double.class));
+	void getsDeserializerTypeIfTypeEqualsDouble() {
+		assertEquals("text/plain", f.getDeserializerType(null, double.class));
 	}
 
 	@Test
-	void cleansForDeserializingIfTypeEqualsDoubleWithHint() {
-		assertEquals("text/plain", f.cleanForDeserializing(null, new Hint<Double>() {}.getType()));
+	void getsDeserializerTypeIfTypeEqualsDoubleWithHint() {
+		assertEquals("text/plain", f.getDeserializerType(null, new Hint<Double>() {}.getType()));
 	}
 
 	@Test
-	void cleansForDeserializingIfTypeEqualsString() {
-		assertEquals("text/plain", f.cleanForDeserializing(null, String.class));
+	void getsDeserializerTypeIfTypeEqualsString() {
+		assertEquals("text/plain", f.getDeserializerType(null, String.class));
 	}
 
 	@Test
-	void cleansForDeserializingIfTypeEqualsReader() {
-		assertEquals("text/plain", f.cleanForDeserializing(null, Reader.class));
+	void getsDeserializerTypeIfTypeEqualsReader() {
+		assertEquals("text/plain", f.getDeserializerType(null, Reader.class));
 	}
 
 	@Test
-	void cleansForDeserializingIfTypeEqualsObject() {
+	void getsDeserializerTypeIfTypeEqualsObject() {
 		try (MockedStatic<Media> media = mockStatic(Media.class)) {
 			String fallbackTextType = "application/xml";
 			media.when(() -> Media.strip(fallbackTextType)).thenReturn(fallbackTextType);
 			f.setFallbackTextType(fallbackTextType);
-			assertEquals(fallbackTextType, f.cleanForDeserializing(null, Object.class));
+			assertEquals(fallbackTextType, f.getDeserializerType(null, Object.class));
 		}
 	}
 
 	@Test
 	void doesNotCleanForDeserializing() {
 		assertThrows(IllegalArgumentException.class, () -> {
-			f.cleanForDeserializing(null, Object.class);
+			f.getDeserializerType(null, Object.class);
 		});
 	}
 
@@ -632,6 +632,30 @@ class FacadeTest {
 			Assembler assembler = f.getAssembler("application/octet-stream");
 			f.putDefaultAssembler(contentType);
 			assertSame(assembler, f.getAssembler(contentType));
+		}
+	}
+
+	@Test
+	void doesNotPutDefaultAssemblerIfTypeIsNull() {
+		assertThrows(NullPointerException.class, () -> {
+			f.putDefaultAssembler(null);
+		});
+		assertThrows(SupportException.class, () -> {
+			f.getAssembler(null);
+		});
+	}
+
+	@Test
+	void doesNotPutDefaultAssemblerIfStripReturnsNull() {
+		try (MockedStatic<Media> media = mockStatic(Media.class)) {
+			String contentType = "image/png";
+			media.when(() -> Media.strip(contentType)).thenReturn(null);
+			assertThrows(IllegalArgumentException.class, () -> {
+				f.putDefaultAssembler(contentType);
+			});
+			assertThrows(SupportException.class, () -> {
+				f.getAssembler(contentType);
+			});
 		}
 	}
 
@@ -699,6 +723,30 @@ class FacadeTest {
 		}
 	}
 
+	@Test
+	void doesNotPutDefaultDisassemblerIfTypeIsNull() {
+		assertThrows(NullPointerException.class, () -> {
+			f.putDefaultDisassembler(null);
+		});
+		assertThrows(SupportException.class, () -> {
+			f.getDisassembler(null);
+		});
+	}
+
+	@Test
+	void doesNotPutDefaultDisassemblerIfStripReturnsNull() {
+		try (MockedStatic<Media> media = mockStatic(Media.class)) {
+			String contentType = "image/png";
+			media.when(() -> Media.strip(contentType)).thenReturn(null);
+			assertThrows(IllegalArgumentException.class, () -> {
+				f.putDefaultDisassembler(contentType);
+			});
+			assertThrows(SupportException.class, () -> {
+				f.getDisassembler(contentType);
+			});
+		}
+	}
+
 	@ParameterizedTest
 	@ValueSource(strings = {
 			"application/octet-stream",
@@ -763,6 +811,30 @@ class FacadeTest {
 		}
 	}
 
+	@Test
+	void doesNotPutDefaultSerializerIfTypeIsNull() {
+		assertThrows(NullPointerException.class, () -> {
+			f.putDefaultSerializer(null);
+		});
+		assertThrows(SupportException.class, () -> {
+			f.getSerializer(null);
+		});
+	}
+
+	@Test
+	void doesNotPutDefaultSerializerIfStripReturnsNull() {
+		try (MockedStatic<Media> media = mockStatic(Media.class)) {
+			String contentType = "application/xml";
+			media.when(() -> Media.strip(contentType)).thenReturn(null);
+			assertThrows(IllegalArgumentException.class, () -> {
+				f.putDefaultSerializer(contentType);
+			});
+			assertThrows(SupportException.class, () -> {
+				f.getSerializer(contentType);
+			});
+		}
+	}
+
 	@ParameterizedTest
 	@ValueSource(strings = {
 			"text/plain",
@@ -824,6 +896,30 @@ class FacadeTest {
 			Deserializer deserializer = f.getDeserializer("text/plain");
 			f.putDefaultDeserializer(contentType);
 			assertSame(deserializer, f.getDeserializer(contentType));
+		}
+	}
+
+	@Test
+	void doesNotPutDefaultDeserializerIfTypeIsNull() {
+		assertThrows(NullPointerException.class, () -> {
+			f.putDefaultDeserializer(null);
+		});
+		assertThrows(SupportException.class, () -> {
+			f.getDeserializer(null);
+		});
+	}
+
+	@Test
+	void doesNotPutDefaultDeserializerIfStripReturnsNull() {
+		try (MockedStatic<Media> media = mockStatic(Media.class)) {
+			String contentType = "application/xml";
+			media.when(() -> Media.strip(contentType)).thenReturn(null);
+			assertThrows(IllegalArgumentException.class, () -> {
+				f.putDefaultDeserializer(contentType);
+			});
+			assertThrows(SupportException.class, () -> {
+				f.getDeserializer(contentType);
+			});
 		}
 	}
 

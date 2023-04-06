@@ -1804,8 +1804,8 @@ class HandlerTest {
 		Serializer serializer = mock(Serializer.class);
 		when(resource.getContentType()).thenReturn(null);
 		when(facade.isBinary(any())).thenReturn(false);
-		when(facade.cleanForSerializing(eq(null), eq(actual), any())).thenReturn("type/subtype");
-		when(facade.cleanForSerializing(eq("text/plain"), eq(actual), any())).thenReturn("text/plain");
+		when(facade.getSerializerType(eq(null), eq(actual), any())).thenReturn("type/subtype");
+		when(facade.getSerializerType(eq("text/plain"), eq(actual), any())).thenReturn("text/plain");
 		when(facade.getSerializer("type/subtype")).thenReturn(serializer);
 		when(facade.getSerializer("text/plain")).thenReturn(serializer);
 		return serializer;
@@ -2069,8 +2069,8 @@ class HandlerTest {
 		Assembler assembler = mock(Assembler.class);
 		when(resource.getContentType()).thenReturn(null);
 		when(facade.isBinary(any())).thenReturn(true);
-		when(facade.cleanForAssembling(eq(null), eq(actual), any())).thenReturn("type/subtype");
-		when(facade.cleanForAssembling(eq("text/plain"), eq(actual), any())).thenReturn("text/plain");
+		when(facade.getAssemblerType(eq(null), eq(actual), any())).thenReturn("type/subtype");
+		when(facade.getAssemblerType(eq("text/plain"), eq(actual), any())).thenReturn("text/plain");
 		when(facade.getAssembler("type/subtype")).thenReturn(assembler);
 		when(facade.getAssembler("text/plain")).thenReturn(assembler);
 		return assembler;

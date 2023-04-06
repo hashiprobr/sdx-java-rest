@@ -79,7 +79,7 @@ class RestResponseTest {
 		Deserializer deserializer = mock(Deserializer.class);
 		when(deserializer.read(reader, Object.class)).thenReturn(body);
 		when(facade.isBinary(Object.class)).thenReturn(false);
-		when(facade.cleanForDeserializing(null, Object.class)).thenReturn(CONTENT_TYPE);
+		when(facade.getDeserializerType(null, Object.class)).thenReturn(CONTENT_TYPE);
 		when(facade.getDeserializer(CONTENT_TYPE)).thenReturn(deserializer);
 		return body;
 	}
@@ -130,7 +130,7 @@ class RestResponseTest {
 		Disassembler disassembler = mock(Disassembler.class);
 		when(disassembler.read(stream, Object.class)).thenReturn(body);
 		when(facade.isBinary(Object.class)).thenReturn(true);
-		when(facade.cleanForDisassembling(null, Object.class)).thenReturn(CONTENT_TYPE);
+		when(facade.getDisassemblerType(null, Object.class)).thenReturn(CONTENT_TYPE);
 		when(facade.getDisassembler(CONTENT_TYPE)).thenReturn(disassembler);
 		return body;
 	}

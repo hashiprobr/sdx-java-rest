@@ -59,7 +59,7 @@ class ConcreteHandlerTest {
 			return null;
 		}).when(serializer).write(eq(BODY), eq(String.class), any());
 		facade = mock(Facade.class);
-		when(facade.cleanForSerializing(null, BODY, String.class)).thenReturn("type/subtype");
+		when(facade.getSerializerType(null, BODY, String.class)).thenReturn("type/subtype");
 		when(facade.getSerializer("type/subtype")).thenReturn(serializer);
 		formatter = mock(ErrorFormatter.class);
 		when(formatter.getReturnType()).thenReturn(String.class);

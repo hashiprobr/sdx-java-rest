@@ -56,7 +56,7 @@ class DataTest {
 		Deserializer deserializer = mock(Deserializer.class);
 		when(deserializer.read(reader, Object.class)).thenReturn(body);
 		when(facade.isBinary(Object.class)).thenReturn(false);
-		when(facade.cleanForDeserializing(null, Object.class)).thenReturn(CONTENT_TYPE);
+		when(facade.getDeserializerType(null, Object.class)).thenReturn(CONTENT_TYPE);
 		when(facade.getDeserializer(CONTENT_TYPE)).thenReturn(deserializer);
 		assertSame(body, d.getBody(Object.class, 200000));
 		media.verify(() -> Media.decode(any(LimitInputStream.class), eq(contentType)));
@@ -74,7 +74,7 @@ class DataTest {
 		Disassembler disassembler = mock(Disassembler.class);
 		when(disassembler.read(stream, Object.class)).thenReturn(body);
 		when(facade.isBinary(Object.class)).thenReturn(true);
-		when(facade.cleanForDisassembling(null, Object.class)).thenReturn(CONTENT_TYPE);
+		when(facade.getDisassemblerType(null, Object.class)).thenReturn(CONTENT_TYPE);
 		when(facade.getDisassembler(CONTENT_TYPE)).thenReturn(disassembler);
 		assertSame(body, d.getBody(Object.class, 0));
 		media.verify(() -> Media.decode(any(LimitInputStream.class), eq(contentType)), times(0));

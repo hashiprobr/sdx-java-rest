@@ -1064,7 +1064,7 @@ class RestClientTest {
 			return null;
 		}).when(serializer).write(eq(actual), eq(String.class), any());
 		when(facade.isBinary(String.class)).thenReturn(false);
-		when(facade.cleanForSerializing(null, actual, String.class)).thenReturn("type/subtype");
+		when(facade.getSerializerType(null, actual, String.class)).thenReturn("type/subtype");
 		when(facade.getSerializer("type/subtype")).thenReturn(serializer);
 		Content content = p.addTaskAndGetContent(tasks, body);
 		assertEquals(1, tasks.size());
@@ -1123,7 +1123,7 @@ class RestClientTest {
 			return null;
 		}).when(assembler).write(eq(actual), eq(byte[].class), any());
 		when(facade.isBinary(byte[].class)).thenReturn(true);
-		when(facade.cleanForAssembling(null, actual, byte[].class)).thenReturn("type/subtype");
+		when(facade.getAssemblerType(null, actual, byte[].class)).thenReturn("type/subtype");
 		when(facade.getAssembler("type/subtype")).thenReturn(assembler);
 		Content content = p.addTaskAndGetContent(tasks, body);
 		assertEquals(1, tasks.size());

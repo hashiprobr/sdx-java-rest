@@ -140,7 +140,7 @@ public class Facade {
 		extensions.put(extension, contentType);
 	}
 
-	public String cleanForAssembling(String contentType, Object body, Type type) {
+	public String getAssemblerType(String contentType, Object body, Type type) {
 		if (contentType == null) {
 			if (body instanceof byte[] || body instanceof InputStream || type.equals(streamConsumerType)) {
 				contentType = OCTET_TYPE;
@@ -154,7 +154,7 @@ public class Facade {
 		return contentType;
 	}
 
-	public String cleanForDisassembling(String contentType, Type type) {
+	public String getDisassemblerType(String contentType, Type type) {
 		if (contentType == null) {
 			if (type.equals(byte[].class) || type.equals(InputStream.class)) {
 				contentType = OCTET_TYPE;
@@ -168,7 +168,7 @@ public class Facade {
 		return contentType;
 	}
 
-	public String cleanForSerializing(String contentType, Object body, Type type) {
+	public String getSerializerType(String contentType, Object body, Type type) {
 		if (contentType == null) {
 			if ((body != null && Facade.PRIMITIVE_TYPES.contains(type)) || body instanceof String || body instanceof Reader || type.equals(writerConsumerType)) {
 				contentType = PLAIN_TYPE;
@@ -182,7 +182,7 @@ public class Facade {
 		return contentType;
 	}
 
-	public String cleanForDeserializing(String contentType, Type type) {
+	public String getDeserializerType(String contentType, Type type) {
 		if (contentType == null) {
 			if (Facade.PRIMITIVE_TYPES.contains(type) || type.equals(String.class) || type.equals(Reader.class)) {
 				contentType = PLAIN_TYPE;

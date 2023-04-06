@@ -353,7 +353,7 @@ class Handler extends AbstractHandler {
 
 			Consumer<OutputStream> consumer;
 			if (facade.isBinary(type)) {
-				contentType = facade.cleanForAssembling(contentType, actual, type);
+				contentType = facade.getAssemblerType(contentType, actual, type);
 				Assembler assembler = facade.getAssembler(contentType);
 				consumer = (output) -> {
 					assembler.write(actual, type, output);
@@ -365,7 +365,7 @@ class Handler extends AbstractHandler {
 				};
 				withoutLength = actual instanceof InputStream || type.equals(streamConsumerType);
 			} else {
-				contentType = facade.cleanForSerializing(contentType, actual, type);
+				contentType = facade.getSerializerType(contentType, actual, type);
 				Serializer serializer = facade.getSerializer(contentType);
 				Charset charset = resource.getCharset();
 				consumer = (output) -> {
