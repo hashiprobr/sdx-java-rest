@@ -33,14 +33,12 @@ public class Data {
 		String contentType = this.contentType;
 		InputStream stream = Media.decode(limit(this.stream, maxSize), contentType);
 		if (facade.isBinary(type)) {
-			contentType = strip(contentType);
-			contentType = facade.getDisassemblerType(contentType, type);
+			contentType = facade.getDisassemblerType(strip(contentType), type);
 			Disassembler disassembler = facade.getDisassembler(contentType);
 			body = disassembler.read(stream, type);
 		} else {
 			Reader reader = Media.reader(stream, contentType);
-			contentType = strip(contentType);
-			contentType = facade.getDeserializerType(contentType, type);
+			contentType = facade.getDeserializerType(strip(contentType), type);
 			Deserializer deserializer = facade.getDeserializer(contentType);
 			body = deserializer.read(reader, type);
 		}

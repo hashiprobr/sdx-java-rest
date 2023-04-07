@@ -1,4 +1,4 @@
 package br.pro.hashi.sdx.rest.async;
 
-class InputStreamResponseProducerTest {
+public class ByteResponseProducer {
 }
