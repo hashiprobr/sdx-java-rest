@@ -107,8 +107,8 @@ class RestServerBuilderTest extends BuilderTest {
 		MultipartConfigElement element = b.getElement();
 		assertEquals("", element.getLocation());
 		assertEquals(0, element.getMaxFileSize());
-		assertEquals(200000, element.getMaxRequestSize());
-		assertEquals(1, element.getFileSizeThreshold());
+		assertEquals(2000000, element.getMaxRequestSize());
+		assertEquals(200000, element.getFileSizeThreshold());
 	}
 
 	@Test
@@ -312,7 +312,7 @@ class RestServerBuilderTest extends BuilderTest {
 
 	@Test
 	void setsMultipartConfig() {
-		assertSame(b, b.withMultipartConfig(new MultipartConfigElement("location")));
+		assertSame(b, b.withMultipartConfig("location", -1, -1, 0));
 		MultipartConfigElement element = b.getElement();
 		assertEquals("location", element.getLocation());
 		assertEquals(-1, element.getMaxFileSize());
@@ -323,7 +323,7 @@ class RestServerBuilderTest extends BuilderTest {
 	@Test
 	void doesNotSetMultipartConfig() {
 		assertThrows(NullPointerException.class, () -> {
-			b.withMultipartConfig(null);
+			b.withMultipartConfig(null, -1, -1, 0);
 		});
 		assertEquals("", b.getElement().getLocation());
 	}

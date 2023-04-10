@@ -80,7 +80,7 @@ public non-sealed class RestServerBuilder extends Builder<RestServerBuilder> {
 		this.charset = Coding.CHARSET;
 		this.base64 = false;
 		this.factory = null;
-		this.element = new MultipartConfigElement("", 0, 200000, 1);
+		this.element = new MultipartConfigElement("", 0, 2000000, 200000);
 		this.compliance = UriCompliance.RFC3986_UNAMBIGUOUS;
 		this.maxBodySize = 200000;
 		this.clearPort = 8080;
@@ -296,15 +296,16 @@ public non-sealed class RestServerBuilder extends Builder<RestServerBuilder> {
 	/**
 	 * Sets a configuration that should be used for multipart requests.
 	 * 
-	 * @param element the multipart configuration
+	 * @param location          the directory location where files will be stored
+	 * @param maxFileSize       the maximum size allowed for uploaded files
+	 * @param maxRequestSize    the maximum size allowed for
+	 *                          {@code multipart/form-data} requests
+	 * @param fileSizeThreshold the size threshold after which files will be written
+	 *                          to disk
 	 * @return this builder, for chaining
-	 * @throws NullPointerException if the configuration is null
 	 */
-	public final RestServerBuilder withMultipartConfig(MultipartConfigElement element) {
-		if (element == null) {
-			throw new NullPointerException("Multipart configuration cannot be null");
-		}
-		this.element = element;
+	public final RestServerBuilder withMultipartConfig(String location, long maxFileSize, long maxRequestSize, int fileSizeThreshold) {
+		this.element = new MultipartConfigElement(location, maxFileSize, maxRequestSize, fileSizeThreshold);
 		return self();
 	}
 
