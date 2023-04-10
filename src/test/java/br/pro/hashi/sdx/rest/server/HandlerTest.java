@@ -56,6 +56,7 @@ import br.pro.hashi.sdx.rest.reflection.Cache;
 import br.pro.hashi.sdx.rest.reflection.Headers;
 import br.pro.hashi.sdx.rest.reflection.PartHeaders;
 import br.pro.hashi.sdx.rest.reflection.Queries;
+import br.pro.hashi.sdx.rest.server.exception.NotAcceptableException;
 import br.pro.hashi.sdx.rest.server.exception.NotFoundException;
 import br.pro.hashi.sdx.rest.server.mock.invalid.ResourceWithException;
 import br.pro.hashi.sdx.rest.server.mock.valid.ConcreteResource;
@@ -72,6 +73,7 @@ import br.pro.hashi.sdx.rest.transform.Assembler;
 import br.pro.hashi.sdx.rest.transform.Hint;
 import br.pro.hashi.sdx.rest.transform.Serializer;
 import br.pro.hashi.sdx.rest.transform.facade.Facade;
+import br.pro.hashi.sdx.rest.transform.facade.exception.SupportException;
 import jakarta.servlet.MultipartConfigElement;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.ServletInputStream;
@@ -270,7 +272,7 @@ class HandlerTest {
 		mockCall();
 		mockReturnType();
 		handle();
-		assertMessageResponse(406, "URI must have an extension");
+		assertNotAcceptable("URI must have an extension");
 	}
 
 	@Test
@@ -285,11 +287,15 @@ class HandlerTest {
 		mockCall();
 		mockReturnType();
 		handle();
-		assertMessageResponse(406, "Extension txt is not acceptable");
+		assertNotAcceptable("Extension txt is not acceptable");
 	}
 
 	private void mockRequestUriWithExtension() {
 		when(request.getRequestURI()).thenReturn("/b.txt");
+	}
+
+	private void assertNotAcceptable(String message) {
+		assertMessageResponse(406, message);
 	}
 
 	@Test
@@ -1611,10 +1617,42 @@ class HandlerTest {
 		verifyNoFlush();
 	}
 
+	@Test
+	void writesWithSupportException() {
+		mockCharset();
+		mockWithoutBase64();
+		mockWithoutCommitted();
+		assertThrows(SupportException.class, () -> {
+			serializeWithException(SupportException.class);
+		});
+		verify(response).setContentType("type/subtype;charset=UTF-8");
+		verifyNoWrite();
+		verifyNoFlush();
+	}
+
 	private boolean serializeWithException() {
+		return serializeWithException(RuntimeException.class);
+	}
+
+	private boolean serializeWithException(Class<? extends RuntimeException> type) {
 		Serializer serializer = mockSerializer(SPECIAL_BODY);
-		doThrow(RuntimeException.class).when(serializer).write(eq(SPECIAL_BODY), eq(String.class), any());
+		doThrow(type).when(serializer).write(eq(SPECIAL_BODY), eq(String.class), any());
 		return write(SPECIAL_BODY, String.class);
+	}
+
+	@Test
+	void writesWithSupportExceptionAndExtension() {
+		mockCharset();
+		mockWithoutBase64();
+		mockWithoutCommitted();
+		Serializer serializer = mockSerializer(SPECIAL_BODY);
+		doThrow(SupportException.class).when(serializer).write(eq(SPECIAL_BODY), eq(String.class), any());
+		assertThrows(NotAcceptableException.class, () -> {
+			write(SPECIAL_BODY, String.class, "text/plain");
+		});
+		verify(response).setContentType("text/plain;charset=UTF-8");
+		verifyNoWrite();
+		verifyNoFlush();
 	}
 
 	@Test
@@ -2125,6 +2163,10 @@ class HandlerTest {
 	}
 
 	private boolean write(Object actual, Type type) {
+		return write(actual, type, null);
+	}
+
+	private boolean write(Object actual, Type type, String extensionType) {
 		ServletOutputStream output;
 		try {
 			output = response.getOutputStream();
@@ -2152,7 +2194,7 @@ class HandlerTest {
 		} catch (IOException exception) {
 			throw new AssertionError(exception);
 		}
-		return write(actual, type, null, output);
+		return write(actual, type, extensionType, output);
 	}
 
 	private boolean writeDirectly(Object actual, Type type, String extensionType) {

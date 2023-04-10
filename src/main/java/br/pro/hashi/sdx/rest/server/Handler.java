@@ -35,6 +35,7 @@ import br.pro.hashi.sdx.rest.reflection.PartHeaders;
 import br.pro.hashi.sdx.rest.reflection.Queries;
 import br.pro.hashi.sdx.rest.server.exception.BadRequestException;
 import br.pro.hashi.sdx.rest.server.exception.MessageRestException;
+import br.pro.hashi.sdx.rest.server.exception.NotAcceptableException;
 import br.pro.hashi.sdx.rest.server.exception.PayloadTooLargeException;
 import br.pro.hashi.sdx.rest.server.tree.Data;
 import br.pro.hashi.sdx.rest.server.tree.Endpoint;
@@ -45,6 +46,7 @@ import br.pro.hashi.sdx.rest.transform.Assembler;
 import br.pro.hashi.sdx.rest.transform.Hint;
 import br.pro.hashi.sdx.rest.transform.Serializer;
 import br.pro.hashi.sdx.rest.transform.facade.Facade;
+import br.pro.hashi.sdx.rest.transform.facade.exception.SupportException;
 import jakarta.servlet.MultipartConfigElement;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.ServletOutputStream;
@@ -251,7 +253,7 @@ class Handler extends AbstractHandler {
 				} else {
 					message = "Extension %s is not acceptable".formatted(extension);
 				}
-				throw new MessageRestException(HttpStatus.NOT_ACCEPTABLE_406, message);
+				throw new NotAcceptableException(message);
 			}
 			resource.setFields(headersMap, headers, queries, encoder, response);
 
@@ -396,7 +398,14 @@ class Handler extends AbstractHandler {
 				stream = Media.encode(stream);
 			}
 
-			consumer.accept(stream);
+			try {
+				consumer.accept(stream);
+			} catch (SupportException exception) {
+				if (extensionType == null) {
+					throw exception;
+				}
+				throw new NotAcceptableException("Type %s is not supported".formatted(extensionType));
+			}
 		} catch (RuntimeException exception) {
 			if (!response.isCommitted()) {
 				throw exception;
