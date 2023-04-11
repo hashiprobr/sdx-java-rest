@@ -16,6 +16,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
@@ -1644,7 +1645,7 @@ class EndpointTest {
 	private Data mockExtraData(Object body) {
 		Data data = mock(Data.class);
 		when(data.getBody(eq(Object.class), any(long.class))).thenReturn(body);
-		when(data.getStream()).thenReturn(InputStream.nullInputStream());
+		when(data.getStream()).thenReturn(new ByteArrayInputStream(new byte[] { 0 }));
 		return data;
 	}
 

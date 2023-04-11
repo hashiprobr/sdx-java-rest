@@ -207,9 +207,12 @@ public class Endpoint {
 				}
 				if (bodyParameter == null) {
 					if (body != null) {
-						InputStream stream = body.getStream();
-						try {
-							stream.close();
+						int length;
+						byte[] buffer = new byte[8192];
+						try (InputStream stream = body.getStream()) {
+							do {
+								length = stream.read(buffer, 0, buffer.length);
+							} while (length != -1);
 						} catch (IOException exception) {
 							throw new UncheckedIOException(exception);
 						}
