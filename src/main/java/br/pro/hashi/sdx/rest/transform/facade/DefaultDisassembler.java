@@ -5,7 +5,7 @@ import java.lang.reflect.Type;
 
 import br.pro.hashi.sdx.rest.coding.Media;
 import br.pro.hashi.sdx.rest.transform.Disassembler;
-import br.pro.hashi.sdx.rest.transform.facade.exception.SupportException;
+import br.pro.hashi.sdx.rest.transform.exception.UnsupportedException;
 
 class DefaultDisassembler implements Disassembler {
 	@SuppressWarnings("unchecked")
@@ -17,6 +17,6 @@ class DefaultDisassembler implements Disassembler {
 		if (type.equals(InputStream.class)) {
 			return (T) stream;
 		}
-		throw new SupportException("Type must be equal to byte[] or InputStream");
+		throw new UnsupportedException("Type must be equal to byte[] or InputStream");
 	}
 }

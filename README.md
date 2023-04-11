@@ -1,4 +1,4 @@
 sdx-rest
 ========
 
-**Simple REST framework based on Jetty.**
+**Simple embedded REST framework based on Jetty.**

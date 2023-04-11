@@ -43,7 +43,7 @@ import br.pro.hashi.sdx.rest.server.tree.Endpoint.ItemParameter;
 import br.pro.hashi.sdx.rest.server.tree.mock.endpoint.Signatures;
 import br.pro.hashi.sdx.rest.transform.Hint;
 import br.pro.hashi.sdx.rest.transform.exception.DisassemblingException;
-import br.pro.hashi.sdx.rest.transform.facade.exception.SupportException;
+import br.pro.hashi.sdx.rest.transform.exception.UnsupportedException;
 
 class EndpointTest {
 	private static final double DELTA = 0.000001;
@@ -1805,7 +1805,7 @@ class EndpointTest {
 
 	private Data mockUnsupportedData() {
 		Data data = mock(Data.class);
-		when(data.getBody(eq(Object.class), any(long.class))).thenThrow(SupportException.class);
+		when(data.getBody(eq(Object.class), any(long.class))).thenThrow(UnsupportedException.class);
 		return data;
 	}
 

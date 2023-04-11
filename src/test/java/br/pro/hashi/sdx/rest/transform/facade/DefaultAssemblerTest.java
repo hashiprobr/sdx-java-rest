@@ -18,7 +18,7 @@ import org.junit.jupiter.api.Test;
 
 import br.pro.hashi.sdx.rest.transform.Assembler;
 import br.pro.hashi.sdx.rest.transform.Hint;
-import br.pro.hashi.sdx.rest.transform.facade.exception.SupportException;
+import br.pro.hashi.sdx.rest.transform.exception.UnsupportedException;
 
 class DefaultAssemblerTest {
 	private Assembler a;
@@ -103,7 +103,7 @@ class DefaultAssemblerTest {
 	void doesNotWriteIfBodyIsNeither() {
 		Object body = new Object();
 		ByteArrayOutputStream stream = new ByteArrayOutputStream();
-		assertThrows(SupportException.class, () -> {
+		assertThrows(UnsupportedException.class, () -> {
 			a.write(body, Object.class, stream);
 		});
 	}
@@ -111,7 +111,7 @@ class DefaultAssemblerTest {
 	@Test
 	void doesNotWriteIfBodyIsNull() {
 		ByteArrayOutputStream stream = new ByteArrayOutputStream();
-		assertThrows(SupportException.class, () -> {
+		assertThrows(UnsupportedException.class, () -> {
 			a.write(null, stream);
 		});
 	}

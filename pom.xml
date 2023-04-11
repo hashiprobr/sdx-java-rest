@@ -4,7 +4,7 @@
   <artifactId>sdx-rest</artifactId>
   <version>0.6.2</version>
   <name>${project.groupId}:${project.artifactId}</name>
-  <description>Simple REST framework based on Jetty.</description>
+  <description>Simple embedded REST framework based on Jetty.</description>
   <url>https://github.com/hashiprobr/sdx-java-rest</url>
   <licenses>
     <license>

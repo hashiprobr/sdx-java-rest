@@ -1,5 +1,5 @@
 /**
- * Defines a simple REST framework based on Jetty.
+ * Defines a simple embedded REST framework based on Jetty.
  */
 module br.pro.hashi.sdx.rest {
 	requires transitive org.eclipse.jetty.client;

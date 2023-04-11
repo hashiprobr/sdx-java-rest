@@ -45,8 +45,8 @@ import br.pro.hashi.sdx.rest.server.tree.Tree.Leaf;
 import br.pro.hashi.sdx.rest.transform.Assembler;
 import br.pro.hashi.sdx.rest.transform.Hint;
 import br.pro.hashi.sdx.rest.transform.Serializer;
+import br.pro.hashi.sdx.rest.transform.exception.UnsupportedException;
 import br.pro.hashi.sdx.rest.transform.facade.Facade;
-import br.pro.hashi.sdx.rest.transform.facade.exception.SupportException;
 import jakarta.servlet.MultipartConfigElement;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.ServletOutputStream;
@@ -400,7 +400,7 @@ class Handler extends AbstractHandler {
 
 			try {
 				consumer.accept(stream);
-			} catch (SupportException exception) {
+			} catch (UnsupportedException exception) {
 				if (extensionType == null) {
 					throw exception;
 				}

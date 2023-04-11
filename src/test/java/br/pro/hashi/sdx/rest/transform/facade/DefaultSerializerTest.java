@@ -17,7 +17,7 @@ import org.junit.jupiter.api.Test;
 
 import br.pro.hashi.sdx.rest.transform.Hint;
 import br.pro.hashi.sdx.rest.transform.Serializer;
-import br.pro.hashi.sdx.rest.transform.facade.exception.SupportException;
+import br.pro.hashi.sdx.rest.transform.exception.UnsupportedException;
 
 class DefaultSerializerTest {
 	private Serializer s;
@@ -214,7 +214,7 @@ class DefaultSerializerTest {
 	void doesNotWriteIfBodyIsNeither() {
 		Object body = new Object();
 		Writer writer = new StringWriter();
-		assertThrows(SupportException.class, () -> {
+		assertThrows(UnsupportedException.class, () -> {
 			s.write(body, Object.class, writer);
 		});
 	}
@@ -222,7 +222,7 @@ class DefaultSerializerTest {
 	@Test
 	void doesNotWriteIfBodyIsNull() {
 		Writer writer = new StringWriter();
-		assertThrows(SupportException.class, () -> {
+		assertThrows(UnsupportedException.class, () -> {
 			s.write(null, writer);
 		});
 	}

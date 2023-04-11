@@ -33,7 +33,7 @@ import br.pro.hashi.sdx.rest.server.annotation.Part;
 import br.pro.hashi.sdx.rest.server.exception.BadRequestException;
 import br.pro.hashi.sdx.rest.transform.exception.DeserializingException;
 import br.pro.hashi.sdx.rest.transform.exception.DisassemblingException;
-import br.pro.hashi.sdx.rest.transform.facade.exception.SupportException;
+import br.pro.hashi.sdx.rest.transform.exception.UnsupportedException;
 
 public class Endpoint {
 	private static final Pattern METHOD_PATTERN = Pattern.compile("[A-Za-z]+");
@@ -278,7 +278,7 @@ public class Endpoint {
 		Object argument;
 		try {
 			argument = data.getBody(type, maxSize);
-		} catch (SupportException error) {
+		} catch (UnsupportedException error) {
 			String message = "%s does not have a supported content type".formatted(description);
 			logger.error(message, error);
 			throw new RestException(HttpStatus.UNSUPPORTED_MEDIA_TYPE_415, message);

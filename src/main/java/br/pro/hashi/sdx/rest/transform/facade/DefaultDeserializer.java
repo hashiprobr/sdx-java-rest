@@ -6,7 +6,7 @@ import java.lang.reflect.Type;
 import br.pro.hashi.sdx.rest.coding.Media;
 import br.pro.hashi.sdx.rest.reflection.Cache;
 import br.pro.hashi.sdx.rest.transform.Deserializer;
-import br.pro.hashi.sdx.rest.transform.facade.exception.SupportException;
+import br.pro.hashi.sdx.rest.transform.exception.UnsupportedException;
 
 class DefaultDeserializer implements Deserializer {
 	private final Cache cache;
@@ -27,6 +27,6 @@ class DefaultDeserializer implements Deserializer {
 		if (type.equals(Reader.class)) {
 			return (T) reader;
 		}
-		throw new SupportException("Type must be primitive or equal to String or Reader");
+		throw new UnsupportedException("Type must be primitive or equal to String or Reader");
 	}
 }
