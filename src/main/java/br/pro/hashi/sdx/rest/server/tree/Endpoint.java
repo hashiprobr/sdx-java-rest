@@ -63,12 +63,6 @@ public class Endpoint {
 		DataParameter bodyParameter = null;
 		int start = method.isVarArgs() ? types.length - 1 : -1;
 
-		for (Class<?> exceptionType : method.getExceptionTypes()) {
-			if (!RuntimeException.class.isAssignableFrom(exceptionType)) {
-				throw new ReflectionException("Method %s can only throw unchecked exceptions".formatted(methodName));
-			}
-		}
-
 		int index = 0;
 		for (Parameter parameter : method.getParameters()) {
 			Type type = types[index];
@@ -176,7 +170,7 @@ public class Endpoint {
 		return returnType;
 	}
 
-	public Object call(RestResource resource, List<String> items, Map<String, List<Data>> partMap, Data body) {
+	public Object call(RestResource resource, List<String> items, Map<String, List<Data>> partMap, Data body) throws Exception {
 		Object result;
 		try {
 			if (varType != null) {
@@ -306,15 +300,15 @@ public class Endpoint {
 		return handle;
 	}
 
-	Object invoke(MethodHandle handle, Object... arguments) {
+	Object invoke(MethodHandle handle, Object... arguments) throws Exception {
 		Object result;
 		try {
 			result = handle.invokeWithArguments(arguments);
-		} catch (Throwable exception) {
-			if (exception instanceof RuntimeException) {
-				throw (RuntimeException) exception;
+		} catch (Throwable throwable) {
+			if (throwable instanceof Exception) {
+				throw (Exception) throwable;
 			}
-			throw new AssertionError(exception);
+			throw new AssertionError(throwable);
 		}
 		return result;
 	}

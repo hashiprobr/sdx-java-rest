@@ -1,5 +1,6 @@
 package br.pro.hashi.sdx.rest.server;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -1018,9 +1019,11 @@ class HandlerTest {
 	}
 
 	private void mockRestExceptionCall(int status, Object body) {
-		when(endpoint.call(any(), eq(List.of("0", "1")), eq(Map.of()), any())).thenAnswer((invocation) -> {
-			saveCall(invocation);
-			throw new RestException(status, body);
+		assertDoesNotThrow(() -> {
+			when(endpoint.call(any(), eq(List.of("0", "1")), eq(Map.of()), any())).thenAnswer((invocation) -> {
+				saveCall(invocation);
+				throw new RestException(status, body);
+			});
 		});
 	}
 
@@ -1159,9 +1162,11 @@ class HandlerTest {
 	}
 
 	private void mockNullCall() {
-		when(endpoint.call(any(), eq(List.of("0", "1")), eq(Map.of()), any())).thenAnswer((invocation) -> {
-			saveCall(invocation);
-			return null;
+		assertDoesNotThrow(() -> {
+			when(endpoint.call(any(), eq(List.of("0", "1")), eq(Map.of()), any())).thenAnswer((invocation) -> {
+				saveCall(invocation);
+				return null;
+			});
 		});
 	}
 
@@ -1290,9 +1295,11 @@ class HandlerTest {
 		} catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException | InstantiationException error) {
 			throw new AssertionError(error);
 		}
-		when(endpoint.call(any(), eq(List.of("0", "1")), eq(Map.of()), any())).thenAnswer((invocation) -> {
-			saveCall(invocation);
-			throw exception;
+		assertDoesNotThrow(() -> {
+			when(endpoint.call(any(), eq(List.of("0", "1")), eq(Map.of()), any())).thenAnswer((invocation) -> {
+				saveCall(invocation);
+				throw exception;
+			});
 		});
 	}
 
@@ -1409,9 +1416,11 @@ class HandlerTest {
 		for (String item : items) {
 			itemList.add(item);
 		}
-		when(endpoint.call(any(), eq(itemList), any(), any())).thenAnswer((invocation) -> {
-			saveCall(invocation);
-			return new Object();
+		assertDoesNotThrow(() -> {
+			when(endpoint.call(any(), eq(itemList), any(), any())).thenAnswer((invocation) -> {
+				saveCall(invocation);
+				return new Object();
+			});
 		});
 	}
 

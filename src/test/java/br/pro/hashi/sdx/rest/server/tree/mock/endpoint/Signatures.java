@@ -128,6 +128,10 @@ public class Signatures extends RestResource {
 		throw new Exception();
 	}
 
+	public void withError() throws Error {
+		throw new Error();
+	}
+
 	void withoutPublic() {
 	}
 }
