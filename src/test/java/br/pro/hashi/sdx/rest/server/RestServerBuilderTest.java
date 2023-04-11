@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockConstruction;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.verify;
@@ -41,6 +42,8 @@ import org.eclipse.jetty.server.handler.SecuredRedirectHandler;
 import org.eclipse.jetty.server.handler.ThreadLimitHandler;
 import org.eclipse.jetty.server.handler.gzip.GzipHandler;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
+import org.eclipse.jetty.util.thread.QueuedThreadPool;
+import org.eclipse.jetty.util.thread.ThreadPool;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedConstruction;
 import org.mockito.MockedStatic;
@@ -100,6 +103,11 @@ class RestServerBuilderTest extends BuilderTest {
 	@Test
 	void initializesWithoutFactory() {
 		assertNull(b.getFactory());
+	}
+
+	@Test
+	void initializesWithoutRequestPool() {
+		assertNull(b.getRequestPool());
 	}
 
 	@Test
@@ -311,6 +319,20 @@ class RestServerBuilderTest extends BuilderTest {
 	}
 
 	@Test
+	void setsRequestPool() {
+		ThreadPool requestPool = mock(ThreadPool.class);
+		assertSame(b, b.withRequestPool(requestPool));
+		assertSame(requestPool, b.getRequestPool());
+	}
+
+	@Test
+	void doesNotSetRequestPool() {
+		assertThrows(NullPointerException.class, () -> {
+			b.withRequestPool(null);
+		});
+	}
+
+	@Test
 	void setsMultipartConfig() {
 		assertSame(b, b.withMultipartConfig("location", -1, -1, 0));
 		MultipartConfigElement element = b.getElement();
@@ -443,6 +465,14 @@ class RestServerBuilderTest extends BuilderTest {
 		assertNotNull(tree.getLeafAndAddItems(new String[] { "c" }, itemList));
 		assertNotNull(tree.getLeafAndAddItems(new String[] { "b", "c" }, itemList));
 		assertNotNull(tree.getLeafAndAddItems(new String[] { "c", "d" }, itemList));
+	}
+
+	@Test
+	void buildsWithRequestPool() {
+		ThreadPool requestPool = new QueuedThreadPool();
+		b.withRequestPool(requestPool);
+		RestServer server = b.build(VALID_PACKAGE);
+		assertSame(requestPool, server.getJettyServer().getThreadPool());
 	}
 
 	@Test

@@ -31,6 +31,7 @@ import org.eclipse.jetty.server.handler.SecuredRedirectHandler;
 import org.eclipse.jetty.server.handler.ThreadLimitHandler;
 import org.eclipse.jetty.server.handler.gzip.GzipHandler;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
+import org.eclipse.jetty.util.thread.ThreadPool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,6 +59,7 @@ public non-sealed class RestServerBuilder extends Builder<RestServerBuilder> {
 	private Charset charset;
 	private boolean base64;
 	private SslContextFactory.Server factory;
+	private ThreadPool requestPool;
 	private MultipartConfigElement element;
 	private UriCompliance compliance;
 	private long maxBodySize;
@@ -80,6 +82,7 @@ public non-sealed class RestServerBuilder extends Builder<RestServerBuilder> {
 		this.charset = Coding.CHARSET;
 		this.base64 = false;
 		this.factory = null;
+		this.requestPool = null;
 		this.element = new MultipartConfigElement("", 0, 2000000, 200000);
 		this.compliance = UriCompliance.RFC3986_UNAMBIGUOUS;
 		this.maxBodySize = 200000;
@@ -122,6 +125,10 @@ public non-sealed class RestServerBuilder extends Builder<RestServerBuilder> {
 
 	SslContextFactory.Server getFactory() {
 		return factory;
+	}
+
+	ThreadPool getRequestPool() {
+		return requestPool;
 	}
 
 	MultipartConfigElement getElement() {
@@ -294,6 +301,21 @@ public non-sealed class RestServerBuilder extends Builder<RestServerBuilder> {
 	}
 
 	/**
+	 * Sets a primary thread pool that should be used for requests.
+	 * 
+	 * @param requestPool the thread pool
+	 * @return this builder, for chaining
+	 * @throws NullPointerException if the pool is null
+	 */
+	public final RestServerBuilder withRequestPool(ThreadPool requestPool) {
+		if (requestPool == null) {
+			throw new NullPointerException("Request pool cannot be null");
+		}
+		this.requestPool = requestPool;
+		return self();
+	}
+
+	/**
 	 * Sets a configuration that should be used for multipart requests.
 	 * 
 	 * @param location          the directory location where files will be stored
@@ -442,7 +464,12 @@ public non-sealed class RestServerBuilder extends Builder<RestServerBuilder> {
 			logger.info("Registered %s".formatted(typeName));
 		}
 
-		Server server = new Server();
+		Server server;
+		if (requestPool == null) {
+			server = new Server();
+		} else {
+			server = new Server(requestPool);
+		}
 
 		ConcreteHandler errorHandler = new ConcreteHandler(facade, formatter, contentType, charset, base64);
 		server.setErrorHandler(errorHandler);
