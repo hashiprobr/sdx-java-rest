@@ -14,8 +14,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 
-import br.pro.hashi.sdx.rest.coding.Coding;
 import br.pro.hashi.sdx.rest.coding.Media;
+import br.pro.hashi.sdx.rest.constant.Defaults;
 import br.pro.hashi.sdx.rest.transform.Hint;
 
 class RestBodyTest {
@@ -86,7 +86,7 @@ class RestBodyTest {
 	@Test
 	void initializesWithDefaultCharset() {
 		b = newRestBody();
-		assertEquals(Coding.CHARSET, b.getCharset());
+		assertEquals(Defaults.CHARSET, b.getCharset());
 	}
 
 	@Test
@@ -131,7 +131,7 @@ class RestBodyTest {
 	@Test
 	void setsCharset() {
 		b = newRestBody();
-		if (Coding.CHARSET.equals(StandardCharsets.UTF_8)) {
+		if (Defaults.CHARSET.equals(StandardCharsets.UTF_8)) {
 			assertSame(b, b.in(StandardCharsets.ISO_8859_1));
 			assertEquals(StandardCharsets.ISO_8859_1, b.getCharset());
 		} else {
@@ -146,7 +146,7 @@ class RestBodyTest {
 		assertThrows(NullPointerException.class, () -> {
 			b.in(null);
 		});
-		assertEquals(Coding.CHARSET, b.getCharset());
+		assertEquals(Defaults.CHARSET, b.getCharset());
 	}
 
 	@Test

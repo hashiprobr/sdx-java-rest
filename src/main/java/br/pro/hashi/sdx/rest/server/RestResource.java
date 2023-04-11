@@ -8,8 +8,8 @@ import java.util.Map;
 import java.util.Set;
 
 import br.pro.hashi.sdx.rest.Fields;
-import br.pro.hashi.sdx.rest.coding.Coding;
 import br.pro.hashi.sdx.rest.coding.Media;
+import br.pro.hashi.sdx.rest.constant.Defaults;
 import jakarta.servlet.http.HttpServletResponse;
 
 /**
@@ -65,7 +65,7 @@ public abstract class RestResource {
 		this.status = -1;
 		this.nullable = false;
 		this.contentType = null;
-		this.charset = Coding.CHARSET;
+		this.charset = Defaults.CHARSET;
 		this.base64 = false;
 	}
 

@@ -19,8 +19,8 @@ import java.util.HashMap;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 
-import br.pro.hashi.sdx.rest.coding.Coding;
 import br.pro.hashi.sdx.rest.coding.Media;
+import br.pro.hashi.sdx.rest.constant.Defaults;
 import br.pro.hashi.sdx.rest.reflection.Headers;
 import br.pro.hashi.sdx.rest.reflection.Queries;
 import jakarta.servlet.http.HttpServletResponse;
@@ -64,7 +64,7 @@ class RestResourceTest {
 	@Test
 	void initializesWithDefaultCharset() {
 		r = newRestResource();
-		assertEquals(Coding.CHARSET, r.getCharset());
+		assertEquals(Defaults.CHARSET, r.getCharset());
 	}
 
 	@Test
@@ -123,7 +123,7 @@ class RestResourceTest {
 	@Test
 	void setsCharset() {
 		r = newRestResource();
-		if (Coding.CHARSET.equals(StandardCharsets.UTF_8)) {
+		if (Defaults.CHARSET.equals(StandardCharsets.UTF_8)) {
 			assertNull(r.in(StandardCharsets.ISO_8859_1));
 			assertEquals(StandardCharsets.ISO_8859_1, r.getCharset());
 		} else {
@@ -138,7 +138,7 @@ class RestResourceTest {
 		assertThrows(NullPointerException.class, () -> {
 			r.in(null);
 		});
-		assertEquals(Coding.CHARSET, r.getCharset());
+		assertEquals(Defaults.CHARSET, r.getCharset());
 	}
 
 	@Test

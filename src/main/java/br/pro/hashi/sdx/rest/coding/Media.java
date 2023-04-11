@@ -14,6 +14,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import br.pro.hashi.sdx.rest.coding.exception.CharsetException;
+import br.pro.hashi.sdx.rest.constant.Defaults;
+import br.pro.hashi.sdx.rest.constant.Sizes;
 
 public final class Media {
 	private static final Base64.Encoder BASE64_ENCODER = Base64.getEncoder();
@@ -36,7 +38,7 @@ public final class Media {
 	public static Reader reader(InputStream stream, String contentType) {
 		Charset charset;
 		if (contentType == null) {
-			charset = Coding.CHARSET;
+			charset = Defaults.CHARSET;
 		} else {
 			Matcher matcher = CHARSET_PATTERN.matcher(contentType);
 			if (matcher.matches()) {
@@ -49,7 +51,7 @@ public final class Media {
 					throw new CharsetException("Charset %s is not supported".formatted(charsetName));
 				}
 			} else {
-				charset = Coding.CHARSET;
+				charset = Defaults.CHARSET;
 			}
 		}
 		return new InputStreamReader(stream, charset);
@@ -58,7 +60,7 @@ public final class Media {
 	public static String read(Reader reader) {
 		StringBuilder builder = new StringBuilder();
 		int length;
-		char[] buffer = new char[8192];
+		char[] buffer = new char[Sizes.BUFFER];
 		try {
 			while ((length = reader.read(buffer, 0, buffer.length)) != -1) {
 				builder.append(buffer, 0, length);

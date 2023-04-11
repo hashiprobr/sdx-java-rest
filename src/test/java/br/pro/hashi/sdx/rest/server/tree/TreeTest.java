@@ -22,7 +22,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.MockedConstruction;
 
-import br.pro.hashi.sdx.rest.coding.Coding;
+import br.pro.hashi.sdx.rest.constant.Defaults;
 import br.pro.hashi.sdx.rest.reflection.Cache;
 import br.pro.hashi.sdx.rest.reflection.exception.ReflectionException;
 import br.pro.hashi.sdx.rest.server.RestResource;
@@ -93,7 +93,7 @@ class TreeTest {
 	@BeforeEach
 	void setUp() {
 		cache = mock(Cache.class);
-		t = new Tree(cache, Coding.LOCALE, 200000);
+		t = new Tree(cache, Defaults.LOCALE, 200000);
 		itemMap = new HashMap<>();
 		itemMap.put(Enclosing.class, new String[] { "a", "b" });
 		itemMap.put(Zero.class, new String[] { "a0", "b0" });

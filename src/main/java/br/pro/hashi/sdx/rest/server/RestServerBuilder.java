@@ -36,9 +36,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import br.pro.hashi.sdx.rest.Builder;
-import br.pro.hashi.sdx.rest.coding.Coding;
 import br.pro.hashi.sdx.rest.coding.Media;
 import br.pro.hashi.sdx.rest.coding.Percent;
+import br.pro.hashi.sdx.rest.constant.Defaults;
 import br.pro.hashi.sdx.rest.reflection.Cache;
 import br.pro.hashi.sdx.rest.reflection.Reflection;
 import br.pro.hashi.sdx.rest.server.exception.ResourceException;
@@ -79,7 +79,7 @@ public non-sealed class RestServerBuilder extends Builder<RestServerBuilder> {
 		this.gatewayTypes = new HashSet<>();
 		this.formatter = new ConcreteFormatter();
 		this.contentType = null;
-		this.charset = Coding.CHARSET;
+		this.charset = Defaults.CHARSET;
 		this.base64 = false;
 		this.factory = null;
 		this.requestPool = null;

@@ -55,7 +55,7 @@ import br.pro.hashi.sdx.rest.client.RestClient.Proxy;
 import br.pro.hashi.sdx.rest.client.RestClient.Proxy.Entry;
 import br.pro.hashi.sdx.rest.client.RestClient.Proxy.Task;
 import br.pro.hashi.sdx.rest.client.exception.ClientException;
-import br.pro.hashi.sdx.rest.coding.Coding;
+import br.pro.hashi.sdx.rest.constant.Defaults;
 import br.pro.hashi.sdx.rest.reflection.Cache;
 import br.pro.hashi.sdx.rest.reflection.Headers;
 import br.pro.hashi.sdx.rest.transform.Assembler;
@@ -81,7 +81,7 @@ class RestClientTest {
 		jettyClient = mock(HttpClient.class);
 		request = mock(Request.class);
 		response = mock(Response.class);
-		c = new RestClient(cache, facade, jettyClient, StandardCharsets.UTF_8, Coding.LOCALE, "http://a");
+		c = new RestClient(cache, facade, jettyClient, StandardCharsets.UTF_8, Defaults.LOCALE, "http://a");
 	}
 
 	@Test

@@ -27,6 +27,7 @@ import org.junit.jupiter.params.provider.NullSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import br.pro.hashi.sdx.rest.coding.exception.CharsetException;
+import br.pro.hashi.sdx.rest.constant.Defaults;
 
 class MediaTest {
 	private static final String USASCII_CONTENT = "usascii";
@@ -60,7 +61,7 @@ class MediaTest {
 			";;parameter;;name=value;",
 			" \t\n; \t\n; \t\nparameter \t\n; \t\n; \t\nname \t\n= \t\nvalue \t\n; \t\n" })
 	void readsCorrectly(String contentType) {
-		InputStream stream = newInputStream(SPECIAL_CONTENT, Coding.CHARSET);
+		InputStream stream = newInputStream(SPECIAL_CONTENT, Defaults.CHARSET);
 		assertEquals(SPECIAL_CONTENT, read(stream, contentType));
 	}
 

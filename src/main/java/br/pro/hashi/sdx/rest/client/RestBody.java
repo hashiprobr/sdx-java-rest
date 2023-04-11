@@ -3,8 +3,8 @@ package br.pro.hashi.sdx.rest.client;
 import java.lang.reflect.Type;
 import java.nio.charset.Charset;
 
-import br.pro.hashi.sdx.rest.coding.Coding;
 import br.pro.hashi.sdx.rest.coding.Media;
+import br.pro.hashi.sdx.rest.constant.Defaults;
 import br.pro.hashi.sdx.rest.transform.Hint;
 
 /**
@@ -62,7 +62,7 @@ public class RestBody {
 		this.actual = actual;
 		this.type = type;
 		this.contentType = null;
-		this.charset = Coding.CHARSET;
+		this.charset = Defaults.CHARSET;
 		this.base64 = false;
 	}
 

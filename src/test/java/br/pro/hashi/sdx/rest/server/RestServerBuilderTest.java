@@ -51,8 +51,8 @@ import org.reflections.Reflections;
 
 import br.pro.hashi.sdx.rest.Builder;
 import br.pro.hashi.sdx.rest.BuilderTest;
-import br.pro.hashi.sdx.rest.coding.Coding;
 import br.pro.hashi.sdx.rest.coding.Media;
+import br.pro.hashi.sdx.rest.constant.Defaults;
 import br.pro.hashi.sdx.rest.server.exception.ResourceException;
 import br.pro.hashi.sdx.rest.server.mock.invalid.ResourceWithBlank;
 import br.pro.hashi.sdx.rest.server.mock.invalid.ResourceWithNull;
@@ -92,7 +92,7 @@ class RestServerBuilderTest extends BuilderTest {
 
 	@Test
 	void initializesWithDefaultCharset() {
-		assertEquals(Coding.CHARSET, b.getCharset());
+		assertEquals(Defaults.CHARSET, b.getCharset());
 	}
 
 	@Test
@@ -250,7 +250,7 @@ class RestServerBuilderTest extends BuilderTest {
 
 	@Test
 	void setsErrorCharset() {
-		if (Coding.CHARSET.equals(StandardCharsets.UTF_8)) {
+		if (Defaults.CHARSET.equals(StandardCharsets.UTF_8)) {
 			assertSame(b, b.withErrorCharset(StandardCharsets.ISO_8859_1));
 			assertEquals(StandardCharsets.ISO_8859_1, b.getCharset());
 		} else {
@@ -264,7 +264,7 @@ class RestServerBuilderTest extends BuilderTest {
 		assertThrows(NullPointerException.class, () -> {
 			b.withErrorCharset(null);
 		});
-		assertEquals(Coding.CHARSET, b.getCharset());
+		assertEquals(Defaults.CHARSET, b.getCharset());
 	}
 
 	@Test
@@ -443,7 +443,7 @@ class RestServerBuilderTest extends BuilderTest {
 		ConcreteHandler errorHandler = (ConcreteHandler) jettyServer.getErrorHandler();
 		assertSame(b.getFormatter(), errorHandler.getFormatter());
 		assertNull(errorHandler.getContentType());
-		assertEquals(Coding.CHARSET, errorHandler.getCharset());
+		assertEquals(Defaults.CHARSET, errorHandler.getCharset());
 		assertFalse(errorHandler.isBase64());
 		ThreadLimitHandler limitHandler = (ThreadLimitHandler) jettyServer.getHandler();
 		GzipHandler gzipHandler = (GzipHandler) limitHandler.getHandler();
@@ -495,7 +495,7 @@ class RestServerBuilderTest extends BuilderTest {
 
 	@Test
 	void buildsWithErrorCharset() {
-		if (Coding.CHARSET.equals(StandardCharsets.UTF_8)) {
+		if (Defaults.CHARSET.equals(StandardCharsets.UTF_8)) {
 			b.withErrorCharset(StandardCharsets.ISO_8859_1);
 			RestServer server = b.build(VALID_PACKAGE);
 			ConcreteHandler errorHandler = (ConcreteHandler) server.getJettyServer().getErrorHandler();

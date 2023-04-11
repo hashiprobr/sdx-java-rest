@@ -17,7 +17,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedConstruction;
 
-import br.pro.hashi.sdx.rest.coding.Coding;
+import br.pro.hashi.sdx.rest.constant.Defaults;
 import br.pro.hashi.sdx.rest.reflection.Cache;
 import br.pro.hashi.sdx.rest.transform.Assembler;
 import br.pro.hashi.sdx.rest.transform.Deserializer;
@@ -65,7 +65,7 @@ public abstract class BuilderTest {
 
 	@Test
 	void initializesWithDefaultLocale() {
-		assertEquals(Coding.LOCALE, b.locale);
+		assertEquals(Defaults.LOCALE, b.locale);
 	}
 
 	@Test
@@ -181,7 +181,7 @@ public abstract class BuilderTest {
 
 	@Test
 	void setsLocale() {
-		if (Coding.LOCALE.equals(Locale.US)) {
+		if (Defaults.LOCALE.equals(Locale.US)) {
 			assertSame(b, b.withLocale(Locale.UK));
 			assertEquals(Locale.UK, b.locale);
 		} else {
@@ -195,7 +195,7 @@ public abstract class BuilderTest {
 		assertThrows(NullPointerException.class, () -> {
 			b.withLocale(null);
 		});
-		assertEquals(Coding.LOCALE, b.locale);
+		assertEquals(Defaults.LOCALE, b.locale);
 	}
 
 	@Test

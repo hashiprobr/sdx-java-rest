@@ -7,7 +7,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 
 import br.pro.hashi.sdx.rest.client.RestClientBuilder;
-import br.pro.hashi.sdx.rest.coding.Coding;
+import br.pro.hashi.sdx.rest.constant.Defaults;
 import br.pro.hashi.sdx.rest.reflection.Cache;
 import br.pro.hashi.sdx.rest.server.RestServerBuilder;
 import br.pro.hashi.sdx.rest.transform.Assembler;
@@ -74,7 +74,7 @@ public sealed abstract class Builder<T extends Builder<T>> permits RestClientBui
 		this.cache = new Cache();
 		this.facade = new Facade(this.cache);
 		this.urlCharset = StandardCharsets.UTF_8;
-		this.locale = Coding.LOCALE;
+		this.locale = Defaults.LOCALE;
 		this.redirection = true;
 		this.compression = true;
 	}
