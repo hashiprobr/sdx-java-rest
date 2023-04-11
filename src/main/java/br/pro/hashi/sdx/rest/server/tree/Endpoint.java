@@ -1,5 +1,8 @@
 package br.pro.hashi.sdx.rest.server.tree;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UncheckedIOException;
 import java.lang.invoke.MethodHandle;
 import java.lang.reflect.Array;
 import java.lang.reflect.Method;
@@ -202,7 +205,16 @@ public class Endpoint {
 				if (!partMap.isEmpty()) {
 					throw new BadRequestException("Endpoint does not expect a multipart body");
 				}
-				if (bodyParameter != null) {
+				if (bodyParameter == null) {
+					if (body != null) {
+						InputStream stream = body.getStream();
+						try {
+							stream.close();
+						} catch (IOException exception) {
+							throw new UncheckedIOException(exception);
+						}
+					}
+				} else {
 					if (body == null) {
 						throw new BadRequestException("Endpoint expects a body");
 					}

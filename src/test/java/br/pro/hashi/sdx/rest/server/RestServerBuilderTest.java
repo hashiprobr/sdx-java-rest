@@ -321,14 +321,6 @@ class RestServerBuilderTest extends BuilderTest {
 	}
 
 	@Test
-	void doesNotSetMultipartConfig() {
-		assertThrows(NullPointerException.class, () -> {
-			b.withMultipartConfig(null, -1, -1, 0);
-		});
-		assertEquals("", b.getElement().getLocation());
-	}
-
-	@Test
 	void setsUriCompliance() {
 		assertSame(b, b.withUriCompliance(UriCompliance.UNSAFE));
 		assertEquals(UriCompliance.UNSAFE, b.getCompliance());

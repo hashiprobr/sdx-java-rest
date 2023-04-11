@@ -404,7 +404,7 @@ class Handler extends AbstractHandler {
 				if (extensionType == null) {
 					throw exception;
 				}
-				throw new NotAcceptableException("Type %s is not supported".formatted(extensionType));
+				throw new NotAcceptableException("Cannot send response as %s".formatted(extensionType));
 			}
 		} catch (RuntimeException exception) {
 			if (!response.isCommitted()) {

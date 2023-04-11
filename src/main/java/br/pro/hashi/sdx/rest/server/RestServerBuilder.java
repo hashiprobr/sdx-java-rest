@@ -593,6 +593,9 @@ public non-sealed class RestServerBuilder extends Builder<RestServerBuilder> {
 	}
 
 	/**
+	 * Internal member.
+	 * 
+	 * @return this builder, for chaining
 	 * @hidden
 	 */
 	@Override

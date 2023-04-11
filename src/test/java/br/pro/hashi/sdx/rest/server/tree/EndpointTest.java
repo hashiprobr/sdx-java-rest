@@ -9,12 +9,16 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.AdditionalMatchers.eq;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UncheckedIOException;
 import java.lang.invoke.MethodHandle;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
@@ -755,11 +759,22 @@ class EndpointTest {
 	@Test
 	void callsWithNothingAndOneExtraBody() {
 		e = newEndpoint(0, "withNothing");
-		Data data = mockData(new Object());
+		Data data = mockExtraData(new Object());
 		assertNull(e.call(resource, List.of(), Map.of(), data));
 		assertArrayEquals(new Object[] { null }, e.getArguments());
 		verify(resource).withNothing();
 		verify(data, times(0)).getBody(eq(Object.class), any(long.class));
+	}
+
+	@Test
+	void doesNotCallWithNothingAndOneInvalidExtraBody() {
+		e = newEndpoint(0, "withNothing");
+		IOException cause = new IOException();
+		Data data = mockInvalidExtraData(new Object(), cause);
+		Exception exception = assertThrows(UncheckedIOException.class, () -> {
+			e.call(resource, List.of(), Map.of(), data);
+		});
+		assertSame(cause, exception.getCause());
 	}
 
 	@Test
@@ -789,11 +804,22 @@ class EndpointTest {
 	@Test
 	void callsWithVarArgsAndOneExtraBody() {
 		e = newEndpoint(0, "withVarArgs", int[].class);
-		Data data = mockData(new Object());
+		Data data = mockExtraData(new Object());
 		assertNull(e.call(resource, List.of("1", "2"), Map.of(), data));
 		assertArrayEquals(new Object[] { null, null }, e.getArguments());
 		verify(resource).withVarArgs(1, 2);
 		verify(data, times(0)).getBody(eq(Object.class), any(long.class));
+	}
+
+	@Test
+	void doesNotCallWithVarArgsAndOneExtraBody() {
+		e = newEndpoint(0, "withVarArgs", int[].class);
+		IOException cause = new IOException();
+		Data data = mockInvalidExtraData(new Object(), cause);
+		Exception exception = assertThrows(UncheckedIOException.class, () -> {
+			e.call(resource, List.of("1", "2"), Map.of(), data);
+		});
+		assertSame(cause, exception.getCause());
 	}
 
 	@Test
@@ -816,11 +842,22 @@ class EndpointTest {
 	@Test
 	void callsWithOneItemAndOneExtraBody() {
 		e = newEndpoint(0, "withOneItem", int.class);
-		Data data = mockData(new Object());
+		Data data = mockExtraData(new Object());
 		assertNull(e.call(resource, List.of("1"), Map.of(), data));
 		assertArrayEquals(new Object[] { null, null }, e.getArguments());
 		verify(resource).withOneItem(1);
 		verify(data, times(0)).getBody(eq(Object.class), any(long.class));
+	}
+
+	@Test
+	void doesNotCallWithOneItemAndOneInvalidExtraBody() {
+		e = newEndpoint(0, "withOneItem", int.class);
+		IOException cause = new IOException();
+		Data data = mockInvalidExtraData(new Object(), cause);
+		Exception exception = assertThrows(UncheckedIOException.class, () -> {
+			e.call(resource, List.of("1"), Map.of(), data);
+		});
+		assertSame(cause, exception.getCause());
 	}
 
 	@Test
@@ -885,11 +922,22 @@ class EndpointTest {
 	@Test
 	void callsWithTwoItemsAndOneExtraBody() {
 		e = newEndpoint(0, "withTwoItems", int.class, double.class);
-		Data data = mockData(new Object());
+		Data data = mockExtraData(new Object());
 		assertNull(e.call(resource, List.of("1", "2.3"), Map.of(), data));
 		assertArrayEquals(new Object[] { null, null, null }, e.getArguments());
 		verify(resource).withTwoItems(eq(1), eq(2.3, DELTA));
 		verify(data, times(0)).getBody(eq(Object.class), any(long.class));
+	}
+
+	@Test
+	void doesNotCallWithTwoItemsAndOneInvalidExtraBody() {
+		e = newEndpoint(0, "withTwoItems", int.class, double.class);
+		IOException cause = new IOException();
+		Data data = mockInvalidExtraData(new Object(), cause);
+		Exception exception = assertThrows(UncheckedIOException.class, () -> {
+			e.call(resource, List.of("1", "2.3"), Map.of(), data);
+		});
+		assertSame(cause, exception.getCause());
 	}
 
 	@Test
@@ -1590,6 +1638,26 @@ class EndpointTest {
 	private Data mockData(Object body) {
 		Data data = mock(Data.class);
 		when(data.getBody(eq(Object.class), any(long.class))).thenReturn(body);
+		return data;
+	}
+
+	private Data mockExtraData(Object body) {
+		Data data = mock(Data.class);
+		when(data.getBody(eq(Object.class), any(long.class))).thenReturn(body);
+		when(data.getStream()).thenReturn(InputStream.nullInputStream());
+		return data;
+	}
+
+	private Data mockInvalidExtraData(Object body, Throwable cause) {
+		Data data = mock(Data.class);
+		when(data.getBody(eq(Object.class), any(long.class))).thenReturn(body);
+		InputStream stream = spy(InputStream.nullInputStream());
+		try {
+			doThrow(cause).when(stream).close();
+		} catch (IOException exception) {
+			throw new AssertionError(exception);
+		}
+		when(data.getStream()).thenReturn(stream);
 		return data;
 	}
 

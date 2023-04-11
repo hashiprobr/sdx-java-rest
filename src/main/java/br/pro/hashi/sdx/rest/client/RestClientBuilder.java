@@ -215,6 +215,9 @@ public non-sealed class RestClientBuilder extends Builder<RestClientBuilder> {
 	}
 
 	/**
+	 * Internal member.
+	 * 
+	 * @return this builder, for chaining
 	 * @hidden
 	 */
 	@Override
