@@ -207,12 +207,18 @@ public class Endpoint {
 				}
 				if (bodyParameter == null) {
 					if (body != null) {
-						int length;
-						byte[] buffer = new byte[8192];
-						try (InputStream stream = body.getStream()) {
-							do {
-								length = stream.read(buffer, 0, buffer.length);
-							} while (length != -1);
+						InputStream stream = body.getStream();
+						int b;
+						try {
+							b = stream.read();
+						} catch (IOException exception) {
+							throw new UncheckedIOException(exception);
+						}
+						if (b != -1) {
+							throw new BadRequestException("Endpoint does not expect a body");
+						}
+						try {
+							stream.close();
 						} catch (IOException exception) {
 							throw new UncheckedIOException(exception);
 						}

@@ -758,20 +758,38 @@ class EndpointTest {
 	}
 
 	@Test
-	void callsWithNothingAndOneExtraBody() {
+	void doesNotCallWithNothingAndOneExtraBody() {
 		e = newEndpoint(0, "withNothing");
-		Data data = mockExtraData(new Object());
-		assertNull(e.call(resource, List.of(), Map.of(), data));
-		assertArrayEquals(new Object[] { null }, e.getArguments());
-		verify(resource).withNothing();
-		verify(data, times(0)).getBody(eq(Object.class), any(long.class));
+		Data data = mockExtraData();
+		assertThrows(BadRequestException.class, () -> {
+			e.call(resource, List.of(), Map.of(), data);
+		});
 	}
 
 	@Test
 	void doesNotCallWithNothingAndOneInvalidExtraBody() {
 		e = newEndpoint(0, "withNothing");
+		Data data = mockInvalidExtraData();
+		assertThrows(UncheckedIOException.class, () -> {
+			e.call(resource, List.of(), Map.of(), data);
+		});
+	}
+
+	@Test
+	void callsWithNothingAndOneEmptyExtraBody() {
+		e = newEndpoint(0, "withNothing");
+		Object body = new Object();
+		Data data = mockEmptyExtraData(body);
+		assertNull(e.call(resource, List.of(), Map.of(), data));
+		assertArrayEquals(new Object[] { null }, e.getArguments());
+		verify(resource).withNothing();
+	}
+
+	@Test
+	void doesNotCallWithNothingAndOneInvalidEmptyExtraBody() {
+		e = newEndpoint(0, "withNothing");
 		IOException cause = new IOException();
-		Data data = mockInvalidExtraData(new Object(), cause);
+		Data data = mockInvalidEmptyExtraData(cause);
 		Exception exception = assertThrows(UncheckedIOException.class, () -> {
 			e.call(resource, List.of(), Map.of(), data);
 		});
@@ -803,20 +821,28 @@ class EndpointTest {
 	}
 
 	@Test
-	void callsWithVarArgsAndOneExtraBody() {
+	void doesNotCallWithVarArgsAndOneExtraBody() {
 		e = newEndpoint(0, "withVarArgs", int[].class);
-		Data data = mockExtraData(new Object());
-		assertNull(e.call(resource, List.of("1", "2"), Map.of(), data));
-		assertArrayEquals(new Object[] { null, null }, e.getArguments());
-		verify(resource).withVarArgs(1, 2);
-		verify(data, times(0)).getBody(eq(Object.class), any(long.class));
+		Data data = mockExtraData();
+		assertThrows(BadRequestException.class, () -> {
+			e.call(resource, List.of("1", "2"), Map.of(), data);
+		});
 	}
 
 	@Test
-	void doesNotCallWithVarArgsAndOneExtraBody() {
+	void doesNotCallWithVarArgsAndOneInvalidExtraBody() {
+		e = newEndpoint(0, "withVarArgs", int[].class);
+		Data data = mockInvalidExtraData();
+		assertThrows(UncheckedIOException.class, () -> {
+			e.call(resource, List.of("1", "2"), Map.of(), data);
+		});
+	}
+
+	@Test
+	void doesNotCallWithVarArgsAndOneInvalidEmptyExtraBody() {
 		e = newEndpoint(0, "withVarArgs", int[].class);
 		IOException cause = new IOException();
-		Data data = mockInvalidExtraData(new Object(), cause);
+		Data data = mockInvalidEmptyExtraData(cause);
 		Exception exception = assertThrows(UncheckedIOException.class, () -> {
 			e.call(resource, List.of("1", "2"), Map.of(), data);
 		});
@@ -841,20 +867,28 @@ class EndpointTest {
 	}
 
 	@Test
-	void callsWithOneItemAndOneExtraBody() {
+	void doesNotCallWithOneItemAndOneExtraBody() {
 		e = newEndpoint(0, "withOneItem", int.class);
-		Data data = mockExtraData(new Object());
-		assertNull(e.call(resource, List.of("1"), Map.of(), data));
-		assertArrayEquals(new Object[] { null, null }, e.getArguments());
-		verify(resource).withOneItem(1);
-		verify(data, times(0)).getBody(eq(Object.class), any(long.class));
+		Data data = mockExtraData();
+		assertThrows(BadRequestException.class, () -> {
+			e.call(resource, List.of("1"), Map.of(), data);
+		});
 	}
 
 	@Test
 	void doesNotCallWithOneItemAndOneInvalidExtraBody() {
 		e = newEndpoint(0, "withOneItem", int.class);
+		Data data = mockInvalidExtraData();
+		assertThrows(UncheckedIOException.class, () -> {
+			e.call(resource, List.of("1"), Map.of(), data);
+		});
+	}
+
+	@Test
+	void doesNotCallWithOneItemAndOneInvalidEmptyExtraBody() {
+		e = newEndpoint(0, "withOneItem", int.class);
 		IOException cause = new IOException();
-		Data data = mockInvalidExtraData(new Object(), cause);
+		Data data = mockInvalidEmptyExtraData(cause);
 		Exception exception = assertThrows(UncheckedIOException.class, () -> {
 			e.call(resource, List.of("1"), Map.of(), data);
 		});
@@ -921,20 +955,28 @@ class EndpointTest {
 	}
 
 	@Test
-	void callsWithTwoItemsAndOneExtraBody() {
+	void doesNotCallWithTwoItemsAndOneExtraBody() {
 		e = newEndpoint(0, "withTwoItems", int.class, double.class);
-		Data data = mockExtraData(new Object());
-		assertNull(e.call(resource, List.of("1", "2.3"), Map.of(), data));
-		assertArrayEquals(new Object[] { null, null, null }, e.getArguments());
-		verify(resource).withTwoItems(eq(1), eq(2.3, DELTA));
-		verify(data, times(0)).getBody(eq(Object.class), any(long.class));
+		Data data = mockExtraData();
+		assertThrows(BadRequestException.class, () -> {
+			e.call(resource, List.of("1", "2.3"), Map.of(), data);
+		});
 	}
 
 	@Test
 	void doesNotCallWithTwoItemsAndOneInvalidExtraBody() {
 		e = newEndpoint(0, "withTwoItems", int.class, double.class);
+		Data data = mockInvalidExtraData();
+		assertThrows(UncheckedIOException.class, () -> {
+			e.call(resource, List.of("1", "2.3"), Map.of(), data);
+		});
+	}
+
+	@Test
+	void doesNotCallWithTwoItemsAndOneInvalidEmptyExtraBody() {
+		e = newEndpoint(0, "withTwoItems", int.class, double.class);
 		IOException cause = new IOException();
-		Data data = mockInvalidExtraData(new Object(), cause);
+		Data data = mockInvalidEmptyExtraData(cause);
 		Exception exception = assertThrows(UncheckedIOException.class, () -> {
 			e.call(resource, List.of("1", "2.3"), Map.of(), data);
 		});
@@ -1642,16 +1684,33 @@ class EndpointTest {
 		return data;
 	}
 
-	private Data mockExtraData(Object body) {
+	private Data mockExtraData() {
 		Data data = mock(Data.class);
-		when(data.getBody(eq(Object.class), any(long.class))).thenReturn(body);
 		when(data.getStream()).thenReturn(new ByteArrayInputStream(new byte[] { 0 }));
 		return data;
 	}
 
-	private Data mockInvalidExtraData(Object body, Throwable cause) {
+	private Data mockInvalidExtraData() {
 		Data data = mock(Data.class);
+		InputStream stream = InputStream.nullInputStream();
+		try {
+			stream.close();
+		} catch (IOException exception) {
+			throw new AssertionError(exception);
+		}
+		when(data.getStream()).thenReturn(stream);
+		return data;
+	}
+
+	private Data mockEmptyExtraData(Object body) {
+		Data data = mock(Data.class);
+		when(data.getStream()).thenReturn(InputStream.nullInputStream());
 		when(data.getBody(eq(Object.class), any(long.class))).thenReturn(body);
+		return data;
+	}
+
+	private Data mockInvalidEmptyExtraData(Throwable cause) {
+		Data data = mock(Data.class);
 		InputStream stream = spy(InputStream.nullInputStream());
 		try {
 			doThrow(cause).when(stream).close();
