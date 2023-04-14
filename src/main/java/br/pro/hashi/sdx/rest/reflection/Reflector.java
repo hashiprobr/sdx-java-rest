@@ -1,9 +1,10 @@
 package br.pro.hashi.sdx.rest.reflection;
 
+import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodHandles.Lookup;
 import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -15,14 +16,22 @@ import org.reflections.Reflections;
 
 import br.pro.hashi.sdx.rest.reflection.exception.ReflectionException;
 
-public final class Reflection {
-	public static final Lookup LOOKUP = MethodHandles.lookup();
+public final class Reflector {
+	private static final Reflector INSTANCE = new Reflector();
+	private static final Lookup LOOKUP = MethodHandles.lookup();
 
-	public static <T> Constructor<T> getNoArgsConstructor(Class<T> type) {
+	public static Reflector getInstance() {
+		return INSTANCE;
+	}
+
+	Reflector() {
+	}
+
+	public <T> MethodHandle getNoArgsConstructor(Class<T> type) {
 		return getNoArgsConstructor(type, type.getName());
 	}
 
-	public static <T> Constructor<T> getNoArgsConstructor(Class<T> type, String typeName) {
+	public <T> MethodHandle getNoArgsConstructor(Class<T> type, String typeName) {
 		Constructor<T> constructor;
 		try {
 			constructor = type.getDeclaredConstructor();
@@ -32,23 +41,45 @@ public final class Reflection {
 		if (!Modifier.isPublic(constructor.getModifiers())) {
 			constructor.setAccessible(true);
 		}
-		return constructor;
+		return unreflectConstructor(constructor);
 	}
 
-	public static <T> T newNoArgsInstance(Constructor<T> constructor) {
+	<T> MethodHandle unreflectConstructor(Constructor<T> constructor) {
+		MethodHandle handle;
+		try {
+			handle = LOOKUP.unreflectConstructor(constructor);
+		} catch (IllegalAccessException exception) {
+			throw new AssertionError(exception);
+		}
+		return handle;
+	}
+
+	public <T> T newNoArgsInstance(MethodHandle handle) {
 		T instance;
 		try {
-			instance = constructor.newInstance();
-		} catch (InvocationTargetException exception) {
-			throw new ReflectionException(exception.getCause());
-		} catch (IllegalAccessException | InstantiationException exception) {
-			throw new ReflectionException(exception);
+			instance = (T) handle.invoke();
+		} catch (Throwable throwable) {
+			throw new ReflectionException(throwable);
 		}
 		return instance;
 	}
 
-	public static <T> Iterable<Class<? extends T>> getConcreteSubTypes(String packageName, Class<T> type) {
+	public MethodHandle unreflect(Method method) {
+		MethodHandle handle;
+		try {
+			handle = LOOKUP.unreflect(method);
+		} catch (IllegalAccessException exception) {
+			throw new AssertionError(exception);
+		}
+		return handle;
+	}
+
+	public <T> Iterable<Class<? extends T>> getConcreteSubTypes(String packageName, Class<T> type) {
 		Reflections reflections = new Reflections(packageName);
+		return getConcreteSubTypes(reflections, type);
+	}
+
+	<T> Iterable<Class<? extends T>> getConcreteSubTypes(Reflections reflections, Class<T> type) {
 		return new Iterable<>() {
 			@Override
 			public Iterator<Class<? extends T>> iterator() {
@@ -60,19 +91,17 @@ public final class Reflection {
 		};
 	}
 
-	public static <T, S extends T> Type getSpecificType(Class<T> rootType, int rootIndex, S object) {
+	public <T, S extends T> Type getSpecificType(Class<T> rootType, int rootIndex, S object) {
 		Class<?> type = object.getClass();
+		TypeVariable<?>[] typeVariables;
 
 		Stack<Node> stack = new Stack<>();
 		stack.push(new Node(null, type));
 
-		Type specificType;
-		TypeVariable<?>[] typeVariables;
-
 		while (!stack.isEmpty()) {
 			Node node = stack.peek();
 
-			if (node.hasNext()) {
+			if (node.moveToNext()) {
 				Class<?> superType = node.getSuperType();
 
 				if (superType != null) {
@@ -82,19 +111,19 @@ public final class Reflection {
 						while (node != null) {
 							ParameterizedType genericSuperType = node.getGenericSuperType();
 							Type[] types = genericSuperType.getActualTypeArguments();
-							specificType = types[index];
+							Type specificType = types[index];
 
-							if (specificType instanceof TypeVariable) {
-								typeVariables = node.getTypeParameters();
-								index = 0;
-								while (!specificType.equals(typeVariables[index])) {
-									index++;
-								}
-							} else {
+							if (!(specificType instanceof TypeVariable)) {
 								return specificType;
 							}
 
-							node = node.getParent();
+							typeVariables = node.getTypeParameters();
+							index = 0;
+							while (!specificType.equals(typeVariables[index])) {
+								index++;
+							}
+
+							node = node.getSubNode();
 						}
 					} else {
 						stack.push(new Node(node, superType));
@@ -110,32 +139,32 @@ public final class Reflection {
 		throw new ReflectionException("Class %s must specify type %s".formatted(type.getName(), typeVariableName));
 	}
 
-	private static class Node {
-		private final Node parent;
+	private class Node {
+		private final Node subNode;
 		private final Class<?> type;
 		private final Class<?>[] interfaces;
 		private final Type[] genericInterfaces;
 		private int index;
 
-		private Node(Node parent, Class<?> type) {
-			this.parent = parent;
+		private Node(Node subNode, Class<?> type) {
+			this.subNode = subNode;
 			this.type = type;
 			this.interfaces = type.getInterfaces();
 			this.genericInterfaces = type.getGenericInterfaces();
 			this.index = -2;
 			// superclass == -1
-			// interface >= 0
+			// interfaces >= 0
 		}
 
-		private Node getParent() {
-			return parent;
+		private Node getSubNode() {
+			return subNode;
 		}
 
 		private TypeVariable<?>[] getTypeParameters() {
 			return type.getTypeParameters();
 		}
 
-		private boolean hasNext() {
+		private boolean moveToNext() {
 			index++;
 			return index < interfaces.length;
 		}
@@ -159,8 +188,5 @@ public final class Reflection {
 			}
 			return (ParameterizedType) genericType;
 		}
-	}
-
-	private Reflection() {
 	}
 }

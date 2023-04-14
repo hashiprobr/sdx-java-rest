@@ -1,10 +1,10 @@
 package br.pro.hashi.sdx.rest.transform.extension;
 
-import java.lang.reflect.Constructor;
+import java.lang.invoke.MethodHandle;
 import java.util.Iterator;
 
 import br.pro.hashi.sdx.rest.client.RestClientBuilder;
-import br.pro.hashi.sdx.rest.reflection.Reflection;
+import br.pro.hashi.sdx.rest.reflection.Reflector;
 import br.pro.hashi.sdx.rest.server.RestServerBuilder;
 
 /**
@@ -18,10 +18,13 @@ import br.pro.hashi.sdx.rest.server.RestServerBuilder;
  * </p>
  */
 public abstract class Injector {
+	private final Reflector reflector;
+
 	/**
 	 * Constructs a new injector.
 	 */
 	protected Injector() {
+		this.reflector = Reflector.getInstance();
 	}
 
 	/**
@@ -43,7 +46,7 @@ public abstract class Injector {
 		return new Iterable<>() {
 			@Override
 			public Iterator<T> iterator() {
-				Iterator<Class<? extends T>> iterator = Reflection.getConcreteSubTypes(packageName, type).iterator();
+				Iterator<Class<? extends T>> iterator = reflector.getConcreteSubTypes(packageName, type).iterator();
 
 				return new Iterator<>() {
 					@Override
@@ -54,8 +57,8 @@ public abstract class Injector {
 					@Override
 					public T next() {
 						Class<? extends T> converterType = iterator.next();
-						Constructor<? extends T> constructor = Reflection.getNoArgsConstructor(converterType);
-						return Reflection.newNoArgsInstance(constructor);
+						MethodHandle handle = reflector.getNoArgsConstructor(converterType);
+						return reflector.newNoArgsInstance(handle);
 					}
 				};
 			}

@@ -2,7 +2,7 @@ package br.pro.hashi.sdx.rest.transform;
 
 import java.lang.reflect.Type;
 
-import br.pro.hashi.sdx.rest.reflection.Reflection;
+import br.pro.hashi.sdx.rest.reflection.Reflector;
 
 /**
  * <p>
@@ -23,7 +23,7 @@ public abstract class Hint<T> {
 	 * Constructs a new hint.
 	 */
 	protected Hint() {
-		this.type = Reflection.getSpecificType(Hint.class, 0, this);
+		this.type = Reflector.getInstance().getSpecificType(Hint.class, 0, this);
 	}
 
 	/**

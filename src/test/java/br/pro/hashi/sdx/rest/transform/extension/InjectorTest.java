@@ -2,40 +2,35 @@ package br.pro.hashi.sdx.rest.transform.extension;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 
-import br.pro.hashi.sdx.rest.reflection.Reflection;
+import br.pro.hashi.sdx.rest.reflection.Reflector;
 import br.pro.hashi.sdx.rest.transform.extension.mock.ConcreteConverter;
 import br.pro.hashi.sdx.rest.transform.extension.mock.ConcreteInjector;
 
 class InjectorTest {
-	private Injector i;
-
-	@BeforeEach
-	void setUp() {
-		i = new ConcreteInjector();
-	}
-
 	@Test
 	void getsSubConverters() {
-		try (MockedStatic<Reflection> reflection = mockStatic(Reflection.class)) {
+		try (MockedStatic<Reflector> reflectorStatic = mockStatic(Reflector.class)) {
 			String packageName = "package";
 			Converter<?, ?> converter = new ConcreteConverter();
-			reflection.when(() -> Reflection.getConcreteSubTypes(packageName, Converter.class)).thenReturn(Set.of(ConcreteConverter.class));
-			reflection.when(() -> Reflection.getNoArgsConstructor(ConcreteConverter.class)).thenReturn(null);
-			reflection.when(() -> Reflection.newNoArgsInstance(null)).thenReturn(converter);
+			Reflector reflector = mock(Reflector.class);
+			when(reflector.getConcreteSubTypes(packageName, Converter.class)).thenReturn(Set.of(ConcreteConverter.class));
+			when(reflector.getNoArgsConstructor(ConcreteConverter.class)).thenReturn(null);
+			when(reflector.newNoArgsInstance(null)).thenReturn(converter);
+			reflectorStatic.when(() -> Reflector.getInstance()).thenReturn(reflector);
+			Injector i = new ConcreteInjector();
 			List<Converter<?, ?>> subConverters = new ArrayList<>();
-			for (Converter<?, ?> subConverter : i.getSubConverters(packageName, Converter.class)) {
-				subConverters.add(subConverter);
-			}
+			i.getSubConverters(packageName, Converter.class).forEach(subConverters::add);
 			assertEquals(1, subConverters.size());
 			assertSame(converter, subConverters.get(0));
 		}

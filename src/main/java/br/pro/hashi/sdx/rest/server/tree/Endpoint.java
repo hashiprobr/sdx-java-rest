@@ -24,7 +24,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import br.pro.hashi.sdx.rest.reflection.Cache;
-import br.pro.hashi.sdx.rest.reflection.Reflection;
+import br.pro.hashi.sdx.rest.reflection.Reflector;
 import br.pro.hashi.sdx.rest.reflection.exception.ReflectionException;
 import br.pro.hashi.sdx.rest.server.RestException;
 import br.pro.hashi.sdx.rest.server.RestResource;
@@ -38,6 +38,7 @@ import br.pro.hashi.sdx.rest.transform.exception.UnsupportedException;
 public class Endpoint {
 	private static final Pattern METHOD_PATTERN = Pattern.compile("[A-Za-z]+");
 
+	private final Reflector reflector;
 	private final Logger logger;
 	private final Class<? extends RestResource> resourceType;
 	private final MethodHandle handle;
@@ -122,9 +123,10 @@ public class Endpoint {
 			throw new ReflectionException("Method %s must have at least %d parameters that are neither part or body".formatted(methodName, distance));
 		}
 
+		this.reflector = Reflector.getInstance();
 		this.logger = LoggerFactory.getLogger(Endpoint.class);
 		this.resourceType = resourceType;
-		this.handle = unreflect(method).asFixedArity();
+		this.handle = reflector.unreflect(method).asFixedArity();
 		this.returnType = method.getGenericReturnType();
 		this.varType = varType;
 		this.itemParameters = itemList.toArray(new ItemParameter[itemList.size()]);
@@ -288,16 +290,6 @@ public class Endpoint {
 			throw new BadRequestException(message);
 		}
 		return argument;
-	}
-
-	MethodHandle unreflect(Method method) {
-		MethodHandle handle;
-		try {
-			handle = Reflection.LOOKUP.unreflect(method);
-		} catch (IllegalAccessException exception) {
-			throw new AssertionError(exception);
-		}
-		return handle;
 	}
 
 	Object invoke(MethodHandle handle, Object... arguments) throws Exception {

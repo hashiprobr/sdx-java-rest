@@ -2,7 +2,7 @@ package br.pro.hashi.sdx.rest.transform.extension;
 
 import java.lang.reflect.Type;
 
-import br.pro.hashi.sdx.rest.reflection.Reflection;
+import br.pro.hashi.sdx.rest.reflection.Reflector;
 
 /**
  * <p>
@@ -29,7 +29,7 @@ public interface Converter<S, T> {
 	 * @return an object representing {@code S}
 	 */
 	default Type getSourceType() {
-		return Reflection.getSpecificType(Converter.class, 0, this);
+		return Reflector.getInstance().getSpecificType(Converter.class, 0, this);
 	}
 
 	/**
@@ -43,7 +43,7 @@ public interface Converter<S, T> {
 	 * @return an object representing {@code T}
 	 */
 	default Type getTargetType() {
-		return Reflection.getSpecificType(Converter.class, 1, this);
+		return Reflector.getInstance().getSpecificType(Converter.class, 1, this);
 	}
 
 	/**

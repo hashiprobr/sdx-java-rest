@@ -12,9 +12,11 @@ import java.util.function.Function;
 import br.pro.hashi.sdx.rest.reflection.exception.ReflectionException;
 
 public class Cache {
+	private final Reflector reflector;
 	private final Map<Class<?>, Function<String, ?>> functions;
 
 	public Cache() {
+		this.reflector = Reflector.getInstance();
 		this.functions = new HashMap<>(Map.of(
 				boolean.class, Boolean::parseBoolean,
 				byte.class, Byte::parseByte,
@@ -26,6 +28,10 @@ public class Cache {
 				BigInteger.class, BigInteger::new,
 				BigDecimal.class, BigDecimal::new,
 				String.class, (valueString) -> valueString));
+	}
+
+	Reflector getReflector() {
+		return reflector;
 	}
 
 	Map<Class<?>, Function<String, ?>> getFunctions() {
@@ -54,23 +60,13 @@ public class Cache {
 					throw new ReflectionException("Type valueOf method can only throw unchecked exceptions");
 				}
 			}
-			MethodHandle handle = unreflect(method);
+			MethodHandle handle = reflector.unreflect(method);
 			function = (valueString) -> {
 				return invoke(handle, valueString);
 			};
 			functions.put(type, function);
 		}
 		return function;
-	}
-
-	MethodHandle unreflect(Method method) {
-		MethodHandle handle;
-		try {
-			handle = Reflection.LOOKUP.unreflect(method);
-		} catch (IllegalAccessException exception) {
-			throw new AssertionError(exception);
-		}
-		return handle;
 	}
 
 	<T> T invoke(MethodHandle handle, String valueString) {

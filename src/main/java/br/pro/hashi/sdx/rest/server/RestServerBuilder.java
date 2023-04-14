@@ -1,7 +1,6 @@
 package br.pro.hashi.sdx.rest.server;
 
 import java.lang.invoke.MethodHandle;
-import java.lang.reflect.Constructor;
 import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -40,7 +39,7 @@ import br.pro.hashi.sdx.rest.coding.Media;
 import br.pro.hashi.sdx.rest.coding.Percent;
 import br.pro.hashi.sdx.rest.constant.Defaults;
 import br.pro.hashi.sdx.rest.reflection.Cache;
-import br.pro.hashi.sdx.rest.reflection.Reflection;
+import br.pro.hashi.sdx.rest.reflection.Reflector;
 import br.pro.hashi.sdx.rest.server.exception.ResourceException;
 import br.pro.hashi.sdx.rest.server.tree.Tree;
 import br.pro.hashi.sdx.rest.transform.facade.Facade;
@@ -52,6 +51,7 @@ import jakarta.servlet.MultipartConfigElement;
 public non-sealed class RestServerBuilder extends Builder<RestServerBuilder> {
 	private static final Pattern BASE_PATTERN = Pattern.compile("\\p{javaLowerCase}\\p{javaUpperCase}");
 
+	private final Reflector reflector;
 	private final Logger logger;
 	private final Set<Class<? extends RuntimeException>> gatewayTypes;
 	private ErrorFormatter formatter;
@@ -75,6 +75,7 @@ public non-sealed class RestServerBuilder extends Builder<RestServerBuilder> {
 	 * Constructs a new builder.
 	 */
 	public RestServerBuilder() {
+		this.reflector = Reflector.getInstance();
 		this.logger = LoggerFactory.getLogger(RestServerBuilder.class);
 		this.gatewayTypes = new HashSet<>();
 		this.formatter = new ConcreteFormatter();
@@ -448,11 +449,11 @@ public non-sealed class RestServerBuilder extends Builder<RestServerBuilder> {
 	public final RestServer build(String packageName) {
 		Map<Class<? extends RestResource>, MethodHandle> handles = new HashMap<>();
 		Map<Class<? extends RestResource>, String[]> itemMap = new HashMap<>();
-		for (Class<? extends RestResource> type : Reflection.getConcreteSubTypes(packageName, RestResource.class)) {
+		for (Class<? extends RestResource> type : reflector.getConcreteSubTypes(packageName, RestResource.class)) {
 			String typeName = type.getName();
-			Constructor<? extends RestResource> constructor = Reflection.getNoArgsConstructor(type, typeName);
-			String[] items = getItems(constructor, typeName);
-			handles.put(type, unreflect(constructor));
+			MethodHandle handle = reflector.getNoArgsConstructor(type, typeName);
+			String[] items = getItems(handle, typeName);
+			handles.put(type, handle);
 			itemMap.put(type, items);
 			logger.info("Constructed %s".formatted(typeName));
 		}
@@ -566,8 +567,8 @@ public non-sealed class RestServerBuilder extends Builder<RestServerBuilder> {
 		return new RestServer(server, scheme, clearPort, mainPort, altPort);
 	}
 
-	private String[] getItems(Constructor<? extends RestResource> constructor, String typeName) {
-		RestResource resource = Reflection.newNoArgsInstance(constructor);
+	private String[] getItems(MethodHandle handle, String typeName) {
+		RestResource resource = reflector.newNoArgsInstance(handle);
 		String base = resource.getBase();
 		if (base == null) {
 			if (!resource.isNullBase()) {
@@ -607,16 +608,6 @@ public non-sealed class RestServerBuilder extends Builder<RestServerBuilder> {
 			throw new ResourceException(typeName, message);
 		}
 		return Percent.splitAndDecode(base, urlCharset);
-	}
-
-	MethodHandle unreflect(Constructor<? extends RestResource> constructor) {
-		MethodHandle handle;
-		try {
-			handle = Reflection.LOOKUP.unreflectConstructor(constructor);
-		} catch (IllegalAccessException exception) {
-			throw new AssertionError(exception);
-		}
-		return handle;
 	}
 
 	/**

@@ -185,17 +185,9 @@ class CacheTest {
 	}
 
 	@Test
-	void doesNotUnreflectIfMethodIsInaccessible() {
-		Method method = getDeclaredMethod(WithNonPublicMethod.class);
-		assertThrows(AssertionError.class, () -> {
-			c.unreflect(method);
-		});
-	}
-
-	@Test
 	void doesNotInvokeIfMethodThrowsCheckedException() {
 		Method method = getDeclaredMethod(WithCheckedException.class);
-		MethodHandle handle = c.unreflect(method);
+		MethodHandle handle = c.getReflector().unreflect(method);
 		assertThrows(AssertionError.class, () -> {
 			c.invoke(handle, "valueString");
 		});

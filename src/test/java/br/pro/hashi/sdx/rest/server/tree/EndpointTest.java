@@ -34,6 +34,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import br.pro.hashi.sdx.rest.reflection.Cache;
+import br.pro.hashi.sdx.rest.reflection.Reflector;
 import br.pro.hashi.sdx.rest.reflection.exception.ReflectionException;
 import br.pro.hashi.sdx.rest.server.RestException;
 import br.pro.hashi.sdx.rest.server.RestResource;
@@ -1876,7 +1877,7 @@ class EndpointTest {
 		e = newEndpoint(0, "withNothing");
 		Method method = getDeclaredMethod(Signatures.class, "withoutPublic");
 		assertThrows(AssertionError.class, () -> {
-			e.unreflect(method);
+			Reflector.getInstance().unreflect(method);
 		});
 	}
 
@@ -1884,7 +1885,7 @@ class EndpointTest {
 	void doesNotInvokeWithError() {
 		e = newEndpoint(0, "withNothing");
 		Method method = getDeclaredMethod(Signatures.class, "withError");
-		MethodHandle handle = e.unreflect(method);
+		MethodHandle handle = Reflector.getInstance().unreflect(method);
 		Object[] arguments = new Object[] { resource };
 		assertThrows(AssertionError.class, () -> {
 			e.invoke(handle, arguments);
