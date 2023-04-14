@@ -27,11 +27,15 @@ public final class Reflector {
 	Reflector() {
 	}
 
-	public <T> MethodHandle getNoArgsConstructor(Class<T> type) {
-		return getNoArgsConstructor(type, type.getName());
+	public <T> MethodHandle getNoArgsConstructor(Class<T> type, String typeName) {
+		return getNoArgsConstructor(type, typeName, LOOKUP);
 	}
 
-	public <T> MethodHandle getNoArgsConstructor(Class<T> type, String typeName) {
+	public <T> MethodHandle getNoArgsConstructor(Class<T> type, Lookup lookup) {
+		return getNoArgsConstructor(type, type.getName(), lookup);
+	}
+
+	<T> MethodHandle getNoArgsConstructor(Class<T> type, String typeName, Lookup lookup) {
 		Constructor<T> constructor;
 		try {
 			constructor = type.getDeclaredConstructor();
@@ -41,13 +45,13 @@ public final class Reflector {
 		if (!Modifier.isPublic(constructor.getModifiers())) {
 			constructor.setAccessible(true);
 		}
-		return unreflectConstructor(constructor);
+		return unreflectConstructor(constructor, lookup);
 	}
 
-	<T> MethodHandle unreflectConstructor(Constructor<T> constructor) {
+	<T> MethodHandle unreflectConstructor(Constructor<T> constructor, Lookup lookup) {
 		MethodHandle handle;
 		try {
-			handle = LOOKUP.unreflectConstructor(constructor);
+			handle = lookup.unreflectConstructor(constructor);
 		} catch (IllegalAccessException exception) {
 			throw new AssertionError(exception);
 		}

@@ -11,6 +11,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodHandles.Lookup;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -69,6 +71,8 @@ import br.pro.hashi.sdx.rest.reflection.mock.specific.PartialGenericInterface;
 import br.pro.hashi.sdx.rest.reflection.mock.specific.PartialGenericParent;
 
 class ReflectorTest {
+	private static final Lookup LOOKUP = MethodHandles.lookup();
+
 	private Reflector r;
 
 	@BeforeEach
@@ -90,7 +94,7 @@ class ReflectorTest {
 			PrivateConstructor.class })
 	void getsAndCallsNoArgsConstructor(Class<?> type) {
 		MethodHandle handle = assertDoesNotThrow(() -> {
-			return r.getNoArgsConstructor(type);
+			return r.getNoArgsConstructor(type, LOOKUP);
 		});
 		assertDoesNotThrow(() -> {
 			r.newNoArgsInstance(handle);
@@ -100,7 +104,7 @@ class ReflectorTest {
 	@Test
 	void doesNotGetArgsConstructor() {
 		assertThrows(ReflectionException.class, () -> {
-			r.getNoArgsConstructor(ArgsConstructor.class);
+			r.getNoArgsConstructor(ArgsConstructor.class, LOOKUP);
 		});
 	}
 
@@ -114,14 +118,14 @@ class ReflectorTest {
 			return type.getDeclaredConstructor();
 		});
 		assertThrows(AssertionError.class, () -> {
-			r.unreflectConstructor(constructor);
+			r.unreflectConstructor(constructor, LOOKUP);
 		});
 	}
 
 	@Test
 	void getsButDoesNotCallThrowerConstructor() {
 		MethodHandle handle = assertDoesNotThrow(() -> {
-			return r.getNoArgsConstructor(ThrowerConstructor.class);
+			return r.getNoArgsConstructor(ThrowerConstructor.class, LOOKUP);
 		});
 		assertThrows(ReflectionException.class, () -> {
 			r.newNoArgsInstance(handle);

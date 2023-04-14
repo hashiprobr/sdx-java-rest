@@ -1,6 +1,7 @@
 package br.pro.hashi.sdx.rest.transform.extension;
 
 import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles.Lookup;
 import java.util.Iterator;
 
 import br.pro.hashi.sdx.rest.client.RestClientBuilder;
@@ -40,9 +41,10 @@ public abstract class Injector {
 	 * @param <T>         the superclass of the converters
 	 * @param packageName the name of the package
 	 * @param type        an object representing {@code T}
+	 * @param lookup      a lookup object with full access to {@code T}
 	 * @return an instance of each concrete subclass of {@code T} in the package
 	 */
-	protected final <T extends Converter<?, ?>> Iterable<T> getSubConverters(String packageName, Class<T> type) {
+	protected final <T extends Converter<?, ?>> Iterable<T> getSubConverters(String packageName, Class<T> type, Lookup lookup) {
 		return new Iterable<>() {
 			@Override
 			public Iterator<T> iterator() {
@@ -57,7 +59,7 @@ public abstract class Injector {
 					@Override
 					public T next() {
 						Class<? extends T> converterType = iterator.next();
-						MethodHandle handle = reflector.getNoArgsConstructor(converterType);
+						MethodHandle handle = reflector.getNoArgsConstructor(converterType, lookup);
 						return reflector.newNoArgsInstance(handle);
 					}
 				};
