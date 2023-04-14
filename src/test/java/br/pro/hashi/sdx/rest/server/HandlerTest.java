@@ -65,6 +65,7 @@ import br.pro.hashi.sdx.rest.server.mock.valid.ConcreteResourceWithoutBlank;
 import br.pro.hashi.sdx.rest.server.mock.valid.ConcreteResourceWithoutEmpty;
 import br.pro.hashi.sdx.rest.server.mock.valid.ConcreteResourceWithoutPlain;
 import br.pro.hashi.sdx.rest.server.mock.valid.NullableResource;
+import br.pro.hashi.sdx.rest.server.stream.CountOutputStream;
 import br.pro.hashi.sdx.rest.server.tree.Data;
 import br.pro.hashi.sdx.rest.server.tree.Endpoint;
 import br.pro.hashi.sdx.rest.server.tree.Node;

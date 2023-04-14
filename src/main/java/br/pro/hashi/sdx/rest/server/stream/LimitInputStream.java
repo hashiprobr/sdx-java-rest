@@ -1,4 +1,4 @@
-package br.pro.hashi.sdx.rest.server.tree;
+package br.pro.hashi.sdx.rest.server.stream;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -6,18 +6,18 @@ import java.io.OutputStream;
 
 import br.pro.hashi.sdx.rest.server.exception.PayloadTooLargeException;
 
-class LimitInputStream extends InputStream {
+public class LimitInputStream extends InputStream {
 	private final InputStream stream;
 	private final long maxSize;
 	private long size;
 
-	LimitInputStream(InputStream stream, long maxSize) {
+	public LimitInputStream(InputStream stream, long maxSize) {
 		this.stream = stream;
 		this.maxSize = maxSize;
 		this.size = 0;
 	}
 
-	long getSize() {
+	public long getSize() {
 		return size;
 	}
 

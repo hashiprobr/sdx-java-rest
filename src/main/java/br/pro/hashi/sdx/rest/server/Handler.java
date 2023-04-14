@@ -37,6 +37,7 @@ import br.pro.hashi.sdx.rest.server.exception.BadRequestException;
 import br.pro.hashi.sdx.rest.server.exception.MessageRestException;
 import br.pro.hashi.sdx.rest.server.exception.NotAcceptableException;
 import br.pro.hashi.sdx.rest.server.exception.PayloadTooLargeException;
+import br.pro.hashi.sdx.rest.server.stream.CountOutputStream;
 import br.pro.hashi.sdx.rest.server.tree.Data;
 import br.pro.hashi.sdx.rest.server.tree.Endpoint;
 import br.pro.hashi.sdx.rest.server.tree.Node;

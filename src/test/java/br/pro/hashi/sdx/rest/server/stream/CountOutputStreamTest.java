@@ -1,4 +1,4 @@
-package br.pro.hashi.sdx.rest.server;
+package br.pro.hashi.sdx.rest.server.stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;

@@ -19,6 +19,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.MockedStatic;
 
 import br.pro.hashi.sdx.rest.coding.Media;
+import br.pro.hashi.sdx.rest.server.stream.LimitInputStream;
 import br.pro.hashi.sdx.rest.transform.Deserializer;
 import br.pro.hashi.sdx.rest.transform.Disassembler;
 import br.pro.hashi.sdx.rest.transform.facade.Facade;

@@ -1,15 +1,15 @@
-package br.pro.hashi.sdx.rest.server;
+package br.pro.hashi.sdx.rest.server.stream;
 
 import java.io.OutputStream;
 
-class CountOutputStream extends OutputStream {
+public class CountOutputStream extends OutputStream {
 	private long count;
 
-	CountOutputStream() {
+	public CountOutputStream() {
 		this.count = 0;
 	}
 
-	long getCount() {
+	public long getCount() {
 		return count;
 	}
 

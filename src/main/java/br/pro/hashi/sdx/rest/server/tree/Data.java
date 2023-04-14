@@ -5,6 +5,7 @@ import java.io.Reader;
 import java.lang.reflect.Type;
 
 import br.pro.hashi.sdx.rest.coding.Media;
+import br.pro.hashi.sdx.rest.server.stream.LimitInputStream;
 import br.pro.hashi.sdx.rest.transform.Deserializer;
 import br.pro.hashi.sdx.rest.transform.Disassembler;
 import br.pro.hashi.sdx.rest.transform.facade.Facade;
