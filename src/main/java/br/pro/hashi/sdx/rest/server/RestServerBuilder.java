@@ -451,7 +451,7 @@ public non-sealed class RestServerBuilder extends Builder<RestServerBuilder> {
 		Map<Class<? extends RestResource>, String[]> itemMap = new HashMap<>();
 		for (Class<? extends RestResource> type : reflector.getConcreteSubTypes(packageName, RestResource.class)) {
 			String typeName = type.getName();
-			MethodHandle handle = reflector.getNoArgsConstructor(type, typeName);
+			MethodHandle handle = reflector.getCreator(type, typeName);
 			String[] items = getItems(handle, typeName);
 			handles.put(type, handle);
 			itemMap.put(type, items);
@@ -568,7 +568,7 @@ public non-sealed class RestServerBuilder extends Builder<RestServerBuilder> {
 	}
 
 	private String[] getItems(MethodHandle handle, String typeName) {
-		RestResource resource = reflector.newNoArgsInstance(handle);
+		RestResource resource = reflector.invokeCreator(handle);
 		String base = resource.getBase();
 		if (base == null) {
 			if (!resource.isNullBase()) {

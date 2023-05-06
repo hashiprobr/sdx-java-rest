@@ -24,7 +24,7 @@ public abstract class ErrorFormatter {
 	}
 
 	Method getMethod(Class<? extends ErrorFormatter> type) throws NoSuchMethodException {
-		return type.getMethod("format", int.class, String.class);
+		return type.getDeclaredMethod("format", int.class, String.class);
 	}
 
 	Type getReturnType() {

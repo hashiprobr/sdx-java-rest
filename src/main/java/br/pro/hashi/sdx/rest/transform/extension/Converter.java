@@ -29,7 +29,7 @@ public interface Converter<S, T> {
 	 * @return an object representing {@code S}
 	 */
 	default Type getSourceType() {
-		return Reflector.getInstance().getSpecificType(Converter.class, 0, this);
+		return Reflector.getInstance().getSpecificType(this, Converter.class, 0);
 	}
 
 	/**
@@ -43,7 +43,7 @@ public interface Converter<S, T> {
 	 * @return an object representing {@code T}
 	 */
 	default Type getTargetType() {
-		return Reflector.getInstance().getSpecificType(Converter.class, 1, this);
+		return Reflector.getInstance().getSpecificType(this, Converter.class, 1);
 	}
 
 	/**

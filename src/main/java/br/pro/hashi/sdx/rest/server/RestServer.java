@@ -8,8 +8,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.github.alexdlaird.ngrok.NgrokClient;
-import com.github.alexdlaird.ngrok.conf.JavaNgrokConfig;
-import com.github.alexdlaird.ngrok.installer.NgrokVersion;
 import com.github.alexdlaird.ngrok.protocol.CreateTunnel;
 
 import br.pro.hashi.sdx.rest.server.exception.ServerException;
@@ -186,11 +184,7 @@ public final class RestServer {
 		String authority;
 		if (useTunnel) {
 			int index = scheme.length() + 3;
-			JavaNgrokConfig config = new JavaNgrokConfig.Builder()
-					.withNgrokVersion(NgrokVersion.V3)
-					.build();
 			NgrokClient client = new NgrokClient.Builder()
-					.withJavaNgrokConfig(config)
 					.build();
 			CreateTunnel create = new CreateTunnel.Builder()
 					.withBindTls(index == 8)

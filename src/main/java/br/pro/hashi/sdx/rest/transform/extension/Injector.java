@@ -45,24 +45,19 @@ public abstract class Injector {
 	 * @return an instance of each concrete subclass of {@code T} in the package
 	 */
 	protected final <T extends Converter<?, ?>> Iterable<T> getSubConverters(String packageName, Class<T> type, Lookup lookup) {
-		return new Iterable<>() {
+		Iterator<Class<? extends T>> iterator = reflector.getConcreteSubTypes(packageName, type).iterator();
+
+		return () -> new Iterator<>() {
 			@Override
-			public Iterator<T> iterator() {
-				Iterator<Class<? extends T>> iterator = reflector.getConcreteSubTypes(packageName, type).iterator();
+			public boolean hasNext() {
+				return iterator.hasNext();
+			}
 
-				return new Iterator<>() {
-					@Override
-					public boolean hasNext() {
-						return iterator.hasNext();
-					}
-
-					@Override
-					public T next() {
-						Class<? extends T> converterType = iterator.next();
-						MethodHandle handle = reflector.getNoArgsConstructor(converterType, lookup);
-						return reflector.newNoArgsInstance(handle);
-					}
-				};
+			@Override
+			public T next() {
+				Class<? extends T> converterType = iterator.next();
+				MethodHandle handle = reflector.getCreator(converterType, lookup);
+				return reflector.invokeCreator(handle);
 			}
 		};
 	}

@@ -54,7 +54,7 @@ public class Endpoint {
 		Matcher matcher = METHOD_PATTERN.matcher(methodName);
 		methodName = "%s.%s".formatted(typeName, methodName);
 		if (!matcher.matches()) {
-			throw new ReflectionException("Method name %s must have only US-ASCII letters".formatted(methodName));
+			throw new ReflectionException("Method name %s can only have US-ASCII letters".formatted(methodName));
 		}
 
 		Type[] types = method.getGenericParameterTypes();

@@ -9,7 +9,6 @@ import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
-import java.util.Iterator;
 import java.util.Stack;
 
 import org.reflections.Reflections;
@@ -27,15 +26,15 @@ public final class Reflector {
 	Reflector() {
 	}
 
-	public <T> MethodHandle getNoArgsConstructor(Class<T> type, String typeName) {
-		return getNoArgsConstructor(type, typeName, LOOKUP);
+	public <T> MethodHandle getCreator(Class<T> type, String typeName) {
+		return getCreator(type, typeName, LOOKUP);
 	}
 
-	public <T> MethodHandle getNoArgsConstructor(Class<T> type, Lookup lookup) {
-		return getNoArgsConstructor(type, type.getName(), lookup);
+	public <T> MethodHandle getCreator(Class<T> type, Lookup lookup) {
+		return getCreator(type, type.getName(), lookup);
 	}
 
-	<T> MethodHandle getNoArgsConstructor(Class<T> type, String typeName, Lookup lookup) {
+	<T> MethodHandle getCreator(Class<T> type, String typeName, Lookup lookup) {
 		Constructor<T> constructor;
 		try {
 			constructor = type.getDeclaredConstructor();
@@ -49,16 +48,16 @@ public final class Reflector {
 	}
 
 	<T> MethodHandle unreflectConstructor(Constructor<T> constructor, Lookup lookup) {
-		MethodHandle handle;
+		MethodHandle creator;
 		try {
-			handle = lookup.unreflectConstructor(constructor);
+			creator = lookup.unreflectConstructor(constructor);
 		} catch (IllegalAccessException exception) {
 			throw new AssertionError(exception);
 		}
-		return handle;
+		return creator;
 	}
 
-	public <T> T newNoArgsInstance(MethodHandle handle) {
+	public <T> T invokeCreator(MethodHandle handle) {
 		T instance;
 		try {
 			instance = (T) handle.invoke();
@@ -84,18 +83,13 @@ public final class Reflector {
 	}
 
 	<T> Iterable<Class<? extends T>> getConcreteSubTypes(Reflections reflections, Class<T> type) {
-		return new Iterable<>() {
-			@Override
-			public Iterator<Class<? extends T>> iterator() {
-				return reflections.getSubTypesOf(type)
-						.stream()
-						.filter((subType) -> !Modifier.isAbstract(subType.getModifiers()))
-						.iterator();
-			}
-		};
+		return () -> reflections.getSubTypesOf(type)
+				.stream()
+				.filter((subType) -> !Modifier.isAbstract(subType.getModifiers()))
+				.iterator();
 	}
 
-	public <T, S extends T> Type getSpecificType(Class<T> rootType, int rootIndex, S object) {
+	public <T, S extends T> Type getSpecificType(S object, Class<T> rootType, int rootIndex) {
 		Class<?> type = object.getClass();
 		TypeVariable<?>[] typeVariables;
 

@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>io.github.hashiprobr</groupId>
   <artifactId>sdx-rest</artifactId>
-  <version>0.7.1</version>
+  <version>0.8.0</version>
   <name>${project.groupId}:${project.artifactId}</name>
   <description>Simple embedded REST framework based on Jetty.</description>
   <url>https://github.com/hashiprobr/sdx-java-rest</url>
@@ -83,12 +83,12 @@
     <dependency>
       <groupId>com.github.alexdlaird</groupId>
       <artifactId>java-ngrok</artifactId>
-      <version>1.6.2</version>
+      <version>2.1.0</version>
     </dependency>
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-params</artifactId>
-      <version>5.9.2</version>
+      <version>5.9.3</version>
       <scope>test</scope>
     </dependency>
     <dependency>

@@ -2,7 +2,7 @@ package br.pro.hashi.sdx.rest.reflection;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockConstruction;
@@ -31,8 +31,8 @@ import br.pro.hashi.sdx.rest.reflection.exception.ReflectionException;
 import br.pro.hashi.sdx.rest.reflection.mock.concrete.AbstractChild;
 import br.pro.hashi.sdx.rest.reflection.mock.concrete.Child;
 import br.pro.hashi.sdx.rest.reflection.mock.concrete.Parent;
-import br.pro.hashi.sdx.rest.reflection.mock.handle.ArgsConstructor;
-import br.pro.hashi.sdx.rest.reflection.mock.handle.ImplicitConstructor;
+import br.pro.hashi.sdx.rest.reflection.mock.handle.ArgumentConstructor;
+import br.pro.hashi.sdx.rest.reflection.mock.handle.DefaultConstructor;
 import br.pro.hashi.sdx.rest.reflection.mock.handle.Methods;
 import br.pro.hashi.sdx.rest.reflection.mock.handle.PackageConstructor;
 import br.pro.hashi.sdx.rest.reflection.mock.handle.PrivateConstructor;
@@ -82,29 +82,25 @@ class ReflectorTest {
 
 	@Test
 	void getsInstance() {
-		assertNotNull(Reflector.getInstance());
+		assertInstanceOf(Reflector.class, Reflector.getInstance());
 	}
 
 	@ParameterizedTest
 	@ValueSource(classes = {
-			ImplicitConstructor.class,
+			DefaultConstructor.class,
 			PublicConstructor.class,
 			ProtectedConstructor.class,
 			PackageConstructor.class,
 			PrivateConstructor.class })
-	void getsAndCallsNoArgsConstructor(Class<?> type) {
-		MethodHandle handle = assertDoesNotThrow(() -> {
-			return r.getNoArgsConstructor(type, LOOKUP);
-		});
-		assertDoesNotThrow(() -> {
-			r.newNoArgsInstance(handle);
-		});
+	<E> void getsAndInvokesCreator(Class<E> type) {
+		MethodHandle creator = r.getCreator(type, type.getName());
+		assertInstanceOf(type, r.invokeCreator(creator));
 	}
 
 	@Test
-	void doesNotGetArgsConstructor() {
+	void doesNotGetArgumentCreator() {
 		assertThrows(ReflectionException.class, () -> {
-			r.getNoArgsConstructor(ArgsConstructor.class, LOOKUP);
+			r.getCreator(ArgumentConstructor.class, LOOKUP);
 		});
 	}
 
@@ -113,8 +109,8 @@ class ReflectorTest {
 			ProtectedConstructor.class,
 			PackageConstructor.class,
 			PrivateConstructor.class })
-	void doesNotUnreflectIllegalConstructor(Class<?> type) {
-		Constructor<?> constructor = assertDoesNotThrow(() -> {
+	<E> void doesNotUnreflectIllegalConstructor(Class<E> type) {
+		Constructor<E> constructor = assertDoesNotThrow(() -> {
 			return type.getDeclaredConstructor();
 		});
 		assertThrows(AssertionError.class, () -> {
@@ -123,20 +119,16 @@ class ReflectorTest {
 	}
 
 	@Test
-	void getsButDoesNotCallThrowerConstructor() {
-		MethodHandle handle = assertDoesNotThrow(() -> {
-			return r.getNoArgsConstructor(ThrowerConstructor.class, LOOKUP);
-		});
+	void doesNotInvokeThrowerCreator() {
+		MethodHandle creator = r.getCreator(ThrowerConstructor.class, LOOKUP);
 		assertThrows(ReflectionException.class, () -> {
-			r.newNoArgsInstance(handle);
+			r.invokeCreator(creator);
 		});
 	}
 
 	@Test
-	void unreflectsMethod() {
-		Method method = assertDoesNotThrow(() -> {
-			return Methods.class.getDeclaredMethod("legal");
-		});
+	void unreflects() {
+		Method method = getDeclaredMethod("legal");
 		assertDoesNotThrow(() -> {
 			r.unreflect(method);
 		});
@@ -147,17 +139,22 @@ class ReflectorTest {
 			"illegalProtected",
 			"illegalPackage",
 			"illegalPrivate" })
-	void doesNotUnreflectIllegalMethod(String methodName) {
-		Method method = assertDoesNotThrow(() -> {
-			return Methods.class.getDeclaredMethod(methodName);
-		});
+	void doesNotUnreflectIllegal(String methodName) {
+		Method method = getDeclaredMethod(methodName);
 		assertThrows(AssertionError.class, () -> {
 			r.unreflect(method);
 		});
 	}
 
+	private Method getDeclaredMethod(String methodName) {
+		Method method = assertDoesNotThrow(() -> {
+			return Methods.class.getDeclaredMethod(methodName);
+		});
+		return method;
+	}
+
 	@Test
-	void instantiatesAndPassesReflections() {
+	void createsReflections() {
 		MockInitializer<Reflections> initializer = (mock, context) -> {
 			assertEquals("package", context.arguments().get(0));
 		};
@@ -182,204 +179,221 @@ class ReflectorTest {
 
 	@Test
 	void getsBothSpecificTypesFromFinalChildWithBoth() {
-		assertBothSpecificTypesExist(GenericParent.class, new FinalChildWithBoth());
+		FinalChildWithBoth object = new FinalChildWithBoth();
+		assertBothSpecificTypesExist(object, GenericParent.class);
 	}
 
 	@Test
 	void getsBothSpecificTypesFromFinalChildWithLeft() {
-		assertBothSpecificTypesExist(GenericParent.class, new FinalChildWithLeft());
+		FinalChildWithLeft object = new FinalChildWithLeft();
+		assertBothSpecificTypesExist(object, GenericParent.class);
 	}
 
 	@Test
 	void getsBothSpecificTypesFromFinalChildWithRight() {
-		assertBothSpecificTypesExist(GenericParent.class, new FinalChildWithRight());
+		FinalChildWithRight object = new FinalChildWithRight();
+		assertBothSpecificTypesExist(object, GenericParent.class);
 	}
 
 	@Test
 	void getsBothSpecificTypesFromFinalChildWithNeither() {
-		assertBothSpecificTypesExist(GenericParent.class, new FinalChildWithNeither());
+		FinalChildWithNeither object = new FinalChildWithNeither();
+		assertBothSpecificTypesExist(object, GenericParent.class);
 	}
 
 	@Test
 	void getsBothSpecificTypesFromChildWithBoth() {
-		assertBothSpecificTypesExist(GenericParent.class, new ChildWithBoth());
+		ChildWithBoth object = new ChildWithBoth();
+		assertBothSpecificTypesExist(object, GenericParent.class);
 	}
 
 	@Test
 	void getsLeftSpecificTypeFromChildWithLeft() {
-		ChildWithLeft<Double> child = new ChildWithLeft<>();
-		assertLeftSpecificTypeExists(GenericParent.class, child);
-		assertRightSpecificTypeNotExists(GenericParent.class, child);
+		ChildWithLeft<Double> object = new ChildWithLeft<>();
+		assertLeftSpecificTypeExists(object, GenericParent.class);
+		assertRightSpecificTypeNotExists(object, GenericParent.class);
 	}
 
 	@Test
 	void getsRightSpecificTypeFromChildWithRight() {
-		ChildWithRight<Integer> child = new ChildWithRight<>();
-		assertLeftSpecificTypeNotExists(GenericParent.class, child);
-		assertRightSpecificTypeExists(GenericParent.class, child);
+		ChildWithRight<Integer> object = new ChildWithRight<>();
+		assertLeftSpecificTypeNotExists(object, GenericParent.class);
+		assertRightSpecificTypeExists(object, GenericParent.class);
 	}
 
 	@Test
 	void getsNeitherSpecificTypeFromChildWithNeither() {
-		ChildWithNeither<Integer, Double> child = new ChildWithNeither<>();
-		assertBothSpecificTypesNotExist(GenericParent.class, child);
+		ChildWithNeither<Integer, Double> object = new ChildWithNeither<>();
+		assertBothSpecificTypesNotExist(object, GenericParent.class);
 	}
 
 	@Test
 	void getsBothSpecificTypesFromFinalImplementationWithDiamond() {
-		assertBothSpecificTypesExist(GenericInterface.class, new FinalImplementationWithDiamond());
+		FinalImplementationWithDiamond object = new FinalImplementationWithDiamond();
+		assertBothSpecificTypesExist(object, GenericInterface.class);
 	}
 
 	@Test
 	void getsBothSpecificTypesFromFinalImplementationWithBoth() {
-		assertBothSpecificTypesExist(GenericInterface.class, new FinalImplementationWithBoth());
+		FinalImplementationWithBoth object = new FinalImplementationWithBoth();
+		assertBothSpecificTypesExist(object, GenericInterface.class);
 	}
 
 	@Test
 	void getsBothSpecificTypesFromFinalImplementationWithLeft() {
-		assertBothSpecificTypesExist(GenericInterface.class, new FinalImplementationWithLeft());
+		FinalImplementationWithLeft object = new FinalImplementationWithLeft();
+		assertBothSpecificTypesExist(object, GenericInterface.class);
 	}
 
 	@Test
 	void getsBothSpecificTypesFromFinalImplementationWithRight() {
-		assertBothSpecificTypesExist(GenericInterface.class, new FinalImplementationWithRight());
+		FinalImplementationWithRight object = new FinalImplementationWithRight();
+		assertBothSpecificTypesExist(object, GenericInterface.class);
 	}
 
 	@Test
 	void getsBothSpecificTypesFromFinalImplementationWithNeither() {
-		assertBothSpecificTypesExist(GenericInterface.class, new FinalImplementationWithNeither());
+		FinalImplementationWithNeither object = new FinalImplementationWithNeither();
+		assertBothSpecificTypesExist(object, GenericInterface.class);
 	}
 
 	@Test
 	void getsBothSpecificTypesFromImplementationWithDiamond() {
-		assertBothSpecificTypesExist(GenericInterface.class, new ImplementationWithDiamond());
+		ImplementationWithDiamond object = new ImplementationWithDiamond();
+		assertBothSpecificTypesExist(object, GenericInterface.class);
 	}
 
 	@Test
 	void getsBothSpecificTypesFromImplementationWithBoth() {
-		assertBothSpecificTypesExist(GenericInterface.class, new ImplementationWithBoth());
+		ImplementationWithBoth object = new ImplementationWithBoth();
+		assertBothSpecificTypesExist(object, GenericInterface.class);
 	}
 
 	@Test
 	void getsLeftSpecificTypeFromImplementationWithLeft() {
-		ImplementationWithLeft<Double> implementation = new ImplementationWithLeft<>();
-		assertLeftSpecificTypeExists(GenericInterface.class, implementation);
-		assertRightSpecificTypeNotExists(GenericInterface.class, implementation);
+		ImplementationWithLeft<Double> object = new ImplementationWithLeft<>();
+		assertLeftSpecificTypeExists(object, GenericInterface.class);
+		assertRightSpecificTypeNotExists(object, GenericInterface.class);
 	}
 
 	@Test
 	void getsRightSpecificTypeFromImplementationWithRight() {
-		ImplementationWithRight<Integer> implementation = new ImplementationWithRight<>();
-		assertLeftSpecificTypeNotExists(GenericInterface.class, implementation);
-		assertRightSpecificTypeExists(GenericInterface.class, implementation);
+		ImplementationWithRight<Integer> object = new ImplementationWithRight<>();
+		assertLeftSpecificTypeNotExists(object, GenericInterface.class);
+		assertRightSpecificTypeExists(object, GenericInterface.class);
 	}
 
 	@Test
 	void getsNeitherSpecificTypeFromImplementationWithNeither() {
-		ImplementationWithNeither<Integer, Double> implementation = new ImplementationWithNeither<>();
-		assertBothSpecificTypesNotExist(GenericInterface.class, implementation);
+		ImplementationWithNeither<Integer, Double> object = new ImplementationWithNeither<>();
+		assertBothSpecificTypesNotExist(object, GenericInterface.class);
 	}
 
-	private <T, S extends T> void assertBothSpecificTypesExist(Class<T> rootType, S object) {
-		assertLeftSpecificTypeExists(rootType, object);
-		assertRightSpecificTypeExists(rootType, object);
+	private <T, S extends T> void assertBothSpecificTypesExist(S object, Class<T> rootType) {
+		assertLeftSpecificTypeExists(object, rootType);
+		assertRightSpecificTypeExists(object, rootType);
 	}
 
-	private <T, S extends T> void assertLeftSpecificTypeExists(Class<T> rootType, S object) {
-		assertSpecificTypeEquals(Integer.class, rootType, 0, object);
+	private <T, S extends T> void assertLeftSpecificTypeExists(S object, Class<T> rootType) {
+		assertSpecificTypeEquals(Integer.class, object, rootType, 0);
 	}
 
-	private <T, S extends T> void assertRightSpecificTypeExists(Class<T> rootType, S object) {
-		assertSpecificTypeEquals(Double.class, rootType, 1, object);
+	private <T, S extends T> void assertRightSpecificTypeExists(S object, Class<T> rootType) {
+		assertSpecificTypeEquals(Double.class, object, rootType, 1);
 	}
 
-	private <T, S extends T> void assertBothSpecificTypesNotExist(Class<T> rootType, S object) {
-		assertLeftSpecificTypeNotExists(rootType, object);
-		assertRightSpecificTypeNotExists(rootType, object);
+	private <T, S extends T> void assertBothSpecificTypesNotExist(S object, Class<T> rootType) {
+		assertLeftSpecificTypeNotExists(object, rootType);
+		assertRightSpecificTypeNotExists(object, rootType);
 	}
 
-	private <T, S extends T> void assertLeftSpecificTypeNotExists(Class<T> rootType, S object) {
-		assertSpecificTypeThrows(rootType, 0, object);
+	private <T, S extends T> void assertLeftSpecificTypeNotExists(S object, Class<T> rootType) {
+		assertSpecificTypeThrows(object, rootType, 0);
 	}
 
-	private <T, S extends T> void assertRightSpecificTypeNotExists(Class<T> rootType, S object) {
-		assertSpecificTypeThrows(rootType, 1, object);
+	private <T, S extends T> void assertRightSpecificTypeNotExists(S object, Class<T> rootType) {
+		assertSpecificTypeThrows(object, rootType, 1);
 	}
 
 	@Test
 	void getsBothSpecificTypesFromFinalMixedWithBoth() {
-		assertBothSpecificTypesExist(new FinalMixedWithBoth());
+		FinalMixedWithBoth object = new FinalMixedWithBoth();
+		assertBothSpecificTypesExist(object);
 	}
 
 	@Test
 	void getsBothSpecificTypesFromFinalMixedWithLeft() {
-		assertBothSpecificTypesExist(new FinalMixedWithLeft());
+		FinalMixedWithLeft object = new FinalMixedWithLeft();
+		assertBothSpecificTypesExist(object);
 	}
 
 	@Test
 	void getsBothSpecificTypesFromFinalMixedWithRight() {
-		assertBothSpecificTypesExist(new FinalMixedWithRight());
+		FinalMixedWithRight object = new FinalMixedWithRight();
+		assertBothSpecificTypesExist(object);
 	}
 
 	@Test
 	void getsBothSpecificTypesFromFinalMixedWithNeither() {
-		assertBothSpecificTypesExist(new FinalMixedWithNeither());
+		FinalMixedWithNeither object = new FinalMixedWithNeither();
+		assertBothSpecificTypesExist(object);
 	}
 
 	@Test
 	void getsBothSpecificTypesFromMixedWithBoth() {
-		assertBothSpecificTypesExist(new MixedWithBoth());
+		MixedWithBoth object = new MixedWithBoth();
+		assertBothSpecificTypesExist(object);
 	}
 
 	@Test
 	void getsLeftSpecificTypeFromMixedWithLeft() {
-		MixedWithLeft<Integer> mixed = new MixedWithLeft<>();
-		assertLeftSpecificTypeExists(mixed);
-		assertRightSpecificTypeNotExists(mixed);
+		MixedWithLeft<Integer> object = new MixedWithLeft<>();
+		assertLeftSpecificTypeExists(object);
+		assertRightSpecificTypeNotExists(object);
 	}
 
 	@Test
 	void getsRightSpecificTypeFromMixedWithRight() {
-		MixedWithRight<Integer> mixed = new MixedWithRight<>();
-		assertLeftSpecificTypeNotExists(mixed);
-		assertRightSpecificTypeExists(mixed);
+		MixedWithRight<Integer> object = new MixedWithRight<>();
+		assertLeftSpecificTypeNotExists(object);
+		assertRightSpecificTypeExists(object);
 	}
 
 	@Test
 	void getsNeitherSpecificTypeFromMixedWithNeither() {
-		MixedWithNeither<Integer, Double> mixed = new MixedWithNeither<>();
-		assertLeftSpecificTypeNotExists(mixed);
-		assertRightSpecificTypeNotExists(mixed);
+		MixedWithNeither<Integer, Double> object = new MixedWithNeither<>();
+		assertLeftSpecificTypeNotExists(object);
+		assertRightSpecificTypeNotExists(object);
 	}
 
-	private <S extends PartialGenericParent<?> & PartialGenericInterface<?>> void assertBothSpecificTypesExist(S mixed) {
-		assertLeftSpecificTypeExists(mixed);
-		assertRightSpecificTypeExists(mixed);
+	private <S extends PartialGenericParent<?> & PartialGenericInterface<?>> void assertBothSpecificTypesExist(S object) {
+		assertLeftSpecificTypeExists(object);
+		assertRightSpecificTypeExists(object);
 	}
 
-	private <S extends PartialGenericParent<?> & PartialGenericInterface<?>> void assertLeftSpecificTypeExists(S mixed) {
-		assertSpecificTypeEquals(Integer.class, PartialGenericParent.class, 0, mixed);
+	private <S extends PartialGenericParent<?> & PartialGenericInterface<?>> void assertLeftSpecificTypeExists(S object) {
+		assertSpecificTypeEquals(Integer.class, object, PartialGenericParent.class, 0);
 	}
 
-	private <S extends PartialGenericParent<?> & PartialGenericInterface<?>> void assertRightSpecificTypeExists(S mixed) {
-		assertSpecificTypeEquals(Double.class, PartialGenericInterface.class, 0, mixed);
+	private <S extends PartialGenericParent<?> & PartialGenericInterface<?>> void assertRightSpecificTypeExists(S object) {
+		assertSpecificTypeEquals(Double.class, object, PartialGenericInterface.class, 0);
 	}
 
-	private <S extends PartialGenericParent<?> & PartialGenericInterface<?>> void assertLeftSpecificTypeNotExists(S mixed) {
-		assertSpecificTypeThrows(PartialGenericParent.class, 0, mixed);
+	private <S extends PartialGenericParent<?> & PartialGenericInterface<?>> void assertLeftSpecificTypeNotExists(S object) {
+		assertSpecificTypeThrows(object, PartialGenericParent.class, 0);
 	}
 
-	private <S extends PartialGenericParent<?> & PartialGenericInterface<?>> void assertRightSpecificTypeNotExists(S mixed) {
-		assertSpecificTypeThrows(PartialGenericInterface.class, 0, mixed);
+	private <S extends PartialGenericParent<?> & PartialGenericInterface<?>> void assertRightSpecificTypeNotExists(S object) {
+		assertSpecificTypeThrows(object, PartialGenericInterface.class, 0);
 	}
 
-	private <T, S extends T> void assertSpecificTypeEquals(Class<?> expected, Class<T> rootType, int rootIndex, S object) {
-		assertEquals(expected, r.getSpecificType(rootType, rootIndex, object));
+	private <T, S extends T> void assertSpecificTypeEquals(Class<?> expected, S object, Class<T> rootType, int rootIndex) {
+		assertEquals(expected, r.getSpecificType(object, rootType, rootIndex));
 	}
 
-	private <T, S extends T> void assertSpecificTypeThrows(Class<T> rootType, int rootIndex, S object) {
+	private <T, S extends T> void assertSpecificTypeThrows(S object, Class<T> rootType, int rootIndex) {
 		assertThrows(ReflectionException.class, () -> {
-			r.getSpecificType(rootType, rootIndex, object);
+			r.getSpecificType(object, rootType, rootIndex);
 		});
 	}
 }

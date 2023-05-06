@@ -29,8 +29,8 @@ class InjectorTest {
 			Converter<?, ?> converter = new ConcreteConverter();
 			Reflector reflector = mock(Reflector.class);
 			when(reflector.getConcreteSubTypes(packageName, Converter.class)).thenReturn(Set.of(ConcreteConverter.class));
-			when(reflector.getNoArgsConstructor(ConcreteConverter.class, LOOKUP)).thenReturn(null);
-			when(reflector.newNoArgsInstance(null)).thenReturn(converter);
+			when(reflector.getCreator(ConcreteConverter.class, LOOKUP)).thenReturn(null);
+			when(reflector.invokeCreator(null)).thenReturn(converter);
 			reflectorStatic.when(() -> Reflector.getInstance()).thenReturn(reflector);
 			Injector i = new ConcreteInjector();
 			List<Converter<?, ?>> subConverters = new ArrayList<>();

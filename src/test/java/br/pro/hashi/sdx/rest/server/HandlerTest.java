@@ -146,7 +146,7 @@ class HandlerTest {
 	private void putHandle(Lookup lookup, Class<? extends RestResource> type) {
 		Constructor<? extends RestResource> constructor;
 		try {
-			constructor = type.getConstructor();
+			constructor = type.getDeclaredConstructor();
 		} catch (NoSuchMethodException exception) {
 			throw new AssertionError(exception);
 		}
