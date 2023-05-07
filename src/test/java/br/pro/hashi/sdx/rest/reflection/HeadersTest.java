@@ -16,7 +16,7 @@ class HeadersTest extends FieldsTest {
 
 	@Override
 	protected Fields newInstance() {
-		Cache cache = new Cache();
+		ParserFactory cache = new ParserFactory();
 		HttpFields.Mutable fields = HttpFields.build();
 		fields.add("x", "false");
 		fields.add("x", "true");

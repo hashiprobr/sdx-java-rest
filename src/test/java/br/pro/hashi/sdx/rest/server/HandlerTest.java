@@ -53,7 +53,7 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
 import br.pro.hashi.sdx.rest.Fields;
-import br.pro.hashi.sdx.rest.reflection.Cache;
+import br.pro.hashi.sdx.rest.reflection.ParserFactory;
 import br.pro.hashi.sdx.rest.reflection.Headers;
 import br.pro.hashi.sdx.rest.reflection.PartHeaders;
 import br.pro.hashi.sdx.rest.reflection.Queries;
@@ -88,7 +88,7 @@ class HandlerTest {
 	private static final String USASCII_BODY = "special";
 	private static final String SPECIAL_BODY = "spéçíál";
 
-	private Cache cache;
+	private ParserFactory cache;
 	private Facade facade;
 	private Tree tree;
 	private ErrorFormatter formatter;
@@ -113,7 +113,7 @@ class HandlerTest {
 
 	@BeforeEach
 	void setUp() throws NoSuchMethodException, IOException {
-		cache = mock(Cache.class);
+		cache = mock(ParserFactory.class);
 		facade = mock(Facade.class);
 		when(facade.getExtensionType("txt")).thenReturn("text/plain");
 		tree = mock(Tree.class);

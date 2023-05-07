@@ -56,7 +56,7 @@ import br.pro.hashi.sdx.rest.client.RestClient.Proxy.Entry;
 import br.pro.hashi.sdx.rest.client.RestClient.Proxy.Task;
 import br.pro.hashi.sdx.rest.client.exception.ClientException;
 import br.pro.hashi.sdx.rest.constant.Defaults;
-import br.pro.hashi.sdx.rest.reflection.Cache;
+import br.pro.hashi.sdx.rest.reflection.ParserFactory;
 import br.pro.hashi.sdx.rest.reflection.Headers;
 import br.pro.hashi.sdx.rest.transform.Assembler;
 import br.pro.hashi.sdx.rest.transform.Serializer;
@@ -66,7 +66,7 @@ class RestClientTest {
 	private static final String USASCII_BODY = "special";
 	private static final String SPECIAL_BODY = "spéçíál";
 
-	private Cache cache;
+	private ParserFactory cache;
 	private Facade facade;
 	private HttpClient jettyClient;
 	private Request request;
@@ -76,7 +76,7 @@ class RestClientTest {
 
 	@BeforeEach
 	void setUp() {
-		cache = mock(Cache.class);
+		cache = mock(ParserFactory.class);
 		facade = mock(Facade.class);
 		jettyClient = mock(HttpClient.class);
 		request = mock(Request.class);

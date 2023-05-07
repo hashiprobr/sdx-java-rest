@@ -11,20 +11,20 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.Stack;
 
-import br.pro.hashi.sdx.rest.reflection.Cache;
+import br.pro.hashi.sdx.rest.reflection.ParserFactory;
 import br.pro.hashi.sdx.rest.reflection.exception.ReflectionException;
 import br.pro.hashi.sdx.rest.server.RestResource;
 import br.pro.hashi.sdx.rest.server.annotation.Nested;
 import br.pro.hashi.sdx.rest.server.exception.NotFoundException;
 
 public class Tree {
-	private final Cache cache;
+	private final ParserFactory cache;
 	private final Locale locale;
 	private final Node root;
 	private final Set<String> methodNames;
 	private final long maxBodySize;
 
-	public Tree(Cache cache, Locale locale, long maxBodySize) {
+	public Tree(ParserFactory cache, Locale locale, long maxBodySize) {
 		this.cache = cache;
 		this.locale = locale;
 		this.root = new Node();

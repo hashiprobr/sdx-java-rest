@@ -38,7 +38,7 @@ import br.pro.hashi.sdx.rest.Builder;
 import br.pro.hashi.sdx.rest.coding.Media;
 import br.pro.hashi.sdx.rest.coding.Percent;
 import br.pro.hashi.sdx.rest.constant.Defaults;
-import br.pro.hashi.sdx.rest.reflection.Cache;
+import br.pro.hashi.sdx.rest.reflection.ParserFactory;
 import br.pro.hashi.sdx.rest.reflection.Reflector;
 import br.pro.hashi.sdx.rest.server.exception.ResourceException;
 import br.pro.hashi.sdx.rest.server.tree.Tree;
@@ -96,7 +96,7 @@ public non-sealed class RestServerBuilder extends Builder<RestServerBuilder> {
 		this.cors = true;
 	}
 
-	Cache getCache() {
+	ParserFactory getCache() {
 		return cache;
 	}
 

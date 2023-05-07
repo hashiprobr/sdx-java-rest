@@ -33,7 +33,7 @@ import br.pro.hashi.sdx.rest.client.exception.ClientException;
 import br.pro.hashi.sdx.rest.coding.Media;
 import br.pro.hashi.sdx.rest.coding.Percent;
 import br.pro.hashi.sdx.rest.coding.Query;
-import br.pro.hashi.sdx.rest.reflection.Cache;
+import br.pro.hashi.sdx.rest.reflection.ParserFactory;
 import br.pro.hashi.sdx.rest.reflection.Headers;
 import br.pro.hashi.sdx.rest.transform.Assembler;
 import br.pro.hashi.sdx.rest.transform.Serializer;
@@ -65,14 +65,14 @@ public final class RestClient {
 	}
 
 	private final Logger logger;
-	private final Cache cache;
+	private final ParserFactory cache;
 	private final Facade facade;
 	private final HttpClient jettyClient;
 	private final Charset urlCharset;
 	private final Locale locale;
 	private final String urlPrefix;
 
-	RestClient(Cache cache, Facade facade, HttpClient jettyClient, Charset urlCharset, Locale locale, String urlPrefix) {
+	RestClient(ParserFactory cache, Facade facade, HttpClient jettyClient, Charset urlCharset, Locale locale, String urlPrefix) {
 		this.logger = LoggerFactory.getLogger(RestClient.class);
 		this.cache = cache;
 		this.facade = facade;
@@ -82,7 +82,7 @@ public final class RestClient {
 		this.urlPrefix = urlPrefix;
 	}
 
-	Cache getCache() {
+	ParserFactory getCache() {
 		return cache;
 	}
 

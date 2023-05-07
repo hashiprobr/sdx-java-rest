@@ -29,7 +29,7 @@ import org.slf4j.LoggerFactory;
 import br.pro.hashi.sdx.rest.Fields;
 import br.pro.hashi.sdx.rest.coding.Media;
 import br.pro.hashi.sdx.rest.coding.Percent;
-import br.pro.hashi.sdx.rest.reflection.Cache;
+import br.pro.hashi.sdx.rest.reflection.ParserFactory;
 import br.pro.hashi.sdx.rest.reflection.Headers;
 import br.pro.hashi.sdx.rest.reflection.PartHeaders;
 import br.pro.hashi.sdx.rest.reflection.Queries;
@@ -59,7 +59,7 @@ class Handler extends AbstractHandler {
 	private final Type streamConsumerType;
 	private final Type writerConsumerType;
 	private final Logger logger;
-	private final Cache cache;
+	private final ParserFactory cache;
 	private final Facade facade;
 	private final Tree tree;
 	private final ErrorFormatter formatter;
@@ -69,7 +69,7 @@ class Handler extends AbstractHandler {
 	private final Charset urlCharset;
 	private final boolean cors;
 
-	Handler(Cache cache, Facade facade, Tree tree, ErrorFormatter formatter, Map<Class<? extends RestResource>, MethodHandle> handles, MultipartConfigElement element, Set<Class<? extends RuntimeException>> gatewayTypes, Charset urlCharset, boolean cors) {
+	Handler(ParserFactory cache, Facade facade, Tree tree, ErrorFormatter formatter, Map<Class<? extends RestResource>, MethodHandle> handles, MultipartConfigElement element, Set<Class<? extends RuntimeException>> gatewayTypes, Charset urlCharset, boolean cors) {
 		this.streamConsumerType = new Hint<Consumer<OutputStream>>() {}.getType();
 		this.writerConsumerType = new Hint<Consumer<Writer>>() {}.getType();
 		this.logger = LoggerFactory.getLogger(Handler.class);
@@ -84,7 +84,7 @@ class Handler extends AbstractHandler {
 		this.cors = cors;
 	}
 
-	Cache getCache() {
+	ParserFactory getCache() {
 		return cache;
 	}
 
@@ -337,8 +337,8 @@ class Handler extends AbstractHandler {
 		RestResource resource;
 		try {
 			resource = (RestResource) handle.invoke();
-		} catch (Throwable exception) {
-			throw new AssertionError(exception);
+		} catch (Throwable throwable) {
+			throw new AssertionError(throwable);
 		}
 		return resource;
 	}

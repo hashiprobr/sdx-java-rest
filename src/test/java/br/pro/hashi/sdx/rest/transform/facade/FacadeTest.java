@@ -30,7 +30,7 @@ import org.mockito.MockedConstruction;
 import org.mockito.MockedStatic;
 
 import br.pro.hashi.sdx.rest.coding.Media;
-import br.pro.hashi.sdx.rest.reflection.Cache;
+import br.pro.hashi.sdx.rest.reflection.ParserFactory;
 import br.pro.hashi.sdx.rest.transform.Assembler;
 import br.pro.hashi.sdx.rest.transform.Deserializer;
 import br.pro.hashi.sdx.rest.transform.Disassembler;
@@ -51,7 +51,7 @@ class FacadeTest {
 		disassemblerConstruction = mockConstruction(DefaultDisassembler.class);
 		serializerConstruction = mockConstruction(DefaultSerializer.class);
 		deserializerConstruction = mockConstruction(DefaultDeserializer.class);
-		f = new Facade(new Cache());
+		f = new Facade(ParserFactory.getInstance());
 	}
 
 	@AfterEach

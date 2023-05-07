@@ -33,7 +33,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
-import br.pro.hashi.sdx.rest.reflection.Cache;
+import br.pro.hashi.sdx.rest.reflection.ParserFactory;
 import br.pro.hashi.sdx.rest.reflection.Reflector;
 import br.pro.hashi.sdx.rest.reflection.exception.ReflectionException;
 import br.pro.hashi.sdx.rest.server.RestException;
@@ -51,7 +51,7 @@ class EndpointTest {
 
 	private Function<String, Integer> intFunction;
 	private Function<String, Double> doubleFunction;
-	private Cache cache;
+	private ParserFactory cache;
 	private Endpoint e;
 	private Signatures resource;
 
@@ -59,7 +59,7 @@ class EndpointTest {
 	void setUp() {
 		intFunction = Integer::parseInt;
 		doubleFunction = Double::parseDouble;
-		cache = mock(Cache.class);
+		cache = mock(ParserFactory.class);
 		when(cache.get(int.class)).thenReturn(intFunction);
 		when(cache.get(double.class)).thenReturn(doubleFunction);
 		resource = spy(new Signatures());

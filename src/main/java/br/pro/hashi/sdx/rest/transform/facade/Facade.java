@@ -13,7 +13,7 @@ import java.util.Set;
 import java.util.function.Consumer;
 
 import br.pro.hashi.sdx.rest.coding.Media;
-import br.pro.hashi.sdx.rest.reflection.Cache;
+import br.pro.hashi.sdx.rest.reflection.ParserFactory;
 import br.pro.hashi.sdx.rest.transform.Assembler;
 import br.pro.hashi.sdx.rest.transform.Deserializer;
 import br.pro.hashi.sdx.rest.transform.Disassembler;
@@ -53,7 +53,7 @@ public class Facade {
 	private String fallbackByteType;
 	private String fallbackTextType;
 
-	public Facade(Cache cache) {
+	public Facade(ParserFactory cache) {
 		this.streamConsumerType = new Hint<Consumer<OutputStream>>() {}.getType();
 		this.writerConsumerType = new Hint<Consumer<Writer>>() {}.getType();
 

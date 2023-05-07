@@ -8,10 +8,10 @@ import br.pro.hashi.sdx.rest.Fields;
 import jakarta.servlet.http.Part;
 
 public final class PartHeaders extends Fields {
-	private final Cache cache;
+	private final ParserFactory cache;
 	private final Part part;
 
-	public PartHeaders(Cache cache, Part part) {
+	public PartHeaders(ParserFactory cache, Part part) {
 		this.cache = cache;
 		this.part = part;
 	}

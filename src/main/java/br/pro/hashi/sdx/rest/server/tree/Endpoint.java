@@ -23,7 +23,7 @@ import org.eclipse.jetty.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import br.pro.hashi.sdx.rest.reflection.Cache;
+import br.pro.hashi.sdx.rest.reflection.ParserFactory;
 import br.pro.hashi.sdx.rest.reflection.Reflector;
 import br.pro.hashi.sdx.rest.reflection.exception.ReflectionException;
 import br.pro.hashi.sdx.rest.server.RestException;
@@ -50,7 +50,7 @@ public class Endpoint {
 	private final Object[] arguments;
 	private final int reach;
 
-	Endpoint(Cache cache, long maxBodySize, int distance, Class<? extends RestResource> resourceType, String typeName, Method method, String methodName) {
+	Endpoint(ParserFactory cache, long maxBodySize, int distance, Class<? extends RestResource> resourceType, String typeName, Method method, String methodName) {
 		Matcher matcher = METHOD_PATTERN.matcher(methodName);
 		methodName = "%s.%s".formatted(typeName, methodName);
 		if (!matcher.matches()) {

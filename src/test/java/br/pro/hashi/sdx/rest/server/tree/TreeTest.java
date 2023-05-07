@@ -23,7 +23,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.MockedConstruction;
 
 import br.pro.hashi.sdx.rest.constant.Defaults;
-import br.pro.hashi.sdx.rest.reflection.Cache;
+import br.pro.hashi.sdx.rest.reflection.ParserFactory;
 import br.pro.hashi.sdx.rest.reflection.exception.ReflectionException;
 import br.pro.hashi.sdx.rest.server.RestResource;
 import br.pro.hashi.sdx.rest.server.annotation.Nested;
@@ -84,7 +84,7 @@ import br.pro.hashi.sdx.rest.server.tree.mock.node.ZeroInTwo;
 import br.pro.hashi.sdx.rest.server.tree.mock.node.ZeroInZero;
 
 class TreeTest {
-	private Cache cache;
+	private ParserFactory cache;
 	private Tree t;
 	private Map<Class<? extends RestResource>, String[]> itemMap;
 	private List<String> itemList;
@@ -92,7 +92,7 @@ class TreeTest {
 
 	@BeforeEach
 	void setUp() {
-		cache = mock(Cache.class);
+		cache = mock(ParserFactory.class);
 		t = new Tree(cache, Defaults.LOCALE, 200000);
 		itemMap = new HashMap<>();
 		itemMap.put(Enclosing.class, new String[] { "a", "b" });

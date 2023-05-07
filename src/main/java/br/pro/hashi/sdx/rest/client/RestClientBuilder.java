@@ -18,7 +18,7 @@ import org.eclipse.jetty.util.ssl.SslContextFactory;
 
 import br.pro.hashi.sdx.rest.Builder;
 import br.pro.hashi.sdx.rest.coding.Percent;
-import br.pro.hashi.sdx.rest.reflection.Cache;
+import br.pro.hashi.sdx.rest.reflection.ParserFactory;
 import br.pro.hashi.sdx.rest.transform.facade.Facade;
 
 /**
@@ -34,7 +34,7 @@ public non-sealed class RestClientBuilder extends Builder<RestClientBuilder> {
 		this.factory = null;
 	}
 
-	Cache getCache() {
+	ParserFactory getCache() {
 		return cache;
 	}
 

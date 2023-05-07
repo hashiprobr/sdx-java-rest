@@ -9,10 +9,10 @@ import org.eclipse.jetty.http.HttpFields;
 import br.pro.hashi.sdx.rest.Fields;
 
 public final class Headers extends Fields {
-	private final Cache cache;
+	private final ParserFactory cache;
 	private final HttpFields fields;
 
-	public Headers(Cache cache, HttpFields fields) {
+	public Headers(ParserFactory cache, HttpFields fields) {
 		this.cache = cache;
 		this.fields = fields;
 	}

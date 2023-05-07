@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockConstruction;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.verify;
 
 import java.nio.charset.StandardCharsets;
@@ -16,9 +17,10 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedConstruction;
+import org.mockito.MockedStatic;
 
 import br.pro.hashi.sdx.rest.constant.Defaults;
-import br.pro.hashi.sdx.rest.reflection.Cache;
+import br.pro.hashi.sdx.rest.reflection.ParserFactory;
 import br.pro.hashi.sdx.rest.transform.Assembler;
 import br.pro.hashi.sdx.rest.transform.Deserializer;
 import br.pro.hashi.sdx.rest.transform.Disassembler;
@@ -27,25 +29,26 @@ import br.pro.hashi.sdx.rest.transform.Serializer;
 import br.pro.hashi.sdx.rest.transform.facade.Facade;
 
 public abstract class BuilderTest {
-	private MockedConstruction<Cache> cacheConstruction;
+	private MockedStatic<ParserFactory> cacheStatic;
 	private MockedConstruction<Facade> facadeConstruction;
 	private Builder<?> b;
-	private Cache cache;
+	private ParserFactory cache;
 	private Facade facade;
 
 	@BeforeEach
 	void setUp() {
-		cacheConstruction = mockConstruction(Cache.class);
+		cache = mock(ParserFactory.class);
+		cacheStatic = mockStatic(ParserFactory.class);
+		cacheStatic.when(() -> ParserFactory.getInstance()).thenReturn(cache);
 		facadeConstruction = mockConstruction(Facade.class);
 		b = newInstance();
-		cache = cacheConstruction.constructed().get(0);
 		facade = facadeConstruction.constructed().get(0);
 	}
 
 	@AfterEach
 	void tearDown() {
 		facadeConstruction.close();
-		cacheConstruction.close();
+		cacheStatic.close();
 	}
 
 	@Test

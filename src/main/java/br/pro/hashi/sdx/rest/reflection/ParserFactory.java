@@ -11,13 +11,23 @@ import java.util.function.Function;
 
 import br.pro.hashi.sdx.rest.reflection.exception.ReflectionException;
 
-public class Cache {
-	private final Reflector reflector;
-	private final Map<Class<?>, Function<String, ?>> functions;
+public class ParserFactory {
+	private static final ParserFactory INSTANCE = new ParserFactory();
 
-	public Cache() {
-		this.reflector = Reflector.getInstance();
-		this.functions = new HashMap<>(Map.of(
+	private final Reflector reflector;
+	private final Map<Class<?>, Function<String, ?>> cache;
+
+	public static ParserFactory getInstance() {
+		return INSTANCE;
+	}
+
+	ParserFactory() {
+		this(Reflector.getInstance());
+	}
+
+	ParserFactory(Reflector reflector) {
+		this.reflector = reflector;
+		this.cache = new HashMap<>(Map.of(
 				boolean.class, Boolean::parseBoolean,
 				byte.class, Byte::parseByte,
 				short.class, Short::parseShort,
@@ -34,50 +44,47 @@ public class Cache {
 		return reflector;
 	}
 
-	Map<Class<?>, Function<String, ?>> getFunctions() {
-		return functions;
-	}
-
 	public synchronized <T> Function<String, T> get(Class<T> type) {
 		@SuppressWarnings("unchecked")
-		Function<String, T> function = (Function<String, T>) functions.get(type);
-		if (function == null) {
+		Function<String, T> parser = (Function<String, T>) cache.get(type);
+		if (parser == null) {
+			String typeName = type.getName();
 			Method method;
 			try {
 				method = type.getDeclaredMethod("valueOf", String.class);
 			} catch (NoSuchMethodException exception) {
-				throw new ReflectionException("Type must have a valueOf(String) method");
+				throw new ReflectionException("Class %s must have a valueOf(String) method".formatted(typeName));
 			}
 			if (!method.getReturnType().equals(type)) {
-				throw new ReflectionException("Type valueOf method must return an object of the type");
+				throw new ReflectionException("Method valueOf(String) of class %s must return an instance of this class".formatted(typeName));
 			}
 			int modifiers = method.getModifiers();
 			if (!(Modifier.isPublic(modifiers) && Modifier.isStatic(modifiers))) {
-				throw new ReflectionException("Type valueOf method must be public and static");
+				throw new ReflectionException("Method valueOf(String) of class %s must be public and static".formatted(typeName));
 			}
 			for (Class<?> exceptionType : method.getExceptionTypes()) {
 				if (!RuntimeException.class.isAssignableFrom(exceptionType)) {
-					throw new ReflectionException("Type valueOf method can only throw unchecked exceptions");
+					throw new ReflectionException("Method valueOf(String) of class %s can only throw unchecked exceptions".formatted(typeName));
 				}
 			}
 			MethodHandle handle = reflector.unreflect(method);
-			function = (valueString) -> {
+			parser = (valueString) -> {
 				return invoke(handle, valueString);
 			};
-			functions.put(type, function);
+			cache.put(type, parser);
 		}
-		return function;
+		return parser;
 	}
 
 	<T> T invoke(MethodHandle handle, String valueString) {
 		T value;
 		try {
 			value = (T) handle.invoke(valueString);
-		} catch (Throwable exception) {
-			if (exception instanceof RuntimeException) {
-				throw (RuntimeException) exception;
+		} catch (Throwable throwable) {
+			if (throwable instanceof RuntimeException) {
+				throw (RuntimeException) throwable;
 			}
-			throw new AssertionError(exception);
+			throw new AssertionError(throwable);
 		}
 		return value;
 	}

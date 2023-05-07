@@ -8,10 +8,10 @@ import java.util.stream.Stream;
 import br.pro.hashi.sdx.rest.Fields;
 
 public final class Queries extends Fields {
-	private final Cache cache;
+	private final ParserFactory cache;
 	private final Map<String, String[]> map;
 
-	public Queries(Cache cache, Map<String, String[]> map) {
+	public Queries(ParserFactory cache, Map<String, String[]> map) {
 		this.cache = cache;
 		this.map = map;
 	}

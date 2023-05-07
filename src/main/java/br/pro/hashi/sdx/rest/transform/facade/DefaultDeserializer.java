@@ -4,14 +4,14 @@ import java.io.Reader;
 import java.lang.reflect.Type;
 
 import br.pro.hashi.sdx.rest.coding.Media;
-import br.pro.hashi.sdx.rest.reflection.Cache;
+import br.pro.hashi.sdx.rest.reflection.ParserFactory;
 import br.pro.hashi.sdx.rest.transform.Deserializer;
 import br.pro.hashi.sdx.rest.transform.exception.UnsupportedException;
 
 class DefaultDeserializer implements Deserializer {
-	private final Cache cache;
+	private final ParserFactory cache;
 
-	DefaultDeserializer(Cache cache) {
+	DefaultDeserializer(ParserFactory cache) {
 		this.cache = cache;
 	}
 

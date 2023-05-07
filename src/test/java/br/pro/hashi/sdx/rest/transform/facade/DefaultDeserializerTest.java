@@ -10,7 +10,7 @@ import java.io.StringReader;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import br.pro.hashi.sdx.rest.reflection.Cache;
+import br.pro.hashi.sdx.rest.reflection.ParserFactory;
 import br.pro.hashi.sdx.rest.transform.Deserializer;
 import br.pro.hashi.sdx.rest.transform.Hint;
 import br.pro.hashi.sdx.rest.transform.exception.UnsupportedException;
@@ -22,7 +22,7 @@ class DefaultDeserializerTest {
 	@BeforeEach
 	void setUp() {
 		reader = new StringReader(newString());
-		d = new DefaultDeserializer(new Cache());
+		d = new DefaultDeserializer(ParserFactory.getInstance());
 	}
 
 	@Test
