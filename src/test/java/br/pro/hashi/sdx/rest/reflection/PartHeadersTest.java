@@ -18,7 +18,7 @@ class PartHeadersTest extends FieldsTest {
 
 	@Override
 	protected Fields newInstance() {
-		ParserFactory cache = new ParserFactory();
+		ParserFactory cache = ParserFactory.getInstance();
 		Part part = mock(Part.class);
 		when(part.getHeaderNames()).thenReturn(List.of("x", "y", "z", "xs", "ys", "zs"));
 		when(part.getHeaders("x")).thenReturn(List.of("false", "true"));

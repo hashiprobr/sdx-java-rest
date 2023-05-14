@@ -11,7 +11,7 @@ class QueriesTest extends FieldsTest {
 
 	@Override
 	protected Fields newInstance() {
-		ParserFactory cache = new ParserFactory();
+		ParserFactory cache = ParserFactory.getInstance();
 		Map<String, String[]> map = new HashMap<>();
 		map.put("x", new String[] { "false", "true" });
 		map.put("y", new String[] { "0", "1" });

@@ -12,18 +12,19 @@ import java.util.function.Function;
 import br.pro.hashi.sdx.rest.reflection.exception.ReflectionException;
 
 public class ParserFactory {
-	private static final ParserFactory INSTANCE = new ParserFactory();
+	private static final ParserFactory INSTANCE = newInstance();
 
-	private final Reflector reflector;
-	private final Map<Class<?>, Function<String, ?>> cache;
+	private static ParserFactory newInstance() {
+		Reflector reflector = Reflector.getInstance();
+		return new ParserFactory(reflector);
+	}
 
 	public static ParserFactory getInstance() {
 		return INSTANCE;
 	}
 
-	ParserFactory() {
-		this(Reflector.getInstance());
-	}
+	private final Reflector reflector;
+	private final Map<Class<?>, Function<String, ?>> cache;
 
 	ParserFactory(Reflector reflector) {
 		this.reflector = reflector;
@@ -38,10 +39,6 @@ public class ParserFactory {
 				BigInteger.class, BigInteger::new,
 				BigDecimal.class, BigDecimal::new,
 				String.class, (valueString) -> valueString));
-	}
-
-	Reflector getReflector() {
-		return reflector;
 	}
 
 	public synchronized <T> Function<String, T> get(Class<T> type) {
