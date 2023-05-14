@@ -11,8 +11,7 @@ import static org.mockito.Mockito.mockConstruction;
 import static org.mockito.Mockito.verify;
 
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Set;
 
 import org.eclipse.jetty.client.ContentDecoder;
 import org.eclipse.jetty.client.GZIPContentDecoder;
@@ -98,12 +97,9 @@ class RestClientBuilderTest extends BuilderTest {
 		HttpClient jettyClient = client.getJettyClient();
 		assertInstanceOf(HttpCookieStore.Empty.class, jettyClient.getCookieStore());
 		assertTrue(jettyClient.isFollowRedirects());
-		List<ContentDecoder.Factory> factories = new ArrayList<>();
-		for (ContentDecoder.Factory factory : jettyClient.getContentDecoderFactories()) {
-			factories.add(factory);
-		}
+		Set<ContentDecoder.Factory> factories = jettyClient.getContentDecoderFactories();
 		assertEquals(1, factories.size());
-		assertInstanceOf(GZIPContentDecoder.Factory.class, factories.get(0));
+		assertInstanceOf(GZIPContentDecoder.Factory.class, factories.iterator().next());
 		assertNull(jettyClient.getSslContextFactory());
 		assertInstanceOf(HttpClientTransportDynamic.class, jettyClient.getTransport());
 	}

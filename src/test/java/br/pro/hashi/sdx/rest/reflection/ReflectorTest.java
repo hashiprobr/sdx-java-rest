@@ -92,7 +92,7 @@ class ReflectorTest {
 			ProtectedConstructor.class,
 			PackageConstructor.class,
 			PrivateConstructor.class })
-	<E> void getsAndInvokesCreator(Class<E> type) {
+	<T> void getsAndInvokesCreator(Class<T> type) {
 		MethodHandle creator = r.getCreator(type, type.getName());
 		assertInstanceOf(type, r.invokeCreator(creator));
 	}
@@ -100,7 +100,7 @@ class ReflectorTest {
 	@Test
 	void doesNotGetArgumentCreator() {
 		assertThrows(ReflectionException.class, () -> {
-			r.getCreator(ArgumentConstructor.class, LOOKUP);
+			getCreator(ArgumentConstructor.class);
 		});
 	}
 
@@ -109,8 +109,8 @@ class ReflectorTest {
 			ProtectedConstructor.class,
 			PackageConstructor.class,
 			PrivateConstructor.class })
-	<E> void doesNotUnreflectIllegalConstructor(Class<E> type) {
-		Constructor<E> constructor = assertDoesNotThrow(() -> {
+	<T> void doesNotUnreflectIllegalConstructor(Class<T> type) {
+		Constructor<T> constructor = assertDoesNotThrow(() -> {
 			return type.getDeclaredConstructor();
 		});
 		assertThrows(AssertionError.class, () -> {
@@ -120,10 +120,14 @@ class ReflectorTest {
 
 	@Test
 	void doesNotInvokeThrowerCreator() {
-		MethodHandle creator = r.getCreator(ThrowerConstructor.class, LOOKUP);
+		MethodHandle creator = getCreator(ThrowerConstructor.class);
 		assertThrows(ReflectionException.class, () -> {
 			r.invokeCreator(creator);
 		});
+	}
+
+	private <T> MethodHandle getCreator(Class<T> type) {
+		return r.getCreator(type, LOOKUP);
 	}
 
 	@Test

@@ -150,50 +150,7 @@ class ParserFactoryTest {
 	}
 
 	@Test
-	void doesNotGetMissingParser() {
-		assertThrows(ReflectionException.class, () -> {
-			f.get(MissingMethod.class);
-		});
-	}
-
-	@Test
-	void doesNotGetNonInstanceParser() {
-		assertThrows(ReflectionException.class, () -> {
-			f.get(NonInstanceMethod.class);
-		});
-	}
-
-	@Test
-	void doesNotGetNonPublicParser() {
-		assertThrows(ReflectionException.class, () -> {
-			f.get(NonPublicMethod.class);
-		});
-	}
-
-	@Test
-	void doesNotGetNonStaticParser() {
-		assertThrows(ReflectionException.class, () -> {
-			f.get(NonStaticMethod.class);
-		});
-	}
-
-	@Test
-	void doesNotGetCheckedParser() {
-		assertThrows(ReflectionException.class, () -> {
-			f.get(CheckedMethod.class);
-		});
-	}
-
-	@Test
-	void doesNotApplyUncheckedParser() {
-		Function<String, UncheckedMethod> parser = f.get(UncheckedMethod.class);
-		assertThrows(RuntimeException.class, () -> {
-			parser.apply("s");
-		});
-	}
-
-	@Test
-	void doesNotInvokeCheckedMethod() {
+	void doesNotInvokeCheckedHandle() {
 		Method method = getDeclaredMethod(CheckedMethod.class);
 		MethodHandle handle = assertDoesNotThrow(() -> {
 			return LOOKUP.unreflect(method);
@@ -211,5 +168,48 @@ class ParserFactoryTest {
 			throw new AssertionError(exception);
 		}
 		return method;
+	}
+
+	@Test
+	void doesNotApplyUncheckedParser() {
+		Function<String, UncheckedMethod> parser = f.get(UncheckedMethod.class);
+		assertThrows(RuntimeException.class, () -> {
+			parser.apply("s");
+		});
+	}
+
+	@Test
+	void doesNotGetCheckedParser() {
+		assertThrows(ReflectionException.class, () -> {
+			f.get(CheckedMethod.class);
+		});
+	}
+
+	@Test
+	void doesNotGetNonStaticParser() {
+		assertThrows(ReflectionException.class, () -> {
+			f.get(NonStaticMethod.class);
+		});
+	}
+
+	@Test
+	void doesNotGetNonPublicParser() {
+		assertThrows(ReflectionException.class, () -> {
+			f.get(NonPublicMethod.class);
+		});
+	}
+
+	@Test
+	void doesNotGetNonInstanceParser() {
+		assertThrows(ReflectionException.class, () -> {
+			f.get(NonInstanceMethod.class);
+		});
+	}
+
+	@Test
+	void doesNotGetMissingParser() {
+		assertThrows(ReflectionException.class, () -> {
+			f.get(MissingMethod.class);
+		});
 	}
 }
