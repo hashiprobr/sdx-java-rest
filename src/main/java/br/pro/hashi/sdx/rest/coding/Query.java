@@ -4,7 +4,7 @@ import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
 
-public final class Query {
+public class Query {
 	public static String encode(String item, Charset charset) {
 		item = URLEncoder.encode(item, charset);
 		return makeConsistentWithRfc3986(item);

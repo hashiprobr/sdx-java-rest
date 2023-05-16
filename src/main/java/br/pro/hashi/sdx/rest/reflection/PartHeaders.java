@@ -6,7 +6,7 @@ import java.util.stream.Stream;
 import br.pro.hashi.sdx.rest.Fields;
 import jakarta.servlet.http.Part;
 
-public final class PartHeaders extends Fields {
+public non-sealed class PartHeaders extends Fields {
 	private final Part part;
 
 	public PartHeaders(ParserFactory factory, Part part) {

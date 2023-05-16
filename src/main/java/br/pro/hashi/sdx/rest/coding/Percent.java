@@ -3,7 +3,7 @@ package br.pro.hashi.sdx.rest.coding;
 import java.net.URLDecoder;
 import java.nio.charset.Charset;
 
-public final class Percent {
+public class Percent {
 	public static String stripEndingSlashes(String uri) {
 		int last = uri.length() - 1;
 		while (last > 0 && uri.charAt(last) == '/') {

@@ -7,7 +7,7 @@ import org.eclipse.jetty.http.HttpFields;
 
 import br.pro.hashi.sdx.rest.Fields;
 
-public final class Headers extends Fields {
+public non-sealed class Headers extends Fields {
 	private final HttpFields fields;
 
 	public Headers(ParserFactory factory, HttpFields fields) {

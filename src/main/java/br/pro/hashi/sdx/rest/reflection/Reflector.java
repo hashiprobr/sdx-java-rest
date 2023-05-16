@@ -15,7 +15,7 @@ import org.reflections.Reflections;
 
 import br.pro.hashi.sdx.rest.reflection.exception.ReflectionException;
 
-public final class Reflector {
+public class Reflector {
 	private static final Reflector INSTANCE = new Reflector();
 	private static final Lookup LOOKUP = MethodHandles.lookup();
 

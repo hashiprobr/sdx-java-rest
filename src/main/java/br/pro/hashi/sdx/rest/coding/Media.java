@@ -17,7 +17,7 @@ import br.pro.hashi.sdx.rest.coding.exception.CharsetException;
 import br.pro.hashi.sdx.rest.constant.Defaults;
 import br.pro.hashi.sdx.rest.constant.Sizes;
 
-public final class Media {
+public class Media {
 	private static final Base64.Encoder BASE64_ENCODER = Base64.getEncoder();
 	private static final Base64.Decoder BASE64_DECODER = Base64.getDecoder();
 	private static final Pattern BASE64_PATTERN = Pattern.compile("(?:[^;]*;)+\\s*base64\\s*(?:;[^;]*)*", Pattern.CASE_INSENSITIVE);

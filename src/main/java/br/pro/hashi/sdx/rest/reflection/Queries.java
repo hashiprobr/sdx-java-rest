@@ -6,7 +6,7 @@ import java.util.stream.Stream;
 
 import br.pro.hashi.sdx.rest.Fields;
 
-public final class Queries extends Fields {
+public non-sealed class Queries extends Fields {
 	private final Map<String, String[]> map;
 
 	public Queries(ParserFactory factory, Map<String, String[]> map) {
