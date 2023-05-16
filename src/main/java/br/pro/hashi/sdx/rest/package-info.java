@@ -1,4 +1,4 @@
 /**
- * Provides base classes for building and running REST clients and servers.
+ * Provides base classes.
  */
 package br.pro.hashi.sdx.rest;

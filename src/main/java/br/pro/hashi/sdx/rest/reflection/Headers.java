@@ -1,7 +1,6 @@
 package br.pro.hashi.sdx.rest.reflection;
 
 import java.util.Set;
-import java.util.function.Function;
 import java.util.stream.Stream;
 
 import org.eclipse.jetty.http.HttpFields;
@@ -9,11 +8,10 @@ import org.eclipse.jetty.http.HttpFields;
 import br.pro.hashi.sdx.rest.Fields;
 
 public final class Headers extends Fields {
-	private final ParserFactory cache;
 	private final HttpFields fields;
 
-	public Headers(ParserFactory cache, HttpFields fields) {
-		this.cache = cache;
+	public Headers(ParserFactory factory, HttpFields fields) {
+		super(factory);
 		this.fields = fields;
 	}
 
@@ -22,25 +20,18 @@ public final class Headers extends Fields {
 	}
 
 	@Override
-	protected Stream<String> getStream(String name) {
-		name = clean(name);
-		return fields.getValuesList(name).stream();
-	}
-
-	@Override
-	protected String doGet(String name) {
-		name = clean(name);
-		return fields.get(name);
-	}
-
-	@Override
-	protected <T> Function<String, T> function(Class<T> type) {
-		return cache.get(type);
-	}
-
-	@Override
 	public Set<String> names() {
 		return fields.getFieldNamesCollection();
+	}
+
+	@Override
+	protected Stream<String> getStream(String name) {
+		return fields.getValuesList(clean(name)).stream();
+	}
+
+	@Override
+	protected String getString(String name) {
+		return fields.get(clean(name));
 	}
 
 	private String clean(String name) {

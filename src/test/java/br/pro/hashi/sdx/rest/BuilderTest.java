@@ -53,7 +53,7 @@ public abstract class BuilderTest {
 
 	@Test
 	void initializesWithCache() {
-		assertEquals(cache, b.cache);
+		assertEquals(cache, b.parserFactory);
 	}
 
 	@Test

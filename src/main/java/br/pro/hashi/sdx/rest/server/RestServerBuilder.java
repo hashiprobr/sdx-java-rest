@@ -97,7 +97,7 @@ public non-sealed class RestServerBuilder extends Builder<RestServerBuilder> {
 	}
 
 	ParserFactory getCache() {
-		return cache;
+		return parserFactory;
 	}
 
 	Facade getFacade() {
@@ -458,7 +458,7 @@ public non-sealed class RestServerBuilder extends Builder<RestServerBuilder> {
 			logger.info("Constructed %s".formatted(typeName));
 		}
 
-		Tree tree = new Tree(cache, locale, maxBodySize);
+		Tree tree = new Tree(parserFactory, locale, maxBodySize);
 		for (Class<? extends RestResource> type : itemMap.keySet()) {
 			String typeName = type.getName();
 			tree.putNodesAndEndpoints(type, typeName, itemMap);
@@ -475,7 +475,7 @@ public non-sealed class RestServerBuilder extends Builder<RestServerBuilder> {
 		ConcreteHandler errorHandler = new ConcreteHandler(facade, formatter, contentType, charset, base64);
 		server.setErrorHandler(errorHandler);
 
-		AbstractHandler handler = new Handler(cache, facade, tree, formatter, handles, element, gatewayTypes, urlCharset, cors);
+		AbstractHandler handler = new Handler(parserFactory, facade, tree, formatter, handles, element, gatewayTypes, urlCharset, cors);
 		if (compression) {
 			GzipHandler gzipHandler = new GzipHandler();
 			gzipHandler.setHandler(handler);

@@ -18,7 +18,7 @@ import br.pro.hashi.sdx.rest.transform.Serializer;
 import br.pro.hashi.sdx.rest.transform.facade.Facade;
 
 /**
- * Base class for configuring and building REST clients and servers.
+ * Base class for builders.
  * 
  * @param <T> the subclass
  */
@@ -28,7 +28,7 @@ public sealed abstract class Builder<T extends Builder<T>> permits RestClientBui
 	 * 
 	 * @hidden
 	 */
-	protected final ParserFactory cache;
+	protected final ParserFactory parserFactory;
 
 	/**
 	 * Internal member.
@@ -71,8 +71,8 @@ public sealed abstract class Builder<T extends Builder<T>> permits RestClientBui
 	 * @hidden
 	 */
 	protected Builder() {
-		this.cache = ParserFactory.getInstance();
-		this.facade = new Facade(this.cache);
+		this.parserFactory = ParserFactory.getInstance();
+		this.facade = new Facade(this.parserFactory);
 		this.urlCharset = StandardCharsets.UTF_8;
 		this.locale = Defaults.LOCALE;
 		this.redirection = true;
