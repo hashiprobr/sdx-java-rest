@@ -4,21 +4,21 @@ package br.pro.hashi.sdx.rest.transform.exception;
  * Thrown to indicate that there is no support for transforming an object into a
  * representation or vice-versa.
  */
-public class UnsupportedException extends RuntimeException {
-	private static final long serialVersionUID = -8017735781658743101L;
+public class TypeException extends RuntimeException {
+	private static final long serialVersionUID = 398124112466236078L;
 
 	/**
-	 * Constructs an {@code UnsupportedException} with no detail message.
+	 * Constructs an {@code TypeException} with no detail message.
 	 */
-	public UnsupportedException() {
+	public TypeException() {
 	}
 
 	/**
-	 * Constructs an {@code UnsupportedException} with the specified detail message.
+	 * Constructs an {@code TypeException} with the specified detail message.
 	 * 
 	 * @param message the detail message
 	 */
-	public UnsupportedException(String message) {
+	public TypeException(String message) {
 		super(message);
 	}
 
@@ -34,7 +34,7 @@ public class UnsupportedException extends RuntimeException {
 	 * @param message the detail message
 	 * @param cause   the cause
 	 */
-	public UnsupportedException(String message, Throwable cause) {
+	public TypeException(String message, Throwable cause) {
 		super(message, cause);
 	}
 
@@ -44,7 +44,7 @@ public class UnsupportedException extends RuntimeException {
 	 * 
 	 * @param cause the cause
 	 */
-	public UnsupportedException(Throwable cause) {
+	public TypeException(Throwable cause) {
 		super(cause);
 	}
 }

@@ -26,11 +26,15 @@ public interface Assembler {
 	 * 
 	 * @param body   the object
 	 * @param stream the output
+	 * @throws NullPointerException if the body is null
 	 * @throws UncheckedIOException if the representation cannot be written
 	 * @throws AssemblingException  if the object cannot be transformed
 	 */
 	default void write(Object body, OutputStream stream) {
-		write(body, body == null ? Object.class : body.getClass(), stream);
+		if (body == null) {
+			throw new NullPointerException("Body cannot be null");
+		}
+		write(body, body.getClass(), stream);
 	}
 
 	/**

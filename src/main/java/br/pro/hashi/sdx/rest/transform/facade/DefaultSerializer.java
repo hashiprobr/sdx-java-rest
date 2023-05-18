@@ -9,7 +9,7 @@ import java.util.function.Consumer;
 
 import br.pro.hashi.sdx.rest.transform.Hint;
 import br.pro.hashi.sdx.rest.transform.Serializer;
-import br.pro.hashi.sdx.rest.transform.exception.UnsupportedException;
+import br.pro.hashi.sdx.rest.transform.exception.TypeException;
 
 class DefaultSerializer implements Serializer {
 	private final Type consumerType;
@@ -21,7 +21,7 @@ class DefaultSerializer implements Serializer {
 	@Override
 	public void write(Object body, Type type, Writer writer) {
 		try {
-			if (body != null && Facade.PRIMITIVE_TYPES.contains(type)) {
+			if (Facade.PRIMITIVE_TYPES.contains(type)) {
 				writer.write(body.toString());
 				return;
 			}
@@ -39,7 +39,7 @@ class DefaultSerializer implements Serializer {
 				consumer.accept(writer);
 				return;
 			}
-			throw new UnsupportedException("Body must be a primitive or an instance of String, Reader or Consumer<Writer>");
+			throw new TypeException("Body must be a primitive or an instance of String, Reader or Consumer<Writer>");
 		} catch (IOException exception) {
 			throw new UncheckedIOException(exception);
 		}

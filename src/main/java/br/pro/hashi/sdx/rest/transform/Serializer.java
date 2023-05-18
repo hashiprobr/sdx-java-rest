@@ -25,11 +25,15 @@ public interface Serializer {
 	 * 
 	 * @param body   the object
 	 * @param writer the output
+	 * @throws NullPointerException if the body is null
 	 * @throws UncheckedIOException if the representation cannot be written
 	 * @throws SerializingException if the object cannot be transformed
 	 */
 	default void write(Object body, Writer writer) {
-		write(body, body == null ? Object.class : body.getClass(), writer);
+		if (body == null) {
+			throw new NullPointerException("Body cannot be null");
+		}
+		write(body, body.getClass(), writer);
 	}
 
 	/**

@@ -9,7 +9,7 @@ import java.util.function.Consumer;
 
 import br.pro.hashi.sdx.rest.transform.Assembler;
 import br.pro.hashi.sdx.rest.transform.Hint;
-import br.pro.hashi.sdx.rest.transform.exception.UnsupportedException;
+import br.pro.hashi.sdx.rest.transform.exception.TypeException;
 
 class DefaultAssembler implements Assembler {
 	private final Type consumerType;
@@ -35,7 +35,7 @@ class DefaultAssembler implements Assembler {
 				consumer.accept(stream);
 				return;
 			}
-			throw new UnsupportedException("Body must be instance of byte[], InputStream or Consumer<OutputStream>");
+			throw new TypeException("Body must be instance of byte[], InputStream or Consumer<OutputStream>");
 		} catch (IOException exception) {
 			throw new UncheckedIOException(exception);
 		}

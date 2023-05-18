@@ -6,19 +6,19 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 
 import org.junit.jupiter.api.Test;
 
-class UnsupportedExceptionTest {
-	private UnsupportedException e;
+class TypeExceptionTest {
+	private TypeException e;
 
 	@Test
 	void constructsWithNoArgs() {
-		e = new UnsupportedException();
+		e = new TypeException();
 		assertNull(e.getMessage());
 		assertNull(e.getCause());
 	}
 
 	@Test
 	void constructsWithMessage() {
-		e = new UnsupportedException("message");
+		e = new TypeException("message");
 		assertEquals("message", e.getMessage());
 		assertNull(e.getCause());
 	}
@@ -26,7 +26,7 @@ class UnsupportedExceptionTest {
 	@Test
 	void constructsWithMessageAndCause() {
 		Throwable cause = new Throwable();
-		e = new UnsupportedException("message", cause);
+		e = new TypeException("message", cause);
 		assertEquals("message", e.getMessage());
 		assertSame(cause, e.getCause());
 	}
@@ -34,7 +34,7 @@ class UnsupportedExceptionTest {
 	@Test
 	void constructsWithCause() {
 		Throwable cause = new Throwable();
-		e = new UnsupportedException(cause);
+		e = new TypeException(cause);
 		assertEquals(cause.toString(), e.getMessage());
 		assertSame(cause, e.getCause());
 	}

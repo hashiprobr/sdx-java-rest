@@ -13,7 +13,7 @@ import org.junit.jupiter.api.Test;
 import br.pro.hashi.sdx.rest.reflection.ParserFactory;
 import br.pro.hashi.sdx.rest.transform.Deserializer;
 import br.pro.hashi.sdx.rest.transform.Hint;
-import br.pro.hashi.sdx.rest.transform.exception.UnsupportedException;
+import br.pro.hashi.sdx.rest.transform.exception.TypeException;
 
 class DefaultDeserializerTest {
 	private Reader reader;
@@ -117,14 +117,14 @@ class DefaultDeserializerTest {
 
 	@Test
 	void doesNotReadIfTypeEqualsStringReader() {
-		assertThrows(UnsupportedException.class, () -> {
+		assertThrows(TypeException.class, () -> {
 			d.read(reader, StringReader.class);
 		});
 	}
 
 	@Test
 	void doesNotReadIfTypeEqualsStringReaderWithHint() {
-		assertThrows(UnsupportedException.class, () -> {
+		assertThrows(TypeException.class, () -> {
 			d.read(reader, new Hint<StringReader>() {}.getType());
 		});
 	}

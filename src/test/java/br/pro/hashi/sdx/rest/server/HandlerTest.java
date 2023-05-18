@@ -74,7 +74,7 @@ import br.pro.hashi.sdx.rest.server.tree.Tree.Leaf;
 import br.pro.hashi.sdx.rest.transform.Assembler;
 import br.pro.hashi.sdx.rest.transform.Hint;
 import br.pro.hashi.sdx.rest.transform.Serializer;
-import br.pro.hashi.sdx.rest.transform.exception.UnsupportedException;
+import br.pro.hashi.sdx.rest.transform.exception.TypeException;
 import br.pro.hashi.sdx.rest.transform.facade.Facade;
 import jakarta.servlet.MultipartConfigElement;
 import jakarta.servlet.ServletException;
@@ -1632,8 +1632,8 @@ class HandlerTest {
 		mockCharset();
 		mockWithoutBase64();
 		mockWithoutCommitted();
-		assertThrows(UnsupportedException.class, () -> {
-			serializeWithException(UnsupportedException.class);
+		assertThrows(TypeException.class, () -> {
+			serializeWithException(TypeException.class);
 		});
 		verify(response).setContentType("type/subtype;charset=UTF-8");
 		verifyNoWrite();
@@ -1656,7 +1656,7 @@ class HandlerTest {
 		mockWithoutBase64();
 		mockWithoutCommitted();
 		Serializer serializer = mockSerializer(SPECIAL_BODY);
-		doThrow(UnsupportedException.class).when(serializer).write(eq(SPECIAL_BODY), eq(String.class), any());
+		doThrow(TypeException.class).when(serializer).write(eq(SPECIAL_BODY), eq(String.class), any());
 		assertThrows(NotAcceptableException.class, () -> {
 			write(SPECIAL_BODY, String.class, "text/plain");
 		});

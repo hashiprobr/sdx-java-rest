@@ -19,7 +19,7 @@ import br.pro.hashi.sdx.rest.transform.Deserializer;
 import br.pro.hashi.sdx.rest.transform.Disassembler;
 import br.pro.hashi.sdx.rest.transform.Hint;
 import br.pro.hashi.sdx.rest.transform.Serializer;
-import br.pro.hashi.sdx.rest.transform.exception.UnsupportedException;
+import br.pro.hashi.sdx.rest.transform.exception.TypeException;
 
 public class Facade {
 	private static final String OCTET_TYPE = "application/octet-stream";
@@ -199,7 +199,7 @@ public class Facade {
 	public Assembler getAssembler(String contentType) {
 		Assembler assembler = assemblers.get(contentType);
 		if (assembler == null) {
-			throw new UnsupportedException("No assembler associated to %s".formatted(contentType));
+			throw new TypeException("No assembler associated to %s".formatted(contentType));
 		}
 		return assembler;
 	}
@@ -231,7 +231,7 @@ public class Facade {
 	public Disassembler getDisassembler(String contentType) {
 		Disassembler disassembler = disassemblers.get(contentType);
 		if (disassembler == null) {
-			throw new UnsupportedException("No disassembler associated to %s".formatted(contentType));
+			throw new TypeException("No disassembler associated to %s".formatted(contentType));
 		}
 		return disassembler;
 	}
@@ -263,7 +263,7 @@ public class Facade {
 	public Serializer getSerializer(String contentType) {
 		Serializer serializer = serializers.get(contentType);
 		if (serializer == null) {
-			throw new UnsupportedException("No serializer associated to %s".formatted(contentType));
+			throw new TypeException("No serializer associated to %s".formatted(contentType));
 		}
 		return serializer;
 	}
@@ -295,7 +295,7 @@ public class Facade {
 	public Deserializer getDeserializer(String contentType) {
 		Deserializer deserializer = deserializers.get(contentType);
 		if (deserializer == null) {
-			throw new UnsupportedException("No deserializer associated to %s".formatted(contentType));
+			throw new TypeException("No deserializer associated to %s".formatted(contentType));
 		}
 		return deserializer;
 	}
