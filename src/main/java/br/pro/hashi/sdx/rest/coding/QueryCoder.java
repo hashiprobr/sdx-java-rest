@@ -4,15 +4,29 @@ import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
 
-public class Query {
-	public static String encode(String item, Charset charset) {
+public class QueryCoder {
+	private static final QueryCoder INSTANCE = new QueryCoder();
+
+	public static QueryCoder getInstance() {
+		return INSTANCE;
+	}
+
+	QueryCoder() {
+	}
+
+	public String recode(String item, Charset charset) {
+		item = URLDecoder.decode(item, charset);
+		return encode(item, charset);
+	}
+
+	public String encode(String item, Charset charset) {
 		item = URLEncoder.encode(item, charset);
-		return makeConsistentWithRfc3986(item);
+		return updateToRfc3986(item);
 	}
 
 	// decode ~
 	// encode *
-	private static String makeConsistentWithRfc3986(String item) {
+	private String updateToRfc3986(String item) {
 		StringBuilder builder = new StringBuilder();
 		for (int i = 0; i < item.length(); i++) {
 			char c = item.charAt(i);
@@ -38,13 +52,5 @@ public class Query {
 			}
 		}
 		return builder.toString();
-	}
-
-	public static String recode(String item, Charset charset) {
-		item = URLDecoder.decode(item, charset);
-		return encode(item, charset);
-	}
-
-	private Query() {
 	}
 }

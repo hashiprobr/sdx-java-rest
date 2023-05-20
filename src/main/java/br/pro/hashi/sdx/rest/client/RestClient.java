@@ -32,9 +32,9 @@ import org.slf4j.LoggerFactory;
 import br.pro.hashi.sdx.rest.client.exception.ClientException;
 import br.pro.hashi.sdx.rest.coding.Media;
 import br.pro.hashi.sdx.rest.coding.Percent;
-import br.pro.hashi.sdx.rest.coding.Query;
-import br.pro.hashi.sdx.rest.reflection.ParserFactory;
+import br.pro.hashi.sdx.rest.coding.QueryCoder;
 import br.pro.hashi.sdx.rest.reflection.Headers;
+import br.pro.hashi.sdx.rest.reflection.ParserFactory;
 import br.pro.hashi.sdx.rest.transform.Assembler;
 import br.pro.hashi.sdx.rest.transform.Serializer;
 import br.pro.hashi.sdx.rest.transform.facade.Facade;
@@ -595,7 +595,7 @@ public final class RestClient {
 		}
 
 		private String encode(String item) {
-			return Query.encode(item, urlCharset);
+			return QueryCoder.getInstance().encode(item, urlCharset);
 		}
 
 		/**
@@ -967,7 +967,7 @@ public final class RestClient {
 		}
 
 		private String recode(String item) {
-			return Query.recode(item, urlCharset);
+			return QueryCoder.getInstance().recode(item, urlCharset);
 		}
 
 		void addHeaders(Request request) {
