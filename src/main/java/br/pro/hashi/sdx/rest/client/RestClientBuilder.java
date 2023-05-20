@@ -17,7 +17,7 @@ import org.eclipse.jetty.util.HttpCookieStore;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 
 import br.pro.hashi.sdx.rest.Builder;
-import br.pro.hashi.sdx.rest.coding.Percent;
+import br.pro.hashi.sdx.rest.coding.PathCoder;
 import br.pro.hashi.sdx.rest.reflection.ParserFactory;
 import br.pro.hashi.sdx.rest.transform.facade.Facade;
 
@@ -192,7 +192,7 @@ public non-sealed class RestClientBuilder extends Builder<RestClientBuilder> {
 		if (path.isEmpty()) {
 			throw new IllegalArgumentException("URL prefix path cannot be blank");
 		}
-		path = Percent.stripEndingSlashes(path);
+		path = PathCoder.getInstance().stripEndingSlashes(path);
 		int index = path.indexOf('/');
 		if (index != -1) {
 			if (index == 0) {
@@ -200,7 +200,7 @@ public non-sealed class RestClientBuilder extends Builder<RestClientBuilder> {
 			}
 			String authority = path.substring(0, index);
 			String urlSuffix = path.substring(index + 1);
-			path = "%s/%s".formatted(authority, Percent.recode(urlSuffix, urlCharset));
+			path = "%s/%s".formatted(authority, PathCoder.getInstance().recode(urlSuffix, urlCharset));
 		}
 		return "%s%s".formatted(schema, path);
 	}

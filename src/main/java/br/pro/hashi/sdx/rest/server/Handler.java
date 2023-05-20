@@ -28,9 +28,9 @@ import org.slf4j.LoggerFactory;
 
 import br.pro.hashi.sdx.rest.Fields;
 import br.pro.hashi.sdx.rest.coding.Media;
-import br.pro.hashi.sdx.rest.coding.Percent;
-import br.pro.hashi.sdx.rest.reflection.ParserFactory;
+import br.pro.hashi.sdx.rest.coding.PathCoder;
 import br.pro.hashi.sdx.rest.reflection.Headers;
+import br.pro.hashi.sdx.rest.reflection.ParserFactory;
 import br.pro.hashi.sdx.rest.reflection.PartHeaders;
 import br.pro.hashi.sdx.rest.reflection.Queries;
 import br.pro.hashi.sdx.rest.server.exception.BadRequestException;
@@ -144,14 +144,14 @@ class Handler extends AbstractHandler {
 					uri = uri.substring(0, length - 1);
 				}
 			} else {
-				uri = Percent.stripEndingSlashes(uri);
+				uri = PathCoder.getInstance().stripEndingSlashes(uri);
 				extension = "";
 				extensionType = null;
 			}
 
 			String[] items;
 			try {
-				items = Percent.splitAndDecode(uri, urlCharset);
+				items = PathCoder.getInstance().splitAndDecode(uri, urlCharset);
 			} catch (IllegalArgumentException error) {
 				String message = "URI could not be decoded";
 				logger.error(message, error);

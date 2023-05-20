@@ -36,7 +36,7 @@ import org.slf4j.LoggerFactory;
 
 import br.pro.hashi.sdx.rest.Builder;
 import br.pro.hashi.sdx.rest.coding.Media;
-import br.pro.hashi.sdx.rest.coding.Percent;
+import br.pro.hashi.sdx.rest.coding.PathCoder;
 import br.pro.hashi.sdx.rest.constant.Defaults;
 import br.pro.hashi.sdx.rest.reflection.ParserFactory;
 import br.pro.hashi.sdx.rest.reflection.Reflector;
@@ -593,10 +593,10 @@ public non-sealed class RestServerBuilder extends Builder<RestServerBuilder> {
 				throw new ResourceException(typeName, "Base must start with /");
 			}
 		}
-		base = Percent.stripEndingSlashes(base);
+		base = PathCoder.getInstance().stripEndingSlashes(base);
 		String urlSuffix;
 		try {
-			urlSuffix = Percent.recode(base, urlCharset);
+			urlSuffix = PathCoder.getInstance().recode(base, urlCharset);
 		} catch (IllegalArgumentException error) {
 			String message = "Base could not be decoded";
 			logger.error(message, error);
@@ -607,7 +607,7 @@ public non-sealed class RestServerBuilder extends Builder<RestServerBuilder> {
 		if (message != null) {
 			throw new ResourceException(typeName, message);
 		}
-		return Percent.splitAndDecode(base, urlCharset);
+		return PathCoder.getInstance().splitAndDecode(base, urlCharset);
 	}
 
 	/**
