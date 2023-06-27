@@ -8,7 +8,7 @@ import java.util.Map;
 import java.util.Set;
 
 import br.pro.hashi.sdx.rest.Fields;
-import br.pro.hashi.sdx.rest.coding.Media;
+import br.pro.hashi.sdx.rest.coding.MediaCoder;
 import br.pro.hashi.sdx.rest.constant.Defaults;
 import jakarta.servlet.http.HttpServletResponse;
 
@@ -165,7 +165,7 @@ public abstract class RestResource {
 		if (contentType == null) {
 			throw new NullPointerException("Content type cannot be null");
 		}
-		contentType = Media.strip(contentType);
+		contentType = MediaCoder.getInstance().strip(contentType);
 		if (contentType == null) {
 			throw new IllegalArgumentException("Content type cannot be blank");
 		}

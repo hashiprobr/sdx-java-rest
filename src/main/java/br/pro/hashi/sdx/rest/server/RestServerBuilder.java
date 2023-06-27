@@ -35,7 +35,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import br.pro.hashi.sdx.rest.Builder;
-import br.pro.hashi.sdx.rest.coding.Media;
+import br.pro.hashi.sdx.rest.coding.MediaCoder;
 import br.pro.hashi.sdx.rest.coding.PathCoder;
 import br.pro.hashi.sdx.rest.constant.Defaults;
 import br.pro.hashi.sdx.rest.reflection.ParserFactory;
@@ -239,7 +239,7 @@ public non-sealed class RestServerBuilder extends Builder<RestServerBuilder> {
 		if (contentType == null) {
 			throw new NullPointerException("Content type cannot be null");
 		}
-		contentType = Media.strip(contentType);
+		contentType = MediaCoder.getInstance().strip(contentType);
 		if (contentType == null) {
 			throw new IllegalArgumentException("Content type cannot be blank");
 		}

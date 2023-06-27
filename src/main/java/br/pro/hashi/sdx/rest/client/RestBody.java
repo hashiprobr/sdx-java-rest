@@ -3,7 +3,7 @@ package br.pro.hashi.sdx.rest.client;
 import java.lang.reflect.Type;
 import java.nio.charset.Charset;
 
-import br.pro.hashi.sdx.rest.coding.Media;
+import br.pro.hashi.sdx.rest.coding.MediaCoder;
 import br.pro.hashi.sdx.rest.constant.Defaults;
 import br.pro.hashi.sdx.rest.transform.Hint;
 
@@ -116,7 +116,7 @@ public class RestBody {
 		if (contentType == null) {
 			throw new NullPointerException("Content type cannot be null");
 		}
-		contentType = Media.strip(contentType);
+		contentType = MediaCoder.getInstance().strip(contentType);
 		if (contentType == null) {
 			throw new IllegalArgumentException("Content type cannot be blank");
 		}

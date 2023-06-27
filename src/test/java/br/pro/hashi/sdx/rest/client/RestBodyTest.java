@@ -6,7 +6,9 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.when;
 
 import java.nio.charset.StandardCharsets;
 
@@ -14,16 +16,18 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 
-import br.pro.hashi.sdx.rest.coding.Media;
+import br.pro.hashi.sdx.rest.coding.MediaCoder;
 import br.pro.hashi.sdx.rest.constant.Defaults;
 import br.pro.hashi.sdx.rest.transform.Hint;
 
 class RestBodyTest {
+	private MediaCoder coder;
 	private Object actual;
 	private RestBody b;
 
 	@BeforeEach
 	void setUp() {
+		coder = mock(MediaCoder.class);
 		actual = new Object();
 	}
 
@@ -97,10 +101,11 @@ class RestBodyTest {
 
 	@Test
 	void setsContentType() {
-		try (MockedStatic<Media> media = mockStatic(Media.class)) {
+		try (MockedStatic<MediaCoder> media = mockStatic(MediaCoder.class)) {
 			b = newRestBody();
 			String contentType = "type/subtype";
-			media.when(() -> Media.strip(contentType)).thenReturn(contentType);
+			when(coder.strip(contentType)).thenReturn(contentType);
+			media.when(() -> MediaCoder.getInstance()).thenReturn(coder);
 			assertSame(b, b.as(contentType));
 			assertEquals(contentType, b.getContentType());
 		}
@@ -117,10 +122,11 @@ class RestBodyTest {
 
 	@Test
 	void doesNotSetContentTypeIfStripReturnsNull() {
-		try (MockedStatic<Media> media = mockStatic(Media.class)) {
+		try (MockedStatic<MediaCoder> media = mockStatic(MediaCoder.class)) {
 			b = newRestBody();
 			String contentType = "type/subtype";
-			media.when(() -> Media.strip(contentType)).thenReturn(null);
+			when(coder.strip(contentType)).thenReturn(null);
+			media.when(() -> MediaCoder.getInstance()).thenReturn(coder);
 			assertThrows(IllegalArgumentException.class, () -> {
 				b.as(contentType);
 			});

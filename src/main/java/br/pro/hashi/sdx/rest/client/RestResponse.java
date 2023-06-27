@@ -6,7 +6,7 @@ import java.lang.reflect.Type;
 
 import br.pro.hashi.sdx.rest.Fields;
 import br.pro.hashi.sdx.rest.client.exception.ClientException;
-import br.pro.hashi.sdx.rest.coding.Media;
+import br.pro.hashi.sdx.rest.coding.MediaCoder;
 import br.pro.hashi.sdx.rest.reflection.Headers;
 import br.pro.hashi.sdx.rest.transform.Deserializer;
 import br.pro.hashi.sdx.rest.transform.Disassembler;
@@ -175,13 +175,13 @@ public final class RestResponse {
 			available = false;
 		}
 		T body;
-		InputStream stream = Media.decode(this.stream, contentType);
+		InputStream stream = MediaCoder.getInstance().decode(this.stream, contentType);
 		if (facade.isBinary(type)) {
 			contentType = facade.getDisassemblerType(strip(contentType), type);
 			Disassembler disassembler = facade.getDisassembler(contentType);
 			body = disassembler.read(stream, type);
 		} else {
-			Reader reader = Media.reader(stream, contentType);
+			Reader reader = MediaCoder.getInstance().reader(stream, contentType);
 			contentType = facade.getDeserializerType(strip(contentType), type);
 			Deserializer deserializer = facade.getDeserializer(contentType);
 			body = deserializer.read(reader, type);
@@ -191,7 +191,7 @@ public final class RestResponse {
 
 	private String strip(String contentType) {
 		if (contentType != null) {
-			contentType = Media.strip(contentType);
+			contentType = MediaCoder.getInstance().strip(contentType);
 		}
 		return contentType;
 	}

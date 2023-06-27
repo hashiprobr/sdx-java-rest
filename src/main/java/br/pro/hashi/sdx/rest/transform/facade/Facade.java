@@ -12,7 +12,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 
-import br.pro.hashi.sdx.rest.coding.Media;
+import br.pro.hashi.sdx.rest.coding.MediaCoder;
 import br.pro.hashi.sdx.rest.reflection.ParserFactory;
 import br.pro.hashi.sdx.rest.transform.Assembler;
 import br.pro.hashi.sdx.rest.transform.Deserializer;
@@ -130,7 +130,7 @@ public class Facade {
 		if (contentType == null) {
 			throw new NullPointerException("Extension type cannot be null");
 		}
-		contentType = Media.strip(contentType);
+		contentType = MediaCoder.getInstance().strip(contentType);
 		if (contentType == null) {
 			throw new IllegalArgumentException("Extension type cannot be blank");
 		}
@@ -221,7 +221,7 @@ public class Facade {
 		if (contentType == null) {
 			throw new NullPointerException("Assembler type cannot be null");
 		}
-		contentType = Media.strip(contentType);
+		contentType = MediaCoder.getInstance().strip(contentType);
 		if (contentType == null) {
 			throw new IllegalArgumentException("Assembler type cannot be blank");
 		}
@@ -253,7 +253,7 @@ public class Facade {
 		if (contentType == null) {
 			throw new NullPointerException("Disassembler type cannot be null");
 		}
-		contentType = Media.strip(contentType);
+		contentType = MediaCoder.getInstance().strip(contentType);
 		if (contentType == null) {
 			throw new IllegalArgumentException("Disassembler type cannot be blank");
 		}
@@ -285,7 +285,7 @@ public class Facade {
 		if (contentType == null) {
 			throw new NullPointerException("Serializer type cannot be null");
 		}
-		contentType = Media.strip(contentType);
+		contentType = MediaCoder.getInstance().strip(contentType);
 		if (contentType == null) {
 			throw new IllegalArgumentException("Serializer type cannot be blank");
 		}
@@ -317,7 +317,7 @@ public class Facade {
 		if (contentType == null) {
 			throw new NullPointerException("Deserializer type cannot be null");
 		}
-		contentType = Media.strip(contentType);
+		contentType = MediaCoder.getInstance().strip(contentType);
 		if (contentType == null) {
 			throw new IllegalArgumentException("Deserializer type cannot be blank");
 		}
@@ -328,7 +328,7 @@ public class Facade {
 		if (fallbackByteType == null) {
 			throw new NullPointerException("Fallback byte type cannot be null");
 		}
-		fallbackByteType = Media.strip(fallbackByteType);
+		fallbackByteType = MediaCoder.getInstance().strip(fallbackByteType);
 		if (fallbackByteType == null) {
 			throw new IllegalArgumentException("Fallback byte type cannot be blank");
 		}
@@ -339,7 +339,7 @@ public class Facade {
 		if (fallbackTextType == null) {
 			throw new NullPointerException("Fallback text type cannot be null");
 		}
-		fallbackTextType = Media.strip(fallbackTextType);
+		fallbackTextType = MediaCoder.getInstance().strip(fallbackTextType);
 		if (fallbackTextType == null) {
 			throw new IllegalArgumentException("Fallback text type cannot be blank");
 		}

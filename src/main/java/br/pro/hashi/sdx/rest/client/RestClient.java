@@ -30,7 +30,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import br.pro.hashi.sdx.rest.client.exception.ClientException;
-import br.pro.hashi.sdx.rest.coding.Media;
+import br.pro.hashi.sdx.rest.coding.MediaCoder;
 import br.pro.hashi.sdx.rest.coding.PathCoder;
 import br.pro.hashi.sdx.rest.coding.QueryCoder;
 import br.pro.hashi.sdx.rest.reflection.Headers;
@@ -1041,7 +1041,7 @@ public final class RestClient {
 			OutputStreamRequestContent content = new OutputStreamRequestContent(contentType);
 			OutputStream stream = content.getOutputStream();
 			if (base64) {
-				stream = Media.encode(stream);
+				stream = MediaCoder.getInstance().encode(stream);
 			}
 
 			tasks.add(new Task(consumer, stream));

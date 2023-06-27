@@ -27,7 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import br.pro.hashi.sdx.rest.Fields;
-import br.pro.hashi.sdx.rest.coding.Media;
+import br.pro.hashi.sdx.rest.coding.MediaCoder;
 import br.pro.hashi.sdx.rest.coding.PathCoder;
 import br.pro.hashi.sdx.rest.reflection.Headers;
 import br.pro.hashi.sdx.rest.reflection.ParserFactory;
@@ -396,7 +396,7 @@ class Handler extends AbstractHandler {
 				}
 			}
 			if (base64) {
-				stream = Media.encode(stream);
+				stream = MediaCoder.getInstance().encode(stream);
 			}
 
 			try {

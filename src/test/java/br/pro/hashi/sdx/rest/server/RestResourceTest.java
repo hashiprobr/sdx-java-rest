@@ -11,6 +11,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.nio.charset.CharsetEncoder;
 import java.nio.charset.StandardCharsets;
@@ -19,13 +20,14 @@ import java.util.HashMap;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 
-import br.pro.hashi.sdx.rest.coding.Media;
+import br.pro.hashi.sdx.rest.coding.MediaCoder;
 import br.pro.hashi.sdx.rest.constant.Defaults;
 import br.pro.hashi.sdx.rest.reflection.Headers;
 import br.pro.hashi.sdx.rest.reflection.Queries;
 import jakarta.servlet.http.HttpServletResponse;
 
 class RestResourceTest {
+	private MediaCoder coder;
 	private HttpServletResponse response;
 	private RestResource r;
 
@@ -89,10 +91,11 @@ class RestResourceTest {
 
 	@Test
 	void setsContentType() {
-		try (MockedStatic<Media> media = mockStatic(Media.class)) {
+		try (MockedStatic<MediaCoder> media = mockStatic(MediaCoder.class)) {
 			r = newRestResource();
 			String contentType = "type/subtype";
-			media.when(() -> Media.strip(contentType)).thenReturn(contentType);
+			when(coder.strip(contentType)).thenReturn(contentType);
+			media.when(() -> MediaCoder.getInstance()).thenReturn(coder);
 			assertNull(r.as(contentType));
 			assertEquals(contentType, r.getContentType());
 		}
@@ -109,10 +112,11 @@ class RestResourceTest {
 
 	@Test
 	void doesNotSetContentTypeIfStripReturnsNull() {
-		try (MockedStatic<Media> media = mockStatic(Media.class)) {
+		try (MockedStatic<MediaCoder> media = mockStatic(MediaCoder.class)) {
 			r = newRestResource();
 			String contentType = "type/subtype";
-			media.when(() -> Media.strip(contentType)).thenReturn(null);
+			when(coder.strip(contentType)).thenReturn(null);
+			media.when(() -> MediaCoder.getInstance()).thenReturn(coder);
 			assertThrows(IllegalArgumentException.class, () -> {
 				r.as(contentType);
 			});
@@ -303,6 +307,7 @@ class RestResourceTest {
 	}
 
 	private RestResource newRestResource() {
+		coder = mock(MediaCoder.class);
 		RestResourceMock concreteResource = new RestResourceMock();
 		CharsetEncoder encoder = StandardCharsets.US_ASCII.newEncoder();
 		response = mock(HttpServletResponse.class);

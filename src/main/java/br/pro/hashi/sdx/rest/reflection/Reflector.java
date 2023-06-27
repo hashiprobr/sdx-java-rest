@@ -134,7 +134,7 @@ public class Reflector {
 
 		typeVariables = rootType.getTypeParameters();
 		String typeVariableName = typeVariables[rootIndex].getName();
-		throw new ReflectionException("Class %s must specify type %s".formatted(type.getName(), typeVariableName));
+		throw new ReflectionException("Class %s must specify type %s of %s".formatted(type.getName(), typeVariableName, rootType.getName()));
 	}
 
 	private class Node {

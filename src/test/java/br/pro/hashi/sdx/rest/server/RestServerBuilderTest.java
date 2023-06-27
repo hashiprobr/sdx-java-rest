@@ -50,7 +50,7 @@ import org.reflections.Reflections;
 
 import br.pro.hashi.sdx.rest.Builder;
 import br.pro.hashi.sdx.rest.BuilderTest;
-import br.pro.hashi.sdx.rest.coding.Media;
+import br.pro.hashi.sdx.rest.coding.MediaCoder;
 import br.pro.hashi.sdx.rest.constant.Defaults;
 import br.pro.hashi.sdx.rest.server.exception.ResourceException;
 import br.pro.hashi.sdx.rest.server.mock.invalid.ResourceWithBlank;
@@ -65,10 +65,12 @@ class RestServerBuilderTest extends BuilderTest {
 	private static final String VALID_PACKAGE = "br.pro.hashi.sdx.rest.server.mock.valid";
 	private static final String INVALID_PACKAGE = "br.pro.hashi.sdx.rest.server.mock.invalid";
 
+	private MediaCoder coder;
 	private RestServerBuilder b;
 
 	@Override
 	protected Builder<?> newInstance() {
+		coder = mock(MediaCoder.class);
 		b = new RestServerBuilder();
 		return b;
 	}
@@ -218,9 +220,10 @@ class RestServerBuilderTest extends BuilderTest {
 
 	@Test
 	void setsErrorContentType() {
-		try (MockedStatic<Media> media = mockStatic(Media.class)) {
+		try (MockedStatic<MediaCoder> media = mockStatic(MediaCoder.class)) {
 			String contentType = "type/subtype";
-			media.when(() -> Media.strip(contentType)).thenReturn(contentType);
+			when(coder.strip(contentType)).thenReturn(contentType);
+			media.when(() -> MediaCoder.getInstance()).thenReturn(coder);
 			assertSame(b, b.withErrorContentType(contentType));
 			assertEquals(contentType, b.getContentType());
 		}
@@ -236,9 +239,10 @@ class RestServerBuilderTest extends BuilderTest {
 
 	@Test
 	void doesNotSetErrorContentTypeIfStripReturnsNull() {
-		try (MockedStatic<Media> media = mockStatic(Media.class)) {
+		try (MockedStatic<MediaCoder> media = mockStatic(MediaCoder.class)) {
 			String contentType = "type/subtype";
-			media.when(() -> Media.strip(contentType)).thenReturn(null);
+			when(coder.strip(contentType)).thenReturn(null);
+			media.when(() -> MediaCoder.getInstance()).thenReturn(coder);
 			assertThrows(IllegalArgumentException.class, () -> {
 				b.withErrorContentType(contentType);
 			});

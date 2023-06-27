@@ -65,6 +65,20 @@ class ParserFactoryTest {
 	}
 
 	@Test
+	void doesNotParseCharFromEmptyString() {
+		assertThrows(IllegalArgumentException.class, () -> {
+			f.parseChar("");
+		});
+	}
+
+	@Test
+	void doesNotParseCharFromLargeString() {
+		assertThrows(IllegalArgumentException.class, () -> {
+			f.parseChar("cc");
+		});
+	}
+
+	@Test
 	void getsAndAppliesBooleanParser() {
 		assertTrue(f.get(boolean.class).apply("true"));
 	}
@@ -97,6 +111,16 @@ class ParserFactoryTest {
 	@Test
 	void getsAndAppliesDoubleParser() {
 		assertEquals(6.6, f.get(double.class).apply("6.6"), DELTA);
+	}
+
+	@Test
+	void getsAndAppliesCharParser() {
+		assertEquals('c', f.get(char.class).apply("c"));
+	}
+
+	@Test
+	void getsAndAppliesCharacterParser() {
+		assertEquals(Character.valueOf('c'), f.get(Character.class).apply("c"));
 	}
 
 	@Test

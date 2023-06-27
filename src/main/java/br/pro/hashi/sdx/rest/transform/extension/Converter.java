@@ -11,7 +11,7 @@ import br.pro.hashi.sdx.rest.reflection.Reflector;
  * </p>
  * <p>
  * The idea is that the source type is not supported by a third-party library,
- * but the target type is (possibly via another converter).
+ * but the target type is (possibly via other converters).
  * </p>
  * 
  * @param <S> the source type

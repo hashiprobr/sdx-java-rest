@@ -27,18 +27,31 @@ public class ParserFactory {
 	private final Map<Class<?>, Function<String, ?>> cache;
 
 	ParserFactory(Reflector reflector) {
+		Map<Class<?>, Function<String, ?>> cache = new HashMap<>();
+		cache.put(boolean.class, Boolean::parseBoolean);
+		cache.put(byte.class, Byte::parseByte);
+		cache.put(short.class, Short::parseShort);
+		cache.put(int.class, Integer::parseInt);
+		cache.put(long.class, Long::parseLong);
+		cache.put(float.class, Float::parseFloat);
+		cache.put(double.class, Double::parseDouble);
+		cache.put(char.class, this::parseChar);
+		cache.put(Character.class, this::parseChar);
+		cache.put(BigInteger.class, BigInteger::new);
+		cache.put(BigDecimal.class, BigDecimal::new);
+		cache.put(String.class, (valueString) -> valueString);
 		this.reflector = reflector;
-		this.cache = new HashMap<>(Map.of(
-				boolean.class, Boolean::parseBoolean,
-				byte.class, Byte::parseByte,
-				short.class, Short::parseShort,
-				int.class, Integer::parseInt,
-				long.class, Long::parseLong,
-				float.class, Float::parseFloat,
-				double.class, Double::parseDouble,
-				BigInteger.class, BigInteger::new,
-				BigDecimal.class, BigDecimal::new,
-				String.class, (valueString) -> valueString));
+		this.cache = cache;
+	}
+
+	char parseChar(String valueString) {
+		if (valueString.isEmpty()) {
+			throw new IllegalArgumentException("Value string cannot be empty");
+		}
+		if (valueString.length() > 1) {
+			throw new IllegalArgumentException("Value string can only have one character");
+		}
+		return valueString.charAt(0);
 	}
 
 	public synchronized <T> Function<String, T> get(Class<T> type) {

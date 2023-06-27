@@ -18,7 +18,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.MockedStatic;
 
 import br.pro.hashi.sdx.rest.client.exception.ClientException;
-import br.pro.hashi.sdx.rest.coding.Media;
+import br.pro.hashi.sdx.rest.coding.MediaCoder;
 import br.pro.hashi.sdx.rest.reflection.Headers;
 import br.pro.hashi.sdx.rest.transform.Deserializer;
 import br.pro.hashi.sdx.rest.transform.Disassembler;
@@ -31,7 +31,8 @@ class RestResponseTest {
 	private Facade facade;
 	private Headers headers;
 	private InputStream stream;
-	private MockedStatic<Media> media;
+	private MediaCoder coder;
+	private MockedStatic<MediaCoder> media;
 	private RestResponse r;
 
 	@BeforeEach
@@ -39,7 +40,9 @@ class RestResponseTest {
 		facade = mock(Facade.class);
 		headers = mock(Headers.class);
 		stream = InputStream.nullInputStream();
-		media = mockStatic(Media.class);
+		coder = mock(MediaCoder.class);
+		media = mockStatic(MediaCoder.class);
+		media.when(() -> MediaCoder.getInstance()).thenReturn(coder);
 	}
 
 	@AfterEach
@@ -71,9 +74,9 @@ class RestResponseTest {
 
 	private Object mockBody(String contentType) {
 		Reader reader = mock(Reader.class);
-		media.when(() -> Media.decode(stream, contentType)).thenReturn(stream);
-		media.when(() -> Media.reader(stream, contentType)).thenReturn(reader);
-		media.when(() -> Media.strip(contentType)).thenReturn(null);
+		when(coder.decode(stream, contentType)).thenReturn(stream);
+		when(coder.reader(stream, contentType)).thenReturn(reader);
+		when(coder.strip(contentType)).thenReturn(null);
 		r = newRestResponse(contentType);
 		Object body = new Object();
 		Deserializer deserializer = mock(Deserializer.class);
@@ -123,8 +126,8 @@ class RestResponseTest {
 	}
 
 	private Object mockBinaryBody(String contentType) {
-		media.when(() -> Media.decode(stream, contentType)).thenReturn(stream);
-		media.when(() -> Media.strip(contentType)).thenReturn(null);
+		when(coder.decode(stream, contentType)).thenReturn(stream);
+		when(coder.strip(contentType)).thenReturn(null);
 		r = newRestResponse(contentType);
 		Object body = new Object();
 		Disassembler disassembler = mock(Disassembler.class);

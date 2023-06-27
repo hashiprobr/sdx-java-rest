@@ -10,6 +10,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockConstruction;
 import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.when;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -29,7 +30,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.MockedConstruction;
 import org.mockito.MockedStatic;
 
-import br.pro.hashi.sdx.rest.coding.Media;
+import br.pro.hashi.sdx.rest.coding.MediaCoder;
 import br.pro.hashi.sdx.rest.reflection.ParserFactory;
 import br.pro.hashi.sdx.rest.transform.Assembler;
 import br.pro.hashi.sdx.rest.transform.Deserializer;
@@ -39,6 +40,7 @@ import br.pro.hashi.sdx.rest.transform.Serializer;
 import br.pro.hashi.sdx.rest.transform.exception.TypeException;
 
 class FacadeTest {
+	private MediaCoder coder;
 	private MockedConstruction<DefaultAssembler> assemblerConstruction;
 	private MockedConstruction<DefaultDisassembler> disassemblerConstruction;
 	private MockedConstruction<DefaultSerializer> serializerConstruction;
@@ -47,6 +49,7 @@ class FacadeTest {
 
 	@BeforeEach
 	void setUp() {
+		coder = mock(MediaCoder.class);
 		assemblerConstruction = mockConstruction(DefaultAssembler.class);
 		disassemblerConstruction = mockConstruction(DefaultDisassembler.class);
 		serializerConstruction = mockConstruction(DefaultSerializer.class);
@@ -244,9 +247,10 @@ class FacadeTest {
 
 	@Test
 	void addsXmlExtension() {
-		try (MockedStatic<Media> media = mockStatic(Media.class)) {
+		try (MockedStatic<MediaCoder> media = mockStatic(MediaCoder.class)) {
 			String contentType = "text/plain";
-			media.when(() -> Media.strip(contentType)).thenReturn(contentType);
+			when(coder.strip(contentType)).thenReturn(contentType);
+			media.when(() -> MediaCoder.getInstance()).thenReturn(coder);
 			f.putExtension("xml", contentType);
 			assertEquals(contentType, f.getExtensionType("xml"));
 		}
@@ -278,9 +282,10 @@ class FacadeTest {
 
 	@Test
 	void doesNotAddXmlExtensionIfStripReturnsNull() {
-		try (MockedStatic<Media> media = mockStatic(Media.class)) {
+		try (MockedStatic<MediaCoder> media = mockStatic(MediaCoder.class)) {
 			String contentType = "text/plain";
-			media.when(() -> Media.strip(contentType)).thenReturn(null);
+			when(coder.strip(contentType)).thenReturn(null);
+			media.when(() -> MediaCoder.getInstance()).thenReturn(coder);
 			assertThrows(IllegalArgumentException.class, () -> {
 				f.putExtension("xml", contentType);
 			});
@@ -290,9 +295,10 @@ class FacadeTest {
 
 	@Test
 	void doesNotAddXmlExtensionIfTypeIsInvalid() {
-		try (MockedStatic<Media> media = mockStatic(Media.class)) {
+		try (MockedStatic<MediaCoder> media = mockStatic(MediaCoder.class)) {
 			String contentType = "application/xml";
-			media.when(() -> Media.strip(contentType)).thenReturn(contentType);
+			when(coder.strip(contentType)).thenReturn(contentType);
+			media.when(() -> MediaCoder.getInstance()).thenReturn(coder);
 			assertThrows(IllegalArgumentException.class, () -> {
 				f.putExtension("xml", contentType);
 			});
@@ -302,9 +308,10 @@ class FacadeTest {
 
 	@Test
 	void addsPngExtension() {
-		try (MockedStatic<Media> media = mockStatic(Media.class)) {
+		try (MockedStatic<MediaCoder> media = mockStatic(MediaCoder.class)) {
 			String contentType = "application/octet-stream";
-			media.when(() -> Media.strip(contentType)).thenReturn(contentType);
+			when(coder.strip(contentType)).thenReturn(contentType);
+			media.when(() -> MediaCoder.getInstance()).thenReturn(coder);
 			f.putExtension("png", contentType);
 			assertEquals(contentType, f.getExtensionType("png"));
 		}
@@ -336,9 +343,10 @@ class FacadeTest {
 
 	@Test
 	void doesNotAddPngExtensionIfStripReturnsNull() {
-		try (MockedStatic<Media> media = mockStatic(Media.class)) {
+		try (MockedStatic<MediaCoder> media = mockStatic(MediaCoder.class)) {
 			String contentType = "application/octet-stream";
-			media.when(() -> Media.strip(contentType)).thenReturn(null);
+			when(coder.strip(contentType)).thenReturn(null);
+			media.when(() -> MediaCoder.getInstance()).thenReturn(coder);
 			assertThrows(IllegalArgumentException.class, () -> {
 				f.putExtension("png", contentType);
 			});
@@ -348,9 +356,10 @@ class FacadeTest {
 
 	@Test
 	void doesNotAddPngExtensionIfTypeIsInvalid() {
-		try (MockedStatic<Media> media = mockStatic(Media.class)) {
+		try (MockedStatic<MediaCoder> media = mockStatic(MediaCoder.class)) {
 			String contentType = "image/png";
-			media.when(() -> Media.strip(contentType)).thenReturn(contentType);
+			when(coder.strip(contentType)).thenReturn(contentType);
+			media.when(() -> MediaCoder.getInstance()).thenReturn(coder);
 			assertThrows(IllegalArgumentException.class, () -> {
 				f.putExtension("png", contentType);
 			});
@@ -382,9 +391,10 @@ class FacadeTest {
 
 	@Test
 	void getsAssemblerTypeIfBodyIsObject() {
-		try (MockedStatic<Media> media = mockStatic(Media.class)) {
+		try (MockedStatic<MediaCoder> media = mockStatic(MediaCoder.class)) {
 			String fallbackByteType = "image/png";
-			media.when(() -> Media.strip(fallbackByteType)).thenReturn(fallbackByteType);
+			when(coder.strip(fallbackByteType)).thenReturn(fallbackByteType);
+			media.when(() -> MediaCoder.getInstance()).thenReturn(coder);
 			f.setFallbackByteType(fallbackByteType);
 			assertEquals(fallbackByteType, getAssemblerType(null, new Object()));
 		}
@@ -420,9 +430,10 @@ class FacadeTest {
 
 	@Test
 	void getsDisassemblerTypeIfTypeEqualsObject() {
-		try (MockedStatic<Media> media = mockStatic(Media.class)) {
+		try (MockedStatic<MediaCoder> media = mockStatic(MediaCoder.class)) {
 			String fallbackByteType = "image/png";
-			media.when(() -> Media.strip(fallbackByteType)).thenReturn(fallbackByteType);
+			when(coder.strip(fallbackByteType)).thenReturn(fallbackByteType);
+			media.when(() -> MediaCoder.getInstance()).thenReturn(coder);
 			f.setFallbackByteType(fallbackByteType);
 			assertEquals(fallbackByteType, f.getDisassemblerType(null, Object.class));
 		}
@@ -494,9 +505,10 @@ class FacadeTest {
 
 	@Test
 	void getsSerializerTypeIfBodyIsObject() {
-		try (MockedStatic<Media> media = mockStatic(Media.class)) {
+		try (MockedStatic<MediaCoder> media = mockStatic(MediaCoder.class)) {
 			String fallbackTextType = "application/xml";
-			media.when(() -> Media.strip(fallbackTextType)).thenReturn(fallbackTextType);
+			when(coder.strip(fallbackTextType)).thenReturn(fallbackTextType);
+			media.when(() -> MediaCoder.getInstance()).thenReturn(coder);
 			f.setFallbackTextType(fallbackTextType);
 			assertEquals(fallbackTextType, getSerializerType(null, new Object()));
 		}
@@ -609,9 +621,10 @@ class FacadeTest {
 
 	@Test
 	void getsDeserializerTypeIfTypeEqualsObject() {
-		try (MockedStatic<Media> media = mockStatic(Media.class)) {
+		try (MockedStatic<MediaCoder> media = mockStatic(MediaCoder.class)) {
 			String fallbackTextType = "application/xml";
-			media.when(() -> Media.strip(fallbackTextType)).thenReturn(fallbackTextType);
+			when(coder.strip(fallbackTextType)).thenReturn(fallbackTextType);
+			media.when(() -> MediaCoder.getInstance()).thenReturn(coder);
 			f.setFallbackTextType(fallbackTextType);
 			assertEquals(fallbackTextType, f.getDeserializerType(null, Object.class));
 		}
@@ -626,9 +639,10 @@ class FacadeTest {
 
 	@Test
 	void putsDefaultAssembler() {
-		try (MockedStatic<Media> media = mockStatic(Media.class)) {
+		try (MockedStatic<MediaCoder> media = mockStatic(MediaCoder.class)) {
 			String contentType = "image/png";
-			media.when(() -> Media.strip(contentType)).thenReturn(contentType);
+			when(coder.strip(contentType)).thenReturn(contentType);
+			media.when(() -> MediaCoder.getInstance()).thenReturn(coder);
 			Assembler assembler = f.getAssembler("application/octet-stream");
 			f.putDefaultAssembler(contentType);
 			assertSame(assembler, f.getAssembler(contentType));
@@ -647,9 +661,10 @@ class FacadeTest {
 
 	@Test
 	void doesNotPutDefaultAssemblerIfStripReturnsNull() {
-		try (MockedStatic<Media> media = mockStatic(Media.class)) {
+		try (MockedStatic<MediaCoder> media = mockStatic(MediaCoder.class)) {
 			String contentType = "image/png";
-			media.when(() -> Media.strip(contentType)).thenReturn(null);
+			when(coder.strip(contentType)).thenReturn(null);
+			media.when(() -> MediaCoder.getInstance()).thenReturn(coder);
 			assertThrows(IllegalArgumentException.class, () -> {
 				f.putDefaultAssembler(contentType);
 			});
@@ -664,8 +679,9 @@ class FacadeTest {
 			"application/octet-stream",
 			"image/png" })
 	void putsAssembler(String contentType) {
-		try (MockedStatic<Media> media = mockStatic(Media.class)) {
-			media.when(() -> Media.strip(contentType)).thenReturn(contentType);
+		try (MockedStatic<MediaCoder> media = mockStatic(MediaCoder.class)) {
+			when(coder.strip(contentType)).thenReturn(contentType);
+			media.when(() -> MediaCoder.getInstance()).thenReturn(coder);
 			Assembler assembler = mock(Assembler.class);
 			f.putAssembler(contentType, assembler);
 			assertSame(assembler, f.getAssembler(contentType));
@@ -685,9 +701,10 @@ class FacadeTest {
 
 	@Test
 	void doesNotPutAssemblerIfStripReturnsNull() {
-		try (MockedStatic<Media> media = mockStatic(Media.class)) {
+		try (MockedStatic<MediaCoder> media = mockStatic(MediaCoder.class)) {
 			String contentType = "image/png";
-			media.when(() -> Media.strip(contentType)).thenReturn(null);
+			when(coder.strip(contentType)).thenReturn(null);
+			media.when(() -> MediaCoder.getInstance()).thenReturn(coder);
 			Assembler assembler = mock(Assembler.class);
 			assertThrows(IllegalArgumentException.class, () -> {
 				f.putAssembler(contentType, assembler);
@@ -700,9 +717,10 @@ class FacadeTest {
 
 	@Test
 	void doesNotPutAssemblerIfItIsNull() {
-		try (MockedStatic<Media> media = mockStatic(Media.class)) {
+		try (MockedStatic<MediaCoder> media = mockStatic(MediaCoder.class)) {
 			String contentType = "image/png";
-			media.when(() -> Media.strip(contentType)).thenReturn(contentType);
+			when(coder.strip(contentType)).thenReturn(contentType);
+			media.when(() -> MediaCoder.getInstance()).thenReturn(coder);
 			assertThrows(NullPointerException.class, () -> {
 				f.putAssembler(contentType, null);
 			});
@@ -714,9 +732,10 @@ class FacadeTest {
 
 	@Test
 	void putsDefaultDisassembler() {
-		try (MockedStatic<Media> media = mockStatic(Media.class)) {
+		try (MockedStatic<MediaCoder> media = mockStatic(MediaCoder.class)) {
 			String contentType = "image/png";
-			media.when(() -> Media.strip(contentType)).thenReturn(contentType);
+			when(coder.strip(contentType)).thenReturn(contentType);
+			media.when(() -> MediaCoder.getInstance()).thenReturn(coder);
 			Disassembler disassembler = f.getDisassembler("application/octet-stream");
 			f.putDefaultDisassembler(contentType);
 			assertSame(disassembler, f.getDisassembler(contentType));
@@ -735,9 +754,10 @@ class FacadeTest {
 
 	@Test
 	void doesNotPutDefaultDisassemblerIfStripReturnsNull() {
-		try (MockedStatic<Media> media = mockStatic(Media.class)) {
+		try (MockedStatic<MediaCoder> media = mockStatic(MediaCoder.class)) {
 			String contentType = "image/png";
-			media.when(() -> Media.strip(contentType)).thenReturn(null);
+			when(coder.strip(contentType)).thenReturn(null);
+			media.when(() -> MediaCoder.getInstance()).thenReturn(coder);
 			assertThrows(IllegalArgumentException.class, () -> {
 				f.putDefaultDisassembler(contentType);
 			});
@@ -752,8 +772,9 @@ class FacadeTest {
 			"application/octet-stream",
 			"image/png" })
 	void putsDisassembler(String contentType) {
-		try (MockedStatic<Media> media = mockStatic(Media.class)) {
-			media.when(() -> Media.strip(contentType)).thenReturn(contentType);
+		try (MockedStatic<MediaCoder> media = mockStatic(MediaCoder.class)) {
+			when(coder.strip(contentType)).thenReturn(contentType);
+			media.when(() -> MediaCoder.getInstance()).thenReturn(coder);
 			Disassembler disassembler = mock(Disassembler.class);
 			f.putDisassembler(contentType, disassembler);
 			assertSame(disassembler, f.getDisassembler(contentType));
@@ -773,9 +794,10 @@ class FacadeTest {
 
 	@Test
 	void doesNotPutDisassemblerIfStripReturnsNull() {
-		try (MockedStatic<Media> media = mockStatic(Media.class)) {
+		try (MockedStatic<MediaCoder> media = mockStatic(MediaCoder.class)) {
 			String contentType = "image/png";
-			media.when(() -> Media.strip(contentType)).thenReturn(null);
+			when(coder.strip(contentType)).thenReturn(null);
+			media.when(() -> MediaCoder.getInstance()).thenReturn(coder);
 			Disassembler disassembler = mock(Disassembler.class);
 			assertThrows(IllegalArgumentException.class, () -> {
 				f.putDisassembler(contentType, disassembler);
@@ -788,9 +810,10 @@ class FacadeTest {
 
 	@Test
 	void doesNotPutDisassemblerIfItIsNull() {
-		try (MockedStatic<Media> media = mockStatic(Media.class)) {
+		try (MockedStatic<MediaCoder> media = mockStatic(MediaCoder.class)) {
 			String contentType = "image/png";
-			media.when(() -> Media.strip(contentType)).thenReturn(contentType);
+			when(coder.strip(contentType)).thenReturn(contentType);
+			media.when(() -> MediaCoder.getInstance()).thenReturn(coder);
 			assertThrows(NullPointerException.class, () -> {
 				f.putDisassembler(contentType, null);
 			});
@@ -802,9 +825,10 @@ class FacadeTest {
 
 	@Test
 	void putsDefaultSerializer() {
-		try (MockedStatic<Media> media = mockStatic(Media.class)) {
+		try (MockedStatic<MediaCoder> media = mockStatic(MediaCoder.class)) {
 			String contentType = "application/xml";
-			media.when(() -> Media.strip(contentType)).thenReturn(contentType);
+			when(coder.strip(contentType)).thenReturn(contentType);
+			media.when(() -> MediaCoder.getInstance()).thenReturn(coder);
 			Serializer serializer = f.getSerializer("text/plain");
 			f.putDefaultSerializer(contentType);
 			assertSame(serializer, f.getSerializer(contentType));
@@ -823,9 +847,10 @@ class FacadeTest {
 
 	@Test
 	void doesNotPutDefaultSerializerIfStripReturnsNull() {
-		try (MockedStatic<Media> media = mockStatic(Media.class)) {
+		try (MockedStatic<MediaCoder> media = mockStatic(MediaCoder.class)) {
 			String contentType = "application/xml";
-			media.when(() -> Media.strip(contentType)).thenReturn(null);
+			when(coder.strip(contentType)).thenReturn(null);
+			media.when(() -> MediaCoder.getInstance()).thenReturn(coder);
 			assertThrows(IllegalArgumentException.class, () -> {
 				f.putDefaultSerializer(contentType);
 			});
@@ -840,8 +865,9 @@ class FacadeTest {
 			"text/plain",
 			"application/xml" })
 	void putsSerializer(String contentType) {
-		try (MockedStatic<Media> media = mockStatic(Media.class)) {
-			media.when(() -> Media.strip(contentType)).thenReturn(contentType);
+		try (MockedStatic<MediaCoder> media = mockStatic(MediaCoder.class)) {
+			when(coder.strip(contentType)).thenReturn(contentType);
+			media.when(() -> MediaCoder.getInstance()).thenReturn(coder);
 			Serializer serializer = mock(Serializer.class);
 			f.putSerializer(contentType, serializer);
 			assertSame(serializer, f.getSerializer(contentType));
@@ -861,9 +887,10 @@ class FacadeTest {
 
 	@Test
 	void doesNotPutSerializerIfStripReturnsNull() {
-		try (MockedStatic<Media> media = mockStatic(Media.class)) {
+		try (MockedStatic<MediaCoder> media = mockStatic(MediaCoder.class)) {
 			String contentType = "application/xml";
-			media.when(() -> Media.strip(contentType)).thenReturn(null);
+			when(coder.strip(contentType)).thenReturn(null);
+			media.when(() -> MediaCoder.getInstance()).thenReturn(coder);
 			Serializer serializer = mock(Serializer.class);
 			assertThrows(IllegalArgumentException.class, () -> {
 				f.putSerializer(contentType, serializer);
@@ -876,9 +903,10 @@ class FacadeTest {
 
 	@Test
 	void doesNotPutSerializerIfItIsNull() {
-		try (MockedStatic<Media> media = mockStatic(Media.class)) {
+		try (MockedStatic<MediaCoder> media = mockStatic(MediaCoder.class)) {
 			String contentType = "application/xml";
-			media.when(() -> Media.strip(contentType)).thenReturn(contentType);
+			when(coder.strip(contentType)).thenReturn(contentType);
+			media.when(() -> MediaCoder.getInstance()).thenReturn(coder);
 			assertThrows(NullPointerException.class, () -> {
 				f.putSerializer(contentType, null);
 			});
@@ -890,9 +918,10 @@ class FacadeTest {
 
 	@Test
 	void putsDefaultDeserializer() {
-		try (MockedStatic<Media> media = mockStatic(Media.class)) {
+		try (MockedStatic<MediaCoder> media = mockStatic(MediaCoder.class)) {
 			String contentType = "application/xml";
-			media.when(() -> Media.strip(contentType)).thenReturn(contentType);
+			when(coder.strip(contentType)).thenReturn(contentType);
+			media.when(() -> MediaCoder.getInstance()).thenReturn(coder);
 			Deserializer deserializer = f.getDeserializer("text/plain");
 			f.putDefaultDeserializer(contentType);
 			assertSame(deserializer, f.getDeserializer(contentType));
@@ -911,9 +940,10 @@ class FacadeTest {
 
 	@Test
 	void doesNotPutDefaultDeserializerIfStripReturnsNull() {
-		try (MockedStatic<Media> media = mockStatic(Media.class)) {
+		try (MockedStatic<MediaCoder> media = mockStatic(MediaCoder.class)) {
 			String contentType = "application/xml";
-			media.when(() -> Media.strip(contentType)).thenReturn(null);
+			when(coder.strip(contentType)).thenReturn(null);
+			media.when(() -> MediaCoder.getInstance()).thenReturn(coder);
 			assertThrows(IllegalArgumentException.class, () -> {
 				f.putDefaultDeserializer(contentType);
 			});
@@ -928,8 +958,9 @@ class FacadeTest {
 			"text/plain",
 			"application/xml" })
 	void putsDeserializer(String contentType) {
-		try (MockedStatic<Media> media = mockStatic(Media.class)) {
-			media.when(() -> Media.strip(contentType)).thenReturn(contentType);
+		try (MockedStatic<MediaCoder> media = mockStatic(MediaCoder.class)) {
+			when(coder.strip(contentType)).thenReturn(contentType);
+			media.when(() -> MediaCoder.getInstance()).thenReturn(coder);
 			Deserializer deserializer = mock(Deserializer.class);
 			f.putDeserializer(contentType, deserializer);
 			assertSame(deserializer, f.getDeserializer(contentType));
@@ -949,9 +980,10 @@ class FacadeTest {
 
 	@Test
 	void doesNotPutDeserializerIfStripReturnsNull() {
-		try (MockedStatic<Media> media = mockStatic(Media.class)) {
+		try (MockedStatic<MediaCoder> media = mockStatic(MediaCoder.class)) {
 			String contentType = "application/xml";
-			media.when(() -> Media.strip(contentType)).thenReturn(null);
+			when(coder.strip(contentType)).thenReturn(null);
+			media.when(() -> MediaCoder.getInstance()).thenReturn(coder);
 			Deserializer deserializer = mock(Deserializer.class);
 			assertThrows(IllegalArgumentException.class, () -> {
 				f.putDeserializer(contentType, deserializer);
@@ -964,9 +996,10 @@ class FacadeTest {
 
 	@Test
 	void doesNotPutDeserializerIfItIsNull() {
-		try (MockedStatic<Media> media = mockStatic(Media.class)) {
+		try (MockedStatic<MediaCoder> media = mockStatic(MediaCoder.class)) {
 			String contentType = "application/xml";
-			media.when(() -> Media.strip(contentType)).thenReturn(contentType);
+			when(coder.strip(contentType)).thenReturn(contentType);
+			media.when(() -> MediaCoder.getInstance()).thenReturn(coder);
 			assertThrows(NullPointerException.class, () -> {
 				f.putDeserializer(contentType, null);
 			});
@@ -985,9 +1018,10 @@ class FacadeTest {
 
 	@Test
 	void doesNotSetFallbackByteTypeIfStripReturnsNull() {
-		try (MockedStatic<Media> media = mockStatic(Media.class)) {
+		try (MockedStatic<MediaCoder> media = mockStatic(MediaCoder.class)) {
 			String contentType = "application/octet-stream";
-			media.when(() -> Media.strip(contentType)).thenReturn(null);
+			when(coder.strip(contentType)).thenReturn(null);
+			media.when(() -> MediaCoder.getInstance()).thenReturn(coder);
 			assertThrows(IllegalArgumentException.class, () -> {
 				f.setFallbackByteType(contentType);
 			});
@@ -1003,9 +1037,10 @@ class FacadeTest {
 
 	@Test
 	void doesNotSetFallbackTextTypeIfStripReturnsNull() {
-		try (MockedStatic<Media> media = mockStatic(Media.class)) {
+		try (MockedStatic<MediaCoder> media = mockStatic(MediaCoder.class)) {
 			String contentType = "text/plain";
-			media.when(() -> Media.strip(contentType)).thenReturn(null);
+			when(coder.strip(contentType)).thenReturn(null);
+			media.when(() -> MediaCoder.getInstance()).thenReturn(coder);
 			assertThrows(IllegalArgumentException.class, () -> {
 				f.setFallbackTextType(contentType);
 			});

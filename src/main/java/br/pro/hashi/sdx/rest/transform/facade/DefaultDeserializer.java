@@ -3,7 +3,7 @@ package br.pro.hashi.sdx.rest.transform.facade;
 import java.io.Reader;
 import java.lang.reflect.Type;
 
-import br.pro.hashi.sdx.rest.coding.Media;
+import br.pro.hashi.sdx.rest.coding.MediaCoder;
 import br.pro.hashi.sdx.rest.reflection.ParserFactory;
 import br.pro.hashi.sdx.rest.transform.Deserializer;
 import br.pro.hashi.sdx.rest.transform.exception.TypeException;
@@ -19,10 +19,10 @@ class DefaultDeserializer implements Deserializer {
 	@Override
 	public <T> T read(Reader reader, Type type) {
 		if (Facade.PRIMITIVE_TYPES.contains(type)) {
-			return (T) cache.get((Class<?>) type).apply(Media.read(reader));
+			return (T) cache.get((Class<?>) type).apply(MediaCoder.getInstance().read(reader));
 		}
 		if (type.equals(String.class)) {
-			return (T) Media.read(reader);
+			return (T) MediaCoder.getInstance().read(reader);
 		}
 		if (type.equals(Reader.class)) {
 			return (T) reader;

@@ -3,7 +3,7 @@ package br.pro.hashi.sdx.rest.transform.facade;
 import java.io.InputStream;
 import java.lang.reflect.Type;
 
-import br.pro.hashi.sdx.rest.coding.Media;
+import br.pro.hashi.sdx.rest.coding.MediaCoder;
 import br.pro.hashi.sdx.rest.transform.Disassembler;
 import br.pro.hashi.sdx.rest.transform.exception.TypeException;
 
@@ -12,7 +12,7 @@ class DefaultDisassembler implements Disassembler {
 	@Override
 	public <T> T read(InputStream stream, Type type) {
 		if (type.equals(byte[].class)) {
-			return (T) Media.read(stream);
+			return (T) MediaCoder.getInstance().read(stream);
 		}
 		if (type.equals(InputStream.class)) {
 			return (T) stream;

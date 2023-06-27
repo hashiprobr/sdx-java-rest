@@ -15,7 +15,7 @@ import org.eclipse.jetty.server.handler.ErrorHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import br.pro.hashi.sdx.rest.coding.Media;
+import br.pro.hashi.sdx.rest.coding.MediaCoder;
 import br.pro.hashi.sdx.rest.transform.Serializer;
 import br.pro.hashi.sdx.rest.transform.facade.Facade;
 import jakarta.servlet.http.HttpServletRequest;
@@ -74,7 +74,7 @@ class ConcreteHandler extends ErrorHandler {
 			fields.add("Content-Type", contentType);
 			OutputStream stream;
 			if (base64) {
-				stream = Media.encode(output);
+				stream = MediaCoder.getInstance().encode(output);
 			} else {
 				stream = output;
 			}
@@ -109,7 +109,7 @@ class ConcreteHandler extends ErrorHandler {
 		response.setContentType(contentType);
 		OutputStream stream = response.getOutputStream();
 		if (base64) {
-			stream = Media.encode(stream);
+			stream = MediaCoder.getInstance().encode(stream);
 		}
 		OutputStreamWriter writer = new OutputStreamWriter(stream, charset);
 

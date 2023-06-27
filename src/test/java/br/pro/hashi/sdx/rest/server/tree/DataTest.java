@@ -6,6 +6,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.InputStream;
@@ -18,7 +19,7 @@ import org.junit.jupiter.params.provider.NullSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.MockedStatic;
 
-import br.pro.hashi.sdx.rest.coding.Media;
+import br.pro.hashi.sdx.rest.coding.MediaCoder;
 import br.pro.hashi.sdx.rest.server.stream.LimitInputStream;
 import br.pro.hashi.sdx.rest.transform.Deserializer;
 import br.pro.hashi.sdx.rest.transform.Disassembler;
@@ -27,16 +28,18 @@ import br.pro.hashi.sdx.rest.transform.facade.Facade;
 class DataTest {
 	private static final String CONTENT_TYPE = "type/subtype";
 
+	private MediaCoder coder;
 	private Facade facade;
 	private InputStream stream;
-	private MockedStatic<Media> media;
+	private MockedStatic<MediaCoder> media;
 	private Data d;
 
 	@BeforeEach
 	void setUp() {
+		coder = mock(MediaCoder.class);
 		facade = mock(Facade.class);
 		stream = InputStream.nullInputStream();
-		media = mockStatic(Media.class);
+		media = mockStatic(MediaCoder.class);
 	}
 
 	@AfterEach
@@ -49,9 +52,10 @@ class DataTest {
 	@ValueSource(strings = { CONTENT_TYPE })
 	void getsBody(String contentType) {
 		Reader reader = mock(Reader.class);
-		media.when(() -> Media.decode(any(), eq(contentType))).thenReturn(stream);
-		media.when(() -> Media.reader(stream, contentType)).thenReturn(reader);
-		media.when(() -> Media.strip(contentType)).thenReturn(null);
+		when(coder.decode(any(), eq(contentType))).thenReturn(stream);
+		when(coder.reader(stream, contentType)).thenReturn(reader);
+		when(coder.strip(contentType)).thenReturn(null);
+		media.when(() -> MediaCoder.getInstance()).thenReturn(coder);
 		d = newData(contentType);
 		Object body = new Object();
 		Deserializer deserializer = mock(Deserializer.class);
@@ -60,16 +64,17 @@ class DataTest {
 		when(facade.getDeserializerType(null, Object.class)).thenReturn(CONTENT_TYPE);
 		when(facade.getDeserializer(CONTENT_TYPE)).thenReturn(deserializer);
 		assertSame(body, d.getBody(Object.class, 200000));
-		media.verify(() -> Media.decode(any(LimitInputStream.class), eq(contentType)));
-		media.verify(() -> Media.decode(stream, contentType), times(0));
+		verify(coder).decode(any(LimitInputStream.class), eq(contentType));
+		verify(coder, times(0)).decode(stream, contentType);
 	}
 
 	@ParameterizedTest
 	@NullSource
 	@ValueSource(strings = { CONTENT_TYPE })
 	void getsBinaryBody(String contentType) {
-		media.when(() -> Media.decode(any(), eq(contentType))).thenReturn(stream);
-		media.when(() -> Media.strip(contentType)).thenReturn(null);
+		when(coder.decode(any(), eq(contentType))).thenReturn(stream);
+		when(coder.strip(contentType)).thenReturn(null);
+		media.when(() -> MediaCoder.getInstance()).thenReturn(coder);
 		d = newData(contentType);
 		Object body = new Object();
 		Disassembler disassembler = mock(Disassembler.class);
@@ -78,8 +83,8 @@ class DataTest {
 		when(facade.getDisassemblerType(null, Object.class)).thenReturn(CONTENT_TYPE);
 		when(facade.getDisassembler(CONTENT_TYPE)).thenReturn(disassembler);
 		assertSame(body, d.getBody(Object.class, 0));
-		media.verify(() -> Media.decode(any(LimitInputStream.class), eq(contentType)), times(0));
-		media.verify(() -> Media.decode(stream, contentType));
+		verify(coder, times(0)).decode(any(LimitInputStream.class), eq(contentType));
+		verify(coder).decode(stream, contentType);
 	}
 
 	private Data newData(String contentType) {
