@@ -18,7 +18,7 @@ public interface Deserializer {
 	 * 
 	 * @param <T>    the type of the object
 	 * @param reader the representation
-	 * @param type   an object representing {@code T}
+	 * @param type   {@link Class} representing {@code T}
 	 * @return the object
 	 * @throws UncheckedIOException   if the representation cannot be read
 	 * @throws DeserializingException if the representation cannot be transformed

@@ -1,7 +1,7 @@
 package br.pro.hashi.sdx.rest.transform.exception;
 
 /**
- * Thrown to indicate that an object cannot be transformed into a byte
+ * Thrown to indicate that an object could not be transformed into a byte
  * representation.
  */
 public class AssemblingException extends RuntimeException {

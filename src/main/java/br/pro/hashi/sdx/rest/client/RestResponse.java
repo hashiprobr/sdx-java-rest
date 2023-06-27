@@ -83,7 +83,7 @@ public final class RestResponse {
 	 * </p>
 	 * 
 	 * @param <T>  the type of the body
-	 * @param type an object representing {@code T}
+	 * @param type {@link Class} representing {@code T}
 	 * @return the body
 	 * @throws NullPointerException if the type object is null
 	 * @throws ClientException      if the stream is not available
@@ -128,7 +128,7 @@ public final class RestResponse {
 	 * </p>
 	 * 
 	 * @param <T>         the type of the body
-	 * @param type        an object representing {@code T}
+	 * @param type        {@link Class} representing {@code T}
 	 * @param contentType the content type
 	 * @return the body
 	 * @throws NullPointerException if the type object is null

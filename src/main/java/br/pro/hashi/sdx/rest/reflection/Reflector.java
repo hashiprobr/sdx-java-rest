@@ -57,10 +57,10 @@ public class Reflector {
 		return creator;
 	}
 
-	public <T> T invokeCreator(MethodHandle handle) {
+	public <T> T invokeCreator(MethodHandle creator) {
 		T instance;
 		try {
-			instance = (T) handle.invoke();
+			instance = (T) creator.invoke();
 		} catch (Throwable throwable) {
 			throw new ReflectionException(throwable);
 		}

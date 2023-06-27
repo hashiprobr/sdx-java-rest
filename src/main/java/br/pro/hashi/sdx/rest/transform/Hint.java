@@ -29,7 +29,7 @@ public abstract class Hint<T> {
 	/**
 	 * Obtains the hinted type.
 	 * 
-	 * @return an object representing {@code T}
+	 * @return {@link Class} representing {@code T}
 	 */
 	public final Type getType() {
 		return type;

@@ -1,7 +1,7 @@
 package br.pro.hashi.sdx.rest.transform.exception;
 
 /**
- * Thrown to indicate that an object cannot be transformed into a text
+ * Thrown to indicate that an object could not be transformed into a text
  * representation.
  */
 public class SerializingException extends RuntimeException {

@@ -6,7 +6,7 @@ import br.pro.hashi.sdx.rest.reflection.Reflector;
 
 /**
  * <p>
- * A converter can convert objects of a source type to and from objects of a
+ * Implemented to convert objects of a source type to and from objects of a
  * target type.
  * </p>
  * <p>
@@ -20,13 +20,13 @@ import br.pro.hashi.sdx.rest.reflection.Reflector;
 public interface Converter<S, T> {
 	/**
 	 * <p>
-	 * Obtains the source type.
+	 * Obtains the source type of this converter.
 	 * </p>
 	 * <p>
 	 * Classes are encouraged to provide an alternative implementation.
 	 * </p>
 	 * 
-	 * @return an object representing {@code S}
+	 * @return a {@link Class} representing {@code S}
 	 */
 	default Type getSourceType() {
 		return Reflector.getInstance().getSpecificType(this, Converter.class, 0);
@@ -34,13 +34,13 @@ public interface Converter<S, T> {
 
 	/**
 	 * <p>
-	 * Obtains the target type.
+	 * Obtains the target type of this converter.
 	 * </p>
 	 * <p>
 	 * Classes are encouraged to provide an alternative implementation.
 	 * </p>
 	 * 
-	 * @return an object representing {@code T}
+	 * @return a {@link Class} representing {@code T}
 	 */
 	default Type getTargetType() {
 		return Reflector.getInstance().getSpecificType(this, Converter.class, 1);

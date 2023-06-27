@@ -1,8 +1,8 @@
 package br.pro.hashi.sdx.rest.transform.exception;
 
 /**
- * Thrown to indicate that a text representation cannot be transformed back into
- * an object.
+ * Thrown to indicate that a text representation could not be transformed back
+ * into an object.
  */
 public class DeserializingException extends RuntimeException {
 	private static final long serialVersionUID = 8782038150308982536L;

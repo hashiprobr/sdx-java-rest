@@ -10,12 +10,12 @@ import br.pro.hashi.sdx.rest.server.RestServerBuilder;
 
 /**
  * <p>
- * An injector can manipulate an object of type {@link RestClientBuilder} or
+ * Implemented to inject objects in a {@link RestClientBuilder} or a
  * {@link RestServerBuilder}.
  * </p>
  * <p>
- * The idea is that it can be used to configure and/or extend transform support
- * (possibly via a third-party library).
+ * The idea is that these objects can be used to modify and/or extend transform
+ * support via a third-party library.
  * </p>
  */
 public abstract class Injector {
@@ -30,22 +30,24 @@ public abstract class Injector {
 
 	/**
 	 * <p>
-	 * Convenience method that instantiates all concrete converters in a specified
-	 * package (including subpackages) and iterates over the instances.
+	 * Instantiates all classes in the specified package (including subpackages)
+	 * that are concrete implementations of the specified subinterface of
+	 * {@link Converter}.
 	 * </p>
 	 * <p>
-	 * The idea is that it can be used to wrap and register the converters in a
+	 * The idea is that this method can be used to register the converters in a
 	 * third-party library.
 	 * </p>
 	 * 
-	 * @param <T>         the superclass of the converters
-	 * @param packageName the name of the package
-	 * @param type        an object representing {@code T}
-	 * @param lookup      a lookup object with full access to {@code T}
-	 * @return an instance of each concrete subclass of {@code T} in the package
+	 * @param <T>           the converter type
+	 * @param packageName   the package name
+	 * @param converterType a {@link Class} representing {@code T}
+	 * @param lookup        a {@link Lookup} with full access to {@code T}
+	 * @return an instance of each concrete implementation of {@code T} in the
+	 *         package
 	 */
-	protected final <T extends Converter<?, ?>> Iterable<T> getSubConverters(String packageName, Class<T> type, Lookup lookup) {
-		Iterator<Class<? extends T>> iterator = reflector.getConcreteSubTypes(packageName, type).iterator();
+	protected final <T extends Converter<?, ?>> Iterable<T> getSubConverters(String packageName, Class<T> converterType, Lookup lookup) {
+		Iterator<Class<? extends T>> iterator = reflector.getConcreteSubTypes(packageName, converterType).iterator();
 
 		return () -> new Iterator<>() {
 			@Override
@@ -56,8 +58,8 @@ public abstract class Injector {
 			@Override
 			public T next() {
 				Class<? extends T> converterType = iterator.next();
-				MethodHandle handle = reflector.getCreator(converterType, lookup);
-				return reflector.invokeCreator(handle);
+				MethodHandle creator = reflector.getCreator(converterType, lookup);
+				return reflector.invokeCreator(creator);
 			}
 		};
 	}

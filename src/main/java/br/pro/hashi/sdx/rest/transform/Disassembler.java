@@ -19,7 +19,7 @@ public interface Disassembler {
 	 * 
 	 * @param <T>    the type of the object
 	 * @param stream the representation
-	 * @param type   an object representing {@code T}
+	 * @param type   {@link Class} representing {@code T}
 	 * @return the object
 	 * @throws UncheckedIOException   if the representation cannot be read
 	 * @throws DisassemblingException if the representation cannot be transformed
