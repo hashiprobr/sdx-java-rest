@@ -1,4 +1,4 @@
-package br.pro.hashi.sdx.rest.transform.facade;
+package br.pro.hashi.sdx.rest.transform.manager;
 
 import java.io.InputStream;
 import java.lang.reflect.Type;

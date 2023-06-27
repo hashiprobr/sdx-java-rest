@@ -42,7 +42,7 @@ import br.pro.hashi.sdx.rest.reflection.ParserFactory;
 import br.pro.hashi.sdx.rest.reflection.Reflector;
 import br.pro.hashi.sdx.rest.server.exception.ResourceException;
 import br.pro.hashi.sdx.rest.server.tree.Tree;
-import br.pro.hashi.sdx.rest.transform.facade.Facade;
+import br.pro.hashi.sdx.rest.transform.manager.TransformManager;
 import jakarta.servlet.MultipartConfigElement;
 
 /**
@@ -100,8 +100,8 @@ public non-sealed class RestServerBuilder extends Builder<RestServerBuilder> {
 		return parserFactory;
 	}
 
-	Facade getFacade() {
-		return facade;
+	TransformManager getManager() {
+		return manager;
 	}
 
 	Set<Class<? extends RuntimeException>> getGatewayTypes() {
@@ -189,7 +189,7 @@ public non-sealed class RestServerBuilder extends Builder<RestServerBuilder> {
 	 *                                  type is invalid
 	 */
 	public final RestServerBuilder withExtension(String extension, String contentType) {
-		facade.putExtension(extension, contentType);
+		manager.putExtension(extension, contentType);
 		return self();
 	}
 
@@ -220,7 +220,7 @@ public non-sealed class RestServerBuilder extends Builder<RestServerBuilder> {
 		if (formatter == null) {
 			throw new NullPointerException("Error formatter cannot be null");
 		}
-		if (facade.isBinary(formatter.getReturnType())) {
+		if (manager.isBinary(formatter.getReturnType())) {
 			throw new IllegalArgumentException("Error formatter cannot be binary");
 		}
 		this.formatter = formatter;
@@ -472,10 +472,10 @@ public non-sealed class RestServerBuilder extends Builder<RestServerBuilder> {
 			server = new Server(requestPool);
 		}
 
-		ConcreteHandler errorHandler = new ConcreteHandler(facade, formatter, contentType, charset, base64);
+		ConcreteHandler errorHandler = new ConcreteHandler(manager, formatter, contentType, charset, base64);
 		server.setErrorHandler(errorHandler);
 
-		AbstractHandler handler = new Handler(parserFactory, facade, tree, formatter, handles, element, gatewayTypes, urlCharset, cors);
+		AbstractHandler handler = new Handler(parserFactory, manager, tree, formatter, handles, element, gatewayTypes, urlCharset, cors);
 		if (compression) {
 			GzipHandler gzipHandler = new GzipHandler();
 			gzipHandler.setHandler(handler);

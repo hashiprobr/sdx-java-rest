@@ -23,13 +23,13 @@ import br.pro.hashi.sdx.rest.coding.MediaCoder;
 import br.pro.hashi.sdx.rest.server.stream.LimitInputStream;
 import br.pro.hashi.sdx.rest.transform.Deserializer;
 import br.pro.hashi.sdx.rest.transform.Disassembler;
-import br.pro.hashi.sdx.rest.transform.facade.Facade;
+import br.pro.hashi.sdx.rest.transform.manager.TransformManager;
 
 class DataTest {
 	private static final String CONTENT_TYPE = "type/subtype";
 
 	private MediaCoder coder;
-	private Facade facade;
+	private TransformManager manager;
 	private InputStream stream;
 	private MockedStatic<MediaCoder> media;
 	private Data d;
@@ -37,7 +37,7 @@ class DataTest {
 	@BeforeEach
 	void setUp() {
 		coder = mock(MediaCoder.class);
-		facade = mock(Facade.class);
+		manager = mock(TransformManager.class);
 		stream = InputStream.nullInputStream();
 		media = mockStatic(MediaCoder.class);
 	}
@@ -60,9 +60,9 @@ class DataTest {
 		Object body = new Object();
 		Deserializer deserializer = mock(Deserializer.class);
 		when(deserializer.read(reader, Object.class)).thenReturn(body);
-		when(facade.isBinary(Object.class)).thenReturn(false);
-		when(facade.getDeserializerType(null, Object.class)).thenReturn(CONTENT_TYPE);
-		when(facade.getDeserializer(CONTENT_TYPE)).thenReturn(deserializer);
+		when(manager.isBinary(Object.class)).thenReturn(false);
+		when(manager.getDeserializerType(null, Object.class)).thenReturn(CONTENT_TYPE);
+		when(manager.getDeserializer(CONTENT_TYPE)).thenReturn(deserializer);
 		assertSame(body, d.getBody(Object.class, 200000));
 		verify(coder).decode(any(LimitInputStream.class), eq(contentType));
 		verify(coder, times(0)).decode(stream, contentType);
@@ -79,15 +79,15 @@ class DataTest {
 		Object body = new Object();
 		Disassembler disassembler = mock(Disassembler.class);
 		when(disassembler.read(stream, Object.class)).thenReturn(body);
-		when(facade.isBinary(Object.class)).thenReturn(true);
-		when(facade.getDisassemblerType(null, Object.class)).thenReturn(CONTENT_TYPE);
-		when(facade.getDisassembler(CONTENT_TYPE)).thenReturn(disassembler);
+		when(manager.isBinary(Object.class)).thenReturn(true);
+		when(manager.getDisassemblerType(null, Object.class)).thenReturn(CONTENT_TYPE);
+		when(manager.getDisassembler(CONTENT_TYPE)).thenReturn(disassembler);
 		assertSame(body, d.getBody(Object.class, 0));
 		verify(coder, times(0)).decode(any(LimitInputStream.class), eq(contentType));
 		verify(coder).decode(stream, contentType);
 	}
 
 	private Data newData(String contentType) {
-		return new Data(facade, contentType, stream);
+		return new Data(manager, contentType, stream);
 	}
 }

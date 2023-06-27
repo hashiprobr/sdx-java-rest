@@ -1,4 +1,4 @@
-package br.pro.hashi.sdx.rest.transform.facade;
+package br.pro.hashi.sdx.rest.transform.manager;
 
 import java.io.Reader;
 import java.lang.reflect.Type;
@@ -9,17 +9,17 @@ import br.pro.hashi.sdx.rest.transform.Deserializer;
 import br.pro.hashi.sdx.rest.transform.exception.TypeException;
 
 class DefaultDeserializer implements Deserializer {
-	private final ParserFactory cache;
+	private final ParserFactory factory;
 
-	DefaultDeserializer(ParserFactory cache) {
-		this.cache = cache;
+	DefaultDeserializer(ParserFactory factory) {
+		this.factory = factory;
 	}
 
 	@SuppressWarnings("unchecked")
 	@Override
 	public <T> T read(Reader reader, Type type) {
-		if (Facade.PRIMITIVE_TYPES.contains(type)) {
-			return (T) cache.get((Class<?>) type).apply(MediaCoder.getInstance().read(reader));
+		if (TransformManager.PRIMITIVE_TYPES.contains(type)) {
+			return (T) factory.get((Class<?>) type).apply(MediaCoder.getInstance().read(reader));
 		}
 		if (type.equals(String.class)) {
 			return (T) MediaCoder.getInstance().read(reader);

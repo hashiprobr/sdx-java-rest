@@ -23,12 +23,12 @@ import br.pro.hashi.sdx.rest.reflection.Headers;
 import br.pro.hashi.sdx.rest.transform.Deserializer;
 import br.pro.hashi.sdx.rest.transform.Disassembler;
 import br.pro.hashi.sdx.rest.transform.Hint;
-import br.pro.hashi.sdx.rest.transform.facade.Facade;
+import br.pro.hashi.sdx.rest.transform.manager.TransformManager;
 
 class RestResponseTest {
 	private static final String CONTENT_TYPE = "type/subtype";
 
-	private Facade facade;
+	private TransformManager manager;
 	private Headers headers;
 	private InputStream stream;
 	private MediaCoder coder;
@@ -37,7 +37,7 @@ class RestResponseTest {
 
 	@BeforeEach
 	void setUp() {
-		facade = mock(Facade.class);
+		manager = mock(TransformManager.class);
 		headers = mock(Headers.class);
 		stream = InputStream.nullInputStream();
 		coder = mock(MediaCoder.class);
@@ -81,9 +81,9 @@ class RestResponseTest {
 		Object body = new Object();
 		Deserializer deserializer = mock(Deserializer.class);
 		when(deserializer.read(reader, Object.class)).thenReturn(body);
-		when(facade.isBinary(Object.class)).thenReturn(false);
-		when(facade.getDeserializerType(null, Object.class)).thenReturn(CONTENT_TYPE);
-		when(facade.getDeserializer(CONTENT_TYPE)).thenReturn(deserializer);
+		when(manager.isBinary(Object.class)).thenReturn(false);
+		when(manager.getDeserializerType(null, Object.class)).thenReturn(CONTENT_TYPE);
+		when(manager.getDeserializer(CONTENT_TYPE)).thenReturn(deserializer);
 		return body;
 	}
 
@@ -132,9 +132,9 @@ class RestResponseTest {
 		Object body = new Object();
 		Disassembler disassembler = mock(Disassembler.class);
 		when(disassembler.read(stream, Object.class)).thenReturn(body);
-		when(facade.isBinary(Object.class)).thenReturn(true);
-		when(facade.getDisassemblerType(null, Object.class)).thenReturn(CONTENT_TYPE);
-		when(facade.getDisassembler(CONTENT_TYPE)).thenReturn(disassembler);
+		when(manager.isBinary(Object.class)).thenReturn(true);
+		when(manager.getDisassemblerType(null, Object.class)).thenReturn(CONTENT_TYPE);
+		when(manager.getDisassembler(CONTENT_TYPE)).thenReturn(disassembler);
 		return body;
 	}
 
@@ -143,6 +143,6 @@ class RestResponseTest {
 	}
 
 	private RestResponse newRestResponse(String contentType) {
-		return new RestResponse(facade, 600, headers, contentType, stream);
+		return new RestResponse(manager, 600, headers, contentType, stream);
 	}
 }

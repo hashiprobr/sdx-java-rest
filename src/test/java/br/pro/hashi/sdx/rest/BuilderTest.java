@@ -26,39 +26,39 @@ import br.pro.hashi.sdx.rest.transform.Deserializer;
 import br.pro.hashi.sdx.rest.transform.Disassembler;
 import br.pro.hashi.sdx.rest.transform.Hint;
 import br.pro.hashi.sdx.rest.transform.Serializer;
-import br.pro.hashi.sdx.rest.transform.facade.Facade;
+import br.pro.hashi.sdx.rest.transform.manager.TransformManager;
 
 public abstract class BuilderTest {
 	private MockedStatic<ParserFactory> cacheStatic;
-	private MockedConstruction<Facade> facadeConstruction;
+	private MockedConstruction<TransformManager> managerConstruction;
 	private Builder<?> b;
-	private ParserFactory cache;
-	private Facade facade;
+	private ParserFactory factory;
+	private TransformManager manager;
 
 	@BeforeEach
 	void setUp() {
-		cache = mock(ParserFactory.class);
+		factory = mock(ParserFactory.class);
 		cacheStatic = mockStatic(ParserFactory.class);
-		cacheStatic.when(() -> ParserFactory.getInstance()).thenReturn(cache);
-		facadeConstruction = mockConstruction(Facade.class);
+		cacheStatic.when(() -> ParserFactory.getInstance()).thenReturn(factory);
+		managerConstruction = mockConstruction(TransformManager.class);
 		b = newInstance();
-		facade = facadeConstruction.constructed().get(0);
+		manager = managerConstruction.constructed().get(0);
 	}
 
 	@AfterEach
 	void tearDown() {
-		facadeConstruction.close();
+		managerConstruction.close();
 		cacheStatic.close();
 	}
 
 	@Test
 	void initializesWithCache() {
-		assertEquals(cache, b.parserFactory);
+		assertEquals(factory, b.parserFactory);
 	}
 
 	@Test
-	void initializesWithFacade() {
-		assertEquals(facade, b.facade);
+	void initializesWithManager() {
+		assertEquals(manager, b.manager);
 	}
 
 	@Test
@@ -84,21 +84,21 @@ public abstract class BuilderTest {
 	@Test
 	void addsBinary() {
 		assertSame(b, b.withBinary(Object.class));
-		verify(facade).addBinary(Object.class);
+		verify(manager).addBinary(Object.class);
 	}
 
 	@Test
 	void addsBinaryWithHint() {
 		Hint<Object> hint = new Hint<Object>() {};
 		assertSame(b, b.withBinary(hint));
-		verify(facade).addBinary(hint);
+		verify(manager).addBinary(hint);
 	}
 
 	@Test
 	void putsDefaultAssembler() {
 		String contentType = "image/png";
 		assertSame(b, b.withDefaultAssembler(contentType));
-		verify(facade).putDefaultAssembler(contentType);
+		verify(manager).putDefaultAssembler(contentType);
 	}
 
 	@Test
@@ -106,14 +106,14 @@ public abstract class BuilderTest {
 		String contentType = "image/png";
 		Assembler assembler = mock(Assembler.class);
 		assertSame(b, b.withAssembler(contentType, assembler));
-		verify(facade).putAssembler(contentType, assembler);
+		verify(manager).putAssembler(contentType, assembler);
 	}
 
 	@Test
 	void putsDefaultDisassembler() {
 		String contentType = "image/png";
 		assertSame(b, b.withDefaultDisassembler(contentType));
-		verify(facade).putDefaultDisassembler(contentType);
+		verify(manager).putDefaultDisassembler(contentType);
 	}
 
 	@Test
@@ -121,14 +121,14 @@ public abstract class BuilderTest {
 		String contentType = "image/png";
 		Disassembler disassembler = mock(Disassembler.class);
 		assertSame(b, b.withDisassembler(contentType, disassembler));
-		verify(facade).putDisassembler(contentType, disassembler);
+		verify(manager).putDisassembler(contentType, disassembler);
 	}
 
 	@Test
 	void putsDefaultSerializer() {
 		String contentType = "application/xml";
 		assertSame(b, b.withDefaultSerializer(contentType));
-		verify(facade).putDefaultSerializer(contentType);
+		verify(manager).putDefaultSerializer(contentType);
 	}
 
 	@Test
@@ -136,14 +136,14 @@ public abstract class BuilderTest {
 		String contentType = "application/xml";
 		Serializer serializer = mock(Serializer.class);
 		assertSame(b, b.withSerializer(contentType, serializer));
-		verify(facade).putSerializer(contentType, serializer);
+		verify(manager).putSerializer(contentType, serializer);
 	}
 
 	@Test
 	void putsDefaultDeserializer() {
 		String contentType = "application/xml";
 		assertSame(b, b.withDefaultDeserializer(contentType));
-		verify(facade).putDefaultDeserializer(contentType);
+		verify(manager).putDefaultDeserializer(contentType);
 	}
 
 	@Test
@@ -151,21 +151,21 @@ public abstract class BuilderTest {
 		String contentType = "application/xml";
 		Deserializer deserializer = mock(Deserializer.class);
 		assertSame(b, b.withDeserializer(contentType, deserializer));
-		verify(facade).putDeserializer(contentType, deserializer);
+		verify(manager).putDeserializer(contentType, deserializer);
 	}
 
 	@Test
 	void setsFallbackByteType() {
 		String contentType = "image/png";
 		assertSame(b, b.withFallbackByteType(contentType));
-		verify(facade).setFallbackByteType(contentType);
+		verify(manager).setFallbackByteType(contentType);
 	}
 
 	@Test
 	void setsFallbackTextType() {
 		String contentType = "application/xml";
 		assertSame(b, b.withFallbackTextType(contentType));
-		verify(facade).setFallbackTextType(contentType);
+		verify(manager).setFallbackTextType(contentType);
 	}
 
 	@Test

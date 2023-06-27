@@ -30,7 +30,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import br.pro.hashi.sdx.rest.transform.Serializer;
-import br.pro.hashi.sdx.rest.transform.facade.Facade;
+import br.pro.hashi.sdx.rest.transform.manager.TransformManager;
 import jakarta.servlet.ServletOutputStream;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -39,7 +39,7 @@ class ConcreteHandlerTest {
 	private static final String BODY = "spéçíál";
 
 	private Serializer serializer;
-	private Facade facade;
+	private TransformManager manager;
 	private ErrorFormatter formatter;
 	private ConcreteHandler h;
 	private HttpFields.Mutable fields;
@@ -58,9 +58,9 @@ class ConcreteHandlerTest {
 			writer.close();
 			return null;
 		}).when(serializer).write(eq(BODY), eq(String.class), any());
-		facade = mock(Facade.class);
-		when(facade.getSerializerType(null, BODY, String.class)).thenReturn("type/subtype");
-		when(facade.getSerializer("type/subtype")).thenReturn(serializer);
+		manager = mock(TransformManager.class);
+		when(manager.getSerializerType(null, BODY, String.class)).thenReturn("type/subtype");
+		when(manager.getSerializer("type/subtype")).thenReturn(serializer);
 		formatter = mock(ErrorFormatter.class);
 		when(formatter.getReturnType()).thenReturn(String.class);
 		when(formatter.format(400, BODY)).thenReturn(BODY);
@@ -231,6 +231,6 @@ class ConcreteHandlerTest {
 	}
 
 	private ConcreteHandler newConcreteHandler(Charset charset, boolean base64) {
-		return new ConcreteHandler(facade, formatter, null, charset, base64);
+		return new ConcreteHandler(manager, formatter, null, charset, base64);
 	}
 }

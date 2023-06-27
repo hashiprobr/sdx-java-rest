@@ -19,7 +19,7 @@ import org.eclipse.jetty.util.ssl.SslContextFactory;
 import br.pro.hashi.sdx.rest.Builder;
 import br.pro.hashi.sdx.rest.coding.PathCoder;
 import br.pro.hashi.sdx.rest.reflection.ParserFactory;
-import br.pro.hashi.sdx.rest.transform.facade.Facade;
+import br.pro.hashi.sdx.rest.transform.manager.TransformManager;
 
 /**
  * Configures and builds objects of type {@link RestClient}.
@@ -38,8 +38,8 @@ public non-sealed class RestClientBuilder extends Builder<RestClientBuilder> {
 		return parserFactory;
 	}
 
-	Facade getFacade() {
-		return facade;
+	TransformManager getManager() {
+		return manager;
 	}
 
 	SslContextFactory.Client getFactory() {
@@ -211,7 +211,7 @@ public non-sealed class RestClientBuilder extends Builder<RestClientBuilder> {
 			client.getContentDecoderFactories().add(new GZIPContentDecoder.Factory());
 		}
 		client.setFollowRedirects(redirection);
-		return new RestClient(parserFactory, facade, client, urlCharset, locale, urlPrefix);
+		return new RestClient(parserFactory, manager, client, urlCharset, locale, urlPrefix);
 	}
 
 	/**

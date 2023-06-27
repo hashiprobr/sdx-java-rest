@@ -1,4 +1,4 @@
-package br.pro.hashi.sdx.rest.transform.facade;
+package br.pro.hashi.sdx.rest.transform.manager;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -21,7 +21,7 @@ class DefaultSerializer implements Serializer {
 	@Override
 	public void write(Object body, Type type, Writer writer) {
 		try {
-			if (Facade.PRIMITIVE_TYPES.contains(type)) {
+			if (TransformManager.PRIMITIVE_TYPES.contains(type)) {
 				writer.write(body.toString());
 				return;
 			}

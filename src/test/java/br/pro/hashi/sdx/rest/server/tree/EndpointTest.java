@@ -51,7 +51,7 @@ class EndpointTest {
 
 	private Function<String, Integer> intFunction;
 	private Function<String, Double> doubleFunction;
-	private ParserFactory cache;
+	private ParserFactory factory;
 	private Endpoint e;
 	private Signatures resource;
 
@@ -59,9 +59,9 @@ class EndpointTest {
 	void setUp() {
 		intFunction = Integer::parseInt;
 		doubleFunction = Double::parseDouble;
-		cache = mock(ParserFactory.class);
-		when(cache.get(int.class)).thenReturn(intFunction);
-		when(cache.get(double.class)).thenReturn(doubleFunction);
+		factory = mock(ParserFactory.class);
+		when(factory.get(int.class)).thenReturn(intFunction);
+		when(factory.get(double.class)).thenReturn(doubleFunction);
 		resource = spy(new Signatures());
 	}
 
@@ -1896,7 +1896,7 @@ class EndpointTest {
 	private Endpoint newEndpoint(int distance, String methodName, Class<?>... types) {
 		Class<? extends RestResource> subType = Signatures.class;
 		Method method = getDeclaredMethod(subType, methodName, types);
-		return new Endpoint(cache, 200000, distance, subType, subType.getName(), method, methodName);
+		return new Endpoint(factory, 200000, distance, subType, subType.getName(), method, methodName);
 	}
 
 	private Method getDeclaredMethod(Class<?> subType, String methodName, Class<?>... types) {

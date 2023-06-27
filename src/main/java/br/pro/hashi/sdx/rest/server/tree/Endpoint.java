@@ -50,7 +50,7 @@ public class Endpoint {
 	private final Object[] arguments;
 	private final int reach;
 
-	Endpoint(ParserFactory cache, long maxBodySize, int distance, Class<? extends RestResource> resourceType, String typeName, Method method, String methodName) {
+	Endpoint(ParserFactory factory, long maxBodySize, int distance, Class<? extends RestResource> resourceType, String typeName, Method method, String methodName) {
 		Matcher matcher = METHOD_PATTERN.matcher(methodName);
 		methodName = "%s.%s".formatted(typeName, methodName);
 		if (!matcher.matches()) {
@@ -79,7 +79,7 @@ public class Endpoint {
 						rawType = rawType.getComponentType();
 						varType = rawType;
 					}
-					Function<String, ?> function = cache.get(rawType);
+					Function<String, ?> function = factory.get(rawType);
 					itemList.add(new ItemParameter(index + 1, function, parameter.getName()));
 				} else {
 					if (!partMap.isEmpty()) {

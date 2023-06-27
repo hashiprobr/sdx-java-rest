@@ -1,4 +1,4 @@
-package br.pro.hashi.sdx.rest.transform.facade;
+package br.pro.hashi.sdx.rest.transform.manager;
 
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -21,7 +21,7 @@ import br.pro.hashi.sdx.rest.transform.Hint;
 import br.pro.hashi.sdx.rest.transform.Serializer;
 import br.pro.hashi.sdx.rest.transform.exception.TypeException;
 
-public class Facade {
+public class TransformManager {
 	private static final String OCTET_TYPE = "application/octet-stream";
 	private static final String PLAIN_TYPE = "text/plain";
 
@@ -53,7 +53,7 @@ public class Facade {
 	private String fallbackByteType;
 	private String fallbackTextType;
 
-	public Facade(ParserFactory cache) {
+	public TransformManager(ParserFactory factory) {
 		this.streamConsumerType = new Hint<Consumer<OutputStream>>() {}.getType();
 		this.writerConsumerType = new Hint<Consumer<Writer>>() {}.getType();
 
@@ -75,7 +75,7 @@ public class Facade {
 		this.serializers.put(PLAIN_TYPE, new DefaultSerializer());
 
 		this.deserializers = new HashMap<>();
-		this.deserializers.put(PLAIN_TYPE, new DefaultDeserializer(cache));
+		this.deserializers.put(PLAIN_TYPE, new DefaultDeserializer(factory));
 
 		this.fallbackByteType = null;
 		this.fallbackTextType = null;
@@ -170,7 +170,7 @@ public class Facade {
 
 	public String getSerializerType(String contentType, Object body, Type type) {
 		if (contentType == null) {
-			if ((body != null && Facade.PRIMITIVE_TYPES.contains(type)) || body instanceof String || body instanceof Reader || type.equals(writerConsumerType)) {
+			if ((body != null && TransformManager.PRIMITIVE_TYPES.contains(type)) || body instanceof String || body instanceof Reader || type.equals(writerConsumerType)) {
 				contentType = PLAIN_TYPE;
 			} else {
 				if (fallbackTextType == null) {
@@ -184,7 +184,7 @@ public class Facade {
 
 	public String getDeserializerType(String contentType, Type type) {
 		if (contentType == null) {
-			if (Facade.PRIMITIVE_TYPES.contains(type) || type.equals(String.class) || type.equals(Reader.class)) {
+			if (TransformManager.PRIMITIVE_TYPES.contains(type) || type.equals(String.class) || type.equals(Reader.class)) {
 				contentType = PLAIN_TYPE;
 			} else {
 				if (fallbackTextType == null) {

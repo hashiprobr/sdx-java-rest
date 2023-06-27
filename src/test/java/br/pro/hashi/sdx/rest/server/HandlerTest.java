@@ -75,7 +75,7 @@ import br.pro.hashi.sdx.rest.transform.Assembler;
 import br.pro.hashi.sdx.rest.transform.Hint;
 import br.pro.hashi.sdx.rest.transform.Serializer;
 import br.pro.hashi.sdx.rest.transform.exception.TypeException;
-import br.pro.hashi.sdx.rest.transform.facade.Facade;
+import br.pro.hashi.sdx.rest.transform.manager.TransformManager;
 import jakarta.servlet.MultipartConfigElement;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.ServletInputStream;
@@ -88,8 +88,8 @@ class HandlerTest {
 	private static final String USASCII_BODY = "special";
 	private static final String SPECIAL_BODY = "spéçíál";
 
-	private ParserFactory cache;
-	private Facade facade;
+	private ParserFactory factory;
+	private TransformManager manager;
 	private Tree tree;
 	private ErrorFormatter formatter;
 	private Map<Class<? extends RestResource>, MethodHandle> handles;
@@ -113,9 +113,9 @@ class HandlerTest {
 
 	@BeforeEach
 	void setUp() throws NoSuchMethodException, IOException {
-		cache = mock(ParserFactory.class);
-		facade = mock(Facade.class);
-		when(facade.getExtensionType("txt")).thenReturn("text/plain");
+		factory = mock(ParserFactory.class);
+		manager = mock(TransformManager.class);
+		when(manager.getExtensionType("txt")).thenReturn("text/plain");
 		tree = mock(Tree.class);
 		formatter = mock(ErrorFormatter.class);
 		handles = new HashMap<>();
@@ -1851,11 +1851,11 @@ class HandlerTest {
 	private Serializer mockSerializer(Object actual) {
 		Serializer serializer = mock(Serializer.class);
 		when(resource.getContentType()).thenReturn(null);
-		when(facade.isBinary(any())).thenReturn(false);
-		when(facade.getSerializerType(eq(null), eq(actual), any())).thenReturn("type/subtype");
-		when(facade.getSerializerType(eq("text/plain"), eq(actual), any())).thenReturn("text/plain");
-		when(facade.getSerializer("type/subtype")).thenReturn(serializer);
-		when(facade.getSerializer("text/plain")).thenReturn(serializer);
+		when(manager.isBinary(any())).thenReturn(false);
+		when(manager.getSerializerType(eq(null), eq(actual), any())).thenReturn("type/subtype");
+		when(manager.getSerializerType(eq("text/plain"), eq(actual), any())).thenReturn("text/plain");
+		when(manager.getSerializer("type/subtype")).thenReturn(serializer);
+		when(manager.getSerializer("text/plain")).thenReturn(serializer);
 		return serializer;
 	}
 
@@ -2116,11 +2116,11 @@ class HandlerTest {
 	private Assembler mockAssembler(Object actual) {
 		Assembler assembler = mock(Assembler.class);
 		when(resource.getContentType()).thenReturn(null);
-		when(facade.isBinary(any())).thenReturn(true);
-		when(facade.getAssemblerType(eq(null), eq(actual), any())).thenReturn("type/subtype");
-		when(facade.getAssemblerType(eq("text/plain"), eq(actual), any())).thenReturn("text/plain");
-		when(facade.getAssembler("type/subtype")).thenReturn(assembler);
-		when(facade.getAssembler("text/plain")).thenReturn(assembler);
+		when(manager.isBinary(any())).thenReturn(true);
+		when(manager.getAssemblerType(eq(null), eq(actual), any())).thenReturn("type/subtype");
+		when(manager.getAssemblerType(eq("text/plain"), eq(actual), any())).thenReturn("text/plain");
+		when(manager.getAssembler("type/subtype")).thenReturn(assembler);
+		when(manager.getAssembler("text/plain")).thenReturn(assembler);
 		return assembler;
 	}
 
@@ -2261,6 +2261,6 @@ class HandlerTest {
 	}
 
 	private Handler newHandler(boolean cors) {
-		return new Handler(cache, facade, tree, formatter, handles, element, gatewayTypes, StandardCharsets.UTF_8, cors);
+		return new Handler(factory, manager, tree, formatter, handles, element, gatewayTypes, StandardCharsets.UTF_8, cors);
 	}
 }

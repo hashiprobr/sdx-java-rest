@@ -37,7 +37,7 @@ import br.pro.hashi.sdx.rest.reflection.Headers;
 import br.pro.hashi.sdx.rest.reflection.ParserFactory;
 import br.pro.hashi.sdx.rest.transform.Assembler;
 import br.pro.hashi.sdx.rest.transform.Serializer;
-import br.pro.hashi.sdx.rest.transform.facade.Facade;
+import br.pro.hashi.sdx.rest.transform.manager.TransformManager;
 
 /**
  * Main object for sending REST requests.
@@ -65,17 +65,17 @@ public final class RestClient {
 	}
 
 	private final Logger logger;
-	private final ParserFactory cache;
-	private final Facade facade;
+	private final ParserFactory factory;
+	private final TransformManager manager;
 	private final HttpClient jettyClient;
 	private final Charset urlCharset;
 	private final Locale locale;
 	private final String urlPrefix;
 
-	RestClient(ParserFactory cache, Facade facade, HttpClient jettyClient, Charset urlCharset, Locale locale, String urlPrefix) {
+	RestClient(ParserFactory factory, TransformManager manager, HttpClient jettyClient, Charset urlCharset, Locale locale, String urlPrefix) {
 		this.logger = LoggerFactory.getLogger(RestClient.class);
-		this.cache = cache;
-		this.facade = facade;
+		this.factory = factory;
+		this.manager = manager;
 		this.jettyClient = jettyClient;
 		this.urlCharset = urlCharset;
 		this.locale = locale;
@@ -83,11 +83,11 @@ public final class RestClient {
 	}
 
 	ParserFactory getCache() {
-		return cache;
+		return factory;
 	}
 
-	Facade getFacade() {
-		return facade;
+	TransformManager getManager() {
+		return manager;
 	}
 
 	Charset getUrlCharset() {
@@ -1008,9 +1008,9 @@ public final class RestClient {
 			boolean base64 = body.isBase64();
 
 			Consumer<OutputStream> consumer;
-			if (facade.isBinary(type)) {
-				contentType = facade.getAssemblerType(contentType, actual, type);
-				Assembler assembler = facade.getAssembler(contentType);
+			if (manager.isBinary(type)) {
+				contentType = manager.getAssemblerType(contentType, actual, type);
+				Assembler assembler = manager.getAssembler(contentType);
 				consumer = (output) -> {
 					assembler.write(actual, type, output);
 					try {
@@ -1020,8 +1020,8 @@ public final class RestClient {
 					}
 				};
 			} else {
-				contentType = facade.getSerializerType(contentType, actual, type);
-				Serializer serializer = facade.getSerializer(contentType);
+				contentType = manager.getSerializerType(contentType, actual, type);
+				Serializer serializer = manager.getSerializer(contentType);
 				Charset charset = body.getCharset();
 				consumer = (output) -> {
 					OutputStreamWriter writer = new OutputStreamWriter(output, charset);
@@ -1073,10 +1073,10 @@ public final class RestClient {
 
 			int status = response.getStatus();
 			HttpFields fields = response.getHeaders();
-			Headers headers = new Headers(cache, fields);
+			Headers headers = new Headers(factory, fields);
 			String contentType = fields.get("Content-Type");
 			InputStream stream = listener.getInputStream();
-			return new RestResponse(facade, status, headers, contentType, stream);
+			return new RestResponse(manager, status, headers, contentType, stream);
 		}
 
 		record Entry(String name, String valueString) {

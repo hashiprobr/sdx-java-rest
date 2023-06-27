@@ -1,4 +1,4 @@
-package br.pro.hashi.sdx.rest.transform.facade;
+package br.pro.hashi.sdx.rest.transform.manager;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;

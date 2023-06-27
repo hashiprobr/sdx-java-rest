@@ -15,7 +15,7 @@ import br.pro.hashi.sdx.rest.transform.Deserializer;
 import br.pro.hashi.sdx.rest.transform.Disassembler;
 import br.pro.hashi.sdx.rest.transform.Hint;
 import br.pro.hashi.sdx.rest.transform.Serializer;
-import br.pro.hashi.sdx.rest.transform.facade.Facade;
+import br.pro.hashi.sdx.rest.transform.manager.TransformManager;
 
 /**
  * Base class for builders.
@@ -35,7 +35,7 @@ public sealed abstract class Builder<T extends Builder<T>> permits RestClientBui
 	 * 
 	 * @hidden
 	 */
-	protected final Facade facade;
+	protected final TransformManager manager;
 
 	/**
 	 * Internal member.
@@ -72,7 +72,7 @@ public sealed abstract class Builder<T extends Builder<T>> permits RestClientBui
 	 */
 	protected Builder() {
 		this.parserFactory = ParserFactory.getInstance();
-		this.facade = new Facade(this.parserFactory);
+		this.manager = new TransformManager(this.parserFactory);
 		this.urlCharset = StandardCharsets.UTF_8;
 		this.locale = Defaults.LOCALE;
 		this.redirection = true;
@@ -103,7 +103,7 @@ public sealed abstract class Builder<T extends Builder<T>> permits RestClientBui
 	 * @throws NullPointerException if the type is null
 	 */
 	public final T withBinary(Class<?> type) {
-		facade.addBinary(type);
+		manager.addBinary(type);
 		return self();
 	}
 
@@ -129,7 +129,7 @@ public sealed abstract class Builder<T extends Builder<T>> permits RestClientBui
 	 * @throws NullPointerException if the type hint is null
 	 */
 	public final T withBinary(Hint<?> hint) {
-		facade.addBinary(hint);
+		manager.addBinary(hint);
 		return self();
 	}
 
@@ -143,7 +143,7 @@ public sealed abstract class Builder<T extends Builder<T>> permits RestClientBui
 	 * @throws IllegalArgumentException if the content type is blank
 	 */
 	public final T withDefaultAssembler(String contentType) {
-		facade.putDefaultAssembler(contentType);
+		manager.putDefaultAssembler(contentType);
 		return self();
 	}
 
@@ -164,7 +164,7 @@ public sealed abstract class Builder<T extends Builder<T>> permits RestClientBui
 	 * @throws IllegalArgumentException if the content type is blank
 	 */
 	public final T withAssembler(String contentType, Assembler assembler) {
-		facade.putAssembler(contentType, assembler);
+		manager.putAssembler(contentType, assembler);
 		return self();
 	}
 
@@ -178,7 +178,7 @@ public sealed abstract class Builder<T extends Builder<T>> permits RestClientBui
 	 * @throws IllegalArgumentException if the content type is blank
 	 */
 	public final T withDefaultDisassembler(String contentType) {
-		facade.putDefaultDisassembler(contentType);
+		manager.putDefaultDisassembler(contentType);
 		return self();
 	}
 
@@ -199,7 +199,7 @@ public sealed abstract class Builder<T extends Builder<T>> permits RestClientBui
 	 * @throws IllegalArgumentException if the content type is blank
 	 */
 	public final T withDisassembler(String contentType, Disassembler disassembler) {
-		facade.putDisassembler(contentType, disassembler);
+		manager.putDisassembler(contentType, disassembler);
 		return self();
 	}
 
@@ -213,7 +213,7 @@ public sealed abstract class Builder<T extends Builder<T>> permits RestClientBui
 	 * @throws IllegalArgumentException if the content type is blank
 	 */
 	public final T withDefaultSerializer(String contentType) {
-		facade.putDefaultSerializer(contentType);
+		manager.putDefaultSerializer(contentType);
 		return self();
 	}
 
@@ -234,7 +234,7 @@ public sealed abstract class Builder<T extends Builder<T>> permits RestClientBui
 	 * @throws IllegalArgumentException if the content type is blank
 	 */
 	public final T withSerializer(String contentType, Serializer serializer) {
-		facade.putSerializer(contentType, serializer);
+		manager.putSerializer(contentType, serializer);
 		return self();
 	}
 
@@ -248,7 +248,7 @@ public sealed abstract class Builder<T extends Builder<T>> permits RestClientBui
 	 * @throws IllegalArgumentException if the content type is blank
 	 */
 	public final T withDefaultDeserializer(String contentType) {
-		facade.putDefaultDeserializer(contentType);
+		manager.putDefaultDeserializer(contentType);
 		return self();
 	}
 
@@ -269,7 +269,7 @@ public sealed abstract class Builder<T extends Builder<T>> permits RestClientBui
 	 * @throws IllegalArgumentException if the content type is blank
 	 */
 	public final T withDeserializer(String contentType, Deserializer deserializer) {
-		facade.putDeserializer(contentType, deserializer);
+		manager.putDeserializer(contentType, deserializer);
 		return self();
 	}
 
@@ -290,7 +290,7 @@ public sealed abstract class Builder<T extends Builder<T>> permits RestClientBui
 	 * @throws IllegalArgumentException if the fallback type is blank
 	 */
 	public final T withFallbackByteType(String fallbackByteType) {
-		facade.setFallbackByteType(fallbackByteType);
+		manager.setFallbackByteType(fallbackByteType);
 		return self();
 	}
 
@@ -311,7 +311,7 @@ public sealed abstract class Builder<T extends Builder<T>> permits RestClientBui
 	 * @throws IllegalArgumentException if the fallback type is blank
 	 */
 	public final T withFallbackTextType(String fallbackTextType) {
-		facade.setFallbackTextType(fallbackTextType);
+		manager.setFallbackTextType(fallbackTextType);
 		return self();
 	}
 

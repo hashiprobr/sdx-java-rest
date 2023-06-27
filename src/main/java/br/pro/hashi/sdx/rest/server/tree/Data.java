@@ -8,15 +8,15 @@ import br.pro.hashi.sdx.rest.coding.MediaCoder;
 import br.pro.hashi.sdx.rest.server.stream.LimitInputStream;
 import br.pro.hashi.sdx.rest.transform.Deserializer;
 import br.pro.hashi.sdx.rest.transform.Disassembler;
-import br.pro.hashi.sdx.rest.transform.facade.Facade;
+import br.pro.hashi.sdx.rest.transform.manager.TransformManager;
 
 public class Data {
-	private final Facade facade;
+	private final TransformManager manager;
 	private final String contentType;
 	private final InputStream stream;
 
-	public Data(Facade facade, String contentType, InputStream stream) {
-		this.facade = facade;
+	public Data(TransformManager manager, String contentType, InputStream stream) {
+		this.manager = manager;
 		this.contentType = contentType;
 		this.stream = stream;
 	}
@@ -33,14 +33,14 @@ public class Data {
 		Object body;
 		String contentType = this.contentType;
 		InputStream stream = MediaCoder.getInstance().decode(limit(this.stream, maxSize), contentType);
-		if (facade.isBinary(type)) {
-			contentType = facade.getDisassemblerType(strip(contentType), type);
-			Disassembler disassembler = facade.getDisassembler(contentType);
+		if (manager.isBinary(type)) {
+			contentType = manager.getDisassemblerType(strip(contentType), type);
+			Disassembler disassembler = manager.getDisassembler(contentType);
 			body = disassembler.read(stream, type);
 		} else {
 			Reader reader = MediaCoder.getInstance().reader(stream, contentType);
-			contentType = facade.getDeserializerType(strip(contentType), type);
-			Deserializer deserializer = facade.getDeserializer(contentType);
+			contentType = manager.getDeserializerType(strip(contentType), type);
+			Deserializer deserializer = manager.getDeserializer(contentType);
 			body = deserializer.read(reader, type);
 		}
 		return body;

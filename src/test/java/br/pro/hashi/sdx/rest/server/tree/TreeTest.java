@@ -84,7 +84,7 @@ import br.pro.hashi.sdx.rest.server.tree.mock.node.ZeroInTwo;
 import br.pro.hashi.sdx.rest.server.tree.mock.node.ZeroInZero;
 
 class TreeTest {
-	private ParserFactory cache;
+	private ParserFactory factory;
 	private Tree t;
 	private Map<Class<? extends RestResource>, String[]> itemMap;
 	private List<String> itemList;
@@ -92,8 +92,8 @@ class TreeTest {
 
 	@BeforeEach
 	void setUp() {
-		cache = mock(ParserFactory.class);
-		t = new Tree(cache, Defaults.LOCALE, 200000);
+		factory = mock(ParserFactory.class);
+		t = new Tree(factory, Defaults.LOCALE, 200000);
 		itemMap = new HashMap<>();
 		itemMap.put(Enclosing.class, new String[] { "a", "b" });
 		itemMap.put(Zero.class, new String[] { "a0", "b0" });

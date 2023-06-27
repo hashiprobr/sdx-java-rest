@@ -167,7 +167,7 @@ class RestServerBuilderTest extends BuilderTest {
 	@Test
 	void addsExtension() {
 		assertSame(b, b.withExtension("ext", "type/subtype"));
-		verify(b.getFacade()).putExtension("ext", "type/subtype");
+		verify(b.getManager()).putExtension("ext", "type/subtype");
 	}
 
 	@Test
@@ -211,7 +211,7 @@ class RestServerBuilderTest extends BuilderTest {
 				return null;
 			}
 		};
-		when(b.getFacade().isBinary(Object.class)).thenReturn(true);
+		when(b.getManager().isBinary(Object.class)).thenReturn(true);
 		assertThrows(IllegalArgumentException.class, () -> {
 			b.withErrorFormatter(formatter);
 		});
@@ -451,7 +451,7 @@ class RestServerBuilderTest extends BuilderTest {
 		GzipHandler gzipHandler = (GzipHandler) limitHandler.getHandler();
 		Handler handler = (Handler) gzipHandler.getHandler();
 		assertSame(b.getCache(), handler.getCache());
-		assertSame(b.getFacade(), handler.getFacade());
+		assertSame(b.getManager(), handler.getManager());
 		assertEquals(StandardCharsets.UTF_8, handler.getUrlCharset());
 		assertSame(b.getGatewayTypes(), handler.getGatewayTypes());
 		assertSame(b.getFormatter(), handler.getFormatter());

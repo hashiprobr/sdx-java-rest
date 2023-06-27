@@ -91,7 +91,7 @@ class RestClientBuilderTest extends BuilderTest {
 	void builds() {
 		RestClient client = b.build("http://a");
 		assertSame(b.getCache(), client.getCache());
-		assertSame(b.getFacade(), client.getFacade());
+		assertSame(b.getManager(), client.getManager());
 		assertEquals(StandardCharsets.UTF_8, client.getUrlCharset());
 		assertEquals("http://a", client.getUrlPrefix());
 		HttpClient jettyClient = client.getJettyClient();

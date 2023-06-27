@@ -47,7 +47,7 @@ import br.pro.hashi.sdx.rest.transform.Assembler;
 import br.pro.hashi.sdx.rest.transform.Hint;
 import br.pro.hashi.sdx.rest.transform.Serializer;
 import br.pro.hashi.sdx.rest.transform.exception.TypeException;
-import br.pro.hashi.sdx.rest.transform.facade.Facade;
+import br.pro.hashi.sdx.rest.transform.manager.TransformManager;
 import jakarta.servlet.MultipartConfigElement;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.ServletOutputStream;
@@ -59,8 +59,8 @@ class Handler extends AbstractHandler {
 	private final Type streamConsumerType;
 	private final Type writerConsumerType;
 	private final Logger logger;
-	private final ParserFactory cache;
-	private final Facade facade;
+	private final ParserFactory factory;
+	private final TransformManager manager;
 	private final Tree tree;
 	private final ErrorFormatter formatter;
 	private final Map<Class<? extends RestResource>, MethodHandle> handles;
@@ -69,12 +69,12 @@ class Handler extends AbstractHandler {
 	private final Charset urlCharset;
 	private final boolean cors;
 
-	Handler(ParserFactory cache, Facade facade, Tree tree, ErrorFormatter formatter, Map<Class<? extends RestResource>, MethodHandle> handles, MultipartConfigElement element, Set<Class<? extends RuntimeException>> gatewayTypes, Charset urlCharset, boolean cors) {
+	Handler(ParserFactory factory, TransformManager manager, Tree tree, ErrorFormatter formatter, Map<Class<? extends RestResource>, MethodHandle> handles, MultipartConfigElement element, Set<Class<? extends RuntimeException>> gatewayTypes, Charset urlCharset, boolean cors) {
 		this.streamConsumerType = new Hint<Consumer<OutputStream>>() {}.getType();
 		this.writerConsumerType = new Hint<Consumer<Writer>>() {}.getType();
 		this.logger = LoggerFactory.getLogger(Handler.class);
-		this.cache = cache;
-		this.facade = facade;
+		this.factory = factory;
+		this.manager = manager;
 		this.tree = tree;
 		this.formatter = formatter;
 		this.handles = handles;
@@ -85,11 +85,11 @@ class Handler extends AbstractHandler {
 	}
 
 	ParserFactory getCache() {
-		return cache;
+		return factory;
 	}
 
-	Facade getFacade() {
-		return facade;
+	TransformManager getManager() {
+		return manager;
 	}
 
 	Tree getTree() {
@@ -137,7 +137,7 @@ class Handler extends AbstractHandler {
 			int length = uri.lastIndexOf('.') + 1;
 			if (length > 0 && length < uri.length() && uri.indexOf('/', length) == -1) {
 				extension = uri.substring(length);
-				extensionType = facade.getExtensionType(extension);
+				extensionType = manager.getExtensionType(extension);
 				if (extensionType == null) {
 					extension = "";
 				} else {
@@ -230,16 +230,16 @@ class Handler extends AbstractHandler {
 						partList = new ArrayList<>();
 						partMap.put(name, partList);
 					}
-					headersList.add(new PartHeaders(cache, part));
-					partList.add(new Data(facade, part.getContentType(), part.getInputStream()));
+					headersList.add(new PartHeaders(factory, part));
+					partList.add(new Data(manager, part.getContentType(), part.getInputStream()));
 				}
 				requestBody = null;
 			} else {
-				requestBody = new Data(facade, requestType, request.getInputStream());
+				requestBody = new Data(manager, requestType, request.getInputStream());
 			}
 
-			Fields headers = new Headers(cache, baseRequest.getHttpFields());
-			Fields queries = new Queries(cache, request.getParameterMap());
+			Fields headers = new Headers(factory, baseRequest.getHttpFields());
+			Fields queries = new Queries(factory, request.getParameterMap());
 			CharsetEncoder encoder = StandardCharsets.US_ASCII.newEncoder();
 
 			Class<? extends RestResource> resourceType = endpoint.getResourceType();
@@ -355,9 +355,9 @@ class Handler extends AbstractHandler {
 			boolean base64 = resource.isBase64();
 
 			Consumer<OutputStream> consumer;
-			if (facade.isBinary(type)) {
-				contentType = facade.getAssemblerType(contentType, actual, type);
-				Assembler assembler = facade.getAssembler(contentType);
+			if (manager.isBinary(type)) {
+				contentType = manager.getAssemblerType(contentType, actual, type);
+				Assembler assembler = manager.getAssembler(contentType);
 				consumer = (output) -> {
 					assembler.write(actual, type, output);
 					try {
@@ -368,8 +368,8 @@ class Handler extends AbstractHandler {
 				};
 				withoutLength = actual instanceof InputStream || type.equals(streamConsumerType);
 			} else {
-				contentType = facade.getSerializerType(contentType, actual, type);
-				Serializer serializer = facade.getSerializer(contentType);
+				contentType = manager.getSerializerType(contentType, actual, type);
+				Serializer serializer = manager.getSerializer(contentType);
 				Charset charset = resource.getCharset();
 				consumer = (output) -> {
 					OutputStreamWriter writer = new OutputStreamWriter(output, charset);

@@ -11,21 +11,21 @@ import br.pro.hashi.sdx.rest.reflection.Headers;
 import br.pro.hashi.sdx.rest.transform.Deserializer;
 import br.pro.hashi.sdx.rest.transform.Disassembler;
 import br.pro.hashi.sdx.rest.transform.Hint;
-import br.pro.hashi.sdx.rest.transform.facade.Facade;
+import br.pro.hashi.sdx.rest.transform.manager.TransformManager;
 
 /**
  * Represents the response to a REST request.
  */
 public final class RestResponse {
-	private final Facade facade;
+	private final TransformManager manager;
 	private final int status;
 	private final Headers headers;
 	private final String contentType;
 	private final InputStream stream;
 	private boolean available;
 
-	RestResponse(Facade facade, int status, Headers headers, String contentType, InputStream stream) {
-		this.facade = facade;
+	RestResponse(TransformManager manager, int status, Headers headers, String contentType, InputStream stream) {
+		this.manager = manager;
 		this.status = status;
 		this.headers = headers;
 		this.contentType = contentType;
@@ -33,8 +33,8 @@ public final class RestResponse {
 		this.available = true;
 	}
 
-	Facade getFacade() {
-		return facade;
+	TransformManager getManager() {
+		return manager;
 	}
 
 	InputStream getStream() {
@@ -176,14 +176,14 @@ public final class RestResponse {
 		}
 		T body;
 		InputStream stream = MediaCoder.getInstance().decode(this.stream, contentType);
-		if (facade.isBinary(type)) {
-			contentType = facade.getDisassemblerType(strip(contentType), type);
-			Disassembler disassembler = facade.getDisassembler(contentType);
+		if (manager.isBinary(type)) {
+			contentType = manager.getDisassemblerType(strip(contentType), type);
+			Disassembler disassembler = manager.getDisassembler(contentType);
 			body = disassembler.read(stream, type);
 		} else {
 			Reader reader = MediaCoder.getInstance().reader(stream, contentType);
-			contentType = facade.getDeserializerType(strip(contentType), type);
-			Deserializer deserializer = facade.getDeserializer(contentType);
+			contentType = manager.getDeserializerType(strip(contentType), type);
+			Deserializer deserializer = manager.getDeserializer(contentType);
 			body = deserializer.read(reader, type);
 		}
 		return body;

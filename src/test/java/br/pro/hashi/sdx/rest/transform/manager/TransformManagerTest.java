@@ -1,4 +1,4 @@
-package br.pro.hashi.sdx.rest.transform.facade;
+package br.pro.hashi.sdx.rest.transform.manager;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -39,13 +39,13 @@ import br.pro.hashi.sdx.rest.transform.Hint;
 import br.pro.hashi.sdx.rest.transform.Serializer;
 import br.pro.hashi.sdx.rest.transform.exception.TypeException;
 
-class FacadeTest {
+class TransformManagerTest {
 	private MediaCoder coder;
 	private MockedConstruction<DefaultAssembler> assemblerConstruction;
 	private MockedConstruction<DefaultDisassembler> disassemblerConstruction;
 	private MockedConstruction<DefaultSerializer> serializerConstruction;
 	private MockedConstruction<DefaultDeserializer> deserializerConstruction;
-	private Facade f;
+	private TransformManager f;
 
 	@BeforeEach
 	void setUp() {
@@ -54,7 +54,7 @@ class FacadeTest {
 		disassemblerConstruction = mockConstruction(DefaultDisassembler.class);
 		serializerConstruction = mockConstruction(DefaultSerializer.class);
 		deserializerConstruction = mockConstruction(DefaultDeserializer.class);
-		f = new Facade(ParserFactory.getInstance());
+		f = new TransformManager(ParserFactory.getInstance());
 	}
 
 	@AfterEach

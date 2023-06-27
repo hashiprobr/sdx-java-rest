@@ -17,22 +17,22 @@ import org.slf4j.LoggerFactory;
 
 import br.pro.hashi.sdx.rest.coding.MediaCoder;
 import br.pro.hashi.sdx.rest.transform.Serializer;
-import br.pro.hashi.sdx.rest.transform.facade.Facade;
+import br.pro.hashi.sdx.rest.transform.manager.TransformManager;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 class ConcreteHandler extends ErrorHandler {
 	private final Logger logger;
-	private final Facade facade;
+	private final TransformManager manager;
 	private final ErrorFormatter formatter;
 	private final Type type;
 	private final String contentType;
 	private final Charset charset;
 	private final boolean base64;
 
-	ConcreteHandler(Facade facade, ErrorFormatter formatter, String contentType, Charset charset, boolean base64) {
+	ConcreteHandler(TransformManager manager, ErrorFormatter formatter, String contentType, Charset charset, boolean base64) {
 		this.logger = LoggerFactory.getLogger(ConcreteHandler.class);
-		this.facade = facade;
+		this.manager = manager;
 		this.formatter = formatter;
 		this.type = formatter.getReturnType();
 		this.contentType = contentType;
@@ -63,8 +63,8 @@ class ConcreteHandler extends ErrorHandler {
 			Object actual = formatter.format(status, reason);
 			String contentType = this.contentType;
 
-			contentType = facade.getSerializerType(this.contentType, actual, type);
-			Serializer serializer = facade.getSerializer(contentType);
+			contentType = manager.getSerializerType(this.contentType, actual, type);
+			Serializer serializer = manager.getSerializer(contentType);
 			ByteArrayOutputStream output = new ByteArrayOutputStream();
 			contentType = "%s;charset=%s".formatted(contentType, charset.name());
 			if (base64) {
@@ -99,8 +99,8 @@ class ConcreteHandler extends ErrorHandler {
 		Object actual = formatter.format(response.getStatus(), message);
 		String contentType = this.contentType;
 
-		contentType = facade.getSerializerType(this.contentType, actual, type);
-		Serializer serializer = facade.getSerializer(contentType);
+		contentType = manager.getSerializerType(this.contentType, actual, type);
+		Serializer serializer = manager.getSerializer(contentType);
 		contentType = "%s;charset=%s".formatted(contentType, charset.name());
 		if (base64) {
 			contentType = "%s;base64".formatted(contentType);

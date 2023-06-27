@@ -18,14 +18,14 @@ import br.pro.hashi.sdx.rest.server.annotation.Nested;
 import br.pro.hashi.sdx.rest.server.exception.NotFoundException;
 
 public class Tree {
-	private final ParserFactory cache;
+	private final ParserFactory factory;
 	private final Locale locale;
 	private final Node root;
 	private final Set<String> methodNames;
 	private final long maxBodySize;
 
-	public Tree(ParserFactory cache, Locale locale, long maxBodySize) {
-		this.cache = cache;
+	public Tree(ParserFactory factory, Locale locale, long maxBodySize) {
+		this.factory = factory;
 		this.locale = locale;
 		this.root = new Node();
 		this.methodNames = new HashSet<>();
@@ -96,7 +96,7 @@ public class Tree {
 		for (Method method : type.getMethods()) {
 			if (RestResource.class.isAssignableFrom(method.getDeclaringClass()) && !Modifier.isStatic(method.getModifiers())) {
 				String methodName = method.getName();
-				Endpoint endpoint = new Endpoint(cache, maxBodySize, distance, type, typeName, method, methodName);
+				Endpoint endpoint = new Endpoint(factory, maxBodySize, distance, type, typeName, method, methodName);
 				methodName = methodName.toUpperCase(locale);
 				if (methodName.equals("OPTIONS") || methodName.equals("HEAD")) {
 					throw new ReflectionException("%s cannot have %s endpoints".formatted(typeName, methodName));

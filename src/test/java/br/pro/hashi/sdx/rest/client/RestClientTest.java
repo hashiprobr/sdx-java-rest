@@ -60,14 +60,14 @@ import br.pro.hashi.sdx.rest.reflection.ParserFactory;
 import br.pro.hashi.sdx.rest.reflection.Headers;
 import br.pro.hashi.sdx.rest.transform.Assembler;
 import br.pro.hashi.sdx.rest.transform.Serializer;
-import br.pro.hashi.sdx.rest.transform.facade.Facade;
+import br.pro.hashi.sdx.rest.transform.manager.TransformManager;
 
 class RestClientTest {
 	private static final String USASCII_BODY = "special";
 	private static final String SPECIAL_BODY = "spéçíál";
 
-	private ParserFactory cache;
-	private Facade facade;
+	private ParserFactory factory;
+	private TransformManager manager;
 	private HttpClient jettyClient;
 	private Request request;
 	private Response response;
@@ -76,12 +76,12 @@ class RestClientTest {
 
 	@BeforeEach
 	void setUp() {
-		cache = mock(ParserFactory.class);
-		facade = mock(Facade.class);
+		factory = mock(ParserFactory.class);
+		manager = mock(TransformManager.class);
 		jettyClient = mock(HttpClient.class);
 		request = mock(Request.class);
 		response = mock(Response.class);
-		c = new RestClient(cache, facade, jettyClient, StandardCharsets.UTF_8, Defaults.LOCALE, "http://a");
+		c = new RestClient(factory, manager, jettyClient, StandardCharsets.UTF_8, Defaults.LOCALE, "http://a");
 	}
 
 	@Test
@@ -1063,9 +1063,9 @@ class RestClientTest {
 			writer.write(str);
 			return null;
 		}).when(serializer).write(eq(actual), eq(String.class), any());
-		when(facade.isBinary(String.class)).thenReturn(false);
-		when(facade.getSerializerType(null, actual, String.class)).thenReturn("type/subtype");
-		when(facade.getSerializer("type/subtype")).thenReturn(serializer);
+		when(manager.isBinary(String.class)).thenReturn(false);
+		when(manager.getSerializerType(null, actual, String.class)).thenReturn("type/subtype");
+		when(manager.getSerializer("type/subtype")).thenReturn(serializer);
 		Content content = p.addTaskAndGetContent(tasks, body);
 		assertEquals(1, tasks.size());
 		Task task = tasks.get(0);
@@ -1122,9 +1122,9 @@ class RestClientTest {
 			stream.write(b);
 			return null;
 		}).when(assembler).write(eq(actual), eq(byte[].class), any());
-		when(facade.isBinary(byte[].class)).thenReturn(true);
-		when(facade.getAssemblerType(null, actual, byte[].class)).thenReturn("type/subtype");
-		when(facade.getAssembler("type/subtype")).thenReturn(assembler);
+		when(manager.isBinary(byte[].class)).thenReturn(true);
+		when(manager.getAssemblerType(null, actual, byte[].class)).thenReturn("type/subtype");
+		when(manager.getAssembler("type/subtype")).thenReturn(assembler);
 		Content content = p.addTaskAndGetContent(tasks, body);
 		assertEquals(1, tasks.size());
 		Task task = tasks.get(0);
@@ -1173,7 +1173,7 @@ class RestClientTest {
 			Headers headers = headersConstruction.constructed().get(0);
 			verify(request).send(listener);
 			assertEquals(USASCII_BODY, new String(stream.toByteArray(), StandardCharsets.US_ASCII));
-			assertSame(p.getEnclosing().getFacade(), restResponse.getFacade());
+			assertSame(p.getEnclosing().getManager(), restResponse.getManager());
 			assertEquals(600, restResponse.getStatus());
 			assertEquals(headers, restResponse.getHeaders());
 			assertEquals("type/subtype", restResponse.getContentType());
