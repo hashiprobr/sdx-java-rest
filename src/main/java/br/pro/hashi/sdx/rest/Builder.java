@@ -18,7 +18,7 @@ import br.pro.hashi.sdx.rest.transform.Serializer;
 import br.pro.hashi.sdx.rest.transform.manager.TransformManager;
 
 /**
- * Base class for builders.
+ * Base class for REST client and server builders.
  * 
  * @param <T> the subclass
  */

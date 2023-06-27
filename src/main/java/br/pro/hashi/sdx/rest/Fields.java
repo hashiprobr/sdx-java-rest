@@ -10,7 +10,7 @@ import br.pro.hashi.sdx.rest.reflection.PartHeaders;
 import br.pro.hashi.sdx.rest.reflection.Queries;
 
 /**
- * Base class for headers and queries.
+ * Base class for part headers, headers, and queries.
  */
 public sealed abstract class Fields permits PartHeaders, Headers, Queries {
 	private final ParserFactory factory;
