@@ -40,8 +40,9 @@ class InjectorTest {
 
 		when(reflector.getCreator(any(), any(Lookup.class))).thenAnswer((invocation) -> {
 			Class<T> type = invocation.getArgument(0);
+			Lookup lookup = invocation.getArgument(1);
 			Constructor<T> constructor = type.getDeclaredConstructor();
-			return LOOKUP.unreflectConstructor(constructor);
+			return lookup.unreflectConstructor(constructor);
 		});
 		when(reflector.invokeCreator(any(MethodHandle.class))).thenAnswer((invocation) -> {
 			MethodHandle creator = invocation.getArgument(0);

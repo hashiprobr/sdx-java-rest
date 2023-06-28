@@ -40,7 +40,7 @@ public interface Serializer {
 	 * Transforms the specified typed object into a text representation and writes
 	 * it to the specified {@link Writer} if possible.
 	 * 
-	 * @implNote The implementation can assume that the type is correct and must not
+	 * @implNote The implementation can assume that the type is correct and cannot
 	 *           close the writer.
 	 * 
 	 * @param <T>    the type
