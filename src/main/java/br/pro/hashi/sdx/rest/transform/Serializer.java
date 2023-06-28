@@ -7,12 +7,12 @@ import java.lang.reflect.Type;
 import br.pro.hashi.sdx.rest.transform.exception.SerializingException;
 
 /**
- * A serializer can transform objects into text representations.
+ * Implemented to transform objects into text representations.
  */
 public interface Serializer {
 	/**
-	 * Writes the representation of an arbitrary object to a {@link Writer} if
-	 * possible.
+	 * Transforms the specified object into a text representation and writes it to
+	 * the specified {@link Writer} if possible.
 	 * 
 	 * @implSpec The default implementation simply calls
 	 *           {@link #write(Object, Type, Writer)}, passing
@@ -24,7 +24,7 @@ public interface Serializer {
 	 *           implementation that ensures generic information is not lost.
 	 * 
 	 * @param body   the object
-	 * @param writer the output
+	 * @param writer the writer
 	 * @throws NullPointerException if the body is null
 	 * @throws UncheckedIOException if the representation cannot be written
 	 * @throws SerializingException if the object cannot be transformed
@@ -37,16 +37,18 @@ public interface Serializer {
 	}
 
 	/**
-	 * Writes the representation of a typed object to a {@link Writer} if possible.
+	 * Transforms the specified typed object into a text representation and writes
+	 * it to the specified {@link Writer} if possible.
 	 * 
 	 * @implNote The implementation can assume that the type is correct and must not
 	 *           close the writer.
 	 * 
+	 * @param <T>    the type
 	 * @param body   the object
-	 * @param type   the type of the object
-	 * @param writer the output
+	 * @param type   a {@link Type} representing {@code T}
+	 * @param writer the writer
 	 * @throws UncheckedIOException if the representation cannot be written
 	 * @throws SerializingException if the object cannot be transformed
 	 */
-	void write(Object body, Type type, Writer writer);
+	<T> void write(T body, Type type, Writer writer);
 }

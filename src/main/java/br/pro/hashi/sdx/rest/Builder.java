@@ -84,9 +84,9 @@ public sealed abstract class Builder<T extends Builder<T>> permits RestClientBui
 	 * Adds a type that should be considered binary.
 	 * </p>
 	 * <p>
-	 * Since {@link Class<?>} objects do not have generic information due to type
+	 * Since {@link Class} objects do not have generic information due to type
 	 * erasure, do not call this method if the type is generic. Call
-	 * {@link #withBinary(Hint<?>)} instead.
+	 * {@link #withBinary(Hint)} instead.
 	 * </p>
 	 * <p>
 	 * Objects of types considered binary are transformed by an {@link Assembler} or

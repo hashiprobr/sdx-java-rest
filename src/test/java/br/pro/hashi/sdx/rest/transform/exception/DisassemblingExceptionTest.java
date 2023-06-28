@@ -18,16 +18,18 @@ class DisassemblingExceptionTest {
 
 	@Test
 	void constructsWithMessage() {
-		e = new DisassemblingException("message");
-		assertEquals("message", e.getMessage());
+		String message = "message";
+		e = new DisassemblingException(message);
+		assertEquals(message, e.getMessage());
 		assertNull(e.getCause());
 	}
 
 	@Test
 	void constructsWithMessageAndCause() {
+		String message = "message";
 		Throwable cause = new Throwable();
-		e = new DisassemblingException("message", cause);
-		assertEquals("message", e.getMessage());
+		e = new DisassemblingException(message, cause);
+		assertEquals(message, e.getMessage());
 		assertSame(cause, e.getCause());
 	}
 

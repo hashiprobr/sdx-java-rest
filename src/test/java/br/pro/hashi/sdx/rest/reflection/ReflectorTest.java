@@ -175,10 +175,10 @@ class ReflectorTest {
 	void getsConcreteSubTypes() {
 		Reflections reflections = mock(Reflections.class);
 		when(reflections.getSubTypesOf(Parent.class)).thenReturn(Set.of(Child.class, AbstractChild.class));
-		List<Class<? extends Parent>> subTypes = new ArrayList<>();
-		r.getConcreteSubTypes(reflections, Parent.class).forEach(subTypes::add);
-		assertEquals(1, subTypes.size());
-		assertEquals(Child.class, subTypes.get(0));
+		List<Class<? extends Parent>> types = new ArrayList<>();
+		r.getConcreteSubTypes(reflections, Parent.class).forEach(types::add);
+		assertEquals(1, types.size());
+		assertEquals(Child.class, types.get(0));
 	}
 
 	@Test

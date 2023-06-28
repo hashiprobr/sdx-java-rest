@@ -7,18 +7,19 @@ import java.lang.reflect.Type;
 import br.pro.hashi.sdx.rest.transform.exception.DeserializingException;
 
 /**
- * A deserializer can transform text representations back into objects.
+ * Implemented to transform text representations back into objects.
  */
 public interface Deserializer {
 	/**
-	 * Transforms a {@link Reader} representation back into an object if possible.
+	 * Reads a text representation from the specified {@link Reader} and transforms
+	 * it back into an object of the specified type if possible.
 	 * 
 	 * @implNote The implementation can assume that the type is correct and must
 	 *           close the reader unless it also returns a reader.
 	 * 
-	 * @param <T>    the type of the object
-	 * @param reader the representation
-	 * @param type   {@link Class} representing {@code T}
+	 * @param <T>    the type
+	 * @param reader the reader
+	 * @param type   a {@link Type} representing {@code T}
 	 * @return the object
 	 * @throws UncheckedIOException   if the representation cannot be read
 	 * @throws DeserializingException if the representation cannot be transformed

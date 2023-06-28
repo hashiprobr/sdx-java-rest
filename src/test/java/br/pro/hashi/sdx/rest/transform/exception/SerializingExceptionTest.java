@@ -18,16 +18,18 @@ class SerializingExceptionTest {
 
 	@Test
 	void constructsWithMessage() {
-		e = new SerializingException("message");
-		assertEquals("message", e.getMessage());
+		String message = "message";
+		e = new SerializingException(message);
+		assertEquals(message, e.getMessage());
 		assertNull(e.getCause());
 	}
 
 	@Test
 	void constructsWithMessageAndCause() {
+		String message = "message";
 		Throwable cause = new Throwable();
-		e = new SerializingException("message", cause);
-		assertEquals("message", e.getMessage());
+		e = new SerializingException(message, cause);
+		assertEquals(message, e.getMessage());
 		assertSame(cause, e.getCause());
 	}
 

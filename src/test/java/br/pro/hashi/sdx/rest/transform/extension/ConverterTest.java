@@ -1,48 +1,53 @@
 package br.pro.hashi.sdx.rest.transform.extension;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
 import org.mockito.MockedStatic;
+import org.mockito.MockitoAnnotations;
 
 import br.pro.hashi.sdx.rest.reflection.Reflector;
 import br.pro.hashi.sdx.rest.transform.extension.mock.ConcreteConverter;
 
 class ConverterTest {
-	private Reflector reflector;
+	private AutoCloseable mocks;
+	private @Mock Reflector reflector;
 	private MockedStatic<Reflector> reflectorStatic;
 	private Converter<?, ?> c;
 
 	@BeforeEach
 	void setUp() {
-		reflector = mock(Reflector.class);
+		mocks = MockitoAnnotations.openMocks(this);
+
 		reflectorStatic = mockStatic(Reflector.class);
 		reflectorStatic.when(() -> Reflector.getInstance()).thenReturn(reflector);
+
+		c = new ConcreteConverter();
 	}
 
 	@AfterEach
 	void tearDown() {
 		reflectorStatic.close();
+		assertDoesNotThrow(() -> {
+			mocks.close();
+		});
 	}
 
 	@Test
 	void getsSourceType() {
-		when(reflector.getSpecificType(any(), eq(Converter.class), eq(0))).thenReturn(Double.class);
-		c = new ConcreteConverter();
-		assertEquals(Double.class, c.getSourceType());
+		when(reflector.getSpecificType(c, Converter.class, 0)).thenReturn(Integer.class);
+		assertEquals(Integer.class, c.getSourceType());
 	}
 
 	@Test
 	void getsTargetType() {
-		when(reflector.getSpecificType(any(), eq(Converter.class), eq(1))).thenReturn(Integer.class);
-		c = new ConcreteConverter();
-		assertEquals(Integer.class, c.getTargetType());
+		when(reflector.getSpecificType(c, Converter.class, 1)).thenReturn(Double.class);
+		assertEquals(Double.class, c.getTargetType());
 	}
 }

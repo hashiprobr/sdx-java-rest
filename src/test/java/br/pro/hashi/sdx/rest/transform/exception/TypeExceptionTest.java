@@ -18,16 +18,18 @@ class TypeExceptionTest {
 
 	@Test
 	void constructsWithMessage() {
-		e = new TypeException("message");
-		assertEquals("message", e.getMessage());
+		String message = "message";
+		e = new TypeException(message);
+		assertEquals(message, e.getMessage());
 		assertNull(e.getCause());
 	}
 
 	@Test
 	void constructsWithMessageAndCause() {
+		String message = "message";
 		Throwable cause = new Throwable();
-		e = new TypeException("message", cause);
-		assertEquals("message", e.getMessage());
+		e = new TypeException(message, cause);
+		assertEquals(message, e.getMessage());
 		assertSame(cause, e.getCause());
 	}
 

@@ -7,12 +7,12 @@ import java.lang.reflect.Type;
 import br.pro.hashi.sdx.rest.transform.exception.AssemblingException;
 
 /**
- * An assembler can transform objects into byte representations.
+ * Implemented to transform objects into byte representations.
  */
 public interface Assembler {
 	/**
-	 * Writes the representation of an arbitrary object to an {@link OutputStream}
-	 * if possible.
+	 * Transforms the specified object into a byte representation and writes it to
+	 * the specified {@link OutputStream} if possible.
 	 * 
 	 * @implSpec The default implementation simply calls
 	 *           {@link #write(Object, Type, OutputStream)}, passing
@@ -25,7 +25,7 @@ public interface Assembler {
 	 *           lost.
 	 * 
 	 * @param body   the object
-	 * @param stream the output
+	 * @param stream the stream
 	 * @throws NullPointerException if the body is null
 	 * @throws UncheckedIOException if the representation cannot be written
 	 * @throws AssemblingException  if the object cannot be transformed
@@ -38,17 +38,18 @@ public interface Assembler {
 	}
 
 	/**
-	 * Writes the representation of a typed object to an {@link OutputStream} if
-	 * possible.
+	 * Transforms the specified typed object into a byte representation and writes
+	 * it to the specified {@link OutputStream} if possible.
 	 * 
 	 * @implNote The implementation can assume that the type is correct and must not
 	 *           close the stream.
 	 * 
+	 * @param <T>    the type
 	 * @param body   the object
-	 * @param type   the type of the object
-	 * @param stream the output
+	 * @param type   a {@link Type} representing {@code T}
+	 * @param stream the stream
 	 * @throws UncheckedIOException if the representation cannot be written
 	 * @throws AssemblingException  if the object cannot be transformed
 	 */
-	void write(Object body, Type type, OutputStream stream);
+	<T> void write(T body, Type type, OutputStream stream);
 }

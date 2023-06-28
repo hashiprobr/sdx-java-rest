@@ -6,15 +6,14 @@ import br.pro.hashi.sdx.rest.reflection.Reflector;
 
 /**
  * <p>
- * An instance of an anonymous subclass of this class can be passed to hint the
- * type of a generic object.
+ * Represents a type at runtime.
  * </p>
  * <p>
  * It is analogous to the {@code TypeToken} class in Gson and the
  * {@code TypeReference} class in Jackson.
  * </p>
  *
- * @param <T> the hinted type
+ * @param <T> the type
  */
 public abstract class Hint<T> {
 	private final Type type;
@@ -27,9 +26,9 @@ public abstract class Hint<T> {
 	}
 
 	/**
-	 * Obtains the hinted type.
+	 * Obtains the type.
 	 * 
-	 * @return {@link Class} representing {@code T}
+	 * @return a {@link Type} representing {@code T}
 	 */
 	public final Type getType() {
 		return type;

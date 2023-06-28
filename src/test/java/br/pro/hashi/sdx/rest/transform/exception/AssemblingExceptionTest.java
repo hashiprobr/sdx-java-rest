@@ -18,16 +18,18 @@ class AssemblingExceptionTest {
 
 	@Test
 	void constructsWithMessage() {
-		e = new AssemblingException("message");
-		assertEquals("message", e.getMessage());
+		String message = "message";
+		e = new AssemblingException(message);
+		assertEquals(message, e.getMessage());
 		assertNull(e.getCause());
 	}
 
 	@Test
 	void constructsWithMessageAndCause() {
+		String message = "message";
 		Throwable cause = new Throwable();
-		e = new AssemblingException("message", cause);
-		assertEquals("message", e.getMessage());
+		e = new AssemblingException(message, cause);
+		assertEquals(message, e.getMessage());
 		assertSame(cause, e.getCause());
 	}
 

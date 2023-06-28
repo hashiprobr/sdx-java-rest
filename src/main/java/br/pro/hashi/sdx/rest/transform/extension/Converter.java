@@ -10,7 +10,7 @@ import br.pro.hashi.sdx.rest.reflection.Reflector;
  * target type.
  * </p>
  * <p>
- * The idea is that the source type is not supported by a third-party library,
+ * The idea is that the source type is not supported by a third-party library
  * but the target type is (possibly via other converters).
  * </p>
  * 
@@ -26,7 +26,7 @@ public interface Converter<S, T> {
 	 * Classes are encouraged to provide an alternative implementation.
 	 * </p>
 	 * 
-	 * @return a {@link Class} representing {@code S}
+	 * @return a {@link Type} representing {@code S}
 	 */
 	default Type getSourceType() {
 		return Reflector.getInstance().getSpecificType(this, Converter.class, 0);
@@ -40,7 +40,7 @@ public interface Converter<S, T> {
 	 * Classes are encouraged to provide an alternative implementation.
 	 * </p>
 	 * 
-	 * @return a {@link Class} representing {@code T}
+	 * @return a {@link Type} representing {@code T}
 	 */
 	default Type getTargetType() {
 		return Reflector.getInstance().getSpecificType(this, Converter.class, 1);
