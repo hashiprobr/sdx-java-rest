@@ -31,6 +31,11 @@ class DefaultAssemblerTest {
 	}
 
 	@Test
+	void getsInstance() {
+		assertInstanceOf(DefaultAssembler.class, DefaultAssembler.getInstance());
+	}
+
+	@Test
 	void writesByteArray() {
 		byte[] body = newByteArray();
 		ByteArrayOutputStream stream = new ByteArrayOutputStream();

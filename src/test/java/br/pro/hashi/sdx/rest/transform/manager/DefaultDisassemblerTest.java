@@ -2,6 +2,7 @@ package br.pro.hashi.sdx.rest.transform.manager;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
@@ -43,6 +44,11 @@ class DefaultDisassemblerTest {
 	}
 
 	@Test
+	void getsInstance() {
+		assertInstanceOf(DefaultDisassembler.class, DefaultDisassembler.getInstance());
+	}
+
+	@Test
 	void readsByteArray() {
 		when(coder.read(stream)).thenReturn(newByteArray());
 		assertArrayEquals(newByteArray(), d.read(stream, byte[].class));
@@ -61,6 +67,6 @@ class DefaultDisassemblerTest {
 	}
 
 	private byte[] newByteArray() {
-		return "bytes".getBytes(StandardCharsets.US_ASCII);
+		return "body".getBytes(StandardCharsets.US_ASCII);
 	}
 }

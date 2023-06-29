@@ -30,6 +30,11 @@ class DefaultSerializerTest {
 	}
 
 	@Test
+	void getsInstance() {
+		assertInstanceOf(DefaultSerializer.class, DefaultSerializer.getInstance());
+	}
+
+	@Test
 	void writesString() {
 		String body = newString();
 		StringWriter writer = new StringWriter();

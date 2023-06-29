@@ -2,6 +2,7 @@ package br.pro.hashi.sdx.rest.transform.manager;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
@@ -44,6 +45,11 @@ class DefaultDeserializerTest {
 	}
 
 	@Test
+	void getsInstance() {
+		assertInstanceOf(DefaultDeserializer.class, DefaultDeserializer.getInstance());
+	}
+
+	@Test
 	void readsString() {
 		when(factory.get(String.class)).thenReturn((valueString) -> valueString);
 		when(coder.read(reader)).thenReturn(newString());
@@ -63,6 +69,6 @@ class DefaultDeserializerTest {
 	}
 
 	private String newString() {
-		return "content";
+		return "body";
 	}
 }
