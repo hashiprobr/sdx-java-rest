@@ -25,8 +25,8 @@ class DefaultDeserializerTest {
 	private AutoCloseable mocks;
 	private @Mock ParserFactory factory;
 	private @Mock MediaCoder coder;
-	private Reader reader;
 	private Deserializer d;
+	private Reader reader;
 
 	@BeforeEach
 	void setUp() {
