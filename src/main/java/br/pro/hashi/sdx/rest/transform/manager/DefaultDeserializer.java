@@ -9,24 +9,38 @@ import br.pro.hashi.sdx.rest.transform.Deserializer;
 import br.pro.hashi.sdx.rest.transform.exception.TypeException;
 
 class DefaultDeserializer implements Deserializer {
-	private final ParserFactory factory;
+	private static final DefaultDeserializer INSTANCE = newInstance();
 
-	DefaultDeserializer(ParserFactory factory) {
-		this.factory = factory;
+	private static DefaultDeserializer newInstance() {
+		ParserFactory factory = ParserFactory.getInstance();
+		MediaCoder coder = MediaCoder.getInstance();
+		return new DefaultDeserializer(factory, coder);
 	}
 
-	@SuppressWarnings("unchecked")
+	public static DefaultDeserializer getInstance() {
+		return INSTANCE;
+	}
+
+	private final ParserFactory factory;
+	private final MediaCoder coder;
+
+	DefaultDeserializer(ParserFactory factory, MediaCoder coder) {
+		this.factory = factory;
+		this.coder = coder;
+	}
+
 	@Override
 	public <T> T read(Reader reader, Type type) {
-		if (TransformManager.PRIMITIVE_TYPES.contains(type)) {
-			return (T) factory.get((Class<?>) type).apply(MediaCoder.getInstance().read(reader));
-		}
-		if (type.equals(String.class)) {
-			return (T) MediaCoder.getInstance().read(reader);
+		if (TransformManager.SIMPLE_TYPES.contains(type)) {
+			@SuppressWarnings("unchecked")
+			T body = (T) factory.get((Class<?>) type).apply(coder.read(reader));
+			return body;
 		}
 		if (type.equals(Reader.class)) {
-			return (T) reader;
+			@SuppressWarnings("unchecked")
+			T body = (T) reader;
+			return body;
 		}
-		throw new TypeException("Type must be primitive or equal to String or Reader");
+		throw new TypeException("Type must be primitive or equal to BigInteger, BigDecimal, String, or Reader");
 	}
 }

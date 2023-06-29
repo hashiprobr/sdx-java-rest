@@ -7,7 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.junit.jupiter.api.Test;
 
-import br.pro.hashi.sdx.rest.transform.Hint;
+import br.pro.hashi.sdx.rest.Hint;
 
 class RestExceptionTest {
 	private RestException e;

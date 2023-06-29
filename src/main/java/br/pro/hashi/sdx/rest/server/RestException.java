@@ -2,13 +2,13 @@ package br.pro.hashi.sdx.rest.server;
 
 import java.lang.reflect.Type;
 
-import br.pro.hashi.sdx.rest.transform.Hint;
+import br.pro.hashi.sdx.rest.Hint;
 
 /**
  * Thrown to indicate that an error occurred in an endpoint.
  */
 public class RestException extends RuntimeException {
-	private static final long serialVersionUID = 2264871078824784982L;
+	private static final long serialVersionUID = 8263284704228720673L;
 
 	private static Type getType(Hint<?> hint) {
 		if (hint == null) {

@@ -6,8 +6,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
+import br.pro.hashi.sdx.rest.Hint;
 import br.pro.hashi.sdx.rest.client.RestClient.Proxy.Entry;
-import br.pro.hashi.sdx.rest.transform.Hint;
 
 /**
  * Wrapper for customizing a multipart request body part via a fluent interface.

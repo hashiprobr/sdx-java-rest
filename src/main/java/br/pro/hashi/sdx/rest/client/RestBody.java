@@ -3,9 +3,9 @@ package br.pro.hashi.sdx.rest.client;
 import java.lang.reflect.Type;
 import java.nio.charset.Charset;
 
+import br.pro.hashi.sdx.rest.Hint;
 import br.pro.hashi.sdx.rest.coding.MediaCoder;
 import br.pro.hashi.sdx.rest.constant.Defaults;
-import br.pro.hashi.sdx.rest.transform.Hint;
 
 /**
  * Wrapper for customizing a request body via a fluent interface.

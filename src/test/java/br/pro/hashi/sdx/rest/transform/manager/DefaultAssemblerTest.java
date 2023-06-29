@@ -11,14 +11,15 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UncheckedIOException;
+import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
 import java.util.function.Consumer;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import br.pro.hashi.sdx.rest.Hint;
 import br.pro.hashi.sdx.rest.transform.Assembler;
-import br.pro.hashi.sdx.rest.transform.Hint;
 import br.pro.hashi.sdx.rest.transform.exception.TypeException;
 
 class DefaultAssemblerTest {
@@ -30,7 +31,7 @@ class DefaultAssemblerTest {
 	}
 
 	@Test
-	void writesIfBodyIsByteArray() {
+	void writesByteArray() {
 		byte[] body = newByteArray();
 		ByteArrayOutputStream stream = new ByteArrayOutputStream();
 		a.write(body, stream);
@@ -38,7 +39,7 @@ class DefaultAssemblerTest {
 	}
 
 	@Test
-	void writesIfBodyIsInputStream() {
+	void writesInputStream() {
 		InputStream body = new ByteArrayInputStream(newByteArray());
 		ByteArrayOutputStream stream = new ByteArrayOutputStream();
 		a.write(body, stream);
@@ -46,15 +47,16 @@ class DefaultAssemblerTest {
 	}
 
 	@Test
-	void writesIfBodyIsOutputStreamConsumer() {
+	void writesOutputStreamConsumer() {
 		Consumer<OutputStream> body = (stream) -> {
 			byte[] bytes = newByteArray();
 			assertDoesNotThrow(() -> {
 				stream.write(bytes);
 			});
 		};
+		Type type = new Hint<Consumer<OutputStream>>() {}.getType();
 		ByteArrayOutputStream stream = new ByteArrayOutputStream();
-		a.write(body, new Hint<Consumer<OutputStream>>() {}.getType(), stream);
+		a.write(body, type, stream);
 		assertEqualsBody(stream);
 	}
 
@@ -63,7 +65,7 @@ class DefaultAssemblerTest {
 	}
 
 	@Test
-	void doesNotWriteIfBodyIsNull() {
+	void doesNotWriteNull() {
 		ByteArrayOutputStream stream = new ByteArrayOutputStream();
 		assertThrows(NullPointerException.class, () -> {
 			a.write(null, stream);
@@ -71,7 +73,7 @@ class DefaultAssemblerTest {
 	}
 
 	@Test
-	void doesNotWriteIfBodyIsNeither() {
+	void doesNotWriteUnsupportedType() {
 		Object body = new Object();
 		ByteArrayOutputStream stream = new ByteArrayOutputStream();
 		assertThrows(TypeException.class, () -> {
@@ -80,10 +82,12 @@ class DefaultAssemblerTest {
 	}
 
 	@Test
-	void doesNotWriteIfOutputStreamThrows() throws IOException {
+	void doesNotWrite() {
 		byte[] body = newByteArray();
 		OutputStream stream = OutputStream.nullOutputStream();
-		stream.close();
+		assertDoesNotThrow(() -> {
+			stream.close();
+		});
 		Exception exception = assertThrows(UncheckedIOException.class, () -> {
 			a.write(body, stream);
 		});

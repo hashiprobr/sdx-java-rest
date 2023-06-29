@@ -33,6 +33,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
+import br.pro.hashi.sdx.rest.Hint;
 import br.pro.hashi.sdx.rest.reflection.ParserFactory;
 import br.pro.hashi.sdx.rest.reflection.Reflector;
 import br.pro.hashi.sdx.rest.reflection.exception.ReflectionException;
@@ -42,7 +43,6 @@ import br.pro.hashi.sdx.rest.server.exception.BadRequestException;
 import br.pro.hashi.sdx.rest.server.tree.Endpoint.DataParameter;
 import br.pro.hashi.sdx.rest.server.tree.Endpoint.ItemParameter;
 import br.pro.hashi.sdx.rest.server.tree.mock.endpoint.Signatures;
-import br.pro.hashi.sdx.rest.transform.Hint;
 import br.pro.hashi.sdx.rest.transform.exception.DisassemblingException;
 import br.pro.hashi.sdx.rest.transform.exception.TypeException;
 

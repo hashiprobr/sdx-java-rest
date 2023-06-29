@@ -5,12 +5,12 @@ import java.io.Reader;
 import java.lang.reflect.Type;
 
 import br.pro.hashi.sdx.rest.Fields;
+import br.pro.hashi.sdx.rest.Hint;
 import br.pro.hashi.sdx.rest.client.exception.ClientException;
 import br.pro.hashi.sdx.rest.coding.MediaCoder;
 import br.pro.hashi.sdx.rest.reflection.Headers;
 import br.pro.hashi.sdx.rest.transform.Deserializer;
 import br.pro.hashi.sdx.rest.transform.Disassembler;
-import br.pro.hashi.sdx.rest.transform.Hint;
 import br.pro.hashi.sdx.rest.transform.manager.TransformManager;
 
 /**

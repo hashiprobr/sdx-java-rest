@@ -7,41 +7,43 @@ import java.io.Writer;
 import java.lang.reflect.Type;
 import java.util.function.Consumer;
 
-import br.pro.hashi.sdx.rest.transform.Hint;
+import br.pro.hashi.sdx.rest.Hint;
 import br.pro.hashi.sdx.rest.transform.Serializer;
 import br.pro.hashi.sdx.rest.transform.exception.TypeException;
 
 class DefaultSerializer implements Serializer {
+	private static final DefaultSerializer INSTANCE = new DefaultSerializer();
+
+	public static DefaultSerializer getInstance() {
+		return INSTANCE;
+	}
+
 	private final Type consumerType;
 
-	public DefaultSerializer() {
+	DefaultSerializer() {
 		this.consumerType = new Hint<Consumer<Writer>>() {}.getType();
 	}
 
 	@Override
-	public void write(Object body, Type type, Writer writer) {
+	public <T> void write(T body, Type type, Writer writer) {
 		try {
-			if (TransformManager.PRIMITIVE_TYPES.contains(type)) {
+			if (TransformManager.SIMPLE_TYPES.contains(type)) {
 				writer.write(body.toString());
-				return;
-			}
-			if (body instanceof String) {
-				writer.write((String) body);
 				return;
 			}
 			if (body instanceof Reader) {
 				((Reader) body).transferTo(writer);
 				return;
 			}
-			if (type.equals(consumerType)) {
-				@SuppressWarnings("unchecked")
-				Consumer<Writer> consumer = (Consumer<Writer>) body;
-				consumer.accept(writer);
-				return;
-			}
-			throw new TypeException("Body must be a primitive or an instance of String, Reader or Consumer<Writer>");
 		} catch (IOException exception) {
 			throw new UncheckedIOException(exception);
 		}
+		if (type.equals(consumerType)) {
+			@SuppressWarnings("unchecked")
+			Consumer<Writer> consumer = (Consumer<Writer>) body;
+			consumer.accept(writer);
+			return;
+		}
+		throw new TypeException("Body must be a primitive, a big number, or an instance of String, Reader, or Consumer<Writer>");
 	}
 }

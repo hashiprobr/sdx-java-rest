@@ -6,18 +6,20 @@ import java.io.Reader;
 import java.io.Writer;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 
+import br.pro.hashi.sdx.rest.Hint;
 import br.pro.hashi.sdx.rest.coding.MediaCoder;
 import br.pro.hashi.sdx.rest.reflection.ParserFactory;
 import br.pro.hashi.sdx.rest.transform.Assembler;
 import br.pro.hashi.sdx.rest.transform.Deserializer;
 import br.pro.hashi.sdx.rest.transform.Disassembler;
-import br.pro.hashi.sdx.rest.transform.Hint;
 import br.pro.hashi.sdx.rest.transform.Serializer;
 import br.pro.hashi.sdx.rest.transform.exception.TypeException;
 
@@ -25,21 +27,26 @@ public class TransformManager {
 	private static final String OCTET_TYPE = "application/octet-stream";
 	private static final String PLAIN_TYPE = "text/plain";
 
-	static final Set<Class<?>> PRIMITIVE_TYPES = Set.of(
+	static final Set<Class<?>> SIMPLE_TYPES = Set.of(
 			boolean.class,
-			byte.class,
-			short.class,
-			int.class,
-			long.class,
-			float.class,
-			double.class,
 			Boolean.class,
+			char.class,
+			Character.class,
+			byte.class,
 			Byte.class,
+			short.class,
 			Short.class,
+			int.class,
 			Integer.class,
+			long.class,
 			Long.class,
+			float.class,
 			Float.class,
-			Double.class);
+			double.class,
+			Double.class,
+			BigInteger.class,
+			BigDecimal.class,
+			String.class);
 
 	private final Type streamConsumerType;
 	private final Type writerConsumerType;
@@ -66,16 +73,16 @@ public class TransformManager {
 		this.extensions.put("txt", PLAIN_TYPE);
 
 		this.assemblers = new HashMap<>();
-		this.assemblers.put(OCTET_TYPE, new DefaultAssembler());
+		this.assemblers.put(OCTET_TYPE, DefaultAssembler.getInstance());
 
 		this.disassemblers = new HashMap<>();
-		this.disassemblers.put(OCTET_TYPE, new DefaultDisassembler());
+		this.disassemblers.put(OCTET_TYPE, DefaultDisassembler.getInstance());
 
 		this.serializers = new HashMap<>();
-		this.serializers.put(PLAIN_TYPE, new DefaultSerializer());
+		this.serializers.put(PLAIN_TYPE, DefaultSerializer.getInstance());
 
 		this.deserializers = new HashMap<>();
-		this.deserializers.put(PLAIN_TYPE, new DefaultDeserializer(factory));
+		this.deserializers.put(PLAIN_TYPE, DefaultDeserializer.getInstance());
 
 		this.fallbackByteType = null;
 		this.fallbackTextType = null;
@@ -170,7 +177,7 @@ public class TransformManager {
 
 	public String getSerializerType(String contentType, Object body, Type type) {
 		if (contentType == null) {
-			if ((body != null && TransformManager.PRIMITIVE_TYPES.contains(type)) || body instanceof String || body instanceof Reader || type.equals(writerConsumerType)) {
+			if ((body != null && TransformManager.SIMPLE_TYPES.contains(type)) || body instanceof String || body instanceof Reader || type.equals(writerConsumerType)) {
 				contentType = PLAIN_TYPE;
 			} else {
 				if (fallbackTextType == null) {
@@ -184,7 +191,7 @@ public class TransformManager {
 
 	public String getDeserializerType(String contentType, Type type) {
 		if (contentType == null) {
-			if (TransformManager.PRIMITIVE_TYPES.contains(type) || type.equals(String.class) || type.equals(Reader.class)) {
+			if (TransformManager.SIMPLE_TYPES.contains(type) || type.equals(String.class) || type.equals(Reader.class)) {
 				contentType = PLAIN_TYPE;
 			} else {
 				if (fallbackTextType == null) {

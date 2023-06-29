@@ -1,4 +1,4 @@
-package br.pro.hashi.sdx.rest.transform;
+package br.pro.hashi.sdx.rest;
 
 import java.lang.reflect.Type;
 

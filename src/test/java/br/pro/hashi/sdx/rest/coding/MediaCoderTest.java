@@ -261,12 +261,15 @@ class MediaCoderTest {
 	}
 
 	@Test
-	void doesNotReadIfReaderThrows() throws IOException {
+	void doesNotReadIfReaderThrows() {
 		Reader reader = Reader.nullReader();
-		reader.close();
-		assertThrows(UncheckedIOException.class, () -> {
+		assertDoesNotThrow(() -> {
+			reader.close();
+		});
+		Exception exception = assertThrows(UncheckedIOException.class, () -> {
 			c.read(reader);
 		});
+		assertInstanceOf(IOException.class, exception.getCause());
 	}
 
 	@Test
@@ -276,12 +279,15 @@ class MediaCoderTest {
 	}
 
 	@Test
-	void doesNotReadIfStreamThrows() throws IOException {
+	void doesNotReadIfStreamThrows() {
 		InputStream stream = InputStream.nullInputStream();
-		stream.close();
-		assertThrows(UncheckedIOException.class, () -> {
+		assertDoesNotThrow(() -> {
+			stream.close();
+		});
+		Exception exception = assertThrows(UncheckedIOException.class, () -> {
 			c.read(stream);
 		});
+		assertInstanceOf(IOException.class, exception.getCause());
 	}
 
 	@ParameterizedTest

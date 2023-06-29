@@ -1,131 +1,64 @@
 package br.pro.hashi.sdx.rest.transform.manager;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.when;
 
 import java.io.Reader;
 import java.io.StringReader;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
+import br.pro.hashi.sdx.rest.coding.MediaCoder;
 import br.pro.hashi.sdx.rest.reflection.ParserFactory;
 import br.pro.hashi.sdx.rest.transform.Deserializer;
-import br.pro.hashi.sdx.rest.transform.Hint;
 import br.pro.hashi.sdx.rest.transform.exception.TypeException;
 
 class DefaultDeserializerTest {
+	private AutoCloseable mocks;
+	private @Mock ParserFactory factory;
+	private @Mock MediaCoder coder;
 	private Reader reader;
 	private Deserializer d;
 
 	@BeforeEach
 	void setUp() {
+		mocks = MockitoAnnotations.openMocks(this);
+
+		d = new DefaultDeserializer(factory, coder);
+
 		reader = new StringReader(newString());
-		d = new DefaultDeserializer(ParserFactory.getInstance());
 	}
 
-	@Test
-	void readsIfTypeEqualsBoolean() {
-		assertEquals(false, d.read(new StringReader("false"), boolean.class));
-	}
-
-	@Test
-	void readsIfTypeEqualsBooleanWithHint() {
-		assertEquals(false, d.read(new StringReader("false"), new Hint<Boolean>() {}.getType()));
-	}
-
-	@Test
-	void readsIfTypeEqualsByte() {
-		assertEquals(0, (byte) d.read(new StringReader("0"), byte.class));
-	}
-
-	@Test
-	void readsIfTypeEqualsByteWithHint() {
-		assertEquals(0, (byte) d.read(new StringReader("0"), new Hint<Byte>() {}.getType()));
-	}
-
-	@Test
-	void readsIfTypeEqualsShort() {
-		assertEquals(1, (short) d.read(new StringReader("1"), short.class));
-	}
-
-	@Test
-	void readsIfTypeEqualsShortWithHint() {
-		assertEquals(1, (short) d.read(new StringReader("1"), new Hint<Short>() {}.getType()));
-	}
-
-	@Test
-	void readsIfTypeEqualsInteger() {
-		assertEquals(2, (int) d.read(new StringReader("2"), int.class));
-	}
-
-	@Test
-	void readsIfTypeEqualsIntegerWithHint() {
-		assertEquals(2, (int) d.read(new StringReader("2"), new Hint<Integer>() {}.getType()));
-	}
-
-	@Test
-	void readsIfTypeEqualsLong() {
-		assertEquals(3L, (long) d.read(new StringReader("3"), long.class));
-	}
-
-	@Test
-	void readsIfTypeEqualsLongWithHint() {
-		assertEquals(3L, (long) d.read(new StringReader("3"), new Hint<Long>() {}.getType()));
-	}
-
-	@Test
-	void readsIfTypeEqualsFloat() {
-		assertEquals(4.5F, d.read(new StringReader("4.5"), float.class), 0.000001F);
-	}
-
-	@Test
-	void readsIfTypeEqualsFloatWithHint() {
-		assertEquals(4.5F, d.read(new StringReader("4.5"), new Hint<Float>() {}.getType()), 0.000001F);
-	}
-
-	@Test
-	void readsIfTypeEqualsDouble() {
-		assertEquals(6.7, d.read(new StringReader("6.7"), double.class), 0.000001);
-	}
-
-	@Test
-	void readsIfTypeEqualsDoubleWithHint() {
-		assertEquals(6.7, d.read(new StringReader("6.7"), new Hint<Double>() {}.getType()), 0.000001);
-	}
-
-	@Test
-	void readsIfTypeEqualsString() {
-		assertEquals(newString(), d.read(reader, String.class));
-	}
-
-	@Test
-	void readsIfTypeEqualsStringWithHint() {
-		assertEquals(newString(), d.read(reader, new Hint<String>() {}.getType()));
-	}
-
-	@Test
-	void readsIfTypeEqualsReader() {
-		assertSame(reader, d.read(reader, Reader.class));
-	}
-
-	@Test
-	void readsIfTypeEqualsReaderWithHint() {
-		assertSame(reader, d.read(reader, new Hint<Reader>() {}.getType()));
-	}
-
-	@Test
-	void doesNotReadIfTypeEqualsStringReader() {
-		assertThrows(TypeException.class, () -> {
-			d.read(reader, StringReader.class);
+	@AfterEach
+	void tearDown() {
+		assertDoesNotThrow(() -> {
+			mocks.close();
 		});
 	}
 
 	@Test
-	void doesNotReadIfTypeEqualsStringReaderWithHint() {
+	void readsString() {
+		when(factory.get(String.class)).thenReturn((valueString) -> valueString);
+		when(coder.read(reader)).thenReturn(newString());
+		assertEquals(newString(), d.read(reader, String.class));
+	}
+
+	@Test
+	void readsReader() {
+		assertSame(reader, d.read(reader, Reader.class));
+	}
+
+	@Test
+	void doesNotRead() {
 		assertThrows(TypeException.class, () -> {
-			d.read(reader, new Hint<StringReader>() {}.getType());
+			d.read(reader, Object.class);
 		});
 	}
 
