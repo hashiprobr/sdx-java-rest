@@ -7,7 +7,7 @@ import java.io.Writer;
 import java.lang.reflect.Type;
 import java.util.function.Consumer;
 
-import br.pro.hashi.sdx.rest.Hint;
+import br.pro.hashi.sdx.rest.constant.Types;
 import br.pro.hashi.sdx.rest.transform.Serializer;
 import br.pro.hashi.sdx.rest.transform.exception.TypeException;
 
@@ -18,16 +18,13 @@ class DefaultSerializer implements Serializer {
 		return INSTANCE;
 	}
 
-	private final Type consumerType;
-
 	DefaultSerializer() {
-		this.consumerType = new Hint<Consumer<Writer>>() {}.getType();
 	}
 
 	@Override
 	public <T> void write(T body, Type type, Writer writer) {
 		try {
-			if (TransformManager.SIMPLE_TYPES.contains(type)) {
+			if (Types.instanceOfSimple(body, type)) {
 				writer.write(body.toString());
 				return;
 			}
@@ -38,7 +35,7 @@ class DefaultSerializer implements Serializer {
 		} catch (IOException exception) {
 			throw new UncheckedIOException(exception);
 		}
-		if (type.equals(consumerType)) {
+		if (Types.instanceOfWriterConsumer(body, type)) {
 			@SuppressWarnings("unchecked")
 			Consumer<Writer> consumer = (Consumer<Writer>) body;
 			consumer.accept(writer);

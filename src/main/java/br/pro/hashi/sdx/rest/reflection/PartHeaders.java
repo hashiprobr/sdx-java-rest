@@ -7,9 +7,14 @@ import br.pro.hashi.sdx.rest.Fields;
 import jakarta.servlet.http.Part;
 
 public non-sealed class PartHeaders extends Fields {
+	public static PartHeaders newInstance(Part part) {
+		ParserFactory factory = ParserFactory.getInstance();
+		return new PartHeaders(factory, part);
+	}
+
 	private final Part part;
 
-	public PartHeaders(ParserFactory factory, Part part) {
+	PartHeaders(ParserFactory factory, Part part) {
 		super(factory);
 		this.part = part;
 	}

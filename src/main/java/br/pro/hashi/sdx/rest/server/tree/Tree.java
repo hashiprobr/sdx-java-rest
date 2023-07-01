@@ -18,13 +18,18 @@ import br.pro.hashi.sdx.rest.server.annotation.Nested;
 import br.pro.hashi.sdx.rest.server.exception.NotFoundException;
 
 public class Tree {
+	public static Tree newInstance(Locale locale, long maxBodySize) {
+		ParserFactory factory = ParserFactory.getInstance();
+		return new Tree(factory, locale, maxBodySize);
+	}
+
 	private final ParserFactory factory;
 	private final Locale locale;
 	private final Node root;
 	private final Set<String> methodNames;
 	private final long maxBodySize;
 
-	public Tree(ParserFactory factory, Locale locale, long maxBodySize) {
+	Tree(ParserFactory factory, Locale locale, long maxBodySize) {
 		this.factory = factory;
 		this.locale = locale;
 		this.root = new Node();

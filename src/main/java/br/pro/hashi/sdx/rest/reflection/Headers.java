@@ -8,9 +8,14 @@ import org.eclipse.jetty.http.HttpFields;
 import br.pro.hashi.sdx.rest.Fields;
 
 public non-sealed class Headers extends Fields {
+	public static Headers newInstance(HttpFields fields) {
+		ParserFactory factory = ParserFactory.getInstance();
+		return new Headers(factory, fields);
+	}
+
 	private final HttpFields fields;
 
-	public Headers(ParserFactory factory, HttpFields fields) {
+	Headers(ParserFactory factory, HttpFields fields) {
 		super(factory);
 		this.fields = fields;
 	}

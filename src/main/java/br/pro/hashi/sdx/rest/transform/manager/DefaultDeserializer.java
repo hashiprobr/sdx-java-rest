@@ -4,6 +4,7 @@ import java.io.Reader;
 import java.lang.reflect.Type;
 
 import br.pro.hashi.sdx.rest.coding.MediaCoder;
+import br.pro.hashi.sdx.rest.constant.Types;
 import br.pro.hashi.sdx.rest.reflection.ParserFactory;
 import br.pro.hashi.sdx.rest.transform.Deserializer;
 import br.pro.hashi.sdx.rest.transform.exception.TypeException;
@@ -31,7 +32,7 @@ class DefaultDeserializer implements Deserializer {
 
 	@Override
 	public <T> T read(Reader reader, Type type) {
-		if (TransformManager.SIMPLE_TYPES.contains(type)) {
+		if (Types.equalsSimple(type)) {
 			@SuppressWarnings("unchecked")
 			T body = (T) factory.get((Class<?>) type).apply(coder.read(reader));
 			return body;

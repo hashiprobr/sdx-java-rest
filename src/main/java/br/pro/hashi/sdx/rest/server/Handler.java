@@ -6,7 +6,6 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.UncheckedIOException;
-import java.io.Writer;
 import java.lang.invoke.MethodHandle;
 import java.lang.reflect.Type;
 import java.nio.charset.Charset;
@@ -27,9 +26,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import br.pro.hashi.sdx.rest.Fields;
-import br.pro.hashi.sdx.rest.Hint;
 import br.pro.hashi.sdx.rest.coding.MediaCoder;
 import br.pro.hashi.sdx.rest.coding.PathCoder;
+import br.pro.hashi.sdx.rest.constant.Types;
 import br.pro.hashi.sdx.rest.reflection.Headers;
 import br.pro.hashi.sdx.rest.reflection.ParserFactory;
 import br.pro.hashi.sdx.rest.reflection.PartHeaders;
@@ -56,8 +55,11 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.Part;
 
 class Handler extends AbstractHandler {
-	private final Type streamConsumerType;
-	private final Type writerConsumerType;
+	public static Handler newInstance(TransformManager manager, Tree tree, ErrorFormatter formatter, Map<Class<? extends RestResource>, MethodHandle> handles, MultipartConfigElement element, Set<Class<? extends RuntimeException>> gatewayTypes, Charset urlCharset, boolean cors) {
+		ParserFactory factory = ParserFactory.getInstance();
+		return new Handler(factory, manager, tree, formatter, handles, element, gatewayTypes, urlCharset, cors);
+	}
+
 	private final Logger logger;
 	private final ParserFactory factory;
 	private final TransformManager manager;
@@ -70,8 +72,6 @@ class Handler extends AbstractHandler {
 	private final boolean cors;
 
 	Handler(ParserFactory factory, TransformManager manager, Tree tree, ErrorFormatter formatter, Map<Class<? extends RestResource>, MethodHandle> handles, MultipartConfigElement element, Set<Class<? extends RuntimeException>> gatewayTypes, Charset urlCharset, boolean cors) {
-		this.streamConsumerType = new Hint<Consumer<OutputStream>>() {}.getType();
-		this.writerConsumerType = new Hint<Consumer<Writer>>() {}.getType();
 		this.logger = LoggerFactory.getLogger(Handler.class);
 		this.factory = factory;
 		this.manager = manager;
@@ -230,7 +230,7 @@ class Handler extends AbstractHandler {
 						partList = new ArrayList<>();
 						partMap.put(name, partList);
 					}
-					headersList.add(new PartHeaders(factory, part));
+					headersList.add(PartHeaders.newInstance(part));
 					partList.add(new Data(manager, part.getContentType(), part.getInputStream()));
 				}
 				requestBody = null;
@@ -238,8 +238,8 @@ class Handler extends AbstractHandler {
 				requestBody = new Data(manager, requestType, request.getInputStream());
 			}
 
-			Fields headers = new Headers(factory, baseRequest.getHttpFields());
-			Fields queries = new Queries(factory, request.getParameterMap());
+			Fields headers = Headers.newInstance(baseRequest.getHttpFields());
+			Fields queries = Queries.newInstance(request.getParameterMap());
 			CharsetEncoder encoder = StandardCharsets.US_ASCII.newEncoder();
 
 			Class<? extends RestResource> resourceType = endpoint.getResourceType();
@@ -366,7 +366,7 @@ class Handler extends AbstractHandler {
 						throw new UncheckedIOException(exception);
 					}
 				};
-				withoutLength = actual instanceof InputStream || type.equals(streamConsumerType);
+				withoutLength = actual instanceof InputStream || Types.instanceOfStreamConsumer(actual, type);
 			} else {
 				contentType = manager.getSerializerType(contentType, actual, type);
 				Serializer serializer = manager.getSerializer(contentType);
@@ -380,7 +380,7 @@ class Handler extends AbstractHandler {
 						throw new UncheckedIOException(exception);
 					}
 				};
-				withoutLength = actual instanceof Reader || type.equals(writerConsumerType);
+				withoutLength = actual instanceof Reader || Types.instanceOfWriterConsumer(actual, type);
 				contentType = "%s;charset=%s".formatted(contentType, charset.name());
 			}
 			if (base64) {

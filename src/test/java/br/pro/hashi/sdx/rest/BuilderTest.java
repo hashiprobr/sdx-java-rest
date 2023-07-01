@@ -51,11 +51,6 @@ public abstract class BuilderTest {
 	}
 
 	@Test
-	void initializesWithCache() {
-		assertEquals(factory, b.parserFactory);
-	}
-
-	@Test
 	void initializesWithManager() {
 		assertEquals(manager, b.manager);
 	}
@@ -90,7 +85,7 @@ public abstract class BuilderTest {
 	void addsBinaryWithHint() {
 		Hint<Object> hint = new Hint<Object>() {};
 		assertSame(b, b.withBinary(hint));
-		verify(manager).addBinary(hint);
+		verify(manager).addBinary(hint.getType());
 	}
 
 	@Test

@@ -1,5 +1,6 @@
 package br.pro.hashi.sdx.rest.reflection;
 
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertSame;
 
 import java.util.HashMap;
@@ -25,6 +26,12 @@ class QueriesTest extends FieldsTest {
 		map.put("zs", new String[] { "2.2,3.3" });
 		q = new Queries(factory, map);
 		return q;
+	}
+
+	@Test
+	void getsInstance() {
+		map = new HashMap<>();
+		assertInstanceOf(Queries.class, Queries.newInstance(map));
 	}
 
 	@Test

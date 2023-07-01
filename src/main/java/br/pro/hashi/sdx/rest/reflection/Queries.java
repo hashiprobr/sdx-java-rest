@@ -7,9 +7,14 @@ import java.util.stream.Stream;
 import br.pro.hashi.sdx.rest.Fields;
 
 public non-sealed class Queries extends Fields {
+	public static Queries newInstance(Map<String, String[]> map) {
+		ParserFactory factory = ParserFactory.getInstance();
+		return new Queries(factory, map);
+	}
+
 	private final Map<String, String[]> map;
 
-	public Queries(ParserFactory factory, Map<String, String[]> map) {
+	Queries(ParserFactory factory, Map<String, String[]> map) {
 		super(factory);
 		this.map = map;
 	}

@@ -1,6 +1,7 @@
 package br.pro.hashi.sdx.rest.reflection;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -30,6 +31,12 @@ class HeadersTest extends FieldsTest {
 		fields.add("zs", "2.2,3.3");
 		h = new Headers(factory, fields);
 		return h;
+	}
+
+	@Test
+	void getsInstance() {
+		fields = HttpFields.build();
+		assertInstanceOf(Headers.class, Headers.newInstance(fields));
 	}
 
 	@Test

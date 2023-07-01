@@ -38,7 +38,6 @@ import br.pro.hashi.sdx.rest.Builder;
 import br.pro.hashi.sdx.rest.coding.MediaCoder;
 import br.pro.hashi.sdx.rest.coding.PathCoder;
 import br.pro.hashi.sdx.rest.constant.Defaults;
-import br.pro.hashi.sdx.rest.reflection.ParserFactory;
 import br.pro.hashi.sdx.rest.reflection.Reflector;
 import br.pro.hashi.sdx.rest.server.exception.ResourceException;
 import br.pro.hashi.sdx.rest.server.tree.Tree;
@@ -94,10 +93,6 @@ public non-sealed class RestServerBuilder extends Builder<RestServerBuilder> {
 		this.http2 = true;
 		this.http1 = true;
 		this.cors = true;
-	}
-
-	ParserFactory getCache() {
-		return parserFactory;
 	}
 
 	TransformManager getManager() {
@@ -189,7 +184,7 @@ public non-sealed class RestServerBuilder extends Builder<RestServerBuilder> {
 	 *                                  type is invalid
 	 */
 	public final RestServerBuilder withExtension(String extension, String contentType) {
-		manager.putExtension(extension, contentType);
+		manager.putExtensionType(extension, contentType);
 		return self();
 	}
 
@@ -458,7 +453,7 @@ public non-sealed class RestServerBuilder extends Builder<RestServerBuilder> {
 			logger.info("Constructed %s".formatted(typeName));
 		}
 
-		Tree tree = new Tree(parserFactory, locale, maxBodySize);
+		Tree tree = Tree.newInstance(locale, maxBodySize);
 		for (Class<? extends RestResource> type : itemMap.keySet()) {
 			String typeName = type.getName();
 			tree.putNodesAndEndpoints(type, typeName, itemMap);
@@ -475,7 +470,7 @@ public non-sealed class RestServerBuilder extends Builder<RestServerBuilder> {
 		ConcreteHandler errorHandler = new ConcreteHandler(manager, formatter, contentType, charset, base64);
 		server.setErrorHandler(errorHandler);
 
-		AbstractHandler handler = new Handler(parserFactory, manager, tree, formatter, handles, element, gatewayTypes, urlCharset, cors);
+		AbstractHandler handler = Handler.newInstance(manager, tree, formatter, handles, element, gatewayTypes, urlCharset, cors);
 		if (compression) {
 			GzipHandler gzipHandler = new GzipHandler();
 			gzipHandler.setHandler(handler);

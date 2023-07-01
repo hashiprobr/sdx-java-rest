@@ -18,7 +18,6 @@ import org.eclipse.jetty.util.ssl.SslContextFactory;
 
 import br.pro.hashi.sdx.rest.Builder;
 import br.pro.hashi.sdx.rest.coding.PathCoder;
-import br.pro.hashi.sdx.rest.reflection.ParserFactory;
 import br.pro.hashi.sdx.rest.transform.manager.TransformManager;
 
 /**
@@ -32,10 +31,6 @@ public non-sealed class RestClientBuilder extends Builder<RestClientBuilder> {
 	 */
 	public RestClientBuilder() {
 		this.factory = null;
-	}
-
-	ParserFactory getCache() {
-		return parserFactory;
 	}
 
 	TransformManager getManager() {
@@ -211,7 +206,7 @@ public non-sealed class RestClientBuilder extends Builder<RestClientBuilder> {
 			client.getContentDecoderFactories().add(new GZIPContentDecoder.Factory());
 		}
 		client.setFollowRedirects(redirection);
-		return new RestClient(parserFactory, manager, client, urlCharset, locale, urlPrefix);
+		return new RestClient(manager, client, urlCharset, locale, urlPrefix);
 	}
 
 	/**

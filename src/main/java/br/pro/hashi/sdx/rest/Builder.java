@@ -7,8 +7,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 
 import br.pro.hashi.sdx.rest.client.RestClientBuilder;
+import br.pro.hashi.sdx.rest.coding.MediaCoder;
 import br.pro.hashi.sdx.rest.constant.Defaults;
-import br.pro.hashi.sdx.rest.reflection.ParserFactory;
 import br.pro.hashi.sdx.rest.server.RestServerBuilder;
 import br.pro.hashi.sdx.rest.transform.Assembler;
 import br.pro.hashi.sdx.rest.transform.Deserializer;
@@ -22,13 +22,6 @@ import br.pro.hashi.sdx.rest.transform.manager.TransformManager;
  * @param <T> the subclass
  */
 public sealed abstract class Builder<T extends Builder<T>> permits RestClientBuilder, RestServerBuilder {
-	/**
-	 * Internal member.
-	 * 
-	 * @hidden
-	 */
-	protected final ParserFactory parserFactory;
-
 	/**
 	 * Internal member.
 	 * 
@@ -70,8 +63,7 @@ public sealed abstract class Builder<T extends Builder<T>> permits RestClientBui
 	 * @hidden
 	 */
 	protected Builder() {
-		this.parserFactory = ParserFactory.getInstance();
-		this.manager = new TransformManager(this.parserFactory);
+		this.manager = new TransformManager(MediaCoder.getInstance());
 		this.urlCharset = StandardCharsets.UTF_8;
 		this.locale = Defaults.LOCALE;
 		this.redirection = true;
@@ -102,6 +94,9 @@ public sealed abstract class Builder<T extends Builder<T>> permits RestClientBui
 	 * @throws NullPointerException if the type is null
 	 */
 	public final T withBinary(Class<?> type) {
+		if (type == null) {
+			throw new NullPointerException("Type cannot be null");
+		}
 		manager.addBinary(type);
 		return self();
 	}
@@ -128,7 +123,10 @@ public sealed abstract class Builder<T extends Builder<T>> permits RestClientBui
 	 * @throws NullPointerException if the type hint is null
 	 */
 	public final T withBinary(Hint<?> hint) {
-		manager.addBinary(hint);
+		if (hint == null) {
+			throw new NullPointerException("Hint cannot be null");
+		}
+		manager.addBinary(hint.getType());
 		return self();
 	}
 

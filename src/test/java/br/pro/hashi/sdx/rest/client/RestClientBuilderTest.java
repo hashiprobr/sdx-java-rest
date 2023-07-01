@@ -90,7 +90,6 @@ class RestClientBuilderTest extends BuilderTest {
 	@Test
 	void builds() {
 		RestClient client = b.build("http://a");
-		assertSame(b.getCache(), client.getCache());
 		assertSame(b.getManager(), client.getManager());
 		assertEquals(StandardCharsets.UTF_8, client.getUrlCharset());
 		assertEquals("http://a", client.getUrlPrefix());

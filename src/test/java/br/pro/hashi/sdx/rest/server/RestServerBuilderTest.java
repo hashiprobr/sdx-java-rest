@@ -167,7 +167,7 @@ class RestServerBuilderTest extends BuilderTest {
 	@Test
 	void addsExtension() {
 		assertSame(b, b.withExtension("ext", "type/subtype"));
-		verify(b.getManager()).putExtension("ext", "type/subtype");
+		verify(b.getManager()).putExtensionType("ext", "type/subtype");
 	}
 
 	@Test
@@ -450,7 +450,6 @@ class RestServerBuilderTest extends BuilderTest {
 		ThreadLimitHandler limitHandler = (ThreadLimitHandler) jettyServer.getHandler();
 		GzipHandler gzipHandler = (GzipHandler) limitHandler.getHandler();
 		Handler handler = (Handler) gzipHandler.getHandler();
-		assertSame(b.getCache(), handler.getCache());
 		assertSame(b.getManager(), handler.getManager());
 		assertEquals(StandardCharsets.UTF_8, handler.getUrlCharset());
 		assertSame(b.getGatewayTypes(), handler.getGatewayTypes());

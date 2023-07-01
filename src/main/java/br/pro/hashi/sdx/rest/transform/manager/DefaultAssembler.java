@@ -7,7 +7,7 @@ import java.io.UncheckedIOException;
 import java.lang.reflect.Type;
 import java.util.function.Consumer;
 
-import br.pro.hashi.sdx.rest.Hint;
+import br.pro.hashi.sdx.rest.constant.Types;
 import br.pro.hashi.sdx.rest.transform.Assembler;
 import br.pro.hashi.sdx.rest.transform.exception.TypeException;
 
@@ -18,10 +18,7 @@ class DefaultAssembler implements Assembler {
 		return INSTANCE;
 	}
 
-	private final Type consumerType;
-
 	DefaultAssembler() {
-		this.consumerType = new Hint<Consumer<OutputStream>>() {}.getType();
 	}
 
 	@Override
@@ -38,7 +35,7 @@ class DefaultAssembler implements Assembler {
 		} catch (IOException exception) {
 			throw new UncheckedIOException(exception);
 		}
-		if (type.equals(consumerType)) {
+		if (Types.instanceOfStreamConsumer(body, type)) {
 			@SuppressWarnings("unchecked")
 			Consumer<OutputStream> consumer = (Consumer<OutputStream>) body;
 			consumer.accept(stream);

@@ -34,7 +34,6 @@ import br.pro.hashi.sdx.rest.coding.MediaCoder;
 import br.pro.hashi.sdx.rest.coding.PathCoder;
 import br.pro.hashi.sdx.rest.coding.QueryCoder;
 import br.pro.hashi.sdx.rest.reflection.Headers;
-import br.pro.hashi.sdx.rest.reflection.ParserFactory;
 import br.pro.hashi.sdx.rest.transform.Assembler;
 import br.pro.hashi.sdx.rest.transform.Serializer;
 import br.pro.hashi.sdx.rest.transform.manager.TransformManager;
@@ -65,25 +64,19 @@ public final class RestClient {
 	}
 
 	private final Logger logger;
-	private final ParserFactory factory;
 	private final TransformManager manager;
 	private final HttpClient jettyClient;
 	private final Charset urlCharset;
 	private final Locale locale;
 	private final String urlPrefix;
 
-	RestClient(ParserFactory factory, TransformManager manager, HttpClient jettyClient, Charset urlCharset, Locale locale, String urlPrefix) {
+	RestClient(TransformManager manager, HttpClient jettyClient, Charset urlCharset, Locale locale, String urlPrefix) {
 		this.logger = LoggerFactory.getLogger(RestClient.class);
-		this.factory = factory;
 		this.manager = manager;
 		this.jettyClient = jettyClient;
 		this.urlCharset = urlCharset;
 		this.locale = locale;
 		this.urlPrefix = urlPrefix;
-	}
-
-	ParserFactory getCache() {
-		return factory;
 	}
 
 	TransformManager getManager() {
@@ -1073,7 +1066,7 @@ public final class RestClient {
 
 			int status = response.getStatus();
 			HttpFields fields = response.getHeaders();
-			Headers headers = new Headers(factory, fields);
+			Headers headers = Headers.newInstance(fields);
 			String contentType = fields.get("Content-Type");
 			InputStream stream = listener.getInputStream();
 			return new RestResponse(manager, status, headers, contentType, stream);

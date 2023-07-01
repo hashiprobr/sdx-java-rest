@@ -3,11 +3,8 @@ package br.pro.hashi.sdx.rest.transform.manager;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Reader;
-import java.io.Writer;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -16,7 +13,7 @@ import java.util.function.Consumer;
 
 import br.pro.hashi.sdx.rest.Hint;
 import br.pro.hashi.sdx.rest.coding.MediaCoder;
-import br.pro.hashi.sdx.rest.reflection.ParserFactory;
+import br.pro.hashi.sdx.rest.constant.Types;
 import br.pro.hashi.sdx.rest.transform.Assembler;
 import br.pro.hashi.sdx.rest.transform.Deserializer;
 import br.pro.hashi.sdx.rest.transform.Disassembler;
@@ -27,50 +24,24 @@ public class TransformManager {
 	private static final String OCTET_TYPE = "application/octet-stream";
 	private static final String PLAIN_TYPE = "text/plain";
 
-	static final Set<Class<?>> SIMPLE_TYPES = Set.of(
-			boolean.class,
-			Boolean.class,
-			char.class,
-			Character.class,
-			byte.class,
-			Byte.class,
-			short.class,
-			Short.class,
-			int.class,
-			Integer.class,
-			long.class,
-			Long.class,
-			float.class,
-			Float.class,
-			double.class,
-			Double.class,
-			BigInteger.class,
-			BigDecimal.class,
-			String.class);
+	public static TransformManager newInstance() {
+		MediaCoder coder = MediaCoder.getInstance();
+		return new TransformManager(coder);
+	}
 
-	private final Type streamConsumerType;
-	private final Type writerConsumerType;
-	private final Set<Class<?>> binaryClasses;
-	private final Set<ParameterizedType> binaryParameterizedTypes;
-	private final Map<String, String> extensions;
+	private final MediaCoder coder;
 	private final Map<String, Assembler> assemblers;
 	private final Map<String, Disassembler> disassemblers;
 	private final Map<String, Serializer> serializers;
 	private final Map<String, Deserializer> deserializers;
+	private final Map<String, String> extensions;
+	private final Set<Class<?>> binaryRawTypes;
+	private final Set<Type> binaryGenericTypes;
 	private String fallbackByteType;
 	private String fallbackTextType;
 
-	public TransformManager(ParserFactory factory) {
-		this.streamConsumerType = new Hint<Consumer<OutputStream>>() {}.getType();
-		this.writerConsumerType = new Hint<Consumer<Writer>>() {}.getType();
-
-		this.binaryClasses = new HashSet<>();
-		this.binaryClasses.addAll(Set.of(byte[].class, InputStream.class));
-
-		this.binaryParameterizedTypes = new HashSet<>();
-
-		this.extensions = new HashMap<>();
-		this.extensions.put("txt", PLAIN_TYPE);
+	public TransformManager(MediaCoder coder) {
+		this.coder = coder;
 
 		this.assemblers = new HashMap<>();
 		this.assemblers.put(OCTET_TYPE, DefaultAssembler.getInstance());
@@ -84,123 +55,18 @@ public class TransformManager {
 		this.deserializers = new HashMap<>();
 		this.deserializers.put(PLAIN_TYPE, DefaultDeserializer.getInstance());
 
+		this.extensions = new HashMap<>();
+		this.extensions.put("txt", PLAIN_TYPE);
+
+		this.binaryRawTypes = new HashSet<>();
+		this.binaryRawTypes.add(byte[].class);
+		this.binaryRawTypes.add(InputStream.class);
+
+		this.binaryGenericTypes = new HashSet<>();
+		this.binaryGenericTypes.add(new Hint<Consumer<OutputStream>>() {}.getType());
+
 		this.fallbackByteType = null;
 		this.fallbackTextType = null;
-	}
-
-	public boolean isBinary(Type type) {
-		if (type == null) {
-			return false;
-		}
-		if (type instanceof ParameterizedType) {
-			return binaryParameterizedTypes.contains(type);
-		}
-		for (Class<?> superType : binaryClasses) {
-			if (superType.isAssignableFrom((Class<?>) type)) {
-				return true;
-			}
-		}
-		return false;
-	}
-
-	public void addBinary(Class<?> type) {
-		if (type == null) {
-			throw new NullPointerException("Type cannot be null");
-		}
-		binaryClasses.add(type);
-	}
-
-	public void addBinary(Hint<?> hint) {
-		if (hint == null) {
-			throw new NullPointerException("Hint cannot be null");
-		}
-		Type type = hint.getType();
-		if (type instanceof ParameterizedType) {
-			binaryParameterizedTypes.add((ParameterizedType) type);
-		} else {
-			binaryClasses.add((Class<?>) type);
-		}
-	}
-
-	public String getExtensionType(String extension) {
-		return extensions.get(extension);
-	}
-
-	public void putExtension(String extension, String contentType) {
-		if (extension == null) {
-			throw new NullPointerException("Extension cannot be null");
-		}
-		extension = extension.strip();
-		if (extension.isEmpty()) {
-			throw new IllegalArgumentException("Extension cannot be blank");
-		}
-		if (contentType == null) {
-			throw new NullPointerException("Extension type cannot be null");
-		}
-		contentType = MediaCoder.getInstance().strip(contentType);
-		if (contentType == null) {
-			throw new IllegalArgumentException("Extension type cannot be blank");
-		}
-		if (!(assemblers.containsKey(contentType) || serializers.containsKey(contentType))) {
-			throw new IllegalArgumentException("Extension is not associated to an assembler or a serializer");
-		}
-		extensions.put(extension, contentType);
-	}
-
-	public String getAssemblerType(String contentType, Object body, Type type) {
-		if (contentType == null) {
-			if (body instanceof byte[] || body instanceof InputStream || type.equals(streamConsumerType)) {
-				contentType = OCTET_TYPE;
-			} else {
-				if (fallbackByteType == null) {
-					throw new IllegalArgumentException("Content type is null, body is not instance of byte[], InputStream or Consumer<OutputStream>, and no fallback byte type was specified");
-				}
-				contentType = fallbackByteType;
-			}
-		}
-		return contentType;
-	}
-
-	public String getDisassemblerType(String contentType, Type type) {
-		if (contentType == null) {
-			if (type.equals(byte[].class) || type.equals(InputStream.class)) {
-				contentType = OCTET_TYPE;
-			} else {
-				if (fallbackByteType == null) {
-					throw new IllegalArgumentException("Content type is null, type is not equal to byte[] or InputStream, and no fallback byte type was specified");
-				}
-				contentType = fallbackByteType;
-			}
-		}
-		return contentType;
-	}
-
-	public String getSerializerType(String contentType, Object body, Type type) {
-		if (contentType == null) {
-			if ((body != null && TransformManager.SIMPLE_TYPES.contains(type)) || body instanceof String || body instanceof Reader || type.equals(writerConsumerType)) {
-				contentType = PLAIN_TYPE;
-			} else {
-				if (fallbackTextType == null) {
-					throw new IllegalArgumentException("Content type is null, body is not a primitive or an instance of String, Reader or Consumer<Writer>, and no fallback text type was specified");
-				}
-				contentType = fallbackTextType;
-			}
-		}
-		return contentType;
-	}
-
-	public String getDeserializerType(String contentType, Type type) {
-		if (contentType == null) {
-			if (TransformManager.SIMPLE_TYPES.contains(type) || type.equals(String.class) || type.equals(Reader.class)) {
-				contentType = PLAIN_TYPE;
-			} else {
-				if (fallbackTextType == null) {
-					throw new IllegalArgumentException("Content type is null, type is not primitive or equal to String or Reader, and no fallback text type was specified");
-				}
-				contentType = fallbackTextType;
-			}
-		}
-		return contentType;
 	}
 
 	public Assembler getAssembler(String contentType) {
@@ -213,7 +79,7 @@ public class TransformManager {
 
 	public void putDefaultAssembler(String contentType) {
 		contentType = cleanAssemblerType(contentType);
-		assemblers.put(contentType, assemblers.get(OCTET_TYPE));
+		assemblers.put(contentType, DefaultAssembler.getInstance());
 	}
 
 	public void putAssembler(String contentType, Assembler assembler) {
@@ -228,7 +94,7 @@ public class TransformManager {
 		if (contentType == null) {
 			throw new NullPointerException("Assembler type cannot be null");
 		}
-		contentType = MediaCoder.getInstance().strip(contentType);
+		contentType = coder.strip(contentType);
 		if (contentType == null) {
 			throw new IllegalArgumentException("Assembler type cannot be blank");
 		}
@@ -245,7 +111,7 @@ public class TransformManager {
 
 	public void putDefaultDisassembler(String contentType) {
 		contentType = cleanDisassemblerType(contentType);
-		disassemblers.put(contentType, disassemblers.get(OCTET_TYPE));
+		disassemblers.put(contentType, DefaultDisassembler.getInstance());
 	}
 
 	public void putDisassembler(String contentType, Disassembler disassembler) {
@@ -260,7 +126,7 @@ public class TransformManager {
 		if (contentType == null) {
 			throw new NullPointerException("Disassembler type cannot be null");
 		}
-		contentType = MediaCoder.getInstance().strip(contentType);
+		contentType = coder.strip(contentType);
 		if (contentType == null) {
 			throw new IllegalArgumentException("Disassembler type cannot be blank");
 		}
@@ -277,7 +143,7 @@ public class TransformManager {
 
 	public void putDefaultSerializer(String contentType) {
 		contentType = cleanSerializerType(contentType);
-		serializers.put(contentType, serializers.get(PLAIN_TYPE));
+		serializers.put(contentType, DefaultSerializer.getInstance());
 	}
 
 	public void putSerializer(String contentType, Serializer serializer) {
@@ -292,7 +158,7 @@ public class TransformManager {
 		if (contentType == null) {
 			throw new NullPointerException("Serializer type cannot be null");
 		}
-		contentType = MediaCoder.getInstance().strip(contentType);
+		contentType = coder.strip(contentType);
 		if (contentType == null) {
 			throw new IllegalArgumentException("Serializer type cannot be blank");
 		}
@@ -309,7 +175,7 @@ public class TransformManager {
 
 	public void putDefaultDeserializer(String contentType) {
 		contentType = cleanDeserializerType(contentType);
-		deserializers.put(contentType, deserializers.get(PLAIN_TYPE));
+		deserializers.put(contentType, DefaultDeserializer.getInstance());
 	}
 
 	public void putDeserializer(String contentType, Deserializer deserializer) {
@@ -324,18 +190,63 @@ public class TransformManager {
 		if (contentType == null) {
 			throw new NullPointerException("Deserializer type cannot be null");
 		}
-		contentType = MediaCoder.getInstance().strip(contentType);
+		contentType = coder.strip(contentType);
 		if (contentType == null) {
 			throw new IllegalArgumentException("Deserializer type cannot be blank");
 		}
 		return contentType;
 	}
 
+	public String getExtensionType(String extension) {
+		return extensions.get(extension);
+	}
+
+	public void putExtensionType(String extension, String contentType) {
+		if (extension == null) {
+			throw new NullPointerException("Extension cannot be null");
+		}
+		extension = extension.strip();
+		if (extension.isEmpty()) {
+			throw new IllegalArgumentException("Extension cannot be blank");
+		}
+		if (contentType == null) {
+			throw new NullPointerException("Extension type cannot be null");
+		}
+		contentType = coder.strip(contentType);
+		if (contentType == null) {
+			throw new IllegalArgumentException("Extension type cannot be blank");
+		}
+		if (!(assemblers.containsKey(contentType) || serializers.containsKey(contentType))) {
+			throw new IllegalArgumentException("Extension is not associated to an assembler or a serializer");
+		}
+		extensions.put(extension, contentType);
+	}
+
+	public boolean isBinary(Type type) {
+		if (type instanceof ParameterizedType) {
+			return binaryGenericTypes.contains(type);
+		}
+		for (Class<?> rawType : binaryRawTypes) {
+			if (rawType.isAssignableFrom((Class<?>) type)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public void addBinary(Type type) {
+		if (type instanceof ParameterizedType) {
+			binaryGenericTypes.add(type);
+		} else {
+			binaryRawTypes.add((Class<?>) type);
+		}
+	}
+
 	public void setFallbackByteType(String fallbackByteType) {
 		if (fallbackByteType == null) {
 			throw new NullPointerException("Fallback byte type cannot be null");
 		}
-		fallbackByteType = MediaCoder.getInstance().strip(fallbackByteType);
+		fallbackByteType = coder.strip(fallbackByteType);
 		if (fallbackByteType == null) {
 			throw new IllegalArgumentException("Fallback byte type cannot be blank");
 		}
@@ -346,10 +257,62 @@ public class TransformManager {
 		if (fallbackTextType == null) {
 			throw new NullPointerException("Fallback text type cannot be null");
 		}
-		fallbackTextType = MediaCoder.getInstance().strip(fallbackTextType);
+		fallbackTextType = coder.strip(fallbackTextType);
 		if (fallbackTextType == null) {
 			throw new IllegalArgumentException("Fallback text type cannot be blank");
 		}
 		this.fallbackTextType = fallbackTextType;
+	}
+
+	public String getAssemblerType(String contentType, Object body, Type type) {
+		if (contentType == null) {
+			if (body instanceof byte[] || body instanceof InputStream || Types.instanceOfStreamConsumer(body, type)) {
+				return OCTET_TYPE;
+			}
+			if (fallbackByteType == null) {
+				throw new IllegalStateException("Content type is null, body is not an instance of byte[], InputStream, or Consumer<OutputStream>, and no fallback byte type was specified");
+			}
+			return fallbackByteType;
+		}
+		return contentType;
+	}
+
+	public String getDisassemblerType(String contentType, Type type) {
+		if (contentType == null) {
+			if (type.equals(byte[].class) || type.equals(InputStream.class)) {
+				return OCTET_TYPE;
+			}
+			if (fallbackByteType == null) {
+				throw new IllegalStateException("Content type is null, type is not equal to byte[] or InputStream, and no fallback byte type was specified");
+			}
+			return fallbackByteType;
+		}
+		return contentType;
+	}
+
+	public String getSerializerType(String contentType, Object body, Type type) {
+		if (contentType == null) {
+			if (Types.instanceOfSimple(body, type) || body instanceof Reader || Types.instanceOfWriterConsumer(body, type)) {
+				return PLAIN_TYPE;
+			}
+			if (fallbackTextType == null) {
+				throw new IllegalStateException("Content type is null, body is not a primitive, a big number, or an instance of String, Reader, or Consumer<Writer>, and no fallback text type was specified");
+			}
+			return fallbackTextType;
+		}
+		return contentType;
+	}
+
+	public String getDeserializerType(String contentType, Type type) {
+		if (contentType == null) {
+			if (Types.equalsSimple(type) || type.equals(Reader.class)) {
+				return PLAIN_TYPE;
+			}
+			if (fallbackTextType == null) {
+				throw new IllegalStateException("Content type is null, type is not primitive or equal to BigInteger, BigDecimal, String, or Reader, and no fallback text type was specified");
+			}
+			return fallbackTextType;
+		}
+		return contentType;
 	}
 }

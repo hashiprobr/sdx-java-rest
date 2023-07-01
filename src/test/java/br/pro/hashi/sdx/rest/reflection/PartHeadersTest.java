@@ -1,6 +1,7 @@
 package br.pro.hashi.sdx.rest.reflection;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
@@ -35,6 +36,11 @@ class PartHeadersTest extends FieldsTest {
 		when(part.getHeaderNames()).thenReturn(List.of("x", "y", "z", "xs", "ys", "zs"));
 		h = new PartHeaders(factory, part);
 		return h;
+	}
+
+	@Test
+	void getsInstance() {
+		assertInstanceOf(PartHeaders.class, PartHeaders.newInstance(part));
 	}
 
 	@Test
