@@ -88,7 +88,7 @@ public final class RestClient {
 	 * Obtains the Jetty HttpClient used internally by this client.
 	 * </p>
 	 * <p>
-	 * Call this method if you want to override the default configuration.
+	 * Call this method if you want to override the builder configuration.
 	 * </p>
 	 * 
 	 * @return the internal client
@@ -100,7 +100,7 @@ public final class RestClient {
 	/**
 	 * Starts this client.
 	 * 
-	 * @throws ClientException if the Jetty HttpClient cannot be started
+	 * @throws ClientException if the internal client cannot be started
 	 */
 	public void start() {
 		if (jettyClient.isRunning()) {
@@ -118,7 +118,7 @@ public final class RestClient {
 	/**
 	 * Stops this client.
 	 * 
-	 * @throws ClientException if the Jetty HttpClient cannot be stopped
+	 * @throws ClientException if the internal client cannot be stopped
 	 */
 	public void stop() {
 		if (!jettyClient.isRunning()) {

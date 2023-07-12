@@ -76,7 +76,7 @@ public final class RestServer {
 	 * Obtains the Jetty Server used internally by this server.
 	 * </p>
 	 * <p>
-	 * Call this method if you want to override the default configuration.
+	 * Call this method if you want to override the builder configuration.
 	 * </p>
 	 * 
 	 * @return the internal server
@@ -146,7 +146,7 @@ public final class RestServer {
 	/**
 	 * Starts this server.
 	 * 
-	 * @throws ServerException if the Jetty Server cannot be started
+	 * @throws ServerException if the internal client cannot be started
 	 */
 	public void start() {
 		start(false);
@@ -155,7 +155,7 @@ public final class RestServer {
 	/**
 	 * Starts this server behind a ngrok proxy.
 	 * 
-	 * @throws ServerException if the Jetty Server cannot be started
+	 * @throws ServerException if the internal client cannot be started
 	 */
 	public void startWithTunnel() {
 		start(true);
@@ -229,7 +229,7 @@ public final class RestServer {
 	/**
 	 * Stops this server.
 	 * 
-	 * @throws ServerException if the Jetty Server cannot be stopped
+	 * @throws ServerException if the internal client cannot be stopped
 	 */
 	public void stop() {
 		if (!jettyServer.isRunning()) {
