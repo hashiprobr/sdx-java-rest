@@ -21,7 +21,7 @@ import br.pro.hashi.sdx.rest.coding.PathCoder;
 import br.pro.hashi.sdx.rest.transform.manager.TransformManager;
 
 /**
- * Configures and builds objects of type {@link RestClient}.
+ * Builds REST clients.
  */
 public non-sealed class RestClientBuilder extends Builder<RestClientBuilder> {
 	private SslContextFactory.Client factory;
@@ -206,7 +206,7 @@ public non-sealed class RestClientBuilder extends Builder<RestClientBuilder> {
 			client.getContentDecoderFactories().add(new GZIPContentDecoder.Factory());
 		}
 		client.setFollowRedirects(redirection);
-		return new RestClient(manager, client, urlCharset, locale, urlPrefix);
+		return new RestClient(manager, client, locale, urlCharset, urlPrefix);
 	}
 
 	/**

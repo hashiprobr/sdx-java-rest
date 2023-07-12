@@ -184,7 +184,7 @@ class RestResourceTest {
 		r = newRestResource();
 		Object value = new Object();
 		assertThrows(IllegalArgumentException.class, () -> {
-			r.h("spéçíál", value);
+			r.h("spéçìal", value);
 		});
 		verify(response, times(0)).addHeader(any(), any());
 	}
@@ -217,7 +217,7 @@ class RestResourceTest {
 	void doesNotAddHeaderIfValueStringNotInUSASCII() {
 		r = newRestResource();
 		assertThrows(IllegalArgumentException.class, () -> {
-			r.h("name", "spéçíál");
+			r.h("name", "spéçìal");
 		});
 		verify(response, times(0)).addHeader(any(), any());
 	}

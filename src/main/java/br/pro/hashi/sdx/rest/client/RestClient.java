@@ -39,43 +39,35 @@ import br.pro.hashi.sdx.rest.transform.Serializer;
 import br.pro.hashi.sdx.rest.transform.manager.TransformManager;
 
 /**
- * Main object for sending REST requests.
+ * Sends REST requests.
  */
 public final class RestClient {
 	static final int TIMEOUT = 30;
 
 	/**
-	 * Instantiates a default REST client using a specified URL prefix.
+	 * Gets a default REST client to the specified URL prefix.
 	 * 
 	 * @param urlPrefix the URL prefix
 	 * @return the client
 	 */
 	public static RestClient to(String urlPrefix) {
-		return builder().build(urlPrefix);
-	}
-
-	/**
-	 * Convenience method that instantiates a REST client builder.
-	 * 
-	 * @return the client builder
-	 */
-	public static RestClientBuilder builder() {
-		return new RestClientBuilder();
+		RestClientBuilder builder = new RestClientBuilder();
+		return builder.build(urlPrefix);
 	}
 
 	private final Logger logger;
 	private final TransformManager manager;
 	private final HttpClient jettyClient;
-	private final Charset urlCharset;
 	private final Locale locale;
+	private final Charset urlCharset;
 	private final String urlPrefix;
 
-	RestClient(TransformManager manager, HttpClient jettyClient, Charset urlCharset, Locale locale, String urlPrefix) {
+	RestClient(TransformManager manager, HttpClient jettyClient, Locale locale, Charset urlCharset, String urlPrefix) {
 		this.logger = LoggerFactory.getLogger(RestClient.class);
 		this.manager = manager;
 		this.jettyClient = jettyClient;
-		this.urlCharset = urlCharset;
 		this.locale = locale;
+		this.urlCharset = urlCharset;
 		this.urlPrefix = urlPrefix;
 	}
 

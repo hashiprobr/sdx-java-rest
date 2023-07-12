@@ -62,8 +62,8 @@ import br.pro.hashi.sdx.rest.transform.Serializer;
 import br.pro.hashi.sdx.rest.transform.manager.TransformManager;
 
 class RestClientTest {
-	private static final String USASCII_BODY = "special";
-	private static final String SPECIAL_BODY = "spéçíál";
+	private static final String REGULAR_CONTENT = "regular";
+	private static final String SPECIAL_CONTENT = "spéçìal";
 
 	private TransformManager manager;
 	private HttpClient jettyClient;
@@ -78,7 +78,7 @@ class RestClientTest {
 		jettyClient = mock(HttpClient.class);
 		request = mock(Request.class);
 		response = mock(Response.class);
-		c = new RestClient(manager, jettyClient, StandardCharsets.UTF_8, Defaults.LOCALE, "http://a");
+		c = new RestClient(manager, jettyClient, Defaults.LOCALE, StandardCharsets.UTF_8, "http://a");
 	}
 
 	@Test
@@ -437,7 +437,7 @@ class RestClientTest {
 		p = newProxy();
 		Object value = new Object();
 		assertThrows(IllegalArgumentException.class, () -> {
-			p.h("spéçíál", value);
+			p.h(SPECIAL_CONTENT, value);
 		});
 		assertTrue(p.getHeaders().isEmpty());
 	}
@@ -470,7 +470,7 @@ class RestClientTest {
 	void proxyDoesNotAddHeaderIfValueStringNotInUSASCII() {
 		p = newProxy();
 		assertThrows(IllegalArgumentException.class, () -> {
-			p.h("name", "spéçíál");
+			p.h("name", SPECIAL_CONTENT);
 		});
 		assertTrue(p.getHeaders().isEmpty());
 	}
@@ -1018,22 +1018,22 @@ class RestClientTest {
 	@Test
 	void proxyAddsTaskAndGetsContent() {
 		try (MockedConstruction<OutputStreamRequestContent> construction = mockContentConstruction()) {
-			RestBody body = RestBody.of(SPECIAL_BODY).in(StandardCharsets.ISO_8859_1);
+			RestBody body = RestBody.of(SPECIAL_CONTENT).in(StandardCharsets.ISO_8859_1);
 			OutputStreamRequestContent content = (OutputStreamRequestContent) mockContent(body);
 			assertEquals("type/subtype;charset=ISO-8859-1", content.getContentType());
 			byte[] bytes = ((ByteArrayOutputStream) content.getOutputStream()).toByteArray();
-			assertEquals(SPECIAL_BODY, new String(bytes, StandardCharsets.ISO_8859_1));
+			assertEquals(SPECIAL_CONTENT, new String(bytes, StandardCharsets.ISO_8859_1));
 		}
 	}
 
 	@Test
 	void proxyAddsTaskAndGetsContentInBase64() {
 		try (MockedConstruction<OutputStreamRequestContent> construction = mockContentConstruction()) {
-			RestBody body = RestBody.of(SPECIAL_BODY).in(StandardCharsets.UTF_8).inBase64();
+			RestBody body = RestBody.of(SPECIAL_CONTENT).in(StandardCharsets.UTF_8).inBase64();
 			OutputStreamRequestContent content = (OutputStreamRequestContent) mockContent(body);
 			assertEquals("type/subtype;charset=UTF-8;base64", content.getContentType());
 			byte[] bytes = ((ByteArrayOutputStream) content.getOutputStream()).toByteArray();
-			assertEquals(SPECIAL_BODY, new String(Base64.getDecoder().decode(bytes), StandardCharsets.UTF_8));
+			assertEquals(SPECIAL_CONTENT, new String(Base64.getDecoder().decode(bytes), StandardCharsets.UTF_8));
 		}
 	}
 
@@ -1041,7 +1041,7 @@ class RestClientTest {
 	void proxyAddsTaskAndGetsContentWithException() {
 		Throwable cause = new IOException();
 		try (MockedConstruction<OutputStreamRequestContent> construction = mockContentConstructionWithException(cause)) {
-			RestBody body = RestBody.of(SPECIAL_BODY).in(StandardCharsets.ISO_8859_1);
+			RestBody body = RestBody.of(SPECIAL_CONTENT).in(StandardCharsets.ISO_8859_1);
 			Exception exception = assertThrows(UncheckedIOException.class, () -> {
 				mockContent(body);
 			});
@@ -1077,7 +1077,7 @@ class RestClientTest {
 			OutputStreamRequestContent content = (OutputStreamRequestContent) mockBinaryContent(body);
 			assertEquals("type/subtype", content.getContentType());
 			byte[] bytes = ((ByteArrayOutputStream) content.getOutputStream()).toByteArray();
-			assertEquals(USASCII_BODY, new String(bytes, StandardCharsets.US_ASCII));
+			assertEquals(REGULAR_CONTENT, new String(bytes, StandardCharsets.US_ASCII));
 		}
 	}
 
@@ -1088,7 +1088,7 @@ class RestClientTest {
 			OutputStreamRequestContent content = (OutputStreamRequestContent) mockBinaryContent(body);
 			assertEquals("type/subtype;base64", content.getContentType());
 			byte[] bytes = ((ByteArrayOutputStream) content.getOutputStream()).toByteArray();
-			assertEquals(USASCII_BODY, new String(Base64.getDecoder().decode(bytes), StandardCharsets.US_ASCII));
+			assertEquals(REGULAR_CONTENT, new String(Base64.getDecoder().decode(bytes), StandardCharsets.US_ASCII));
 		}
 	}
 
@@ -1105,7 +1105,7 @@ class RestClientTest {
 	}
 
 	private byte[] mockActual() {
-		return USASCII_BODY.getBytes(StandardCharsets.US_ASCII);
+		return REGULAR_CONTENT.getBytes(StandardCharsets.US_ASCII);
 	}
 
 	private Content mockBinaryContent(RestBody body) {
@@ -1153,7 +1153,7 @@ class RestClientTest {
 			p = newProxy();
 			Consumer<OutputStream> consumer = (stream) -> {
 				try {
-					stream.write(USASCII_BODY.getBytes(StandardCharsets.US_ASCII));
+					stream.write(REGULAR_CONTENT.getBytes(StandardCharsets.US_ASCII));
 					stream.close();
 				} catch (IOException exception) {
 					throw new AssertionError(exception);
@@ -1169,7 +1169,7 @@ class RestClientTest {
 			InputStreamResponseListener listener = listenerConstruction.constructed().get(0);
 			Headers headers = headersConstruction.constructed().get(0);
 			verify(request).send(listener);
-			assertEquals(USASCII_BODY, new String(stream.toByteArray(), StandardCharsets.US_ASCII));
+			assertEquals(REGULAR_CONTENT, new String(stream.toByteArray(), StandardCharsets.US_ASCII));
 			assertSame(p.getEnclosing().getManager(), restResponse.getManager());
 			assertEquals(600, restResponse.getStatus());
 			assertEquals(headers, restResponse.getHeaders());

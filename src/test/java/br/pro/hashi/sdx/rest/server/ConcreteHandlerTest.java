@@ -36,7 +36,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 class ConcreteHandlerTest {
-	private static final String BODY = "spéçíál";
+	private static final String BODY = "spéçìal";
 
 	private Serializer serializer;
 	private TransformManager manager;

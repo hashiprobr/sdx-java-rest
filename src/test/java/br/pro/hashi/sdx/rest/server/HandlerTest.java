@@ -84,8 +84,8 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.Part;
 
 class HandlerTest {
-	private static final String USASCII_BODY = "special";
-	private static final String SPECIAL_BODY = "spéçíál";
+	private static final String REGULAR_CONTENT = "regular";
+	private static final String SPECIAL_CONTENT = "spéçìal";
 
 	private TransformManager manager;
 	private Tree tree;
@@ -1583,7 +1583,7 @@ class HandlerTest {
 	}
 
 	private boolean write() {
-		return serialize(SPECIAL_BODY, String.class);
+		return serialize(SPECIAL_CONTENT, String.class);
 	}
 
 	@Test
@@ -1642,9 +1642,9 @@ class HandlerTest {
 	}
 
 	private boolean serializeWithException(Class<? extends RuntimeException> type) {
-		Serializer serializer = mockSerializer(SPECIAL_BODY);
-		doThrow(type).when(serializer).write(eq(SPECIAL_BODY), eq(String.class), any());
-		return write(SPECIAL_BODY, String.class);
+		Serializer serializer = mockSerializer(SPECIAL_CONTENT);
+		doThrow(type).when(serializer).write(eq(SPECIAL_CONTENT), eq(String.class), any());
+		return write(SPECIAL_CONTENT, String.class);
 	}
 
 	@Test
@@ -1652,10 +1652,10 @@ class HandlerTest {
 		mockCharset();
 		mockWithoutBase64();
 		mockWithoutCommitted();
-		Serializer serializer = mockSerializer(SPECIAL_BODY);
-		doThrow(TypeException.class).when(serializer).write(eq(SPECIAL_BODY), eq(String.class), any());
+		Serializer serializer = mockSerializer(SPECIAL_CONTENT);
+		doThrow(TypeException.class).when(serializer).write(eq(SPECIAL_CONTENT), eq(String.class), any());
 		assertThrows(NotAcceptableException.class, () -> {
-			write(SPECIAL_BODY, String.class, "text/plain");
+			write(SPECIAL_CONTENT, String.class, "text/plain");
 		});
 		verify(response).setContentType("text/plain;charset=UTF-8");
 		verifyNoWrite();
@@ -1669,7 +1669,7 @@ class HandlerTest {
 		mockWithoutCommitted();
 		Consumer<Writer> consumer = (output) -> {
 			try {
-				output.write(SPECIAL_BODY);
+				output.write(SPECIAL_CONTENT);
 			} catch (IOException exception) {
 				throw new AssertionError(exception);
 			}
@@ -1755,7 +1755,7 @@ class HandlerTest {
 		mockCharset();
 		mockWithoutBase64();
 		mockWithoutCommitted();
-		assertTrue(serializeDirectlyWithExtension(SPECIAL_BODY, String.class));
+		assertTrue(serializeDirectlyWithExtension(SPECIAL_CONTENT, String.class));
 		verify(response).setContentType("text/plain;charset=UTF-8");
 		assertEqualsBytes();
 		verifyNoFlush();
@@ -1784,7 +1784,7 @@ class HandlerTest {
 	}
 
 	private boolean writeDirectly() {
-		return serializeDirectly(SPECIAL_BODY, String.class);
+		return serializeDirectly(SPECIAL_CONTENT, String.class);
 	}
 
 	@Test
@@ -1810,7 +1810,7 @@ class HandlerTest {
 	}
 
 	private Object mockReader() {
-		return new StringReader(SPECIAL_BODY);
+		return new StringReader(SPECIAL_CONTENT);
 	}
 
 	private boolean serializeDirectly(Object actual, Type type) {
@@ -1861,7 +1861,7 @@ class HandlerTest {
 	}
 
 	private void assertEqualsBytes(Charset charset, boolean base64) {
-		assertEqualsBytes(SPECIAL_BODY, charset, base64);
+		assertEqualsBytes(SPECIAL_CONTENT, charset, base64);
 	}
 
 	@Test
@@ -1887,7 +1887,7 @@ class HandlerTest {
 	}
 
 	private boolean writeBinary() {
-		return assemble(USASCII_BODY, String.class);
+		return assemble(REGULAR_CONTENT, String.class);
 	}
 
 	@Test
@@ -1929,9 +1929,9 @@ class HandlerTest {
 	}
 
 	private boolean assembleWithException() {
-		Assembler assembler = mockAssembler(USASCII_BODY);
-		doThrow(RuntimeException.class).when(assembler).write(eq(USASCII_BODY), eq(String.class), any());
-		return write(USASCII_BODY, String.class);
+		Assembler assembler = mockAssembler(REGULAR_CONTENT);
+		doThrow(RuntimeException.class).when(assembler).write(eq(REGULAR_CONTENT), eq(String.class), any());
+		return write(REGULAR_CONTENT, String.class);
 	}
 
 	@Test
@@ -2027,7 +2027,7 @@ class HandlerTest {
 		mockCharset();
 		mockWithoutBase64();
 		mockWithoutCommitted();
-		assertTrue(assembleDirectlyWithExtension(USASCII_BODY, String.class));
+		assertTrue(assembleDirectlyWithExtension(REGULAR_CONTENT, String.class));
 		verify(response).setContentType("text/plain");
 		assertBinaryEqualsBytes();
 		verifyNoFlush();
@@ -2045,7 +2045,7 @@ class HandlerTest {
 	}
 
 	private boolean writeDirectlyBinary() {
-		return assembleDirectly(USASCII_BODY, String.class);
+		return assembleDirectly(REGULAR_CONTENT, String.class);
 	}
 
 	@Test
@@ -2075,7 +2075,7 @@ class HandlerTest {
 	}
 
 	private byte[] mockBytes() {
-		return USASCII_BODY.getBytes(StandardCharsets.US_ASCII);
+		return REGULAR_CONTENT.getBytes(StandardCharsets.US_ASCII);
 	}
 
 	private boolean assembleDirectly(Object actual, Type type) {
@@ -2126,7 +2126,7 @@ class HandlerTest {
 	}
 
 	private void assertBinaryEqualsBytes(Charset charset, boolean base64) {
-		assertEqualsBytes(USASCII_BODY, charset, base64);
+		assertEqualsBytes(REGULAR_CONTENT, charset, base64);
 	}
 
 	private void mockCharset() {

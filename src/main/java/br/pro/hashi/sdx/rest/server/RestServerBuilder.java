@@ -45,7 +45,7 @@ import br.pro.hashi.sdx.rest.transform.manager.TransformManager;
 import jakarta.servlet.MultipartConfigElement;
 
 /**
- * Configures and builds objects of type {@link RestServer}.
+ * Builds REST servers.
  */
 public non-sealed class RestServerBuilder extends Builder<RestServerBuilder> {
 	private static final Pattern BASE_PATTERN = Pattern.compile("\\p{javaLowerCase}\\p{javaUpperCase}");
