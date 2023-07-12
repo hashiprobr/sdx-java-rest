@@ -158,7 +158,7 @@ class ReflectorTest {
 	}
 
 	@Test
-	void createsReflections() {
+	void constructsReflections() {
 		MockInitializer<Reflections> initializer = (mock, context) -> {
 			assertEquals("package", context.arguments().get(0));
 		};

@@ -62,7 +62,7 @@ class DefaultDeserializerTest {
 	}
 
 	@Test
-	void doesNotRead() {
+	void doesNotReadUnsupportedType() {
 		assertThrows(TypeException.class, () -> {
 			d.read(reader, Object.class);
 		});

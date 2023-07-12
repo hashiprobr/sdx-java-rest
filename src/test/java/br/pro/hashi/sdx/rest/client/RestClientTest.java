@@ -512,7 +512,7 @@ class RestClientTest {
 	void proxyAddsWrappedPart() {
 		p = newProxy();
 		Object actual = new Object();
-		assertSame(p, p.p("name", new RestPart(actual)));
+		assertSame(p, p.p("name", RestPart.of(actual)));
 		List<RestPart> parts = p.getParts();
 		assertEquals(1, parts.size());
 		RestPart part = parts.get(0);
@@ -523,7 +523,7 @@ class RestClientTest {
 	@Test
 	void proxyDoesNotAddWrappedPart() {
 		p = newProxy();
-		Object actual = new RestBody(new Object());
+		Object actual = RestBody.of(new Object());
 		assertThrows(IllegalArgumentException.class, () -> {
 			p.p("name", actual);
 		});
@@ -554,7 +554,7 @@ class RestClientTest {
 	void proxySetsWrappedBody() {
 		p = newProxy();
 		Object actual = new Object();
-		assertSame(p, p.b(new RestBody(actual)));
+		assertSame(p, p.b(RestBody.of(actual)));
 		RestBody body = p.getBody();
 		assertSame(actual, body.getActual());
 	}
@@ -562,7 +562,7 @@ class RestClientTest {
 	@Test
 	void proxyDoesNotSetWrappedBody() {
 		p = newProxy();
-		Object actual = new RestPart(new Object());
+		Object actual = RestPart.of(new Object());
 		assertThrows(IllegalArgumentException.class, () -> {
 			p.b(actual);
 		});
@@ -957,7 +957,7 @@ class RestClientTest {
 			HttpFields.Mutable fields = mock(HttpFields.Mutable.class);
 			fieldsStatic.when(() -> HttpFields.build()).thenReturn(fields);
 			p = spyNewProxy();
-			p.withPart("name", new RestPart(new Object())
+			p.withPart("name", RestPart.of(new Object())
 					.withHeader("x", "s")
 					.withHeader("y", 1)
 					.withHeader("z", 2.3));
@@ -1018,7 +1018,7 @@ class RestClientTest {
 	@Test
 	void proxyAddsTaskAndGetsContent() {
 		try (MockedConstruction<OutputStreamRequestContent> construction = mockContentConstruction()) {
-			RestBody body = new RestBody(SPECIAL_BODY).in(StandardCharsets.ISO_8859_1);
+			RestBody body = RestBody.of(SPECIAL_BODY).in(StandardCharsets.ISO_8859_1);
 			OutputStreamRequestContent content = (OutputStreamRequestContent) mockContent(body);
 			assertEquals("type/subtype;charset=ISO-8859-1", content.getContentType());
 			byte[] bytes = ((ByteArrayOutputStream) content.getOutputStream()).toByteArray();
@@ -1029,7 +1029,7 @@ class RestClientTest {
 	@Test
 	void proxyAddsTaskAndGetsContentInBase64() {
 		try (MockedConstruction<OutputStreamRequestContent> construction = mockContentConstruction()) {
-			RestBody body = new RestBody(SPECIAL_BODY).in(StandardCharsets.UTF_8).inBase64();
+			RestBody body = RestBody.of(SPECIAL_BODY).in(StandardCharsets.UTF_8).inBase64();
 			OutputStreamRequestContent content = (OutputStreamRequestContent) mockContent(body);
 			assertEquals("type/subtype;charset=UTF-8;base64", content.getContentType());
 			byte[] bytes = ((ByteArrayOutputStream) content.getOutputStream()).toByteArray();
@@ -1041,7 +1041,7 @@ class RestClientTest {
 	void proxyAddsTaskAndGetsContentWithException() {
 		Throwable cause = new IOException();
 		try (MockedConstruction<OutputStreamRequestContent> construction = mockContentConstructionWithException(cause)) {
-			RestBody body = new RestBody(SPECIAL_BODY).in(StandardCharsets.ISO_8859_1);
+			RestBody body = RestBody.of(SPECIAL_BODY).in(StandardCharsets.ISO_8859_1);
 			Exception exception = assertThrows(UncheckedIOException.class, () -> {
 				mockContent(body);
 			});
@@ -1073,7 +1073,7 @@ class RestClientTest {
 	@Test
 	void proxyAddsTaskAndGetsBinaryContent() {
 		try (MockedConstruction<OutputStreamRequestContent> construction = mockContentConstruction()) {
-			RestBody body = new RestBody(mockActual());
+			RestBody body = RestBody.of(mockActual());
 			OutputStreamRequestContent content = (OutputStreamRequestContent) mockBinaryContent(body);
 			assertEquals("type/subtype", content.getContentType());
 			byte[] bytes = ((ByteArrayOutputStream) content.getOutputStream()).toByteArray();
@@ -1084,7 +1084,7 @@ class RestClientTest {
 	@Test
 	void proxyAddsTaskAndGetsBinaryContentInBase64() {
 		try (MockedConstruction<OutputStreamRequestContent> construction = mockContentConstruction()) {
-			RestBody body = new RestBody(mockActual()).inBase64();
+			RestBody body = RestBody.of(mockActual()).inBase64();
 			OutputStreamRequestContent content = (OutputStreamRequestContent) mockBinaryContent(body);
 			assertEquals("type/subtype;base64", content.getContentType());
 			byte[] bytes = ((ByteArrayOutputStream) content.getOutputStream()).toByteArray();
@@ -1096,7 +1096,7 @@ class RestClientTest {
 	void proxyAddsTaskAndGetsBinaryContentWithException() {
 		Throwable cause = new IOException();
 		try (MockedConstruction<OutputStreamRequestContent> construction = mockContentConstructionWithException(cause)) {
-			RestBody body = new RestBody(mockActual());
+			RestBody body = RestBody.of(mockActual());
 			Exception exception = assertThrows(UncheckedIOException.class, () -> {
 				mockBinaryContent(body);
 			});

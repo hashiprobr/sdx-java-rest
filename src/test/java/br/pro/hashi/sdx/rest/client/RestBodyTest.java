@@ -1,168 +1,149 @@
 package br.pro.hashi.sdx.rest.client;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.mockStatic;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 import java.nio.charset.StandardCharsets;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.MockedStatic;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
 import br.pro.hashi.sdx.rest.Hint;
 import br.pro.hashi.sdx.rest.coding.MediaCoder;
 import br.pro.hashi.sdx.rest.constant.Defaults;
 
 class RestBodyTest {
-	private MediaCoder coder;
-	private Object actual;
+	private AutoCloseable mocks;
 	private RestBody b;
+
+	protected @Mock MediaCoder coder;
+	protected Object actual;
 
 	@BeforeEach
 	void setUp() {
-		coder = mock(MediaCoder.class);
+		mocks = MockitoAnnotations.openMocks(this);
+
+		when(coder.strip(any(String.class))).thenAnswer((invocation) -> {
+			String contentType = invocation.getArgument(0);
+			if (contentType.isEmpty()) {
+				return null;
+			}
+			return contentType;
+		});
+
 		actual = new Object();
 	}
 
-	@Test
-	void initializesActual() {
-		b = newRestBody();
-		assertSame(actual, b.getActual());
-	}
-
-	@Test
-	void initializesActualWithNull() {
-		b = new RestBody(null);
-		assertNull(b.getActual());
-	}
-
-	@Test
-	void initializesType() {
-		b = newRestBody();
-		assertEquals(Object.class, b.getType());
-	}
-
-	@Test
-	void initializesTypeWithHint() {
-		b = new RestBody(actual, new Hint<Object>() {});
-		assertEquals(Object.class, b.getType());
-	}
-
-	@Test
-	void doesNotInitializeTypeWithHint() {
-		assertThrows(NullPointerException.class, () -> {
-			new RestBody(actual, (Hint<Object>) null);
+	@AfterEach
+	void tearDown() {
+		assertDoesNotThrow(() -> {
+			mocks.close();
 		});
 	}
 
 	@Test
-	void initializesTypeWithNull() {
-		b = new RestBody(null);
+	void gets() {
+		b = RestBody.of(actual);
+		assertSame(actual, b.getActual());
 		assertEquals(Object.class, b.getType());
 	}
 
 	@Test
-	void initializesTypeWithNullAndHint() {
-		b = new RestBody(null, new Hint<Object>() {});
-		assertEquals(Object.class, b.getType());
-	}
-
-	@Test
-	void doesNotInitializeTypeWithNullAndHint() {
+	void doesNotGetFromNull() {
 		assertThrows(NullPointerException.class, () -> {
-			new RestBody(null, (Hint<Object>) null);
+			RestBody.of(null);
+		});
+	}
+
+	@Test
+	void getsFromHint() {
+		b = RestBody.of(actual, new Hint<Object>() {});
+		assertSame(actual, b.getActual());
+		assertEquals(new Hint<Object>() {}.getType(), b.getType());
+	}
+
+	@Test
+	void doesNotGetFromNullHint() {
+		assertThrows(NullPointerException.class, () -> {
+			RestBody.of(actual, null);
 		});
 	}
 
 	@Test
 	void initializesWithoutContentType() {
-		b = newRestBody();
+		b = newInstance();
 		assertNull(b.getContentType());
 	}
 
 	@Test
 	void initializesWithDefaultCharset() {
-		b = newRestBody();
+		b = newInstance();
 		assertEquals(Defaults.CHARSET, b.getCharset());
 	}
 
 	@Test
 	void initializesWithoutBase64() {
-		b = newRestBody();
+		b = newInstance();
 		assertFalse(b.isBase64());
 	}
 
 	@Test
 	void setsContentType() {
-		try (MockedStatic<MediaCoder> media = mockStatic(MediaCoder.class)) {
-			b = newRestBody();
-			String contentType = "type/subtype";
-			when(coder.strip(contentType)).thenReturn(contentType);
-			media.when(() -> MediaCoder.getInstance()).thenReturn(coder);
-			assertSame(b, b.as(contentType));
-			assertEquals(contentType, b.getContentType());
-		}
+		b = newInstance();
+		String contentType = "type/subtype";
+		assertSame(b, b.as(contentType));
+		assertEquals(contentType, b.getContentType());
 	}
 
 	@Test
-	void doesNotSetContentTypeIfItIsNull() {
-		b = newRestBody();
+	void doesNotSetNullContentType() {
+		b = newInstance();
 		assertThrows(NullPointerException.class, () -> {
 			b.as(null);
 		});
-		assertNull(b.getContentType());
 	}
 
 	@Test
-	void doesNotSetContentTypeIfStripReturnsNull() {
-		try (MockedStatic<MediaCoder> media = mockStatic(MediaCoder.class)) {
-			b = newRestBody();
-			String contentType = "type/subtype";
-			when(coder.strip(contentType)).thenReturn(null);
-			media.when(() -> MediaCoder.getInstance()).thenReturn(coder);
-			assertThrows(IllegalArgumentException.class, () -> {
-				b.as(contentType);
-			});
-			assertNull(b.getContentType());
-		}
+	void doesNotSetBlankContentType() {
+		b = newInstance();
+		assertThrows(IllegalArgumentException.class, () -> {
+			b.as("");
+		});
 	}
 
 	@Test
 	void setsCharset() {
-		b = newRestBody();
-		if (Defaults.CHARSET.equals(StandardCharsets.UTF_8)) {
-			assertSame(b, b.in(StandardCharsets.ISO_8859_1));
-			assertEquals(StandardCharsets.ISO_8859_1, b.getCharset());
-		} else {
-			assertSame(b, b.in(StandardCharsets.UTF_8));
-			assertEquals(StandardCharsets.UTF_8, b.getCharset());
-		}
+		b = newInstance();
+		assertSame(b, b.in(StandardCharsets.US_ASCII));
+		assertEquals(StandardCharsets.US_ASCII, b.getCharset());
 	}
 
 	@Test
-	void doesNotSetCharset() {
-		b = newRestBody();
+	void doesNotSetNullCharset() {
+		b = newInstance();
 		assertThrows(NullPointerException.class, () -> {
 			b.in(null);
 		});
-		assertEquals(Defaults.CHARSET, b.getCharset());
 	}
 
 	@Test
 	void setsBase64() {
-		b = newRestBody();
+		b = newInstance();
 		assertSame(b, b.inBase64());
 		assertTrue(b.isBase64());
 	}
 
-	private RestBody newRestBody() {
-		return new RestBody(actual);
+	protected RestBody newInstance() {
+		return new RestBody(coder, actual, Object.class);
 	}
 }

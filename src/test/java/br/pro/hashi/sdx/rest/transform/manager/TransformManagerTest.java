@@ -99,7 +99,7 @@ class TransformManagerTest {
 	}
 
 	@Test
-	void doesNotGetAssembler() {
+	void doesNotGetMissingAssembler() {
 		assertThrows(TypeException.class, () -> {
 			f.getAssembler("image/png");
 		});
@@ -147,7 +147,7 @@ class TransformManagerTest {
 	}
 
 	@Test
-	void doesNotGetDisassembler() {
+	void doesNotGetMissingDisassembler() {
 		assertThrows(TypeException.class, () -> {
 			f.getDisassembler("image/png");
 		});
@@ -195,7 +195,7 @@ class TransformManagerTest {
 	}
 
 	@Test
-	void doesNotGetSerializer() {
+	void doesNotGetMissingSerializer() {
 		assertThrows(TypeException.class, () -> {
 			f.getSerializer("application/xml");
 		});
@@ -243,7 +243,7 @@ class TransformManagerTest {
 	}
 
 	@Test
-	void doesNotGetDeserializer() {
+	void doesNotGetMissingDeserializer() {
 		assertThrows(TypeException.class, () -> {
 			f.getDeserializer("application/xml");
 		});
@@ -291,12 +291,12 @@ class TransformManagerTest {
 	}
 
 	@Test
-	void doesNotGetByteExtensionType() {
+	void doesNotGetMissingByteExtensionType() {
 		assertNull(f.getExtensionType("png"));
 	}
 
 	@Test
-	void doesNotGetTextExtensionType() {
+	void doesNotGetMissingTextExtensionType() {
 		assertNull(f.getExtensionType("xml"));
 	}
 
@@ -373,14 +373,14 @@ class TransformManagerTest {
 	}
 
 	@Test
-	void doesNotPutByteExtensionType() {
+	void doesNotPutMissingByteExtensionType() {
 		assertThrows(IllegalArgumentException.class, () -> {
 			f.putExtensionType("png", "image/png");
 		});
 	}
 
 	@Test
-	void doesNotPutTextExtensionType() {
+	void doesNotPutMissingTextExtensionType() {
 		assertThrows(IllegalArgumentException.class, () -> {
 			f.putExtensionType("xml", "application/xml");
 		});
@@ -511,7 +511,7 @@ class TransformManagerTest {
 	}
 
 	@Test
-	void doesNotGetAssemblerType() {
+	void doesNotGetMissingAssemblerType() {
 		Object body = new Object();
 		assertThrows(IllegalStateException.class, () -> {
 			f.getAssemblerType(null, body, Object.class);
@@ -535,7 +535,7 @@ class TransformManagerTest {
 	}
 
 	@Test
-	void doesNotGetDisassemblerType() {
+	void doesNotGetMissingDisassemblerType() {
 		assertThrows(IllegalStateException.class, () -> {
 			f.getDisassemblerType(null, Object.class);
 		});
@@ -566,7 +566,7 @@ class TransformManagerTest {
 	}
 
 	@Test
-	void doesNotGetSerializerType() {
+	void doesNotGetMissingSerializerType() {
 		Object body = new Object();
 		assertThrows(IllegalStateException.class, () -> {
 			f.getSerializerType(null, body, Object.class);
@@ -590,7 +590,7 @@ class TransformManagerTest {
 	}
 
 	@Test
-	void doesNotGetDeserializerType() {
+	void doesNotGetMissingDeserializerType() {
 		assertThrows(IllegalStateException.class, () -> {
 			f.getDeserializerType(null, Object.class);
 		});

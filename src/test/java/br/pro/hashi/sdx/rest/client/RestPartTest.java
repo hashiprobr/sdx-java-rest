@@ -6,93 +6,59 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import br.pro.hashi.sdx.rest.Hint;
 import br.pro.hashi.sdx.rest.client.RestClient.Proxy.Entry;
 
-class RestPartTest {
-	private Object actual;
+class RestPartTest extends RestBodyTest {
+	private static final String SPECIAL = "spéçìal";
+
 	private RestPart p;
 
-	@BeforeEach
-	void setUp() {
-		actual = new Object();
-	}
-
 	@Test
-	void initializesActual() {
-		p = newRestPart();
+	void gets() {
+		p = RestPart.of(actual);
 		assertSame(actual, p.getActual());
-	}
-
-	@Test
-	void initializesActualWithNull() {
-		p = new RestPart(null);
-		assertNull(p.getActual());
-	}
-
-	@Test
-	void initializesType() {
-		p = newRestPart();
 		assertEquals(Object.class, p.getType());
 	}
 
 	@Test
-	void initializesTypeWithHint() {
-		p = new RestPart(actual, new Hint<Object>() {});
-		assertEquals(Object.class, p.getType());
-	}
-
-	@Test
-	void doesNotInitializeTypeWithHint() {
+	void doesNotGetFromNull() {
 		assertThrows(NullPointerException.class, () -> {
-			new RestPart(actual, (Hint<Object>) null);
+			RestPart.of(null);
 		});
 	}
 
 	@Test
-	void initializesTypeWithNull() {
-		p = new RestPart(null);
-		assertEquals(Object.class, p.getType());
+	void getsFromHint() {
+		p = RestPart.of(actual, new Hint<Object>() {});
+		assertSame(actual, p.getActual());
+		assertEquals(new Hint<Object>() {}.getType(), p.getType());
 	}
 
 	@Test
-	void initializesTypeWithNullAndHint() {
-		p = new RestPart(null, new Hint<Object>() {});
-		assertEquals(Object.class, p.getType());
-	}
-
-	@Test
-	void doesNotInitializeTypeWithNullAndHint() {
+	void doesNotGetFromNullHint() {
 		assertThrows(NullPointerException.class, () -> {
-			new RestPart(null, (Hint<Object>) null);
+			RestPart.of(actual, null);
 		});
 	}
 
 	@Test
 	void initializesWithoutHeaders() {
-		p = newRestPart();
+		p = newInstance();
 		assertTrue(p.getHeaders().isEmpty());
 	}
 
 	@Test
 	void initializesWithoutName() {
-		p = newRestPart();
+		p = newInstance();
 		assertNull(p.getName());
 	}
 
 	@Test
-	void setsName() {
-		p = newRestPart();
-		p.setName("name");
-		assertEquals("name", p.getName());
-	}
-
-	@Test
 	void addsHeader() {
-		p = newRestPart();
+		p = newInstance();
 		assertSame(p, p.h(" \t\nname \t\n", 0));
 		assertEquals(1, p.getHeaders().size());
 		Entry entry = p.getHeaders().get(0);
@@ -101,47 +67,43 @@ class RestPartTest {
 	}
 
 	@Test
-	void doesNotAddHeaderIfNameIsNull() {
-		p = newRestPart();
+	void doesNotAddHeaderWithNullName() {
+		p = newInstance();
 		Object value = new Object();
 		assertThrows(NullPointerException.class, () -> {
 			p.h(null, value);
 		});
-		assertTrue(p.getHeaders().isEmpty());
 	}
 
 	@Test
-	void doesNotAddHeaderIfNameIsBlank() {
-		p = newRestPart();
+	void doesNotAddHeaderWithBlankName() {
+		p = newInstance();
 		Object value = new Object();
 		assertThrows(IllegalArgumentException.class, () -> {
 			p.h(" \t\n", value);
 		});
-		assertTrue(p.getHeaders().isEmpty());
 	}
 
 	@Test
-	void doesNotAddHeaderIfNameNotInUSASCII() {
-		p = newRestPart();
+	void doesNotAddHeaderWithSpecialName() {
+		p = newInstance();
 		Object value = new Object();
 		assertThrows(IllegalArgumentException.class, () -> {
-			p.h("spéçíál", value);
+			p.h(SPECIAL, value);
 		});
-		assertTrue(p.getHeaders().isEmpty());
 	}
 
 	@Test
-	void doesNotAddHeaderIfValueIsNull() {
-		p = newRestPart();
+	void doesNotAddHeaderWithNullValue() {
+		p = newInstance();
 		assertThrows(NullPointerException.class, () -> {
 			p.h("name", null);
 		});
-		assertTrue(p.getHeaders().isEmpty());
 	}
 
 	@Test
-	void doesNotAddHeaderIfValueStringIsNull() {
-		p = newRestPart();
+	void doesNotAddHeaderWithNullStringValue() {
+		p = newInstance();
 		Object value = new Object() {
 			@Override
 			public String toString() {
@@ -151,19 +113,26 @@ class RestPartTest {
 		assertThrows(NullPointerException.class, () -> {
 			p.h("name", value);
 		});
-		assertTrue(p.getHeaders().isEmpty());
 	}
 
 	@Test
-	void doesNotAddHeaderIfValueStringNotInUSASCII() {
-		p = newRestPart();
+	void doesNotAddHeaderWithSpecialValue() {
+		p = newInstance();
 		assertThrows(IllegalArgumentException.class, () -> {
-			p.h("name", "spéçíál");
+			p.h("name", SPECIAL);
 		});
-		assertTrue(p.getHeaders().isEmpty());
 	}
 
-	private RestPart newRestPart() {
-		return new RestPart(actual);
+	@Test
+	void setsName() {
+		p = newInstance();
+		String name = "name";
+		p.setName(name);
+		assertEquals(name, p.getName());
+	}
+
+	@Override
+	protected RestPart newInstance() {
+		return new RestPart(coder, actual, Object.class);
 	}
 }

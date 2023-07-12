@@ -696,7 +696,7 @@ public final class RestClient {
 				if (part instanceof RestBody) {
 					throw new IllegalArgumentException("Part cannot be instance of RestBody");
 				} else {
-					restPart = new RestPart(part);
+					restPart = RestPart.of(part);
 				}
 			}
 			restPart.setName(name);
@@ -742,7 +742,7 @@ public final class RestClient {
 					restBody = (RestBody) body;
 				}
 			} else {
-				restBody = new RestBody(body);
+				restBody = RestBody.of(body);
 			}
 			this.body = restBody;
 			return this;

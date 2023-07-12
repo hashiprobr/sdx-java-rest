@@ -470,7 +470,7 @@ public non-sealed class RestServerBuilder extends Builder<RestServerBuilder> {
 		ConcreteHandler errorHandler = new ConcreteHandler(manager, formatter, contentType, charset, base64);
 		server.setErrorHandler(errorHandler);
 
-		AbstractHandler handler = Handler.newInstance(manager, tree, formatter, handles, element, gatewayTypes, urlCharset, cors);
+		AbstractHandler handler = new Handler(manager, tree, formatter, handles, element, gatewayTypes, urlCharset, cors);
 		if (compression) {
 			GzipHandler gzipHandler = new GzipHandler();
 			gzipHandler.setHandler(handler);

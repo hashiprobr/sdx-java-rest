@@ -30,7 +30,6 @@ import br.pro.hashi.sdx.rest.coding.MediaCoder;
 import br.pro.hashi.sdx.rest.coding.PathCoder;
 import br.pro.hashi.sdx.rest.constant.Types;
 import br.pro.hashi.sdx.rest.reflection.Headers;
-import br.pro.hashi.sdx.rest.reflection.ParserFactory;
 import br.pro.hashi.sdx.rest.reflection.PartHeaders;
 import br.pro.hashi.sdx.rest.reflection.Queries;
 import br.pro.hashi.sdx.rest.server.exception.BadRequestException;
@@ -55,13 +54,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.Part;
 
 class Handler extends AbstractHandler {
-	public static Handler newInstance(TransformManager manager, Tree tree, ErrorFormatter formatter, Map<Class<? extends RestResource>, MethodHandle> handles, MultipartConfigElement element, Set<Class<? extends RuntimeException>> gatewayTypes, Charset urlCharset, boolean cors) {
-		ParserFactory factory = ParserFactory.getInstance();
-		return new Handler(factory, manager, tree, formatter, handles, element, gatewayTypes, urlCharset, cors);
-	}
-
 	private final Logger logger;
-	private final ParserFactory factory;
 	private final TransformManager manager;
 	private final Tree tree;
 	private final ErrorFormatter formatter;
@@ -71,9 +64,8 @@ class Handler extends AbstractHandler {
 	private final Charset urlCharset;
 	private final boolean cors;
 
-	Handler(ParserFactory factory, TransformManager manager, Tree tree, ErrorFormatter formatter, Map<Class<? extends RestResource>, MethodHandle> handles, MultipartConfigElement element, Set<Class<? extends RuntimeException>> gatewayTypes, Charset urlCharset, boolean cors) {
+	Handler(TransformManager manager, Tree tree, ErrorFormatter formatter, Map<Class<? extends RestResource>, MethodHandle> handles, MultipartConfigElement element, Set<Class<? extends RuntimeException>> gatewayTypes, Charset urlCharset, boolean cors) {
 		this.logger = LoggerFactory.getLogger(Handler.class);
-		this.factory = factory;
 		this.manager = manager;
 		this.tree = tree;
 		this.formatter = formatter;
@@ -82,10 +74,6 @@ class Handler extends AbstractHandler {
 		this.gatewayTypes = gatewayTypes;
 		this.urlCharset = urlCharset;
 		this.cors = cors;
-	}
-
-	ParserFactory getCache() {
-		return factory;
 	}
 
 	TransformManager getManager() {

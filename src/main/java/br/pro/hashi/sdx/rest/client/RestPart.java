@@ -8,51 +8,63 @@ import java.util.List;
 
 import br.pro.hashi.sdx.rest.Hint;
 import br.pro.hashi.sdx.rest.client.RestClient.Proxy.Entry;
+import br.pro.hashi.sdx.rest.coding.MediaCoder;
 
 /**
- * Wrapper for customizing a multipart request body part via a fluent interface.
+ * Wraps a multipart request body part.
  */
 public class RestPart extends RestBody {
+	/**
+	 * <p>
+	 * Gets a wrapped part.
+	 * </p>
+	 * <p>
+	 * This method calls {@code actual.getClass()} to obtain the part type. Since
+	 * {@code actual.getClass()} loses generic information due to type erasure, do
+	 * not call it if the type is generic. Call {@code of(T, Hint<T>)} instead.
+	 * </p>
+	 * 
+	 * @param actual the actual part
+	 * @throws NullPointerException if the part is null
+	 */
+	public static RestPart of(Object actual) {
+		if (actual == null) {
+			throw new NullPointerException("Part cannot be null");
+		}
+		return of(actual, actual.getClass());
+	}
+
+	/**
+	 * <p>
+	 * Gets a wrapped part with hinted type.
+	 * </p>
+	 * <p>
+	 * Call this method if the part type is generic.
+	 * </p>
+	 * 
+	 * @param <T>    the part type
+	 * @param actual the actual part
+	 * @param hint   a {@link Hint} representing {@code T}
+	 * @throws NullPointerException if the hint is null
+	 */
+	public static <T> RestPart of(T actual, Hint<T> hint) {
+		if (hint == null) {
+			throw new NullPointerException("Hint cannot be null");
+		}
+		return of(actual, hint.getType());
+	}
+
+	private static RestPart of(Object actual, Type type) {
+		MediaCoder coder = MediaCoder.getInstance();
+		return new RestPart(coder, actual, type);
+	}
+
 	private final CharsetEncoder encoder;
 	private final List<Entry> headers;
 	private String name;
 
-	/**
-	 * <p>
-	 * Constructs a wrapped part.
-	 * </p>
-	 * <p>
-	 * This constructor calls {@code actual.getClass()} to obtain the part type.
-	 * Since {@code actual.getClass()} loses generic information due to type
-	 * erasure, do not call it if the type is generic. Call
-	 * {@code RestPart(T, Hint<T>)} instead.
-	 * </p>
-	 * 
-	 * @param actual the actual part
-	 */
-	public RestPart(Object actual) {
-		this(actual, actual == null ? Object.class : actual.getClass());
-	}
-
-	/**
-	 * <p>
-	 * Constructs a wrapped part with hinted type.
-	 * </p>
-	 * <p>
-	 * Call this constructor if the part type is generic.
-	 * </p>
-	 * 
-	 * @param <T>    the type of the actual part
-	 * @param actual the actual part
-	 * @param hint   the type hint
-	 * @throws NullPointerException if the type hint is null
-	 */
-	public <T> RestPart(T actual, Hint<T> hint) {
-		this(actual, getType(hint));
-	}
-
-	private RestPart(Object actual, Type type) {
-		super(actual, type);
+	RestPart(MediaCoder coder, Object actual, Type type) {
+		super(coder, actual, type);
 		this.encoder = StandardCharsets.US_ASCII.newEncoder();
 		this.headers = new ArrayList<>();
 		this.name = null;
@@ -88,7 +100,7 @@ public class RestPart extends RestBody {
 
 	/**
 	 * <p>
-	 * Adds a header to the part.
+	 * Adds a header to this part.
 	 * </p>
 	 * <p>
 	 * The value is converted to {@code String} via {@code toString()} and encoded

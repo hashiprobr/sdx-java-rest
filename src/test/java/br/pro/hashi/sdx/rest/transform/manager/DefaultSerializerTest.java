@@ -86,7 +86,7 @@ class DefaultSerializerTest {
 	}
 
 	@Test
-	void doesNotWrite() {
+	void doesNotWriteIfWriterThrows() {
 		String body = newString();
 		Writer writer = Writer.nullWriter();
 		assertDoesNotThrow(() -> {

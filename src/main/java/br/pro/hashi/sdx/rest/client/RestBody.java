@@ -8,57 +8,63 @@ import br.pro.hashi.sdx.rest.coding.MediaCoder;
 import br.pro.hashi.sdx.rest.constant.Defaults;
 
 /**
- * Wrapper for customizing a request body via a fluent interface.
+ * Wraps a request body.
  */
 public class RestBody {
-	static Type getType(Hint<?> hint) {
+	/**
+	 * <p>
+	 * Gets a wrapped body.
+	 * </p>
+	 * <p>
+	 * This method calls {@code actual.getClass()} to obtain the body type. Since
+	 * {@code actual.getClass()} loses generic information due to type erasure, do
+	 * not call it if the type is generic. Call {@code of(T, Hint<T>)} instead.
+	 * </p>
+	 * 
+	 * @param actual the actual body
+	 * @throws NullPointerException if the body is null
+	 */
+	public static RestBody of(Object actual) {
+		if (actual == null) {
+			throw new NullPointerException("Body cannot be null");
+		}
+		return of(actual, actual.getClass());
+	}
+
+	/**
+	 * <p>
+	 * Gets a wrapped body with hinted type.
+	 * </p>
+	 * <p>
+	 * Call this method if the part type is generic.
+	 * </p>
+	 * 
+	 * @param <T>    the body type
+	 * @param actual the actual body
+	 * @param hint   a {@link Hint} representing {@code T}
+	 * @throws NullPointerException if the hint is null
+	 */
+	public static <T> RestBody of(T actual, Hint<T> hint) {
 		if (hint == null) {
 			throw new NullPointerException("Hint cannot be null");
 		}
-		return hint.getType();
+		return of(actual, hint.getType());
 	}
 
+	private static RestBody of(Object actual, Type type) {
+		MediaCoder coder = MediaCoder.getInstance();
+		return new RestBody(coder, actual, type);
+	}
+
+	private final MediaCoder coder;
 	private final Object actual;
 	private final Type type;
 	private String contentType;
 	private Charset charset;
 	private boolean base64;
 
-	/**
-	 * <p>
-	 * Constructs a wrapped body.
-	 * </p>
-	 * <p>
-	 * This constructor calls {@code actual.getClass()} to obtain the body type.
-	 * Since {@code actual.getClass()} loses generic information due to type
-	 * erasure, do not call it if the type is generic. Call
-	 * {@code RestBody(T, Hint<T>)} instead.
-	 * </p>
-	 * 
-	 * @param actual the actual body
-	 */
-	public RestBody(Object actual) {
-		this(actual, actual == null ? Object.class : actual.getClass());
-	}
-
-	/**
-	 * <p>
-	 * Constructs a wrapped body with hinted type.
-	 * </p>
-	 * <p>
-	 * Call this constructor if the body type is generic.
-	 * </p>
-	 * 
-	 * @param <T>    the type of the actual body
-	 * @param actual the actual body
-	 * @param hint   the type hint
-	 * @throws NullPointerException if the type hint is null
-	 */
-	public <T> RestBody(T actual, Hint<T> hint) {
-		this(actual, getType(hint));
-	}
-
-	RestBody(Object actual, Type type) {
+	RestBody(MediaCoder coder, Object actual, Type type) {
+		this.coder = coder;
 		this.actual = actual;
 		this.type = type;
 		this.contentType = null;
@@ -116,7 +122,7 @@ public class RestBody {
 		if (contentType == null) {
 			throw new NullPointerException("Content type cannot be null");
 		}
-		contentType = MediaCoder.getInstance().strip(contentType);
+		contentType = coder.strip(contentType);
 		if (contentType == null) {
 			throw new IllegalArgumentException("Content type cannot be blank");
 		}

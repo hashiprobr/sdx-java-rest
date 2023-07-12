@@ -55,7 +55,6 @@ import org.mockito.stubbing.Answer;
 import br.pro.hashi.sdx.rest.Fields;
 import br.pro.hashi.sdx.rest.Hint;
 import br.pro.hashi.sdx.rest.reflection.Headers;
-import br.pro.hashi.sdx.rest.reflection.ParserFactory;
 import br.pro.hashi.sdx.rest.reflection.PartHeaders;
 import br.pro.hashi.sdx.rest.reflection.Queries;
 import br.pro.hashi.sdx.rest.server.exception.NotAcceptableException;
@@ -88,7 +87,6 @@ class HandlerTest {
 	private static final String USASCII_BODY = "special";
 	private static final String SPECIAL_BODY = "spéçíál";
 
-	private ParserFactory factory;
 	private TransformManager manager;
 	private Tree tree;
 	private ErrorFormatter formatter;
@@ -113,7 +111,6 @@ class HandlerTest {
 
 	@BeforeEach
 	void setUp() throws NoSuchMethodException, IOException {
-		factory = mock(ParserFactory.class);
 		manager = mock(TransformManager.class);
 		when(manager.getExtensionType("txt")).thenReturn("text/plain");
 		tree = mock(Tree.class);
@@ -2261,6 +2258,6 @@ class HandlerTest {
 	}
 
 	private Handler newHandler(boolean cors) {
-		return new Handler(factory, manager, tree, formatter, handles, element, gatewayTypes, StandardCharsets.UTF_8, cors);
+		return new Handler(manager, tree, formatter, handles, element, gatewayTypes, StandardCharsets.UTF_8, cors);
 	}
 }

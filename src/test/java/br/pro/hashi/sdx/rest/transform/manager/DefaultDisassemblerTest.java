@@ -60,7 +60,7 @@ class DefaultDisassemblerTest {
 	}
 
 	@Test
-	void doesNotRead() {
+	void doesNotReadUnsupportedType() {
 		assertThrows(TypeException.class, () -> {
 			d.read(stream, Object.class);
 		});

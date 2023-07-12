@@ -87,7 +87,7 @@ class DefaultAssemblerTest {
 	}
 
 	@Test
-	void doesNotWrite() {
+	void doesNotWriteIfInputStreamThrows() {
 		byte[] body = newByteArray();
 		OutputStream stream = OutputStream.nullOutputStream();
 		assertDoesNotThrow(() -> {

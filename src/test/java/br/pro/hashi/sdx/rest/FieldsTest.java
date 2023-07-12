@@ -244,7 +244,7 @@ public abstract class FieldsTest {
 
 	@Test
 	void getsDefaultDouble() {
-		assertEquals(4.4, f.get("w", double.class, 4.4), DELTA);
+		assertEquals(3.3, f.get("w", double.class, 3.3), DELTA);
 	}
 
 	@Test
