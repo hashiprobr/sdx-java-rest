@@ -1,13 +1,11 @@
 package br.pro.hashi.sdx.rest;
 
 import java.io.InputStream;
-import java.io.Reader;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 
 import br.pro.hashi.sdx.rest.client.RestClientBuilder;
-import br.pro.hashi.sdx.rest.coding.MediaCoder;
 import br.pro.hashi.sdx.rest.constant.Defaults;
 import br.pro.hashi.sdx.rest.server.RestServerBuilder;
 import br.pro.hashi.sdx.rest.transform.Assembler;
@@ -34,14 +32,14 @@ public sealed abstract class Builder<T extends Builder<T>> permits RestClientBui
 	 * 
 	 * @hidden
 	 */
-	protected Charset urlCharset;
+	protected Locale locale;
 
 	/**
 	 * Internal member.
 	 * 
 	 * @hidden
 	 */
-	protected Locale locale;
+	protected Charset urlCharset;
 
 	/**
 	 * Internal member.
@@ -63,76 +61,16 @@ public sealed abstract class Builder<T extends Builder<T>> permits RestClientBui
 	 * @hidden
 	 */
 	protected Builder() {
-		this.manager = new TransformManager(MediaCoder.getInstance());
-		this.urlCharset = StandardCharsets.UTF_8;
+		this.manager = TransformManager.newInstance();
 		this.locale = Defaults.LOCALE;
+		this.urlCharset = StandardCharsets.UTF_8;
 		this.redirection = true;
 		this.compression = true;
 	}
 
 	/**
-	 * <p>
-	 * Adds a type that should be considered binary.
-	 * </p>
-	 * <p>
-	 * Since {@link Class} objects do not have generic information due to type
-	 * erasure, do not call this method if the type is generic. Call
-	 * {@link #withBinary(Hint)} instead.
-	 * </p>
-	 * <p>
-	 * Objects of types considered binary are transformed by an {@link Assembler} or
-	 * a {@link Disassembler}, while other objects are transformed by a
-	 * {@link Serializer}s or a {@link Deserializer}.
-	 * </p>
-	 * <p>
-	 * The only types considered binary by default are {@code byte[]} and
-	 * {@link InputStream}.
-	 * </p>
-	 * 
-	 * @param type the type
-	 * @return this builder, for chaining
-	 * @throws NullPointerException if the type is null
-	 */
-	public final T withBinary(Class<?> type) {
-		if (type == null) {
-			throw new NullPointerException("Type cannot be null");
-		}
-		manager.addBinary(type);
-		return self();
-	}
-
-	/**
-	 * <p>
-	 * Adds a hinted type that should be considered binary.
-	 * </p>
-	 * <p>
-	 * Call this method if the type is generic.
-	 * </p>
-	 * <p>
-	 * Objects of types considered binary are transformed by an {@link Assembler} or
-	 * a {@link Disassembler}, while other objects are transformed by a
-	 * {@link Serializer}s or a {@link Deserializer}.
-	 * </p>
-	 * <p>
-	 * The only types considered binary by default are {@code byte[]} and
-	 * {@link InputStream}.
-	 * </p>
-	 * 
-	 * @param hint the type hint
-	 * @return this builder, for chaining
-	 * @throws NullPointerException if the type hint is null
-	 */
-	public final T withBinary(Hint<?> hint) {
-		if (hint == null) {
-			throw new NullPointerException("Hint cannot be null");
-		}
-		manager.addBinary(hint.getType());
-		return self();
-	}
-
-	/**
-	 * Associates a content type to the same assembler associated to
-	 * {@code application/octet-stream}.
+	 * Associates the specified content type to the same assembler associated to
+	 * {@code application/octet-stream}. Parameters are ignored.
 	 * 
 	 * @param contentType the content type
 	 * @return this builder, for chaining
@@ -146,7 +84,8 @@ public sealed abstract class Builder<T extends Builder<T>> permits RestClientBui
 
 	/**
 	 * <p>
-	 * Associates a content type to an assembler.
+	 * Associates the specified content type to the specified assembler. Parameters
+	 * are ignored.
 	 * </p>
 	 * <p>
 	 * The only content type associated to an assembler by default is
@@ -166,8 +105,8 @@ public sealed abstract class Builder<T extends Builder<T>> permits RestClientBui
 	}
 
 	/**
-	 * Associates a content type to the same disassembler associated to
-	 * {@code application/octet-stream}.
+	 * Associates the specified content type to the same disassembler associated to
+	 * {@code application/octet-stream}. Parameters are ignored.
 	 * 
 	 * @param contentType the content type
 	 * @return this builder, for chaining
@@ -181,7 +120,8 @@ public sealed abstract class Builder<T extends Builder<T>> permits RestClientBui
 
 	/**
 	 * <p>
-	 * Associates a content type to a disassembler.
+	 * Associates the specified content type to the specified disassembler.
+	 * Parameters are ignored.
 	 * </p>
 	 * <p>
 	 * The only content type associated to a disassembler by default is
@@ -201,8 +141,8 @@ public sealed abstract class Builder<T extends Builder<T>> permits RestClientBui
 	}
 
 	/**
-	 * Associates a content type to the same serializer associated to
-	 * {@code text/plain}.
+	 * Associates the specified content type to the same serializer associated to
+	 * {@code text/plain}. Parameters are ignored.
 	 * 
 	 * @param contentType the content type
 	 * @return this builder, for chaining
@@ -216,7 +156,8 @@ public sealed abstract class Builder<T extends Builder<T>> permits RestClientBui
 
 	/**
 	 * <p>
-	 * Associates a content type to a serializer.
+	 * Associates the specified content type to the specified serializer. Parameters
+	 * are ignored.
 	 * </p>
 	 * <p>
 	 * The only content type associated to a serializer by default is
@@ -236,8 +177,8 @@ public sealed abstract class Builder<T extends Builder<T>> permits RestClientBui
 	}
 
 	/**
-	 * Associates a content type to the same deserializer associated to
-	 * {@code text/plain}.
+	 * Associates the specified content type to the same deserializer associated to
+	 * {@code text/plain}. Parameters are ignored.
 	 * 
 	 * @param contentType the content type
 	 * @return this builder, for chaining
@@ -251,7 +192,8 @@ public sealed abstract class Builder<T extends Builder<T>> permits RestClientBui
 
 	/**
 	 * <p>
-	 * Associates a content type to a deserializer.
+	 * Associates the specified content type to the specified deserializer.
+	 * Parameters are ignored.
 	 * </p>
 	 * <p>
 	 * The only content type associated to a deserializer by default is
@@ -272,59 +214,93 @@ public sealed abstract class Builder<T extends Builder<T>> permits RestClientBui
 
 	/**
 	 * <p>
-	 * Sets the fallback content type for objects considered binary.
+	 * Establishes that the specified type should be considered binary.
 	 * </p>
 	 * <p>
-	 * If the content type is not specified, an assembler or disassembler checks if
-	 * the object is a {@code byte[]} or an {@link InputStream}. In this case, it
-	 * simply uses {@code application/octet-stream}. Otherwise, it uses the fallback
-	 * type set by this method.
-	 * </p>
-	 * 
-	 * @param fallbackByteType the fallback type
-	 * @return this builder, for chaining
-	 * @throws NullPointerException     if the fallback type is null
-	 * @throws IllegalArgumentException if the fallback type is blank
-	 */
-	public final T withFallbackByteType(String fallbackByteType) {
-		manager.setFallbackByteType(fallbackByteType);
-		return self();
-	}
-
-	/**
-	 * <p>
-	 * Sets the fallback content type for objects not considered binary.
+	 * Since {@link Class} objects do not have generic information due to type
+	 * erasure, do not call this method if the type is generic. Call
+	 * {@link #withBinary(Hint)} instead.
 	 * </p>
 	 * <p>
-	 * If the content type is not specified, a serializer or deserializer checks if
-	 * the object is a {@code String} or a {@link Reader}. In this case, it simply
-	 * uses {@code text/plain}. Otherwise, it uses the fallback type set by this
-	 * method.
+	 * Objects of types considered binary are transformed by an {@link Assembler} or
+	 * a {@link Disassembler}, while other objects are transformed by a
+	 * {@link Serializer}s or a {@link Deserializer}.
+	 * </p>
+	 * <p>
+	 * The only non-generic types considered binary by default are {@code byte[]}
+	 * and {@link InputStream}.
 	 * </p>
 	 * 
-	 * @param fallbackTextType the fallback type
+	 * @param type the type
 	 * @return this builder, for chaining
-	 * @throws NullPointerException     if the fallback type is null
-	 * @throws IllegalArgumentException if the fallback type is blank
+	 * @throws NullPointerException if the type is null
 	 */
-	public final T withFallbackTextType(String fallbackTextType) {
-		manager.setFallbackTextType(fallbackTextType);
-		return self();
-	}
-
-	/**
-	 * Sets the charset that should be used when percent-encoding or
-	 * percent-decoding an URL. Default is {@link StandardCharsets#UTF_8}.
-	 * 
-	 * @param urlCharset the charset
-	 * @return this builder, for chaining
-	 * @throws NullPointerException if the charset is null
-	 */
-	public final T withUrlCharset(Charset urlCharset) {
-		if (urlCharset == null) {
-			throw new NullPointerException("URL charset cannot be null");
+	public final T withBinary(Class<?> type) {
+		if (type == null) {
+			throw new NullPointerException("Type cannot be null");
 		}
-		this.urlCharset = urlCharset;
+		manager.addBinary(type);
+		return self();
+	}
+
+	/**
+	 * <p>
+	 * Establishes that the specified hinted type should be considered binary.
+	 * </p>
+	 * <p>
+	 * Call this method if the type is generic.
+	 * </p>
+	 * <p>
+	 * Objects of types considered binary are transformed by an {@link Assembler} or
+	 * a {@link Disassembler}, while other objects are transformed by a
+	 * {@link Serializer}s or a {@link Deserializer}.
+	 * </p>
+	 * <p>
+	 * The only generic type considered binary by default is
+	 * {@code Consumer<OutputStream>}.
+	 * </p>
+	 * 
+	 * @param hint the hint
+	 * @return this builder, for chaining
+	 * @throws NullPointerException if the hint is null
+	 */
+	public final T withBinary(Hint<?> hint) {
+		if (hint == null) {
+			throw new NullPointerException("Hint cannot be null");
+		}
+		manager.addBinary(hint.getType());
+		return self();
+	}
+
+	/**
+	 * <p>
+	 * Establishes that the specified content type should be used as a fallback for
+	 * types that are considered binary.
+	 * </p>
+	 * 
+	 * @param contentType the content type
+	 * @return this builder, for chaining
+	 * @throws NullPointerException     if the content type is null
+	 * @throws IllegalArgumentException if the content type is blank
+	 */
+	public final T withBinaryFallbackType(String contentType) {
+		manager.setBinaryFallbackType(contentType);
+		return self();
+	}
+
+	/**
+	 * <p>
+	 * Establishes that the specified content type should be used as a fallback for
+	 * types that are not considered binary.
+	 * </p>
+	 * 
+	 * @param contentType the content type
+	 * @return this builder, for chaining
+	 * @throws NullPointerException     if the content type is null
+	 * @throws IllegalArgumentException if the content type is blank
+	 */
+	public final T withFallbackType(String contentType) {
+		manager.setFallbackType(contentType);
 		return self();
 	}
 
@@ -344,7 +320,23 @@ public sealed abstract class Builder<T extends Builder<T>> permits RestClientBui
 	}
 
 	/**
-	 * Disables automatic redirection.
+	 * Sets the charset that should be used when percent-encoding or
+	 * percent-decoding an URL. Default is {@link StandardCharsets#UTF_8}.
+	 * 
+	 * @param urlCharset the URL charset
+	 * @return this builder, for chaining
+	 * @throws NullPointerException if the charset is null
+	 */
+	public final T withUrlCharset(Charset urlCharset) {
+		if (urlCharset == null) {
+			throw new NullPointerException("URL charset cannot be null");
+		}
+		this.urlCharset = urlCharset;
+		return self();
+	}
+
+	/**
+	 * Disables HTTPS redirection.
 	 * 
 	 * @return this builder, for chaining
 	 */
@@ -354,7 +346,7 @@ public sealed abstract class Builder<T extends Builder<T>> permits RestClientBui
 	}
 
 	/**
-	 * Disables gzip compression.
+	 * Disables GZIP compression.
 	 * 
 	 * @return this builder, for chaining
 	 */

@@ -31,12 +31,6 @@ import br.pro.hashi.sdx.rest.BuilderTest;
 class RestClientBuilderTest extends BuilderTest {
 	private RestClientBuilder b;
 
-	@Override
-	protected Builder<?> newInstance() {
-		b = new RestClientBuilder();
-		return b;
-	}
-
 	@Test
 	void initializesWithoutFactory() {
 		assertNull(b.getFactory());
@@ -244,5 +238,11 @@ class RestClientBuilderTest extends BuilderTest {
 		assertThrows(IllegalArgumentException.class, () -> {
 			b.build("http:///a");
 		});
+	}
+
+	@Override
+	protected Builder<?> newInstance() {
+		b = new RestClientBuilder();
+		return b;
 	}
 }

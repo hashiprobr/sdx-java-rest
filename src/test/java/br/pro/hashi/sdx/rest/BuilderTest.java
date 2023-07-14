@@ -1,12 +1,12 @@
 package br.pro.hashi.sdx.rest;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.mockConstruction;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.verify;
 
@@ -16,11 +16,11 @@ import java.util.Locale;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.MockedConstruction;
+import org.mockito.Mock;
 import org.mockito.MockedStatic;
+import org.mockito.MockitoAnnotations;
 
 import br.pro.hashi.sdx.rest.constant.Defaults;
-import br.pro.hashi.sdx.rest.reflection.ParserFactory;
 import br.pro.hashi.sdx.rest.transform.Assembler;
 import br.pro.hashi.sdx.rest.transform.Deserializer;
 import br.pro.hashi.sdx.rest.transform.Disassembler;
@@ -28,41 +28,37 @@ import br.pro.hashi.sdx.rest.transform.Serializer;
 import br.pro.hashi.sdx.rest.transform.manager.TransformManager;
 
 public abstract class BuilderTest {
-	private MockedStatic<ParserFactory> cacheStatic;
-	private MockedConstruction<TransformManager> construction;
+	private AutoCloseable mocks;
+	private @Mock TransformManager manager;
+	private MockedStatic<TransformManager> managerStatic;
 	private Builder<?> b;
-	private ParserFactory factory;
-	private TransformManager manager;
 
 	@BeforeEach
 	void setUp() {
-		factory = mock(ParserFactory.class);
-		cacheStatic = mockStatic(ParserFactory.class);
-		cacheStatic.when(() -> ParserFactory.getInstance()).thenReturn(factory);
-		construction = mockConstruction(TransformManager.class);
+		mocks = MockitoAnnotations.openMocks(this);
+
+		managerStatic = mockStatic(TransformManager.class);
+		managerStatic.when(() -> TransformManager.newInstance()).thenReturn(manager);
+
 		b = newInstance();
-		manager = construction.constructed().get(0);
 	}
 
 	@AfterEach
 	void tearDown() {
-		construction.close();
-		cacheStatic.close();
-	}
-
-	@Test
-	void initializesWithManager() {
-		assertEquals(manager, b.manager);
-	}
-
-	@Test
-	void initializesWithUTF8() {
-		assertEquals(StandardCharsets.UTF_8, b.urlCharset);
+		managerStatic.close();
+		assertDoesNotThrow(() -> {
+			mocks.close();
+		});
 	}
 
 	@Test
 	void initializesWithDefaultLocale() {
 		assertEquals(Defaults.LOCALE, b.locale);
+	}
+
+	@Test
+	void initializesWithUTF8() {
+		assertEquals(StandardCharsets.UTF_8, b.urlCharset);
 	}
 
 	@Test
@@ -73,19 +69,6 @@ public abstract class BuilderTest {
 	@Test
 	void initializesWithCompression() {
 		assertTrue(b.compression);
-	}
-
-	@Test
-	void addsBinary() {
-		assertSame(b, b.withBinary(Object.class));
-		verify(manager).addBinary(Object.class);
-	}
-
-	@Test
-	void addsBinaryWithHint() {
-		Hint<Object> hint = new Hint<Object>() {};
-		assertSame(b, b.withBinary(hint));
-		verify(manager).addBinary(hint.getType());
 	}
 
 	@Test
@@ -149,17 +132,44 @@ public abstract class BuilderTest {
 	}
 
 	@Test
-	void setsFallbackByteType() {
-		String contentType = "image/png";
-		assertSame(b, b.withFallbackByteType(contentType));
-		verify(manager).setFallbackByteType(contentType);
+	void addsBinary() {
+		assertSame(b, b.withBinary(Object.class));
+		verify(manager).addBinary(Object.class);
 	}
 
 	@Test
-	void setsFallbackTextType() {
+	void addsBinaryWithHint() {
+		Hint<Object> hint = new Hint<Object>() {};
+		assertSame(b, b.withBinary(hint));
+		verify(manager).addBinary(hint.getType());
+	}
+
+	@Test
+	void doesNotAddBinaryWithNullType() {
+		assertThrows(NullPointerException.class, () -> {
+			b.withBinary((Class<?>) null);
+		});
+	}
+
+	@Test
+	void doesNotAddBinaryWithNullHint() {
+		assertThrows(NullPointerException.class, () -> {
+			b.withBinary((Hint<?>) null);
+		});
+	}
+
+	@Test
+	void setsBinaryFallbackType() {
+		String contentType = "image/png";
+		assertSame(b, b.withBinaryFallbackType(contentType));
+		verify(manager).setBinaryFallbackType(contentType);
+	}
+
+	@Test
+	void setsFallbackType() {
 		String contentType = "application/xml";
-		assertSame(b, b.withFallbackTextType(contentType));
-		verify(manager).setFallbackTextType(contentType);
+		assertSame(b, b.withFallbackType(contentType));
+		verify(manager).setFallbackType(contentType);
 	}
 
 	@Test
@@ -169,30 +179,23 @@ public abstract class BuilderTest {
 	}
 
 	@Test
-	void doesNotSetUrlCharset() {
+	void doesNotSetNullUrlCharset() {
 		assertThrows(NullPointerException.class, () -> {
 			b.withUrlCharset(null);
 		});
-		assertEquals(StandardCharsets.UTF_8, b.urlCharset);
 	}
 
 	@Test
 	void setsLocale() {
-		if (Defaults.LOCALE.equals(Locale.US)) {
-			assertSame(b, b.withLocale(Locale.UK));
-			assertEquals(Locale.UK, b.locale);
-		} else {
-			assertSame(b, b.withLocale(Locale.US));
-			assertEquals(Locale.US, b.locale);
-		}
+		assertSame(b, b.withLocale(Locale.ROOT));
+		assertEquals(Locale.ROOT, b.locale);
 	}
 
 	@Test
-	void doesNotSetLocale() {
+	void doesNotSetNullLocale() {
 		assertThrows(NullPointerException.class, () -> {
 			b.withLocale(null);
 		});
-		assertEquals(Defaults.LOCALE, b.locale);
 	}
 
 	@Test

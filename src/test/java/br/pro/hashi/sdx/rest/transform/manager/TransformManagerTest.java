@@ -420,56 +420,56 @@ class TransformManagerTest {
 	}
 
 	@Test
-	void doesNotSetNullFallbackByteType() {
+	void doesNotSetNullBinaryFallbackType() {
 		assertThrows(NullPointerException.class, () -> {
-			f.setFallbackByteType(null);
+			f.setBinaryFallbackType(null);
 		});
 	}
 
 	@Test
-	void doesNotSetBlankFallbackByteType() {
+	void doesNotSetBlankBinaryFallbackType() {
 		assertThrows(IllegalArgumentException.class, () -> {
-			f.setFallbackByteType("");
+			f.setBinaryFallbackType("");
 		});
 	}
 
 	@Test
-	void doesNotSetNullFallbackTextType() {
+	void doesNotSetNullFallbackType() {
 		assertThrows(NullPointerException.class, () -> {
-			f.setFallbackTextType(null);
+			f.setFallbackType(null);
 		});
 	}
 
 	@Test
-	void doesNotSetBlankFallbackTextType() {
+	void doesNotSetBlankFallbackType() {
 		assertThrows(IllegalArgumentException.class, () -> {
-			f.setFallbackTextType("");
+			f.setFallbackType("");
 		});
 	}
 
 	@Test
 	void setsAndGetsFallbackAssemblerType() {
 		Object body = new Object();
-		f.setFallbackByteType("image/png;parameter");
+		f.setBinaryFallbackType("image/png;parameter");
 		assertEquals("image/png", f.getAssemblerType(null, body, Object.class));
 	}
 
 	@Test
 	void setsAndGetsFallbackDisassemblerType() {
-		f.setFallbackByteType("image/png;parameter");
+		f.setBinaryFallbackType("image/png;parameter");
 		assertEquals("image/png", f.getDisassemblerType(null, Object.class));
 	}
 
 	@Test
 	void setsAndGetsFallbackSerializerType() {
 		Object body = new Object();
-		f.setFallbackTextType("application/xml;parameter");
+		f.setFallbackType("application/xml;parameter");
 		assertEquals("application/xml", f.getSerializerType(null, body, Object.class));
 	}
 
 	@Test
 	void setsAndGetsFallbackDeserializerType() {
-		f.setFallbackTextType("application/xml;parameter");
+		f.setFallbackType("application/xml;parameter");
 		assertEquals("application/xml", f.getDeserializerType(null, Object.class));
 	}
 

@@ -37,8 +37,8 @@ public class TransformManager {
 	private final Map<String, String> extensions;
 	private final Set<Class<?>> binaryRawTypes;
 	private final Set<Type> binaryGenericTypes;
-	private String fallbackByteType;
-	private String fallbackTextType;
+	private String binaryFallbackType;
+	private String fallbackType;
 
 	public TransformManager(MediaCoder coder) {
 		this.coder = coder;
@@ -65,8 +65,8 @@ public class TransformManager {
 		this.binaryGenericTypes = new HashSet<>();
 		this.binaryGenericTypes.add(new Hint<Consumer<OutputStream>>() {}.getType());
 
-		this.fallbackByteType = null;
-		this.fallbackTextType = null;
+		this.binaryFallbackType = null;
+		this.fallbackType = null;
 	}
 
 	public Assembler getAssembler(String contentType) {
@@ -242,26 +242,26 @@ public class TransformManager {
 		}
 	}
 
-	public void setFallbackByteType(String fallbackByteType) {
-		if (fallbackByteType == null) {
-			throw new NullPointerException("Fallback byte type cannot be null");
+	public void setBinaryFallbackType(String binaryFallbackType) {
+		if (binaryFallbackType == null) {
+			throw new NullPointerException("Binary fallback type cannot be null");
 		}
-		fallbackByteType = coder.strip(fallbackByteType);
-		if (fallbackByteType == null) {
-			throw new IllegalArgumentException("Fallback byte type cannot be blank");
+		binaryFallbackType = coder.strip(binaryFallbackType);
+		if (binaryFallbackType == null) {
+			throw new IllegalArgumentException("Binary fallback type cannot be blank");
 		}
-		this.fallbackByteType = fallbackByteType;
+		this.binaryFallbackType = binaryFallbackType;
 	}
 
-	public void setFallbackTextType(String fallbackTextType) {
-		if (fallbackTextType == null) {
-			throw new NullPointerException("Fallback text type cannot be null");
+	public void setFallbackType(String fallbackType) {
+		if (fallbackType == null) {
+			throw new NullPointerException("Fallback type cannot be null");
 		}
-		fallbackTextType = coder.strip(fallbackTextType);
-		if (fallbackTextType == null) {
-			throw new IllegalArgumentException("Fallback text type cannot be blank");
+		fallbackType = coder.strip(fallbackType);
+		if (fallbackType == null) {
+			throw new IllegalArgumentException("Fallback type cannot be blank");
 		}
-		this.fallbackTextType = fallbackTextType;
+		this.fallbackType = fallbackType;
 	}
 
 	public String getAssemblerType(String contentType, Object body, Type type) {
@@ -269,10 +269,10 @@ public class TransformManager {
 			if (body instanceof byte[] || body instanceof InputStream || Types.instanceOfStreamConsumer(body, type)) {
 				return OCTET_TYPE;
 			}
-			if (fallbackByteType == null) {
-				throw new IllegalStateException("Content type is null, body is not an instance of byte[], InputStream, or Consumer<OutputStream>, and no fallback byte type was specified");
+			if (binaryFallbackType == null) {
+				throw new IllegalStateException("Content type is null, body is not an instance of byte[], InputStream, or Consumer<OutputStream>, and no binary fallback type was specified");
 			}
-			return fallbackByteType;
+			return binaryFallbackType;
 		}
 		return contentType;
 	}
@@ -282,10 +282,10 @@ public class TransformManager {
 			if (type.equals(byte[].class) || type.equals(InputStream.class)) {
 				return OCTET_TYPE;
 			}
-			if (fallbackByteType == null) {
-				throw new IllegalStateException("Content type is null, type is not equal to byte[] or InputStream, and no fallback byte type was specified");
+			if (binaryFallbackType == null) {
+				throw new IllegalStateException("Content type is null, type is not equal to byte[] or InputStream, and no binary fallback type was specified");
 			}
-			return fallbackByteType;
+			return binaryFallbackType;
 		}
 		return contentType;
 	}
@@ -295,10 +295,10 @@ public class TransformManager {
 			if (Types.instanceOfSimple(body, type) || body instanceof Reader || Types.instanceOfWriterConsumer(body, type)) {
 				return PLAIN_TYPE;
 			}
-			if (fallbackTextType == null) {
-				throw new IllegalStateException("Content type is null, body is not a primitive, a big number, or an instance of String, Reader, or Consumer<Writer>, and no fallback text type was specified");
+			if (fallbackType == null) {
+				throw new IllegalStateException("Content type is null, body is not a primitive, a big number, or an instance of String, Reader, or Consumer<Writer>, and no fallback type was specified");
 			}
-			return fallbackTextType;
+			return fallbackType;
 		}
 		return contentType;
 	}
@@ -308,10 +308,10 @@ public class TransformManager {
 			if (Types.equalsSimple(type) || type.equals(Reader.class)) {
 				return PLAIN_TYPE;
 			}
-			if (fallbackTextType == null) {
-				throw new IllegalStateException("Content type is null, type is not primitive or equal to BigInteger, BigDecimal, String, or Reader, and no fallback text type was specified");
+			if (fallbackType == null) {
+				throw new IllegalStateException("Content type is null, type is not primitive or equal to BigInteger, BigDecimal, String, or Reader, and no fallback type was specified");
 			}
-			return fallbackTextType;
+			return fallbackType;
 		}
 		return contentType;
 	}
