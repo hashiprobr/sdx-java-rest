@@ -17,7 +17,8 @@ import br.pro.hashi.sdx.rest.server.exception.ServerException;
  */
 public final class RestServer {
 	/**
-	 * Gets a default REST server from the resources in the specified package.
+	 * Builds a server with a default configuration from the resources in the
+	 * specified package.
 	 * 
 	 * @param packageName the package name
 	 * @return the server

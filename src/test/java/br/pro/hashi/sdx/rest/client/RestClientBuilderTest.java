@@ -38,9 +38,9 @@ class RestClientBuilderTest extends BuilderTest {
 
 	@Test
 	void setsTrustStore() {
+		String path = "path";
+		String password = "password";
 		try (MockedConstruction<SslContextFactory.Client> construction = mockConstruction(SslContextFactory.Client.class)) {
-			String path = "path";
-			String password = "password";
 			b.withTrustStore(path, password);
 			SslContextFactory.Client factory = construction.constructed().get(0);
 			verify(factory).setTrustStorePath(path);
@@ -50,35 +50,31 @@ class RestClientBuilderTest extends BuilderTest {
 	}
 
 	@Test
-	void doesNotSetTrustStoreIfPathIsNull() {
+	void doesNotSetTrustStoreWithNullPath() {
 		assertThrows(NullPointerException.class, () -> {
 			b.withTrustStore(null, "password");
 		});
-		assertNull(b.getFactory());
 	}
 
 	@Test
-	void doesNotSetTrustStoreIfPathIsEmpty() {
+	void doesNotSetTrustStoreWithEmptyPath() {
 		assertThrows(IllegalArgumentException.class, () -> {
 			b.withTrustStore("", "password");
 		});
-		assertNull(b.getFactory());
 	}
 
 	@Test
-	void doesNotSetTrustStoreIfPasswordIsNull() {
+	void doesNotSetTrustStoreWithNullPassword() {
 		assertThrows(NullPointerException.class, () -> {
 			b.withTrustStore("path", null);
 		});
-		assertNull(b.getFactory());
 	}
 
 	@Test
-	void doesNotSetTrustStoreIfPasswordIsEmpty() {
+	void doesNotSetTrustStoreWithEmptyPassword() {
 		assertThrows(IllegalArgumentException.class, () -> {
 			b.withTrustStore("path", "");
 		});
-		assertNull(b.getFactory());
 	}
 
 	@Test

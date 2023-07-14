@@ -268,7 +268,7 @@ public non-sealed class RestServerBuilder extends Builder<RestServerBuilder> {
 	}
 
 	/**
-	 * Sets a keytool keystore that should be used to enable HTTPS support.
+	 * Sets the keytool KeyStore that should be used to enable HTTPS support.
 	 * 
 	 * @param path     the KeyStore path
 	 * @param password the KeyStore password
@@ -290,9 +290,10 @@ public non-sealed class RestServerBuilder extends Builder<RestServerBuilder> {
 		if (password.isEmpty()) {
 			throw new IllegalArgumentException("KeyStore password cannot be empty");
 		}
-		this.factory = new SslContextFactory.Server();
-		this.factory.setKeyStorePath(path);
-		this.factory.setKeyStorePassword(password);
+		SslContextFactory.Server factory = new SslContextFactory.Server();
+		factory.setKeyStorePath(path);
+		factory.setKeyStorePassword(password);
+		this.factory = factory;
 		return self();
 	}
 
@@ -436,10 +437,11 @@ public non-sealed class RestServerBuilder extends Builder<RestServerBuilder> {
 	}
 
 	/**
-	 * Builds a server using the resources of a specified package.
+	 * Builds a server with the current configuration from the resources in the
+	 * specified package.
 	 * 
 	 * @param packageName the package name
-	 * @return the REST server
+	 * @return the server
 	 */
 	public final RestServer build(String packageName) {
 		Map<Class<? extends RestResource>, MethodHandle> handles = new HashMap<>();

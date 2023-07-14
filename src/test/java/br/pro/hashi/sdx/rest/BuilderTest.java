@@ -57,7 +57,7 @@ public abstract class BuilderTest {
 	}
 
 	@Test
-	void initializesWithUTF8() {
+	void initializesWithDefaultCharset() {
 		assertEquals(StandardCharsets.UTF_8, b.urlCharset);
 	}
 
@@ -173,19 +173,6 @@ public abstract class BuilderTest {
 	}
 
 	@Test
-	void setsUrlCharset() {
-		assertSame(b, b.withUrlCharset(StandardCharsets.ISO_8859_1));
-		assertEquals(StandardCharsets.ISO_8859_1, b.urlCharset);
-	}
-
-	@Test
-	void doesNotSetNullUrlCharset() {
-		assertThrows(NullPointerException.class, () -> {
-			b.withUrlCharset(null);
-		});
-	}
-
-	@Test
 	void setsLocale() {
 		assertSame(b, b.withLocale(Locale.ROOT));
 		assertEquals(Locale.ROOT, b.locale);
@@ -195,6 +182,19 @@ public abstract class BuilderTest {
 	void doesNotSetNullLocale() {
 		assertThrows(NullPointerException.class, () -> {
 			b.withLocale(null);
+		});
+	}
+
+	@Test
+	void setsUrlCharset() {
+		assertSame(b, b.withUrlCharset(StandardCharsets.ISO_8859_1));
+		assertEquals(StandardCharsets.ISO_8859_1, b.urlCharset);
+	}
+
+	@Test
+	void doesNotSetNullUrlCharset() {
+		assertThrows(NullPointerException.class, () -> {
+			b.withUrlCharset(null);
 		});
 	}
 

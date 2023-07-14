@@ -51,10 +51,15 @@ public final class RestClient {
 	}
 
 	/**
-	 * Gets a default REST client to the specified URL prefix.
+	 * <p>
+	 * Builds a dynamic HTTP/2 and HTTP/1.1 client with a default configuration to
+	 * the specified URL prefix.
+	 * </p>
 	 * 
 	 * @param urlPrefix the URL prefix
 	 * @return the client
+	 * @throws NullPointerException     if the URL prefix is null
+	 * @throws IllegalArgumentException if the URL prefix is invalid
 	 */
 	public static RestClient to(String urlPrefix) {
 		RestClientBuilder builder = new RestClientBuilder();

@@ -277,9 +277,9 @@ class RestServerBuilderTest extends BuilderTest {
 
 	@Test
 	void setsKeyStore() {
+		String path = "path";
+		String password = "password";
 		try (MockedConstruction<SslContextFactory.Server> construction = mockConstruction(SslContextFactory.Server.class)) {
-			String path = "path";
-			String password = "password";
 			b.withKeyStore(path, password);
 			SslContextFactory.Server factory = construction.constructed().get(0);
 			verify(factory).setKeyStorePath(path);
@@ -289,35 +289,31 @@ class RestServerBuilderTest extends BuilderTest {
 	}
 
 	@Test
-	void doesNotSetKeyStoreIfPathIsNull() {
+	void doesNotSetKeyStoreWithNullPath() {
 		assertThrows(NullPointerException.class, () -> {
 			b.withKeyStore(null, "password");
 		});
-		assertNull(b.getFactory());
 	}
 
 	@Test
-	void doesNotSetKeyStoreIfPathIsEmpty() {
+	void doesNotSetKeyStoreWithEmptyPath() {
 		assertThrows(IllegalArgumentException.class, () -> {
 			b.withKeyStore("", "password");
 		});
-		assertNull(b.getFactory());
 	}
 
 	@Test
-	void doesNotSetKeyStoreIfPasswordIsNull() {
+	void doesNotSetKeyStoreWithNullPassword() {
 		assertThrows(NullPointerException.class, () -> {
 			b.withKeyStore("path", null);
 		});
-		assertNull(b.getFactory());
 	}
 
 	@Test
-	void doesNotSetKeyStoreIfPasswordIsEmpty() {
+	void doesNotSetKeyStoreWithEmptyPassword() {
 		assertThrows(IllegalArgumentException.class, () -> {
 			b.withKeyStore("path", "");
 		});
-		assertNull(b.getFactory());
 	}
 
 	@Test

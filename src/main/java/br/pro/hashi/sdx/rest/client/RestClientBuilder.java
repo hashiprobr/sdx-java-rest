@@ -42,7 +42,7 @@ public non-sealed class RestClientBuilder extends Builder<RestClientBuilder> {
 	}
 
 	/**
-	 * Sets a keytool truststore that should be used to enable HTTPS support.
+	 * Sets the keytool TrustStore that should be used to enable HTTPS support.
 	 * 
 	 * @param path     the TrustStore path
 	 * @param password the TrustStore password
@@ -64,22 +64,21 @@ public non-sealed class RestClientBuilder extends Builder<RestClientBuilder> {
 		if (password.isEmpty()) {
 			throw new IllegalArgumentException("TrustStore password cannot be empty");
 		}
-		this.factory = new SslContextFactory.Client();
-		this.factory.setTrustStorePath(path);
-		this.factory.setTrustStorePassword(password);
+		SslContextFactory.Client factory = new SslContextFactory.Client();
+		factory.setTrustStorePath(path);
+		factory.setTrustStorePassword(password);
+		this.factory = factory;
 		return self();
 	}
 
 	/**
 	 * <p>
-	 * Builds a dynamic HTTP/2 and HTTP/1.1 client with the current configuration.
-	 * </p>
-	 * <p>
-	 * This method receives an URL prefix that should be used in all requests.
+	 * Builds a dynamic HTTP/2 and HTTP/1.1 client with the current configuration to
+	 * the specified URL prefix.
 	 * </p>
 	 * 
 	 * @param urlPrefix the URL prefix
-	 * @return the {@link RestClient}
+	 * @return the client
 	 * @throws NullPointerException     if the URL prefix is null
 	 * @throws IllegalArgumentException if the URL prefix is invalid
 	 */
@@ -99,14 +98,12 @@ public non-sealed class RestClientBuilder extends Builder<RestClientBuilder> {
 
 	/**
 	 * <p>
-	 * Builds a static HTTP/1.1 client with the current configuration.
-	 * </p>
-	 * <p>
-	 * This method receives an URL prefix that should be used in all requests.
+	 * Builds a static HTTP/1.1 client with the current configuration to the
+	 * specified URL prefix.
 	 * </p>
 	 * 
 	 * @param urlPrefix the URL prefix
-	 * @return the {@link RestClient}
+	 * @return the client
 	 * @throws NullPointerException     if the URL prefix is null
 	 * @throws IllegalArgumentException if the URL prefix is invalid
 	 */
@@ -123,14 +120,12 @@ public non-sealed class RestClientBuilder extends Builder<RestClientBuilder> {
 
 	/**
 	 * <p>
-	 * Builds a static HTTP/2 client with the current configuration.
-	 * </p>
-	 * <p>
-	 * This method receives an URL prefix that should be used in all requests.
+	 * Builds a static HTTP/2 client with the current configuration to the specified
+	 * URL prefix.
 	 * </p>
 	 * 
 	 * @param urlPrefix the URL prefix
-	 * @return the {@link RestClient}
+	 * @return the client
 	 * @throws NullPointerException     if the URL prefix is null
 	 * @throws IllegalArgumentException if the URL prefix is invalid
 	 */
@@ -148,14 +143,12 @@ public non-sealed class RestClientBuilder extends Builder<RestClientBuilder> {
 
 	/**
 	 * <p>
-	 * Builds a static HTTP/3 client with the current configuration.
-	 * </p>
-	 * <p>
-	 * This method receives an URL prefix that should be used in all requests.
+	 * Builds a static HTTP/3 client with the current configuration to the specified
+	 * URL prefix.
 	 * </p>
 	 * 
 	 * @param urlPrefix the URL prefix
-	 * @return the {@link RestClient}
+	 * @return the client
 	 * @throws NullPointerException     if the URL prefix is null
 	 * @throws IllegalArgumentException if the URL prefix is invalid
 	 */
