@@ -38,7 +38,8 @@ class RestBodyTest {
 			if (contentType.isEmpty()) {
 				return null;
 			}
-			return contentType;
+			int index = contentType.indexOf(';');
+			return contentType.substring(0, index);
 		});
 
 		actual = new Object();
@@ -100,9 +101,8 @@ class RestBodyTest {
 	@Test
 	void setsContentType() {
 		b = newInstance();
-		String contentType = "type/subtype";
-		assertSame(b, b.as(contentType));
-		assertEquals(contentType, b.getContentType());
+		assertSame(b, b.as("type/subtype;parameter"));
+		assertEquals("type/subtype", b.getContentType());
 	}
 
 	@Test

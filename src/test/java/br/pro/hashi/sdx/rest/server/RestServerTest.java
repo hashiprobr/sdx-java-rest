@@ -307,7 +307,7 @@ class RestServerTest {
 	}
 
 	@Test
-	void doesNotStartIfJettyServerAlreadyStarted() throws Exception {
+	void doesNotStartIfJettyServerStarted() throws Exception {
 		s = newRestServer();
 		mockLocalHost();
 		when(jettyServer.isRunning()).thenReturn(false);
@@ -324,7 +324,7 @@ class RestServerTest {
 	}
 
 	@Test
-	void doesNotStartIfJettyServerThrowsException() throws Exception {
+	void doesNotStartIfJettyServerThrows() throws Exception {
 		s = newRestServer();
 		mockLocalHost();
 		when(jettyServer.isRunning()).thenReturn(false);
@@ -360,7 +360,7 @@ class RestServerTest {
 	}
 
 	@Test
-	void doesNotStopIfJettyServerAlreadyStopped() throws Exception {
+	void doesNotStopIfJettyServerStopped() throws Exception {
 		s = newRestServer();
 		mockLocalHost();
 		when(jettyServer.isRunning()).thenReturn(false);
@@ -375,7 +375,7 @@ class RestServerTest {
 	}
 
 	@Test
-	void doesNotStopIfJettyServerThrowsException() throws Exception {
+	void doesNotStopIfJettyServerThrows() throws Exception {
 		s = newRestServer();
 		mockLocalHost();
 		when(jettyServer.isRunning()).thenReturn(false);

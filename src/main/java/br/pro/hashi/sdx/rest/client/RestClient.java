@@ -20,7 +20,6 @@ import java.util.function.Consumer;
 
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.api.Request;
-import org.eclipse.jetty.client.api.Request.Content;
 import org.eclipse.jetty.client.api.Response;
 import org.eclipse.jetty.client.util.InputStreamResponseListener;
 import org.eclipse.jetty.client.util.MultiPartRequestContent;
@@ -44,6 +43,13 @@ import br.pro.hashi.sdx.rest.transform.manager.TransformManager;
 public final class RestClient {
 	static final int TIMEOUT = 30;
 
+	static RestClient newInstance(TransformManager manager, HttpClient jettyClient, Locale locale, Charset urlCharset, String urlPrefix) {
+		QueryCoder queryCoder = QueryCoder.getInstance();
+		PathCoder pathCoder = PathCoder.getInstance();
+		MediaCoder mediaCoder = MediaCoder.getInstance();
+		return new RestClient(queryCoder, pathCoder, mediaCoder, manager, jettyClient, locale, urlCharset, urlPrefix);
+	}
+
 	/**
 	 * Gets a default REST client to the specified URL prefix.
 	 * 
@@ -56,14 +62,20 @@ public final class RestClient {
 	}
 
 	private final Logger logger;
+	private final QueryCoder queryCoder;
+	private final PathCoder pathCoder;
+	private final MediaCoder mediaCoder;
 	private final TransformManager manager;
 	private final HttpClient jettyClient;
 	private final Locale locale;
 	private final Charset urlCharset;
 	private final String urlPrefix;
 
-	RestClient(TransformManager manager, HttpClient jettyClient, Locale locale, Charset urlCharset, String urlPrefix) {
+	RestClient(QueryCoder queryCoder, PathCoder pathCoder, MediaCoder mediaCoder, TransformManager manager, HttpClient jettyClient, Locale locale, Charset urlCharset, String urlPrefix) {
 		this.logger = LoggerFactory.getLogger(RestClient.class);
+		this.queryCoder = queryCoder;
+		this.pathCoder = pathCoder;
+		this.mediaCoder = mediaCoder;
 		this.manager = manager;
 		this.jettyClient = jettyClient;
 		this.locale = locale;
@@ -73,6 +85,10 @@ public final class RestClient {
 
 	TransformManager getManager() {
 		return manager;
+	}
+
+	Locale getLocale() {
+		return locale;
 	}
 
 	Charset getUrlCharset() {
@@ -203,7 +219,8 @@ public final class RestClient {
 	 * @return the proxy, for chaining
 	 * @throws NullPointerException     if the header name is null or the header
 	 *                                  value is null
-	 * @throws IllegalArgumentException if the header name is blank
+	 * @throws IllegalArgumentException if the header name is invalid or the header
+	 *                                  value is invalid
 	 * @hidden
 	 */
 	public Proxy h(String name, Object value) {
@@ -224,10 +241,42 @@ public final class RestClient {
 	 * @return the proxy, for chaining
 	 * @throws NullPointerException     if the header name is null or the header
 	 *                                  value is null
-	 * @throws IllegalArgumentException if the header name is blank
+	 * @throws IllegalArgumentException if the header name is invalid or the header
+	 *                                  value is invalid
 	 */
 	public Proxy withHeader(String name, Object value) {
 		return new Proxy().withHeader(name, value);
+	}
+
+	/**
+	 * Alias for {@link #withBody(Object)}.
+	 * 
+	 * @param body the body
+	 * @return the proxy, for chaining
+	 * @throws IllegalArgumentException if already added a part or the body is an
+	 *                                  instance of {@code RestPart}
+	 * @hidden
+	 */
+	public Proxy b(Object body) {
+		return withBody(body);
+	}
+
+	/**
+	 * <p>
+	 * Convenience method that instantiates a {@link RestClient.Proxy} and calls
+	 * {@link RestClient.Proxy#withBody(Object)}.
+	 * </p>
+	 * <p>
+	 * The alias {@link #b(Object)} is available for short chaining.
+	 * </p>
+	 * 
+	 * @param body the body
+	 * @return the proxy, for chaining
+	 * @throws IllegalArgumentException if already added a part or the body is an
+	 *                                  instance of {@code RestPart}
+	 */
+	public Proxy withBody(Object body) {
+		return new Proxy().withBody(body);
 	}
 
 	/**
@@ -237,7 +286,7 @@ public final class RestClient {
 	 * @param part the part
 	 * @return the proxy, for chaining
 	 * @throws NullPointerException     if the name is null
-	 * @throws IllegalArgumentException if already added a body or the part is
+	 * @throws IllegalArgumentException if already added a body or the part is an
 	 *                                  instance of {@code RestBody}
 	 * @hidden
 	 */
@@ -258,7 +307,7 @@ public final class RestClient {
 	 * @param part the part
 	 * @return the proxy, for chaining
 	 * @throws NullPointerException     if the name is null
-	 * @throws IllegalArgumentException if already added a body or the part is
+	 * @throws IllegalArgumentException if already added a body or the part is an
 	 *                                  instance of {@code RestBody}
 	 */
 	public Proxy withPart(String name, Object part) {
@@ -266,41 +315,10 @@ public final class RestClient {
 	}
 
 	/**
-	 * Alias for {@link #withBody(Object)}.
-	 * 
-	 * @param body the body
-	 * @return the proxy, for chaining
-	 * @throws IllegalArgumentException if already added a part or the body is
-	 *                                  instance of {@code RestPart}
-	 * @hidden
-	 */
-	public Proxy b(Object body) {
-		return withBody(body);
-	}
-
-	/**
-	 * <p>
-	 * Convenience method that instantiates a {@link RestClient.Proxy} and calls
-	 * {@link RestClient.Proxy#withBody(Object)}.
-	 * </p>
-	 * <p>
-	 * The alias {@link #b(Object)} is available for short chaining.
-	 * </p>
-	 * 
-	 * @param body the body
-	 * @return the proxy, for chaining
-	 * @throws IllegalArgumentException if already added a part or the body is
-	 *                                  instance of {@code RestPart}
-	 */
-	public Proxy withBody(Object body) {
-		return new Proxy().withBody(body);
-	}
-
-	/**
 	 * Alias for {@link #withTimeout(int)}.
 	 * 
 	 * @param timeout the timeout, in seconds
-	 * @return this proxy, for chaining
+	 * @return the proxy, for chaining
 	 * @hidden
 	 */
 	public Proxy t(int timeout) {
@@ -317,7 +335,7 @@ public final class RestClient {
 	 * </p>
 	 * 
 	 * @param timeout the timeout, in seconds
-	 * @return this proxy, for chaining
+	 * @return the proxy, for chaining
 	 */
 	public Proxy withTimeout(int timeout) {
 		return new Proxy().withTimeout(timeout);
@@ -467,13 +485,9 @@ public final class RestClient {
 			this.encoder = StandardCharsets.US_ASCII.newEncoder();
 			this.queries = new ArrayList<>();
 			this.headers = new ArrayList<>();
-			this.body = null;
 			this.parts = new ArrayList<>();
+			this.body = null;
 			this.timeout = TIMEOUT;
-		}
-
-		RestClient getEnclosing() {
-			return RestClient.this;
 		}
 
 		List<Entry> getQueries() {
@@ -527,8 +541,7 @@ public final class RestClient {
 		 * Adds a query without value to the request.
 		 * </p>
 		 * <p>
-		 * The value is converted to {@code String} via {@code toString()} and encoded
-		 * in the URL charset.
+		 * The name is encoded in the URL charset.
 		 * </p>
 		 * <p>
 		 * The alias {@link #q(String)} is available for short chaining.
@@ -551,8 +564,8 @@ public final class RestClient {
 		 * Adds a query to the request.
 		 * </p>
 		 * <p>
-		 * The value is converted to {@code String} via {@code toString()} and encoded
-		 * in the URL charset.
+		 * The value is converted to {@code String} via {@code toString()}. The name and
+		 * the value string are encoded in the URL charset.
 		 * </p>
 		 * <p>
 		 * The alias {@link #q(String, Object)} is available for short chaining.
@@ -580,7 +593,7 @@ public final class RestClient {
 		}
 
 		private String encode(String item) {
-			return QueryCoder.getInstance().encode(item, urlCharset);
+			return queryCoder.encode(item, urlCharset);
 		}
 
 		/**
@@ -604,8 +617,8 @@ public final class RestClient {
 		 * Adds a header to the request.
 		 * </p>
 		 * <p>
-		 * The value is converted to {@code String} via {@code toString()} and encoded
-		 * in the {@link StandardCharsets#US_ASCII} charset.
+		 * The value is converted to {@code String} via {@code toString()}. The name and
+		 * the value string are encoded in {@link StandardCharsets#US_ASCII}.
 		 * </p>
 		 * <p>
 		 * The alias {@link #h(String, Object)} is available for short chaining.
@@ -645,13 +658,57 @@ public final class RestClient {
 		}
 
 		/**
+		 * Alias for {@link #withBody(Object)}.
+		 * 
+		 * @param body the body
+		 * @return this proxy, for chaining
+		 * @throws IllegalArgumentException if already added a part or the body is an
+		 *                                  instance of {@code RestPart}
+		 * @hidden
+		 */
+		public Proxy b(Object body) {
+			return withBody(body);
+		}
+
+		/**
+		 * <p>
+		 * Sets the body of the request.
+		 * </p>
+		 * <p>
+		 * The alias {@link #b(Object)} is available for short chaining.
+		 * </p>
+		 * 
+		 * @param body the body
+		 * @return this proxy, for chaining
+		 * @throws IllegalArgumentException if already added a part or the body is an
+		 *                                  instance of {@code RestPart}
+		 */
+		public Proxy withBody(Object body) {
+			if (parts.size() > 0) {
+				throw new IllegalArgumentException("Cannot set body if already added a part");
+			}
+			RestBody restBody;
+			if (body instanceof RestBody) {
+				if (body instanceof RestPart) {
+					throw new IllegalArgumentException("Body cannot be an instance of RestPart");
+				} else {
+					restBody = (RestBody) body;
+				}
+			} else {
+				restBody = RestBody.of(body);
+			}
+			this.body = restBody;
+			return this;
+		}
+
+		/**
 		 * Alias for {@link #withPart(String, Object)}.
 		 * 
 		 * @param name the name
 		 * @param part the part
 		 * @return this proxy, for chaining
 		 * @throws NullPointerException     if the name is null
-		 * @throws IllegalArgumentException if already added a body or the part is
+		 * @throws IllegalArgumentException if already added a body or the part is an
 		 *                                  instance of {@code RestBody}
 		 * @hidden
 		 */
@@ -671,72 +728,28 @@ public final class RestClient {
 		 * @param part the part
 		 * @return this proxy, for chaining
 		 * @throws NullPointerException     if the name is null
-		 * @throws IllegalArgumentException if already added a body or the part is
+		 * @throws IllegalArgumentException if already added a body or the part is an
 		 *                                  instance of {@code RestBody}
 		 */
 		public Proxy withPart(String name, Object part) {
-			if (body != null) {
-				throw new IllegalArgumentException("Cannot add part if already added a body");
-			}
 			if (name == null) {
 				throw new NullPointerException("Name cannot be null");
+			}
+			if (body != null) {
+				throw new IllegalArgumentException("Cannot add part if already added a body");
 			}
 			RestPart restPart;
 			if (part instanceof RestPart) {
 				restPart = (RestPart) part;
 			} else {
 				if (part instanceof RestBody) {
-					throw new IllegalArgumentException("Part cannot be instance of RestBody");
+					throw new IllegalArgumentException("Part cannot be an instance of RestBody");
 				} else {
 					restPart = RestPart.of(part);
 				}
 			}
 			restPart.setName(name);
 			parts.add(restPart);
-			return this;
-		}
-
-		/**
-		 * Alias for {@link #withBody(Object)}.
-		 * 
-		 * @param body the body
-		 * @return this proxy, for chaining
-		 * @throws IllegalArgumentException if already added a part or the body is
-		 *                                  instance of {@code RestPart}
-		 * @hidden
-		 */
-		public Proxy b(Object body) {
-			return withBody(body);
-		}
-
-		/**
-		 * <p>
-		 * Adds a body to the request.
-		 * </p>
-		 * <p>
-		 * The alias {@link #b(Object)} is available for short chaining.
-		 * </p>
-		 * 
-		 * @param body the body
-		 * @return this proxy, for chaining
-		 * @throws IllegalArgumentException if already added a part or the body is
-		 *                                  instance of {@code RestPart}
-		 */
-		public Proxy withBody(Object body) {
-			if (parts.size() > 0) {
-				throw new IllegalArgumentException("Cannot add body if already added a part");
-			}
-			RestBody restBody;
-			if (body instanceof RestBody) {
-				if (body instanceof RestPart) {
-					throw new IllegalArgumentException("Body cannot be instance of RestPart");
-				} else {
-					restBody = (RestBody) body;
-				}
-			} else {
-				restBody = RestBody.of(body);
-			}
-			this.body = restBody;
 			return this;
 		}
 
@@ -768,7 +781,7 @@ public final class RestClient {
 		}
 
 		/**
-		 * Sends a GET request to a specified URI.
+		 * Sends a GET request to the specified URI.
 		 * 
 		 * @param uri the URI
 		 * @return the response
@@ -780,7 +793,7 @@ public final class RestClient {
 		}
 
 		/**
-		 * Sends a POST request without body to a specified URI.
+		 * Sends a POST request without body to the specified URI.
 		 * 
 		 * @param uri the URI
 		 * @return the response
@@ -793,7 +806,7 @@ public final class RestClient {
 		}
 
 		/**
-		 * Sends a POST request to a specified URI.
+		 * Sends a POST request to the specified URI.
 		 * 
 		 * @param uri  the URI
 		 * @param body the body
@@ -802,11 +815,11 @@ public final class RestClient {
 		 * @throws IllegalArgumentException if the URI is invalid
 		 */
 		public RestResponse post(String uri, Object body) {
-			return withBody(body).doRequest("POST", uri);
+			return withBody(body).post(uri);
 		}
 
 		/**
-		 * Sends a PUT request without body to a specified URI.
+		 * Sends a PUT request without body to the specified URI.
 		 * 
 		 * @param uri the URI
 		 * @return the response
@@ -819,7 +832,7 @@ public final class RestClient {
 		}
 
 		/**
-		 * Sends a PUT request to a specified URI.
+		 * Sends a PUT request to the specified URI.
 		 * 
 		 * @param uri  the URI
 		 * @param body the body
@@ -828,11 +841,11 @@ public final class RestClient {
 		 * @throws IllegalArgumentException if the URI is invalid
 		 */
 		public RestResponse put(String uri, Object body) {
-			return withBody(body).doRequest("PUT", uri);
+			return withBody(body).put(uri);
 		}
 
 		/**
-		 * Sends a PATCH request without body to a specified URI.
+		 * Sends a PATCH request without body to the specified URI.
 		 * 
 		 * @param uri the URI
 		 * @return the response
@@ -845,7 +858,7 @@ public final class RestClient {
 		}
 
 		/**
-		 * Sends a PATCH request to a specified URI.
+		 * Sends a PATCH request to the specified URI.
 		 * 
 		 * @param uri  the URI
 		 * @param body the body
@@ -854,11 +867,11 @@ public final class RestClient {
 		 * @throws IllegalArgumentException if the URI is invalid
 		 */
 		public RestResponse patch(String uri, Object body) {
-			return withBody(body).doRequest("PATCH", uri);
+			return withBody(body).patch(uri);
 		}
 
 		/**
-		 * Sends a DELETE request to a specified URI.
+		 * Sends a DELETE request to the specified URI.
 		 * 
 		 * @param uri the URI
 		 * @return the response
@@ -870,7 +883,7 @@ public final class RestClient {
 		}
 
 		/**
-		 * Sends a specified method to a specified URI.
+		 * Sends the specified method to the specified URI.
 		 * 
 		 * @param method the method
 		 * @param uri    the URI
@@ -900,23 +913,23 @@ public final class RestClient {
 			if (!uri.startsWith("/")) {
 				throw new IllegalArgumentException("URI must start with /");
 			}
-			String url = "%s%s".formatted(urlPrefix, withQueries(uri));
+			String url = "%s%s".formatted(urlPrefix, completeQueries(uri));
 			Request request = jettyClient.newRequest(url).method(method);
 			addHeaders(request);
-			List<Task> tasks = consumeBodyAndGetTasks(request);
+			List<Task> tasks = consumeBodyAndBuildTasks(request);
 			return send(request, tasks);
 		}
 
-		String withQueries(String uri) {
+		String completeQueries(String uri) {
 			StringJoiner joiner = new StringJoiner("&");
 
 			int index = uri.indexOf('?');
 			if (index == -1) {
-				uri = stripAndEncode(uri);
+				uri = stripAndRecode(uri);
 			} else {
 				String prefix = uri.substring(0, index);
 				String suffix = uri.substring(index + 1);
-				uri = stripAndEncode(prefix);
+				uri = stripAndRecode(prefix);
 
 				for (String item : suffix.split("&", -1)) {
 					index = item.indexOf('=');
@@ -930,13 +943,19 @@ public final class RestClient {
 				}
 			}
 
-			for (Entry entry : queries) {
-				String name = entry.name();
-				String value = entry.valueString();
-				if (value == null) {
-					joiner.add(name);
-				} else {
-					joiner.add("%s=%s".formatted(name, value));
+			if (!queries.isEmpty()) {
+				if (joiner.length() == 0) {
+					joiner = new StringJoiner("&");
+				}
+
+				for (Entry entry : queries) {
+					String name = entry.name();
+					String value = entry.valueString();
+					if (value == null) {
+						joiner.add(name);
+					} else {
+						joiner.add("%s=%s".formatted(name, value));
+					}
 				}
 			}
 
@@ -946,13 +965,13 @@ public final class RestClient {
 			return uri;
 		}
 
-		private String stripAndEncode(String uri) {
-			uri = PathCoder.getInstance().stripEndingSlashes(uri);
-			return PathCoder.getInstance().recode(uri, urlCharset);
+		private String stripAndRecode(String uri) {
+			uri = pathCoder.stripEndingSlashes(uri);
+			return pathCoder.recode(uri, urlCharset);
 		}
 
 		private String recode(String item) {
-			return QueryCoder.getInstance().recode(item, urlCharset);
+			return queryCoder.recode(item, urlCharset);
 		}
 
 		void addHeaders(Request request) {
@@ -963,10 +982,10 @@ public final class RestClient {
 			});
 		}
 
-		List<Task> consumeBodyAndGetTasks(Request request) {
+		List<Task> consumeBodyAndBuildTasks(Request request) {
 			List<Task> tasks = new ArrayList<>();
 			if (body != null) {
-				request.body(addTaskAndGetContent(tasks, body));
+				request.body(addTaskAndBuildContent(tasks, body));
 				body = null;
 			} else {
 				if (!parts.isEmpty()) {
@@ -976,7 +995,7 @@ public final class RestClient {
 							for (Entry entry : part.getHeaders()) {
 								fields.add(entry.name(), entry.valueString());
 							}
-							content.addFieldPart(part.getName(), addTaskAndGetContent(tasks, part), fields);
+							content.addFieldPart(part.getName(), addTaskAndBuildContent(tasks, part), fields);
 						}
 						request.body(content);
 					}
@@ -986,7 +1005,7 @@ public final class RestClient {
 			return tasks;
 		}
 
-		Content addTaskAndGetContent(List<Task> tasks, RestBody body) {
+		OutputStreamRequestContent addTaskAndBuildContent(List<Task> tasks, RestBody body) {
 			Object actual = body.getActual();
 			Type type = body.getType();
 			String contentType = body.getContentType();
@@ -1026,7 +1045,7 @@ public final class RestClient {
 			OutputStreamRequestContent content = new OutputStreamRequestContent(contentType);
 			OutputStream stream = content.getOutputStream();
 			if (base64) {
-				stream = MediaCoder.getInstance().encode(stream);
+				stream = mediaCoder.encode(stream);
 			}
 
 			tasks.add(new Task(consumer, stream));
@@ -1041,8 +1060,8 @@ public final class RestClient {
 
 			for (Task task : tasks) {
 				Consumer<OutputStream> consumer = task.consumer();
-				OutputStream stream = task.stream();
-				consumer.accept(stream);
+				OutputStream output = task.stream();
+				consumer.accept(output);
 			}
 
 			Response response;

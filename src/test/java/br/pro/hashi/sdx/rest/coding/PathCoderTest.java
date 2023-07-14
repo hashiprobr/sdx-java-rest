@@ -29,7 +29,10 @@ class PathCoderTest {
 
 		when(coder.recode(any(String.class), eq(StandardCharsets.UTF_8))).thenAnswer((invocation) -> {
 			String item = invocation.getArgument(0);
-			return item.replace(' ', '+');
+			if (item.isEmpty()) {
+				return "";
+			}
+			return "qr(%s)".formatted(item.replace(' ', '+'));
 		});
 
 		c = new PathCoder(coder);
@@ -189,26 +192,26 @@ class PathCoderTest {
 
 	@Test
 	void recodesPlus() {
-		assertEquals("/%2B", recode("/+"));
+		assertEquals("/qr(%2B)", recode("/+"));
 	}
 
 	@Test
 	void recodesSpace() {
-		assertEquals("/%20", recode("/ "));
+		assertEquals("/qr(%20)", recode("/ "));
 	}
 
 	@ParameterizedTest
 	@CsvSource({
-			"/,                  /",
-			"/a,                 /a",
-			"/aa,                /aa",
-			"/aaa,               /aaa",
-			"/a/b,               /a/b",
-			"//aa//bb,           //aa//bb",
-			"///aaa///bbb,       ///aaa///bbb",
-			"/a/b/c,             /a/b/c",
-			"//aa//bb//cc,       //aa//bb//cc",
-			"///aaa///bbb///ccc, ///aaa///bbb///ccc" })
+			"/,                              /",
+			"/qr(a),                         /a",
+			"/qr(aa),                        /aa",
+			"/qr(aaa),                       /aaa",
+			"/qr(a)/qr(b),                   /a/b",
+			"//qr(aa)//qr(bb),               //aa//bb",
+			"///qr(aaa)///qr(bbb),           ///aaa///bbb",
+			"/qr(a)/qr(b)/qr(c),             /a/b/c",
+			"//qr(aa)//qr(bb)//qr(cc),       //aa//bb//cc",
+			"///qr(aaa)///qr(bbb)///qr(ccc), ///aaa///bbb///ccc" })
 	void recodes(String expected, String path) {
 		assertEquals(expected, recode(path));
 	}

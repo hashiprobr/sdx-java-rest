@@ -59,7 +59,8 @@ class TransformManagerTest {
 			if (contentType.isEmpty()) {
 				return null;
 			}
-			return contentType;
+			int index = contentType.indexOf(';');
+			return contentType.substring(0, index);
 		});
 
 		assemblerStatic = mockStatic(DefaultAssembler.class);
@@ -107,23 +108,21 @@ class TransformManagerTest {
 
 	@Test
 	void putsDefaultAssembler() {
-		String contentType = "image/png";
-		f.putDefaultAssembler(contentType);
-		assertSame(defaultAssembler, f.getAssembler(contentType));
+		f.putDefaultAssembler("image/png;parameter");
+		assertSame(defaultAssembler, f.getAssembler("image/png"));
 	}
 
 	@Test
 	void putsAssembler() {
-		String contentType = "image/png";
 		Assembler assembler = mock(Assembler.class);
-		f.putAssembler(contentType, assembler);
-		assertSame(assembler, f.getAssembler(contentType));
+		f.putAssembler("image/png;parameter", assembler);
+		assertSame(assembler, f.getAssembler("image/png"));
 	}
 
 	@Test
 	void doesNotPutNullAssembler() {
 		assertThrows(NullPointerException.class, () -> {
-			f.putAssembler("image/png", null);
+			f.putAssembler("image/png;parameter", null);
 		});
 	}
 
@@ -155,23 +154,21 @@ class TransformManagerTest {
 
 	@Test
 	void putsDefaultDisassembler() {
-		String contentType = "image/png";
-		f.putDefaultDisassembler(contentType);
-		assertSame(defaultDisassembler, f.getDisassembler(contentType));
+		f.putDefaultDisassembler("image/png;parameter");
+		assertSame(defaultDisassembler, f.getDisassembler("image/png"));
 	}
 
 	@Test
 	void putsDisassembler() {
-		String contentType = "image/png";
 		Disassembler disassembler = mock(Disassembler.class);
-		f.putDisassembler(contentType, disassembler);
-		assertSame(disassembler, f.getDisassembler(contentType));
+		f.putDisassembler("image/png;parameter", disassembler);
+		assertSame(disassembler, f.getDisassembler("image/png"));
 	}
 
 	@Test
 	void doesNotPutNullDisassembler() {
 		assertThrows(NullPointerException.class, () -> {
-			f.putDisassembler("image/png", null);
+			f.putDisassembler("image/png;parameter", null);
 		});
 	}
 
@@ -203,23 +200,21 @@ class TransformManagerTest {
 
 	@Test
 	void putsDefaultSerializer() {
-		String contentType = "application/xml";
-		f.putDefaultSerializer(contentType);
-		assertSame(defaultSerializer, f.getSerializer(contentType));
+		f.putDefaultSerializer("application/xml;parameter");
+		assertSame(defaultSerializer, f.getSerializer("application/xml"));
 	}
 
 	@Test
 	void putsSerializer() {
-		String contentType = "application/xml";
 		Serializer serializer = mock(Serializer.class);
-		f.putSerializer(contentType, serializer);
-		assertSame(serializer, f.getSerializer(contentType));
+		f.putSerializer("application/xml;parameter", serializer);
+		assertSame(serializer, f.getSerializer("application/xml"));
 	}
 
 	@Test
 	void doesNotPutNullSerializer() {
 		assertThrows(NullPointerException.class, () -> {
-			f.putSerializer("application/xml", null);
+			f.putSerializer("application/xml;parameter", null);
 		});
 	}
 
@@ -251,23 +246,21 @@ class TransformManagerTest {
 
 	@Test
 	void putsDefaultDeserializer() {
-		String contentType = "application/xml";
-		f.putDefaultDeserializer(contentType);
-		assertSame(defaultDeserializer, f.getDeserializer(contentType));
+		f.putDefaultDeserializer("application/xml;parameter");
+		assertSame(defaultDeserializer, f.getDeserializer("application/xml"));
 	}
 
 	@Test
 	void putsDeserializer() {
-		String contentType = "application/xml";
 		Deserializer deserializer = mock(Deserializer.class);
-		f.putDeserializer(contentType, deserializer);
-		assertSame(deserializer, f.getDeserializer(contentType));
+		f.putDeserializer("application/xml;parameter", deserializer);
+		assertSame(deserializer, f.getDeserializer("application/xml"));
 	}
 
 	@Test
 	void doesNotPutNullDeserializer() {
 		assertThrows(NullPointerException.class, () -> {
-			f.putDeserializer("application/xml", null);
+			f.putDeserializer("application/xml;parameter", null);
 		});
 	}
 
@@ -302,18 +295,16 @@ class TransformManagerTest {
 
 	@Test
 	void putsByteExtensionType() {
-		String contentType = "image/png";
-		f.putDefaultAssembler(contentType);
-		f.putExtensionType(" \t\npng \t\n", contentType);
-		assertEquals(contentType, f.getExtensionType("png"));
+		f.putDefaultAssembler("image/png;parameter");
+		f.putExtensionType(" \t\npng \t\n", "image/png");
+		assertEquals("image/png", f.getExtensionType("png"));
 	}
 
 	@Test
 	void putsTextExtensionType() {
-		String contentType = "application/xml";
-		f.putDefaultSerializer(contentType);
-		f.putExtensionType(" \t\nxml \t\n", contentType);
-		assertEquals(contentType, f.getExtensionType("xml"));
+		f.putDefaultSerializer("application/xml;parameter");
+		f.putExtensionType(" \t\nxml \t\n", "application/xml");
+		assertEquals("application/xml", f.getExtensionType("xml"));
 	}
 
 	@Test
@@ -458,32 +449,28 @@ class TransformManagerTest {
 
 	@Test
 	void setsAndGetsFallbackAssemblerType() {
-		String contentType = "image/png";
 		Object body = new Object();
-		f.setFallbackByteType(contentType);
-		assertEquals(contentType, f.getAssemblerType(null, body, Object.class));
+		f.setFallbackByteType("image/png;parameter");
+		assertEquals("image/png", f.getAssemblerType(null, body, Object.class));
 	}
 
 	@Test
 	void setsAndGetsFallbackDisassemblerType() {
-		String contentType = "image/png";
-		f.setFallbackByteType(contentType);
-		assertEquals(contentType, f.getDisassemblerType(null, Object.class));
+		f.setFallbackByteType("image/png;parameter");
+		assertEquals("image/png", f.getDisassemblerType(null, Object.class));
 	}
 
 	@Test
 	void setsAndGetsFallbackSerializerType() {
-		String contentType = "application/xml";
 		Object body = new Object();
-		f.setFallbackTextType(contentType);
-		assertEquals(contentType, f.getSerializerType(null, body, Object.class));
+		f.setFallbackTextType("application/xml;parameter");
+		assertEquals("application/xml", f.getSerializerType(null, body, Object.class));
 	}
 
 	@Test
 	void setsAndGetsFallbackDeserializerType() {
-		String contentType = "application/xml";
-		f.setFallbackTextType(contentType);
-		assertEquals(contentType, f.getDeserializerType(null, Object.class));
+		f.setFallbackTextType("application/xml;parameter");
+		assertEquals("application/xml", f.getDeserializerType(null, Object.class));
 	}
 
 	@Test

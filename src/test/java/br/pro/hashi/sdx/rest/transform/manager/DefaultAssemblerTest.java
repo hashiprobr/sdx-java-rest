@@ -66,7 +66,7 @@ class DefaultAssemblerTest {
 	}
 
 	private void assertEqualsBody(ByteArrayOutputStream stream) {
-		assertEquals("body", new String(stream.toByteArray(), StandardCharsets.US_ASCII));
+		assertEquals("body", stream.toString(StandardCharsets.UTF_8));
 	}
 
 	@Test
@@ -100,6 +100,6 @@ class DefaultAssemblerTest {
 	}
 
 	private byte[] newByteArray() {
-		return "body".getBytes(StandardCharsets.US_ASCII);
+		return "body".getBytes(StandardCharsets.UTF_8);
 	}
 }

@@ -29,7 +29,7 @@ import br.pro.hashi.sdx.rest.transform.manager.TransformManager;
 
 public abstract class BuilderTest {
 	private MockedStatic<ParserFactory> cacheStatic;
-	private MockedConstruction<TransformManager> managerConstruction;
+	private MockedConstruction<TransformManager> construction;
 	private Builder<?> b;
 	private ParserFactory factory;
 	private TransformManager manager;
@@ -39,14 +39,14 @@ public abstract class BuilderTest {
 		factory = mock(ParserFactory.class);
 		cacheStatic = mockStatic(ParserFactory.class);
 		cacheStatic.when(() -> ParserFactory.getInstance()).thenReturn(factory);
-		managerConstruction = mockConstruction(TransformManager.class);
+		construction = mockConstruction(TransformManager.class);
 		b = newInstance();
-		manager = managerConstruction.constructed().get(0);
+		manager = construction.constructed().get(0);
 	}
 
 	@AfterEach
 	void tearDown() {
-		managerConstruction.close();
+		construction.close();
 		cacheStatic.close();
 	}
 

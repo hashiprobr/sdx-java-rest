@@ -4,10 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockConstruction;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.lang.invoke.MethodHandle;
@@ -158,25 +155,15 @@ class ReflectorTest {
 	}
 
 	@Test
-	void constructsReflections() {
+	void getsConcreteSubTypes() {
 		MockInitializer<Reflections> initializer = (mock, context) -> {
 			assertEquals("package", context.arguments().get(0));
+			when(mock.getSubTypesOf(Parent.class)).thenReturn(Set.of(Child.class, AbstractChild.class));
 		};
-		try (MockedConstruction<Reflections> construction = mockConstruction(Reflections.class, initializer)) {
-			r = spy(r);
-			r.getConcreteSubTypes("package", Parent.class);
-			List<Reflections> constructed = construction.constructed();
-			assertEquals(1, constructed.size());
-			verify(r).getConcreteSubTypes(constructed.get(0), Parent.class);
-		}
-	}
-
-	@Test
-	void getsConcreteSubTypes() {
-		Reflections reflections = mock(Reflections.class);
-		when(reflections.getSubTypesOf(Parent.class)).thenReturn(Set.of(Child.class, AbstractChild.class));
 		List<Class<? extends Parent>> types = new ArrayList<>();
-		r.getConcreteSubTypes(reflections, Parent.class).forEach(types::add);
+		try (MockedConstruction<Reflections> construction = mockConstruction(Reflections.class, initializer)) {
+			r.getConcreteSubTypes("package", Parent.class).forEach(types::add);
+		}
 		assertEquals(1, types.size());
 		assertEquals(Child.class, types.get(0));
 	}

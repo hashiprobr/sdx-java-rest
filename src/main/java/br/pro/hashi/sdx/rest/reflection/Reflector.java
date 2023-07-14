@@ -79,10 +79,6 @@ public class Reflector {
 
 	public <T> Iterable<Class<? extends T>> getConcreteSubTypes(String packageName, Class<T> type) {
 		Reflections reflections = new Reflections(packageName);
-		return getConcreteSubTypes(reflections, type);
-	}
-
-	<T> Iterable<Class<? extends T>> getConcreteSubTypes(Reflections reflections, Class<T> type) {
 		return () -> reflections.getSubTypesOf(type)
 				.stream()
 				.filter((subType) -> !Modifier.isAbstract(subType.getModifiers()))

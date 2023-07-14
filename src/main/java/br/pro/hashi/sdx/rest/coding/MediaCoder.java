@@ -98,10 +98,10 @@ public class MediaCoder {
 	}
 
 	public InputStream decode(InputStream stream, String contentType) {
-		if (contentType != null && BASE64_PATTERN.matcher(contentType).matches()) {
-			stream = BASE64_DECODER.wrap(stream);
+		if (contentType == null || !BASE64_PATTERN.matcher(contentType).matches()) {
+			return stream;
 		}
-		return stream;
+		return BASE64_DECODER.wrap(stream);
 	}
 
 	public OutputStream encode(OutputStream stream) {

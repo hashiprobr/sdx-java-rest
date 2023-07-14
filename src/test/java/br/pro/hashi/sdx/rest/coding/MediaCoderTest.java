@@ -318,8 +318,8 @@ class MediaCoderTest {
 	}
 
 	private void assertReads(String expected, String content, String contentType) {
-		InputStream stream = c.decode(newInputStream(content, StandardCharsets.US_ASCII), contentType);
-		assertEquals(expected, new String(c.read(stream), StandardCharsets.US_ASCII));
+		InputStream stream = c.decode(newInputStream(content, StandardCharsets.UTF_8), contentType);
+		assertEquals(expected, new String(c.read(stream), StandardCharsets.UTF_8));
 	}
 
 	private InputStream newInputStream(String content, Charset charset) {
@@ -336,11 +336,11 @@ class MediaCoderTest {
 
 	private void assertWrites(String expected, String content) {
 		ByteArrayOutputStream stream = new ByteArrayOutputStream();
-		Writer writer = new OutputStreamWriter(c.encode(stream), StandardCharsets.US_ASCII);
+		Writer writer = new OutputStreamWriter(c.encode(stream), StandardCharsets.UTF_8);
 		assertDoesNotThrow(() -> {
 			writer.write(content);
 			writer.close();
 		});
-		assertEquals(expected, new String(stream.toByteArray(), StandardCharsets.US_ASCII));
+		assertEquals(expected, stream.toString(StandardCharsets.UTF_8));
 	}
 }

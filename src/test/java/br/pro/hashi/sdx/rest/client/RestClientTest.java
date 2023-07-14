@@ -1,5 +1,6 @@
 package br.pro.hashi.sdx.rest.client;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
@@ -28,9 +29,9 @@ import java.io.UncheckedIOException;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Base64;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -38,84 +39,137 @@ import java.util.function.Consumer;
 
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.api.Request;
-import org.eclipse.jetty.client.api.Request.Content;
 import org.eclipse.jetty.client.api.Response;
 import org.eclipse.jetty.client.util.InputStreamResponseListener;
 import org.eclipse.jetty.client.util.MultiPartRequestContent;
 import org.eclipse.jetty.client.util.OutputStreamRequestContent;
 import org.eclipse.jetty.http.HttpFields;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.mockito.Mock;
 import org.mockito.MockedConstruction;
+import org.mockito.MockedConstruction.MockInitializer;
 import org.mockito.MockedStatic;
+import org.mockito.MockitoAnnotations;
 
 import br.pro.hashi.sdx.rest.client.RestClient.Proxy;
 import br.pro.hashi.sdx.rest.client.RestClient.Proxy.Entry;
 import br.pro.hashi.sdx.rest.client.RestClient.Proxy.Task;
 import br.pro.hashi.sdx.rest.client.exception.ClientException;
-import br.pro.hashi.sdx.rest.constant.Defaults;
+import br.pro.hashi.sdx.rest.coding.MediaCoder;
+import br.pro.hashi.sdx.rest.coding.PathCoder;
+import br.pro.hashi.sdx.rest.coding.QueryCoder;
 import br.pro.hashi.sdx.rest.reflection.Headers;
 import br.pro.hashi.sdx.rest.transform.Assembler;
 import br.pro.hashi.sdx.rest.transform.Serializer;
 import br.pro.hashi.sdx.rest.transform.manager.TransformManager;
 
 class RestClientTest {
+	private static final String URL_PREFIX = "http://a";
+	private static final String URI = "/b";
+	private static final String CONTENT_TYPE = "type/subtype";
 	private static final String REGULAR_CONTENT = "regular";
 	private static final String SPECIAL_CONTENT = "spéçìal";
 
-	private TransformManager manager;
-	private HttpClient jettyClient;
-	private Request request;
-	private Response response;
+	private AutoCloseable mocks;
+	private @Mock QueryCoder queryCoder;
+	private @Mock PathCoder pathCoder;
+	private @Mock MediaCoder mediaCoder;
+	private @Mock TransformManager manager;
+	private @Mock HttpClient jettyClient;
+	private @Mock Request request;
+	private @Mock Response response;
 	private RestClient c;
 	private Proxy p;
 
 	@BeforeEach
 	void setUp() {
-		manager = mock(TransformManager.class);
-		jettyClient = mock(HttpClient.class);
-		request = mock(Request.class);
-		response = mock(Response.class);
-		c = new RestClient(manager, jettyClient, Defaults.LOCALE, StandardCharsets.UTF_8, "http://a");
+		mocks = MockitoAnnotations.openMocks(this);
+
+		when(queryCoder.recode(any(String.class), eq(StandardCharsets.UTF_8))).thenAnswer((invocation) -> {
+			String item = invocation.getArgument(0);
+			if (item.isBlank()) {
+				return "";
+			}
+			return "qr(%s)".formatted(item);
+		});
+		when(queryCoder.encode(any(String.class), eq(StandardCharsets.UTF_8))).thenAnswer((invocation) -> {
+			String item = invocation.getArgument(0);
+			return "qe(%s)".formatted(item);
+		});
+
+		when(pathCoder.stripEndingSlashes(any(String.class))).thenAnswer((invocation) -> {
+			return invocation.getArgument(0);
+		});
+		when(pathCoder.recode(any(String.class), eq(StandardCharsets.UTF_8))).thenAnswer((invocation) -> {
+			String path = invocation.getArgument(0);
+			return "pr(%s)".formatted(path);
+		});
+
+		when(mediaCoder.encode(any(OutputStream.class))).thenAnswer((invocation) -> {
+			return invocation.getArgument(0);
+		});
+
+		c = new RestClient(queryCoder, pathCoder, mediaCoder, manager, jettyClient, Locale.ROOT, StandardCharsets.UTF_8, URL_PREFIX);
 	}
 
-	@Test
-	void builds() {
-		try (MockedConstruction<RestClientBuilder> construction = mockBuilderConstruction()) {
-			assertSame(c, RestClient.to("http://a"));
-			RestClientBuilder builder = construction.constructed().get(0);
-			verify(builder).build("http://a");
-		}
-	}
-
-	private MockedConstruction<RestClientBuilder> mockBuilderConstruction() {
-		c = mock(RestClient.class);
-		return mockConstruction(RestClientBuilder.class, (mock, context) -> {
-			when(mock.build("http://a")).thenReturn(c);
+	@AfterEach
+	void tearDown() {
+		assertDoesNotThrow(() -> {
+			mocks.close();
 		});
 	}
 
 	@Test
-	void starts() throws Exception {
-		when(jettyClient.isRunning()).thenReturn(false);
-		c.start();
-		verify(jettyClient).start();
+	void getsInstance() {
+		RestClient client = RestClient.newInstance(manager, jettyClient, Locale.ROOT, StandardCharsets.UTF_8, URL_PREFIX);
+		assertSame(manager, client.getManager());
+		assertEquals(Locale.ROOT, client.getLocale());
+		assertEquals(StandardCharsets.UTF_8, client.getUrlCharset());
+		assertEquals(URL_PREFIX, client.getUrlPrefix());
+		assertSame(jettyClient, client.getJettyClient());
 	}
 
 	@Test
-	void doesNotStartIfJettyClientAlreadyStarted() throws Exception {
+	void gets() {
+		MockInitializer<RestClientBuilder> initializer = (mock, context) -> {
+			when(mock.build(URL_PREFIX)).thenReturn(c);
+		};
+		RestClient client;
+		try (MockedConstruction<RestClientBuilder> construction = mockConstruction(RestClientBuilder.class, initializer)) {
+			client = RestClient.to(URL_PREFIX);
+		}
+		assertSame(c, client);
+	}
+
+	@Test
+	void starts() {
+		when(jettyClient.isRunning()).thenReturn(false);
+		c.start();
+		assertDoesNotThrow(() -> {
+			verify(jettyClient).start();
+		});
+	}
+
+	@Test
+	void doesNotStartIfJettyClientStarted() {
 		when(jettyClient.isRunning()).thenReturn(true);
 		c.start();
-		verify(jettyClient, times(0)).start();
+		assertDoesNotThrow(() -> {
+			verify(jettyClient, times(0)).start();
+		});
 	}
 
 	@Test
-	void doesNotStartIfJettyClientThrowsException() throws Exception {
+	void doesNotStartIfJettyClientThrows() {
 		when(jettyClient.isRunning()).thenReturn(false);
 		Throwable cause = new Exception();
-		doThrow(cause).when(jettyClient).start();
+		assertDoesNotThrow(() -> {
+			doThrow(cause).when(jettyClient).start();
+		});
 		Exception exception = assertThrows(ClientException.class, () -> {
 			c.start();
 		});
@@ -123,24 +177,30 @@ class RestClientTest {
 	}
 
 	@Test
-	void stops() throws Exception {
+	void stops() {
 		when(jettyClient.isRunning()).thenReturn(true);
 		c.stop();
-		verify(jettyClient).stop();
+		assertDoesNotThrow(() -> {
+			verify(jettyClient).stop();
+		});
 	}
 
 	@Test
-	void doesNotStopIfJettyClientAlreadyStopped() throws Exception {
+	void doesNotStopIfJettyClientStopped() {
 		when(jettyClient.isRunning()).thenReturn(false);
 		c.stop();
-		verify(jettyClient, times(0)).stop();
+		assertDoesNotThrow(() -> {
+			verify(jettyClient, times(0)).stop();
+		});
 	}
 
 	@Test
-	void doesNotStopIfJettyClientThrowsException() throws Exception {
+	void doesNotStopIfJettyClientThrows() {
 		when(jettyClient.isRunning()).thenReturn(true);
 		Throwable cause = new Exception();
-		doThrow(cause).when(jettyClient).stop();
+		assertDoesNotThrow(() -> {
+			doThrow(cause).when(jettyClient).stop();
+		});
 		Exception exception = assertThrows(ClientException.class, () -> {
 			c.stop();
 		});
@@ -148,144 +208,180 @@ class RestClientTest {
 	}
 
 	@Test
-	void forwardsWithQueryToProxy() {
-		try (MockedConstruction<Proxy> construction = mockConstruction(Proxy.class)) {
-			c.q("name");
-			p = construction.constructed().get(0);
-			verify(p).withQuery("name");
+	void forwardsWithQueryWithoutValueToProxy() {
+		MockInitializer<Proxy> initializer = (mock, context) -> {
+			when(mock.withQuery("parameter")).thenReturn(mock);
+		};
+		try (MockedConstruction<Proxy> construction = mockConstruction(Proxy.class, initializer)) {
+			p = c.q("parameter");
+			assertSame(p, construction.constructed().get(0));
 		}
+		verify(p).withQuery("parameter");
 	}
 
 	@Test
-	void forwardsWithQueryToProxyWithValue() {
-		try (MockedConstruction<Proxy> construction = mockConstruction(Proxy.class)) {
-			Object value = new Object();
-			c.q("name", value);
-			p = construction.constructed().get(0);
-			verify(p).withQuery("name", value);
+	void forwardsWithQueryToProxy() {
+		Object value = new Object();
+		MockInitializer<Proxy> initializer = (mock, context) -> {
+			when(mock.withQuery("name", value)).thenReturn(mock);
+		};
+		try (MockedConstruction<Proxy> construction = mockConstruction(Proxy.class, initializer)) {
+			p = c.q("name", value);
+			assertSame(p, construction.constructed().get(0));
 		}
+		verify(p).withQuery("name", value);
 	}
 
 	@Test
 	void forwardsWithHeaderToProxy() {
-		try (MockedConstruction<Proxy> construction = mockConstruction(Proxy.class)) {
-			Object value = new Object();
-			c.h("name", value);
-			p = construction.constructed().get(0);
-			verify(p).withHeader("name", value);
+		Object value = new Object();
+		MockInitializer<Proxy> initializer = (mock, context) -> {
+			when(mock.withHeader("name", value)).thenReturn(mock);
+		};
+		try (MockedConstruction<Proxy> construction = mockConstruction(Proxy.class, initializer)) {
+			p = c.h("name", value);
+			assertSame(p, construction.constructed().get(0));
 		}
-	}
-
-	@Test
-	void forwardsWithPartToProxy() {
-		try (MockedConstruction<Proxy> construction = mockConstruction(Proxy.class)) {
-			Object part = new Object();
-			c.p("name", part);
-			p = construction.constructed().get(0);
-			verify(p).withPart("name", part);
-		}
+		verify(p).withHeader("name", value);
 	}
 
 	@Test
 	void forwardsWithBodyToProxy() {
-		try (MockedConstruction<Proxy> construction = mockConstruction(Proxy.class)) {
-			Object body = new Object();
-			c.b(body);
-			p = construction.constructed().get(0);
-			verify(p).withBody(body);
+		Object body = new Object();
+		MockInitializer<Proxy> initializer = (mock, context) -> {
+			when(mock.withBody(body)).thenReturn(mock);
+		};
+		try (MockedConstruction<Proxy> construction = mockConstruction(Proxy.class, initializer)) {
+			p = c.b(body);
+			assertSame(p, construction.constructed().get(0));
 		}
+		verify(p).withBody(body);
+	}
+
+	@Test
+	void forwardsWithPartToProxy() {
+		Object part = new Object();
+		MockInitializer<Proxy> initializer = (mock, context) -> {
+			when(mock.withPart("name", part)).thenReturn(mock);
+		};
+		try (MockedConstruction<Proxy> construction = mockConstruction(Proxy.class, initializer)) {
+			p = c.p("name", part);
+			assertSame(p, construction.constructed().get(0));
+		}
+		verify(p).withPart("name", part);
 	}
 
 	@Test
 	void forwardsWithTimeoutToProxy() {
-		try (MockedConstruction<Proxy> construction = mockConstruction(Proxy.class)) {
-			c.t(0);
-			p = construction.constructed().get(0);
-			verify(p).withTimeout(0);
+		MockInitializer<Proxy> initializer = (mock, context) -> {
+			when(mock.withTimeout(0)).thenReturn(mock);
+		};
+		try (MockedConstruction<Proxy> construction = mockConstruction(Proxy.class, initializer)) {
+			p = c.t(0);
+			assertSame(p, construction.constructed().get(0));
 		}
+		verify(p).withTimeout(0);
 	}
 
 	@Test
 	void forwardsGetToProxy() {
-		try (MockedConstruction<Proxy> construction = mockConstruction(Proxy.class)) {
-			c.get("/");
-			p = construction.constructed().get(0);
-			verify(p).get("/");
+		RestResponse restResponse = mock(RestResponse.class);
+		MockInitializer<Proxy> initializer = (mock, context) -> {
+			when(mock.get(URI)).thenReturn(restResponse);
+		};
+		try (MockedConstruction<Proxy> construction = mockConstruction(Proxy.class, initializer)) {
+			assertSame(restResponse, c.get(URI));
+		}
+	}
+
+	@Test
+	void forwardsPostWithoutBodyToProxy() {
+		RestResponse restResponse = mock(RestResponse.class);
+		MockInitializer<Proxy> initializer = (mock, context) -> {
+			when(mock.post(URI)).thenReturn(restResponse);
+		};
+		try (MockedConstruction<Proxy> construction = mockConstruction(Proxy.class, initializer)) {
+			assertSame(restResponse, c.post(URI));
 		}
 	}
 
 	@Test
 	void forwardsPostToProxy() {
-		try (MockedConstruction<Proxy> construction = mockConstruction(Proxy.class)) {
-			c.post("/");
-			p = construction.constructed().get(0);
-			verify(p).post("/");
+		Object body = new Object();
+		RestResponse restResponse = mock(RestResponse.class);
+		MockInitializer<Proxy> initializer = (mock, context) -> {
+			when(mock.post(URI, body)).thenReturn(restResponse);
+		};
+		try (MockedConstruction<Proxy> construction = mockConstruction(Proxy.class, initializer)) {
+			assertSame(restResponse, c.post(URI, body));
 		}
 	}
 
 	@Test
-	void forwardsPostToProxyWithBody() {
-		try (MockedConstruction<Proxy> construction = mockConstruction(Proxy.class)) {
-			Object body = new Object();
-			c.post("/", body);
-			p = construction.constructed().get(0);
-			verify(p).post("/", body);
+	void forwardsPutWithoutBodyToProxy() {
+		RestResponse restResponse = mock(RestResponse.class);
+		MockInitializer<Proxy> initializer = (mock, context) -> {
+			when(mock.put(URI)).thenReturn(restResponse);
+		};
+		try (MockedConstruction<Proxy> construction = mockConstruction(Proxy.class, initializer)) {
+			assertSame(restResponse, c.put(URI));
 		}
 	}
 
 	@Test
 	void forwardsPutToProxy() {
-		try (MockedConstruction<Proxy> construction = mockConstruction(Proxy.class)) {
-			c.put("/");
-			p = construction.constructed().get(0);
-			verify(p).put("/");
+		Object body = new Object();
+		RestResponse restResponse = mock(RestResponse.class);
+		MockInitializer<Proxy> initializer = (mock, context) -> {
+			when(mock.put(URI, body)).thenReturn(restResponse);
+		};
+		try (MockedConstruction<Proxy> construction = mockConstruction(Proxy.class, initializer)) {
+			assertSame(restResponse, c.put(URI, body));
 		}
 	}
 
 	@Test
-	void forwardsPutToProxyWithBody() {
-		try (MockedConstruction<Proxy> construction = mockConstruction(Proxy.class)) {
-			Object body = new Object();
-			c.put("/", body);
-			p = construction.constructed().get(0);
-			verify(p).put("/", body);
+	void forwardsPatchWithoutBodyToProxy() {
+		RestResponse restResponse = mock(RestResponse.class);
+		MockInitializer<Proxy> initializer = (mock, context) -> {
+			when(mock.patch(URI)).thenReturn(restResponse);
+		};
+		try (MockedConstruction<Proxy> construction = mockConstruction(Proxy.class, initializer)) {
+			assertSame(restResponse, c.patch(URI));
 		}
 	}
 
 	@Test
 	void forwardsPatchToProxy() {
-		try (MockedConstruction<Proxy> construction = mockConstruction(Proxy.class)) {
-			c.patch("/");
-			p = construction.constructed().get(0);
-			verify(p).patch("/");
-		}
-	}
-
-	@Test
-	void forwardsPatchToProxyWithBody() {
-		try (MockedConstruction<Proxy> construction = mockConstruction(Proxy.class)) {
-			Object body = new Object();
-			c.patch("/", body);
-			p = construction.constructed().get(0);
-			verify(p).patch("/", body);
+		Object body = new Object();
+		RestResponse restResponse = mock(RestResponse.class);
+		MockInitializer<Proxy> initializer = (mock, context) -> {
+			when(mock.patch(URI, body)).thenReturn(restResponse);
+		};
+		try (MockedConstruction<Proxy> construction = mockConstruction(Proxy.class, initializer)) {
+			assertSame(restResponse, c.patch(URI, body));
 		}
 	}
 
 	@Test
 	void forwardsDeleteToProxy() {
-		try (MockedConstruction<Proxy> construction = mockConstruction(Proxy.class)) {
-			c.delete("/");
-			p = construction.constructed().get(0);
-			verify(p).delete("/");
+		RestResponse restResponse = mock(RestResponse.class);
+		MockInitializer<Proxy> initializer = (mock, context) -> {
+			when(mock.delete(URI)).thenReturn(restResponse);
+		};
+		try (MockedConstruction<Proxy> construction = mockConstruction(Proxy.class, initializer)) {
+			assertSame(restResponse, c.delete(URI));
 		}
 	}
 
 	@Test
 	void forwardsRequestToProxy() {
-		try (MockedConstruction<Proxy> construction = mockConstruction(Proxy.class)) {
-			c.request("options", "/");
-			p = construction.constructed().get(0);
-			verify(p).request("options", "/");
+		RestResponse restResponse = mock(RestResponse.class);
+		MockInitializer<Proxy> initializer = (mock, context) -> {
+			when(mock.request(" \t\noptions \t\n", URI)).thenReturn(restResponse);
+		};
+		try (MockedConstruction<Proxy> construction = mockConstruction(Proxy.class, initializer)) {
+			assertSame(restResponse, c.request(" \t\noptions \t\n", URI));
 		}
 	}
 
@@ -320,75 +416,51 @@ class RestClientTest {
 	}
 
 	@Test
-	void proxyAddsQuery() {
+	void proxyAddsQueryWithoutValue() {
 		p = newProxy();
-		assertSame(p, p.q("name"));
+		assertSame(p, p.q("parameter"));
 		assertEquals(1, p.getQueries().size());
 		Entry entry = p.getQueries().get(0);
-		assertEquals("name", entry.name());
+		assertEquals("qe(parameter)", entry.name());
 		assertNull(entry.valueString());
 	}
 
 	@Test
-	void proxyAddsEncodedQuery() {
-		p = newProxy();
-		assertSame(p, p.q("?=& %3F%3D%26%20+"));
-		assertEquals(1, p.getQueries().size());
-		Entry entry = p.getQueries().get(0);
-		assertEquals("%3F%3D%26+%253F%253D%2526%2520%2B", entry.name());
-		assertNull(entry.valueString());
-	}
-
-	@Test
-	void proxyDoesNotAddQuery() {
+	void proxyDoesNotAddQueryWithoutValueWithNullName() {
 		p = newProxy();
 		assertThrows(NullPointerException.class, () -> {
 			p.q(null);
 		});
-		assertTrue(p.getQueries().isEmpty());
 	}
 
 	@Test
-	void proxyAddsQueryWithValue() {
+	void proxyAddsQuery() {
 		p = newProxy();
 		assertSame(p, p.q("name", 0));
 		assertEquals(1, p.getQueries().size());
 		Entry entry = p.getQueries().get(0);
-		assertEquals("name", entry.name());
-		assertEquals("0", entry.valueString());
+		assertEquals("qe(name)", entry.name());
+		assertEquals("qe(0)", entry.valueString());
 	}
 
 	@Test
-	void proxyAddsEncodedQueryWithValue() {
+	void proxyDoesNotAddQueryWithNullName() {
 		p = newProxy();
-		assertSame(p, p.q("?=& %3F%3D%26%20+", "%3F%3D%26%20+?=& "));
-		assertEquals(1, p.getQueries().size());
-		Entry entry = p.getQueries().get(0);
-		assertEquals("%3F%3D%26+%253F%253D%2526%2520%2B", entry.name());
-		assertEquals("%253F%253D%2526%2520%2B%3F%3D%26+", entry.valueString());
-	}
-
-	@Test
-	void proxyDoesNotAddQueryWithValueIfNameIsNull() {
-		p = newProxy();
-		Object value = new Object();
 		assertThrows(NullPointerException.class, () -> {
-			p.q(null, value);
+			p.q(null, 0);
 		});
-		assertTrue(p.getQueries().isEmpty());
 	}
 
 	@Test
-	void proxyDoesNotAddQueryWithValueIfValueIsNull() {
+	void proxyDoesNotAddQueryWithNullValue() {
 		p = newProxy();
 		assertThrows(NullPointerException.class, () -> {
 			p.q("name", null);
 		});
-		assertTrue(p.getQueries().isEmpty());
 	}
 
 	@Test
-	void proxyDoesNotAddQueryWithValueIfValueStringIsNull() {
+	void proxyDoesNotAddQueryWithNullValueString() {
 		p = newProxy();
 		Object value = new Object() {
 			@Override
@@ -399,7 +471,6 @@ class RestClientTest {
 		assertThrows(NullPointerException.class, () -> {
 			p.q("name", value);
 		});
-		assertTrue(p.getQueries().isEmpty());
 	}
 
 	@Test
@@ -413,46 +484,39 @@ class RestClientTest {
 	}
 
 	@Test
-	void proxyDoesNotAddHeaderIfNameIsNull() {
+	void proxyDoesNotAddHeaderWithNullName() {
 		p = newProxy();
-		Object value = new Object();
 		assertThrows(NullPointerException.class, () -> {
-			p.h(null, value);
+			p.h(null, 0);
 		});
-		assertTrue(p.getHeaders().isEmpty());
 	}
 
 	@Test
-	void proxyDoesNotAddHeaderIfNameIsBlank() {
+	void proxyDoesNotAddHeaderWithBlankName() {
 		p = newProxy();
-		Object value = new Object();
 		assertThrows(IllegalArgumentException.class, () -> {
-			p.h(" \t\n", value);
+			p.h(" \t\n", 0);
 		});
-		assertTrue(p.getHeaders().isEmpty());
 	}
 
 	@Test
-	void proxyDoesNotAddHeaderIfNameNotInUSASCII() {
+	void proxyDoesNotAddHeaderWithSpecialName() {
 		p = newProxy();
-		Object value = new Object();
 		assertThrows(IllegalArgumentException.class, () -> {
-			p.h(SPECIAL_CONTENT, value);
+			p.h(SPECIAL_CONTENT, 0);
 		});
-		assertTrue(p.getHeaders().isEmpty());
 	}
 
 	@Test
-	void proxyDoesNotAddHeaderIfValueIsNull() {
+	void proxyDoesNotAddHeaderWithNullValue() {
 		p = newProxy();
 		assertThrows(NullPointerException.class, () -> {
 			p.h("name", null);
 		});
-		assertTrue(p.getHeaders().isEmpty());
 	}
 
 	@Test
-	void proxyDoesNotAddHeaderIfValueStringIsNull() {
+	void proxyDoesNotAddHeaderWithNullStringValue() {
 		p = newProxy();
 		Object value = new Object() {
 			@Override
@@ -463,110 +527,107 @@ class RestClientTest {
 		assertThrows(NullPointerException.class, () -> {
 			p.h("name", value);
 		});
-		assertTrue(p.getHeaders().isEmpty());
 	}
 
 	@Test
-	void proxyDoesNotAddHeaderIfValueStringNotInUSASCII() {
+	void proxyDoesNotAddHeaderWithSpecialValue() {
 		p = newProxy();
 		assertThrows(IllegalArgumentException.class, () -> {
 			p.h("name", SPECIAL_CONTENT);
 		});
-		assertTrue(p.getHeaders().isEmpty());
-	}
-
-	@Test
-	void proxyAddsPart() {
-		p = newProxy();
-		Object actual = new Object();
-		assertSame(p, p.p("name", actual));
-		List<RestPart> parts = p.getParts();
-		assertEquals(1, parts.size());
-		RestPart part = parts.get(0);
-		assertEquals("name", part.getName());
-		assertSame(actual, part.getActual());
-	}
-
-	@Test
-	void proxyDoesNotAddPartIfAlreadyAddedBody() {
-		p = newProxy();
-		p.b(new Object());
-		Object actual = new Object();
-		assertThrows(IllegalArgumentException.class, () -> {
-			p.p("name", actual);
-		});
-		assertTrue(p.getParts().isEmpty());
-	}
-
-	@Test
-	void proxyDoesNotAddPartIfNameIsNull() {
-		p = newProxy();
-		Object actual = new Object();
-		assertThrows(NullPointerException.class, () -> {
-			p.p(null, actual);
-		});
-		assertTrue(p.getParts().isEmpty());
-	}
-
-	@Test
-	void proxyAddsWrappedPart() {
-		p = newProxy();
-		Object actual = new Object();
-		assertSame(p, p.p("name", RestPart.of(actual)));
-		List<RestPart> parts = p.getParts();
-		assertEquals(1, parts.size());
-		RestPart part = parts.get(0);
-		assertEquals("name", part.getName());
-		assertSame(actual, part.getActual());
-	}
-
-	@Test
-	void proxyDoesNotAddWrappedPart() {
-		p = newProxy();
-		Object actual = RestBody.of(new Object());
-		assertThrows(IllegalArgumentException.class, () -> {
-			p.p("name", actual);
-		});
-		assertTrue(p.getParts().isEmpty());
 	}
 
 	@Test
 	void proxySetsBody() {
 		p = newProxy();
-		Object actual = new Object();
-		assertSame(p, p.b(actual));
-		RestBody body = p.getBody();
-		assertSame(actual, body.getActual());
+		Object body = new Object();
+		RestBody restBody = mock(RestBody.class);
+		try (MockedStatic<RestBody> bodyStatic = mockStatic(RestBody.class)) {
+			bodyStatic.when(() -> RestBody.of(body)).thenReturn(restBody);
+			assertSame(p, p.b(body));
+		}
+		assertSame(restBody, p.getBody());
 	}
 
 	@Test
-	void proxyDoesNotSetBodyIfAlreadyAddedPart() {
+	void proxyDoesNotSetBodyWithPart() {
 		p = newProxy();
-		p.p("name", new Object());
-		Object actual = new Object();
+		p.p("name", mock(RestPart.class));
+		Object body = new Object();
 		assertThrows(IllegalArgumentException.class, () -> {
-			p.b(actual);
+			p.b(body);
 		});
-		assertNull(p.getBody());
 	}
 
 	@Test
-	void proxySetsWrappedBody() {
+	void proxySetsRestBody() {
 		p = newProxy();
-		Object actual = new Object();
-		assertSame(p, p.b(RestBody.of(actual)));
-		RestBody body = p.getBody();
-		assertSame(actual, body.getActual());
+		RestBody body = mock(RestBody.class);
+		assertSame(p, p.b(body));
+		assertSame(body, p.getBody());
 	}
 
 	@Test
-	void proxyDoesNotSetWrappedBody() {
+	void proxyDoesNotSetRestPart() {
 		p = newProxy();
-		Object actual = RestPart.of(new Object());
+		RestPart body = mock(RestPart.class);
 		assertThrows(IllegalArgumentException.class, () -> {
-			p.b(actual);
+			p.b(body);
 		});
-		assertNull(p.getBody());
+	}
+
+	@Test
+	void proxyAddsPart() {
+		p = newProxy();
+		Object part = new Object();
+		RestPart restPart = mock(RestPart.class);
+		try (MockedStatic<RestPart> partStatic = mockStatic(RestPart.class)) {
+			partStatic.when(() -> RestPart.of(part)).thenReturn(restPart);
+			assertSame(p, p.p("name", part));
+		}
+		List<RestPart> parts = p.getParts();
+		assertEquals(1, parts.size());
+		assertSame(restPart, parts.get(0));
+		verify(restPart).setName("name");
+	}
+
+	@Test
+	void proxyDoesNotAddPartWithBody() {
+		p = newProxy();
+		p.b(mock(RestBody.class));
+		Object part = new Object();
+		assertThrows(IllegalArgumentException.class, () -> {
+			p.p("name", part);
+		});
+	}
+
+	@Test
+	void proxyDoesNotAddPartWithNullName() {
+		p = newProxy();
+		Object part = new Object();
+		assertThrows(NullPointerException.class, () -> {
+			p.p(null, part);
+		});
+	}
+
+	@Test
+	void proxyAddsRestPart() {
+		p = newProxy();
+		RestPart part = mock(RestPart.class);
+		assertSame(p, p.p("name", part));
+		List<RestPart> parts = p.getParts();
+		assertEquals(1, parts.size());
+		assertSame(part, parts.get(0));
+		verify(part).setName("name");
+	}
+
+	@Test
+	void proxyDoesNotAddRestBody() {
+		p = newProxy();
+		RestBody part = mock(RestBody.class);
+		assertThrows(IllegalArgumentException.class, () -> {
+			p.p("name", part);
+		});
 	}
 
 	@Test
@@ -580,25 +641,26 @@ class RestClientTest {
 	void proxyGets() {
 		p = spyNewProxy();
 		RestResponse restResponse = mock(RestResponse.class);
-		doReturn(restResponse).when(p).doRequest("GET", "/");
-		assertSame(restResponse, p.get("/"));
+		doReturn(restResponse).when(p).doRequest("GET", URI);
+		assertSame(restResponse, p.get(URI));
+	}
+
+	@Test
+	void proxyPostsWithoutBody() {
+		p = spyNewProxy();
+		RestResponse restResponse = mock(RestResponse.class);
+		doReturn(restResponse).when(p).doRequest("POST", URI);
+		assertSame(restResponse, p.post(URI));
 	}
 
 	@Test
 	void proxyPosts() {
 		p = spyNewProxy();
-		RestResponse restResponse = mock(RestResponse.class);
-		doReturn(restResponse).when(p).doRequest("POST", "/");
-		assertSame(restResponse, p.post("/"));
-	}
-
-	@Test
-	void proxyPostsWithBody() {
-		p = spyNewProxy();
 		Object body = new Object();
+		doReturn(p).when(p).withBody(body);
 		RestResponse restResponse = mock(RestResponse.class);
-		doReturn(restResponse).when(p).doRequest("POST", "/");
-		assertSame(restResponse, p.post("/", body));
+		doReturn(restResponse).when(p).post(URI);
+		assertSame(restResponse, p.post(URI, body));
 		verify(p).withBody(body);
 	}
 
@@ -606,17 +668,18 @@ class RestClientTest {
 	void proxyPuts() {
 		p = spyNewProxy();
 		RestResponse restResponse = mock(RestResponse.class);
-		doReturn(restResponse).when(p).doRequest("PUT", "/");
-		assertSame(restResponse, p.put("/"));
+		doReturn(restResponse).when(p).doRequest("PUT", URI);
+		assertSame(restResponse, p.put(URI));
 	}
 
 	@Test
 	void proxyPutsWithBody() {
 		p = spyNewProxy();
 		Object body = new Object();
+		doReturn(p).when(p).withBody(body);
 		RestResponse restResponse = mock(RestResponse.class);
-		doReturn(restResponse).when(p).doRequest("PUT", "/");
-		assertSame(restResponse, p.put("/", body));
+		doReturn(restResponse).when(p).put(URI);
+		assertSame(restResponse, p.put(URI, body));
 		verify(p).withBody(body);
 	}
 
@@ -624,17 +687,18 @@ class RestClientTest {
 	void proxyPatches() {
 		p = spyNewProxy();
 		RestResponse restResponse = mock(RestResponse.class);
-		doReturn(restResponse).when(p).doRequest("PATCH", "/");
-		assertSame(restResponse, p.patch("/"));
+		doReturn(restResponse).when(p).doRequest("PATCH", URI);
+		assertSame(restResponse, p.patch(URI));
 	}
 
 	@Test
 	void proxyPatchesWithBody() {
 		p = spyNewProxy();
 		Object body = new Object();
+		doReturn(p).when(p).withBody(body);
 		RestResponse restResponse = mock(RestResponse.class);
-		doReturn(restResponse).when(p).doRequest("PATCH", "/");
-		assertSame(restResponse, p.patch("/", body));
+		doReturn(restResponse).when(p).patch(URI);
+		assertSame(restResponse, p.patch(URI, body));
 		verify(p).withBody(body);
 	}
 
@@ -642,593 +706,775 @@ class RestClientTest {
 	void proxyDeletes() {
 		p = spyNewProxy();
 		RestResponse restResponse = mock(RestResponse.class);
-		doReturn(restResponse).when(p).doRequest("DELETE", "/");
-		assertSame(restResponse, p.delete("/"));
+		doReturn(restResponse).when(p).doRequest("DELETE", URI);
+		assertSame(restResponse, p.delete(URI));
 	}
 
 	@Test
 	void proxyRequests() {
 		p = spyNewProxy();
 		RestResponse restResponse = mock(RestResponse.class);
-		doReturn(restResponse).when(p).doRequest("OPTIONS", "/");
-		assertSame(restResponse, p.request(" \t\noptions \t\n", "/"));
+		doReturn(restResponse).when(p).doRequest("OPTIONS", URI);
+		assertSame(restResponse, p.request(" \t\noptions \t\n", URI));
 	}
 
 	@Test
 	void proxyDoesNotRequestIfMethodIsNull() {
-		p = spyNewProxy();
+		p = newProxy();
 		assertThrows(NullPointerException.class, () -> {
-			p.request(null, "/");
+			p.request(null, URI);
 		});
-		verify(p, times(0)).doRequest(any(), any());
 	}
 
 	@Test
 	void proxyDoesNotRequestIfMethodIsBlank() {
-		p = spyNewProxy();
+		p = newProxy();
 		assertThrows(IllegalArgumentException.class, () -> {
-			p.request(" \t\n", "/");
+			p.request(" \t\n", URI);
 		});
-		verify(p, times(0)).doRequest(any(), any());
 	}
 
 	@Test
 	void proxyDoesRequest() {
 		p = spyNewProxy();
-		doReturn("/?x").when(p).withQueries("/");
-		when(jettyClient.newRequest("http://a/?x")).thenReturn(request);
+		doReturn("/b?x").when(p).completeQueries(URI);
+		when(jettyClient.newRequest("http://a/b?x")).thenReturn(request);
 		when(request.method("OPTIONS")).thenReturn(request);
 		doNothing().when(p).addHeaders(request);
 		List<Task> tasks = List.of();
-		doReturn(tasks).when(p).consumeBodyAndGetTasks(request);
+		doReturn(tasks).when(p).consumeBodyAndBuildTasks(request);
 		RestResponse restResponse = mock(RestResponse.class);
 		doReturn(restResponse).when(p).send(request, tasks);
-		assertSame(restResponse, p.doRequest("OPTIONS", " \t\n/ \t\n"));
+		assertSame(restResponse, p.doRequest("OPTIONS", " \t\n/b \t\n"));
 	}
 
 	@Test
 	void proxyDoesNotDoRequestIfUriIsNull() {
-		p = spyNewProxy();
+		p = newProxy();
 		assertThrows(NullPointerException.class, () -> {
 			p.doRequest("OPTIONS", null);
 		});
-		verify(p, times(0)).withQueries(any());
-		verify(jettyClient, times(0)).newRequest(any(String.class));
 	}
 
 	@Test
 	void proxyDoesNotDoRequestIfUriIsBlank() {
-		p = spyNewProxy();
+		p = newProxy();
 		assertThrows(IllegalArgumentException.class, () -> {
 			p.doRequest("OPTIONS", " \t\n");
 		});
-		verify(p, times(0)).withQueries(any());
-		verify(jettyClient, times(0)).newRequest(any(String.class));
 	}
 
 	@Test
 	void proxyDoesNotDoRequestIfUriDoesNotStartWithSlash() {
-		p = spyNewProxy();
+		p = newProxy();
 		assertThrows(IllegalArgumentException.class, () -> {
-			p.doRequest("OPTIONS", "a");
+			p.doRequest("OPTIONS", "b");
 		});
-		verify(p, times(0)).withQueries(any());
-		verify(jettyClient, times(0)).newRequest(any(String.class));
 	}
 
 	@ParameterizedTest
 	@CsvSource({
-			"/,                /",
-			"/,                /?",
-			"/?%2F,            /?/",
-			"/?%2F%2F%2F,      /?///",
-			"/,                ///",
-			"/,                ///?",
-			"/?%2F,            ///?/",
-			"/?%2F%2F%2F,      ///?///",
-			"/a,               /a/",
-			"/a,               /a/?",
-			"/a?%2F,           /a/?/",
-			"/a?%2F%2F%2F,     /a/?///",
-			"/a,               /a///",
-			"/a,               /a///?",
-			"/a?%2F,           /a///?/",
-			"/a?%2F%2F%2F,     /a///?///",
-			"/abc,             /abc/",
-			"/abc,             /abc/?",
-			"/abc?%2F,         /abc/?/",
-			"/abc?%2F%2F%2F,   /abc/?///",
-			"/abc,             /abc///",
-			"/abc,             /abc///?",
-			"/abc?%2F,         /abc///?/",
-			"/abc?%2F%2F%2F,   /abc///?///",
-			"/a/b/c,           /a/b/c/",
-			"/a/b/c,           /a/b/c/?",
-			"/a/b/c?%2F,       /a/b/c/?/",
-			"/a/b/c?%2F%2F%2F, /a/b/c/?///",
-			"/a/b/c,           /a/b/c///",
-			"/a/b/c,           /a/b/c///?",
-			"/a/b/c?%2F,       /a/b/c///?/",
-			"/a/b/c?%2F%2F%2F, /a/b/c///?///" })
-	void proxyStripsEndingSlashesBeforeQuestionMark(String expected, String uri) {
+			"pr(/b),                   /b",
+			"pr(/b),                   /b?",
+			"pr(/b)?qr(?),             /b??",
+			"pr(/b)?&,                 /b?&",
+			"pr(/b)?=,                 /b?=",
+			"pr(/b)?qr(x),             /b?x",
+			"pr(/b)?qr(x?),            /b?x?",
+			"pr(/b)?qr(x)&,            /b?x&",
+			"pr(/b)?qr(x)&qr(?),       /b?x&?",
+			"pr(/b)?qr(x)&&,           /b?x&&",
+			"pr(/b)?qr(x)&=,           /b?x&=",
+			"pr(/b)?qr(x)&qr(y),       /b?x&y",
+			"pr(/b)?qr(x)&qr(y?),      /b?x&y?",
+			"pr(/b)?qr(x)&qr(y)&,      /b?x&y&",
+			"pr(/b)?qr(x)&qr(y)&qr(?), /b?x&y&?",
+			"pr(/b)?qr(x)&qr(y)&&,     /b?x&y&&",
+			"pr(/b)?qr(x)&qr(y)&=,     /b?x&y&=",
+			"pr(/b)?qr(x)&qr(y)&qr(z), /b?x&y&z",
+			"pr(/b)?qr(x)&qr(y)=,      /b?x&y=",
+			"pr(/b)?qr(x)&qr(y)=qr(?), /b?x&y=?",
+			"pr(/b)?qr(x)&qr(y)=&,     /b?x&y=&",
+			"pr(/b)?qr(x)&qr(y)=qr(=), /b?x&y==",
+			"pr(/b)?qr(x)&qr(y)=qr(z), /b?x&y=z",
+			"pr(/b)?qr(x)=,            /b?x=",
+			"pr(/b)?qr(x)=qr(?),       /b?x=?",
+			"pr(/b)?qr(x)=&,           /b?x=&",
+			"pr(/b)?qr(x)=qr(=),       /b?x==",
+			"pr(/b)?qr(x)=qr(y),       /b?x=y",
+			"pr(/b)?qr(x)=qr(y?),      /b?x=y?",
+			"pr(/b)?qr(x)=qr(y)&,      /b?x=y&",
+			"pr(/b)?qr(x)=qr(y)&qr(?), /b?x=y&?",
+			"pr(/b)?qr(x)=qr(y)&&,     /b?x=y&&",
+			"pr(/b)?qr(x)=qr(y)&=,     /b?x=y&=",
+			"pr(/b)?qr(x)=qr(y)&qr(z), /b?x=y&z",
+			"pr(/b)?qr(x)=qr(y=),      /b?x=y=",
+			"pr(/b)?qr(x)=qr(y=?),     /b?x=y=?",
+			"pr(/b)?qr(x)=qr(y=)&,     /b?x=y=&",
+			"pr(/b)?qr(x)=qr(y==),     /b?x=y==",
+			"pr(/b)?qr(x)=qr(y=z),     /b?x=y=z",
+			"pr(/b&),                  /b&",
+			"pr(/b=),                  /b=" })
+	void proxyCompletesQueries(String expected, String uri) {
 		p = newProxy();
-		assertEquals(expected, p.withQueries(uri));
+		assertEquals(expected, p.completeQueries(uri));
 	}
 
 	@ParameterizedTest
 	@CsvSource({
-			"/?&,              /?&",
-			"/?&&&,            /?&&&",
-			"/?x&y,            /?x&y",
-			"/?x&y&z,          /?x&y&z",
-			"/%26,             /&",
-			"/%26,             /&?",
-			"/%26?&,           /&?&",
-			"/%26?&&&,         /&?&&&",
-			"/%26?x&y,         /&?x&y",
-			"/%26?x&y&z,       /&?x&y&z",
-			"/%26%26%26,       /&&&",
-			"/%26%26%26,       /&&&?",
-			"/%26%26%26?&,     /&&&?&",
-			"/%26%26%26?&&&,   /&&&?&&&",
-			"/%26%26%26?x&y,   /&&&?x&y",
-			"/%26%26%26?x&y&z, /&&&?x&y&z",
-			"/a%26b%26c,       /a&b&c",
-			"/a%26b%26c,       /a&b&c?",
-			"/a%26b%26c?&,     /a&b&c?&",
-			"/a%26b%26c?&&&,   /a&b&c?&&&",
-			"/a%26b%26c?x&y,   /a&b&c?x&y",
-			"/a%26b%26c?x&y&z, /a&b&c?x&y&z" })
-	void proxyEncodesAmpersandBeforeQuestionMark(String expected, String uri) {
+			"pr(/b)?qe(parameter),                   /b",
+			"pr(/b)?qe(parameter),                   /b?",
+			"pr(/b)?qr(?)&qe(parameter),             /b??",
+			"pr(/b)?&&qe(parameter),                 /b?&",
+			"pr(/b)?=&qe(parameter),                 /b?=",
+			"pr(/b)?qr(x)&qe(parameter),             /b?x",
+			"pr(/b)?qr(x?)&qe(parameter),            /b?x?",
+			"pr(/b)?qr(x)&&qe(parameter),            /b?x&",
+			"pr(/b)?qr(x)&qr(?)&qe(parameter),       /b?x&?",
+			"pr(/b)?qr(x)&&&qe(parameter),           /b?x&&",
+			"pr(/b)?qr(x)&=&qe(parameter),           /b?x&=",
+			"pr(/b)?qr(x)&qr(y)&qe(parameter),       /b?x&y",
+			"pr(/b)?qr(x)&qr(y?)&qe(parameter),      /b?x&y?",
+			"pr(/b)?qr(x)&qr(y)&&qe(parameter),      /b?x&y&",
+			"pr(/b)?qr(x)&qr(y)&qr(?)&qe(parameter), /b?x&y&?",
+			"pr(/b)?qr(x)&qr(y)&&&qe(parameter),     /b?x&y&&",
+			"pr(/b)?qr(x)&qr(y)&=&qe(parameter),     /b?x&y&=",
+			"pr(/b)?qr(x)&qr(y)&qr(z)&qe(parameter), /b?x&y&z",
+			"pr(/b)?qr(x)&qr(y)=&qe(parameter),      /b?x&y=",
+			"pr(/b)?qr(x)&qr(y)=qr(?)&qe(parameter), /b?x&y=?",
+			"pr(/b)?qr(x)&qr(y)=&&qe(parameter),     /b?x&y=&",
+			"pr(/b)?qr(x)&qr(y)=qr(=)&qe(parameter), /b?x&y==",
+			"pr(/b)?qr(x)&qr(y)=qr(z)&qe(parameter), /b?x&y=z",
+			"pr(/b)?qr(x)=&qe(parameter),            /b?x=",
+			"pr(/b)?qr(x)=qr(?)&qe(parameter),       /b?x=?",
+			"pr(/b)?qr(x)=&&qe(parameter),           /b?x=&",
+			"pr(/b)?qr(x)=qr(=)&qe(parameter),       /b?x==",
+			"pr(/b)?qr(x)=qr(y)&qe(parameter),       /b?x=y",
+			"pr(/b)?qr(x)=qr(y?)&qe(parameter),      /b?x=y?",
+			"pr(/b)?qr(x)=qr(y)&&qe(parameter),      /b?x=y&",
+			"pr(/b)?qr(x)=qr(y)&qr(?)&qe(parameter), /b?x=y&?",
+			"pr(/b)?qr(x)=qr(y)&&&qe(parameter),     /b?x=y&&",
+			"pr(/b)?qr(x)=qr(y)&=&qe(parameter),     /b?x=y&=",
+			"pr(/b)?qr(x)=qr(y)&qr(z)&qe(parameter), /b?x=y&z",
+			"pr(/b)?qr(x)=qr(y=)&qe(parameter),      /b?x=y=",
+			"pr(/b)?qr(x)=qr(y=?)&qe(parameter),     /b?x=y=?",
+			"pr(/b)?qr(x)=qr(y=)&&qe(parameter),     /b?x=y=&",
+			"pr(/b)?qr(x)=qr(y==)&qe(parameter),     /b?x=y==",
+			"pr(/b)?qr(x)=qr(y=z)&qe(parameter),     /b?x=y=z",
+			"pr(/b&)?qe(parameter),                  /b&",
+			"pr(/b=)?qe(parameter),                  /b=" })
+	void proxyAddsOneQueryWithoutValueAndCompletesQueries(String expected, String uri) {
 		p = newProxy();
-		assertEquals(expected, p.withQueries(uri));
+		p.withQuery("parameter");
+		assertEquals(expected, p.completeQueries(uri));
 	}
 
 	@ParameterizedTest
 	@CsvSource({
-			"/?=,            /?=",
-			"/?=%3D%3D,      /?===",
-			"/?x=y,          /?x=y",
-			"/?x=y%3Dz,      /?x=y=z",
-			"/%3D,           /=",
-			"/%3D,           /=?",
-			"/%3D?=,         /=?=",
-			"/%3D?=%3D%3D,   /=?===",
-			"/%3D?x=y,       /=?x=y",
-			"/%3D?x=y%3Dz,   /=?x=y=z",
-			"/a%3Db,         /a=b",
-			"/a%3Db,         /a=b?",
-			"/a%3Db?=,       /a=b?=",
-			"/a%3Db?=%3D%3D, /a=b?===",
-			"/a%3Db?x=y,     /a=b?x=y",
-			"/a%3Db?x=y%3Dz, /a=b?x=y=z" })
-	void proxyEncodesEqualsSignBeforeQuestionMarkOrAfterFirstOccurence(String expected, String uri) {
+			"pr(/b)?qe(parameter)&qe(name),                   /b",
+			"pr(/b)?qe(parameter)&qe(name),                   /b?",
+			"pr(/b)?qr(?)&qe(parameter)&qe(name),             /b??",
+			"pr(/b)?&&qe(parameter)&qe(name),                 /b?&",
+			"pr(/b)?=&qe(parameter)&qe(name),                 /b?=",
+			"pr(/b)?qr(x)&qe(parameter)&qe(name),             /b?x",
+			"pr(/b)?qr(x?)&qe(parameter)&qe(name),            /b?x?",
+			"pr(/b)?qr(x)&&qe(parameter)&qe(name),            /b?x&",
+			"pr(/b)?qr(x)&qr(?)&qe(parameter)&qe(name),       /b?x&?",
+			"pr(/b)?qr(x)&&&qe(parameter)&qe(name),           /b?x&&",
+			"pr(/b)?qr(x)&=&qe(parameter)&qe(name),           /b?x&=",
+			"pr(/b)?qr(x)&qr(y)&qe(parameter)&qe(name),       /b?x&y",
+			"pr(/b)?qr(x)&qr(y?)&qe(parameter)&qe(name),      /b?x&y?",
+			"pr(/b)?qr(x)&qr(y)&&qe(parameter)&qe(name),      /b?x&y&",
+			"pr(/b)?qr(x)&qr(y)&qr(?)&qe(parameter)&qe(name), /b?x&y&?",
+			"pr(/b)?qr(x)&qr(y)&&&qe(parameter)&qe(name),     /b?x&y&&",
+			"pr(/b)?qr(x)&qr(y)&=&qe(parameter)&qe(name),     /b?x&y&=",
+			"pr(/b)?qr(x)&qr(y)&qr(z)&qe(parameter)&qe(name), /b?x&y&z",
+			"pr(/b)?qr(x)&qr(y)=&qe(parameter)&qe(name),      /b?x&y=",
+			"pr(/b)?qr(x)&qr(y)=qr(?)&qe(parameter)&qe(name), /b?x&y=?",
+			"pr(/b)?qr(x)&qr(y)=&&qe(parameter)&qe(name),     /b?x&y=&",
+			"pr(/b)?qr(x)&qr(y)=qr(=)&qe(parameter)&qe(name), /b?x&y==",
+			"pr(/b)?qr(x)&qr(y)=qr(z)&qe(parameter)&qe(name), /b?x&y=z",
+			"pr(/b)?qr(x)=&qe(parameter)&qe(name),            /b?x=",
+			"pr(/b)?qr(x)=qr(?)&qe(parameter)&qe(name),       /b?x=?",
+			"pr(/b)?qr(x)=&&qe(parameter)&qe(name),           /b?x=&",
+			"pr(/b)?qr(x)=qr(=)&qe(parameter)&qe(name),       /b?x==",
+			"pr(/b)?qr(x)=qr(y)&qe(parameter)&qe(name),       /b?x=y",
+			"pr(/b)?qr(x)=qr(y?)&qe(parameter)&qe(name),      /b?x=y?",
+			"pr(/b)?qr(x)=qr(y)&&qe(parameter)&qe(name),      /b?x=y&",
+			"pr(/b)?qr(x)=qr(y)&qr(?)&qe(parameter)&qe(name), /b?x=y&?",
+			"pr(/b)?qr(x)=qr(y)&&&qe(parameter)&qe(name),     /b?x=y&&",
+			"pr(/b)?qr(x)=qr(y)&=&qe(parameter)&qe(name),     /b?x=y&=",
+			"pr(/b)?qr(x)=qr(y)&qr(z)&qe(parameter)&qe(name), /b?x=y&z",
+			"pr(/b)?qr(x)=qr(y=)&qe(parameter)&qe(name),      /b?x=y=",
+			"pr(/b)?qr(x)=qr(y=?)&qe(parameter)&qe(name),     /b?x=y=?",
+			"pr(/b)?qr(x)=qr(y=)&&qe(parameter)&qe(name),     /b?x=y=&",
+			"pr(/b)?qr(x)=qr(y==)&qe(parameter)&qe(name),     /b?x=y==",
+			"pr(/b)?qr(x)=qr(y=z)&qe(parameter)&qe(name),     /b?x=y=z",
+			"pr(/b&)?qe(parameter)&qe(name),                  /b&",
+			"pr(/b=)?qe(parameter)&qe(name),                  /b=" })
+	void proxyAddsTwoQueriesWithoutValueAndCompletesQueries(String expected, String uri) {
 		p = newProxy();
-		assertEquals(expected, p.withQueries(uri));
-	}
-
-	@Test
-	void proxyPercentEncodesBeforeQuestionMarkAndQueryEncodesAfterQuestionMark() {
-		p = newProxy();
-		assertEquals("/%2B%20%26%3D%3F%20%26%3D?%2F++%26%3D%3F+&=%3F", p.withQueries("/+%20%26%3D%3F &=?/+%20%26%3D%3F &=?"));
-	}
-
-	@ParameterizedTest
-	@CsvSource({
-			"/?y,      /",
-			"/?x&y,    /?x",
-			"/?x=s&y,  /?x=s",
-			"/a?y,     /a",
-			"/a?x&y,   /a?x",
-			"/a?x=s&y, /a?x=s" })
-	void proxyAddsOneQuery(String expected, String uri) {
-		p = newProxy();
-		p.withQuery("y");
-		assertEquals(expected, p.withQueries(uri));
-	}
-
-	@ParameterizedTest
-	@CsvSource({
-			"/?y&z,      /",
-			"/?x&y&z,    /?x",
-			"/?x=s&y&z,  /?x=s",
-			"/a?y&z,     /a",
-			"/a?x&y&z,   /a?x",
-			"/a?x=s&y&z, /a?x=s" })
-	void proxyAddsTwoQueries(String expected, String uri) {
-		p = newProxy();
-		p.withQuery("y");
-		p.withQuery("z");
-		assertEquals(expected, p.withQueries(uri));
+		p.withQuery("parameter");
+		p.withQuery("name");
+		assertEquals(expected, p.completeQueries(uri));
 	}
 
 	@ParameterizedTest
 	@CsvSource({
-			"/?y&z=2.3,      /",
-			"/?x&y&z=2.3,    /?x",
-			"/?x=s&y&z=2.3,  /?x=s",
-			"/a?y&z=2.3,     /a",
-			"/a?x&y&z=2.3,   /a?x",
-			"/a?x=s&y&z=2.3, /a?x=s" })
-	void proxyAddsOneQueryAndOneQueryWithValue(String expected, String uri) {
+			"pr(/b)?qe(parameter)=qe(name),                   /b",
+			"pr(/b)?qe(parameter)=qe(name),                   /b?",
+			"pr(/b)?qr(?)&qe(parameter)=qe(name),             /b??",
+			"pr(/b)?&&qe(parameter)=qe(name),                 /b?&",
+			"pr(/b)?=&qe(parameter)=qe(name),                 /b?=",
+			"pr(/b)?qr(x)&qe(parameter)=qe(name),             /b?x",
+			"pr(/b)?qr(x?)&qe(parameter)=qe(name),            /b?x?",
+			"pr(/b)?qr(x)&&qe(parameter)=qe(name),            /b?x&",
+			"pr(/b)?qr(x)&qr(?)&qe(parameter)=qe(name),       /b?x&?",
+			"pr(/b)?qr(x)&&&qe(parameter)=qe(name),           /b?x&&",
+			"pr(/b)?qr(x)&=&qe(parameter)=qe(name),           /b?x&=",
+			"pr(/b)?qr(x)&qr(y)&qe(parameter)=qe(name),       /b?x&y",
+			"pr(/b)?qr(x)&qr(y?)&qe(parameter)=qe(name),      /b?x&y?",
+			"pr(/b)?qr(x)&qr(y)&&qe(parameter)=qe(name),      /b?x&y&",
+			"pr(/b)?qr(x)&qr(y)&qr(?)&qe(parameter)=qe(name), /b?x&y&?",
+			"pr(/b)?qr(x)&qr(y)&&&qe(parameter)=qe(name),     /b?x&y&&",
+			"pr(/b)?qr(x)&qr(y)&=&qe(parameter)=qe(name),     /b?x&y&=",
+			"pr(/b)?qr(x)&qr(y)&qr(z)&qe(parameter)=qe(name), /b?x&y&z",
+			"pr(/b)?qr(x)&qr(y)=&qe(parameter)=qe(name),      /b?x&y=",
+			"pr(/b)?qr(x)&qr(y)=qr(?)&qe(parameter)=qe(name), /b?x&y=?",
+			"pr(/b)?qr(x)&qr(y)=&&qe(parameter)=qe(name),     /b?x&y=&",
+			"pr(/b)?qr(x)&qr(y)=qr(=)&qe(parameter)=qe(name), /b?x&y==",
+			"pr(/b)?qr(x)&qr(y)=qr(z)&qe(parameter)=qe(name), /b?x&y=z",
+			"pr(/b)?qr(x)=&qe(parameter)=qe(name),            /b?x=",
+			"pr(/b)?qr(x)=qr(?)&qe(parameter)=qe(name),       /b?x=?",
+			"pr(/b)?qr(x)=&&qe(parameter)=qe(name),           /b?x=&",
+			"pr(/b)?qr(x)=qr(=)&qe(parameter)=qe(name),       /b?x==",
+			"pr(/b)?qr(x)=qr(y)&qe(parameter)=qe(name),       /b?x=y",
+			"pr(/b)?qr(x)=qr(y?)&qe(parameter)=qe(name),      /b?x=y?",
+			"pr(/b)?qr(x)=qr(y)&&qe(parameter)=qe(name),      /b?x=y&",
+			"pr(/b)?qr(x)=qr(y)&qr(?)&qe(parameter)=qe(name), /b?x=y&?",
+			"pr(/b)?qr(x)=qr(y)&&&qe(parameter)=qe(name),     /b?x=y&&",
+			"pr(/b)?qr(x)=qr(y)&=&qe(parameter)=qe(name),     /b?x=y&=",
+			"pr(/b)?qr(x)=qr(y)&qr(z)&qe(parameter)=qe(name), /b?x=y&z",
+			"pr(/b)?qr(x)=qr(y=)&qe(parameter)=qe(name),      /b?x=y=",
+			"pr(/b)?qr(x)=qr(y=?)&qe(parameter)=qe(name),     /b?x=y=?",
+			"pr(/b)?qr(x)=qr(y=)&&qe(parameter)=qe(name),     /b?x=y=&",
+			"pr(/b)?qr(x)=qr(y==)&qe(parameter)=qe(name),     /b?x=y==",
+			"pr(/b)?qr(x)=qr(y=z)&qe(parameter)=qe(name),     /b?x=y=z",
+			"pr(/b&)?qe(parameter)=qe(name),                  /b&",
+			"pr(/b=)?qe(parameter)=qe(name),                  /b=" })
+	void proxyAddsOneQueryAndCompletesQueries(String expected, String uri) {
 		p = newProxy();
-		p.withQuery("y");
-		p.withQuery("z", 2.3);
-		assertEquals(expected, p.withQueries(uri));
+		p.withQuery("parameter", "name");
+		assertEquals(expected, p.completeQueries(uri));
 	}
 
 	@ParameterizedTest
 	@CsvSource({
-			"/?y=1,      /",
-			"/?x&y=1,    /?x",
-			"/?x=s&y=1,  /?x=s",
-			"/a?y=1,     /a",
-			"/a?x&y=1,   /a?x",
-			"/a?x=s&y=1, /a?x=s" })
-	void proxyAddsOneQueryWithValue(String expected, String uri) {
+			"pr(/b)?qe(parameter)&qe(name)&qe(0),                   /b",
+			"pr(/b)?qe(parameter)&qe(name)&qe(0),                   /b?",
+			"pr(/b)?qr(?)&qe(parameter)&qe(name)&qe(0),             /b??",
+			"pr(/b)?&&qe(parameter)&qe(name)&qe(0),                 /b?&",
+			"pr(/b)?=&qe(parameter)&qe(name)&qe(0),                 /b?=",
+			"pr(/b)?qr(x)&qe(parameter)&qe(name)&qe(0),             /b?x",
+			"pr(/b)?qr(x?)&qe(parameter)&qe(name)&qe(0),            /b?x?",
+			"pr(/b)?qr(x)&&qe(parameter)&qe(name)&qe(0),            /b?x&",
+			"pr(/b)?qr(x)&qr(?)&qe(parameter)&qe(name)&qe(0),       /b?x&?",
+			"pr(/b)?qr(x)&&&qe(parameter)&qe(name)&qe(0),           /b?x&&",
+			"pr(/b)?qr(x)&=&qe(parameter)&qe(name)&qe(0),           /b?x&=",
+			"pr(/b)?qr(x)&qr(y)&qe(parameter)&qe(name)&qe(0),       /b?x&y",
+			"pr(/b)?qr(x)&qr(y?)&qe(parameter)&qe(name)&qe(0),      /b?x&y?",
+			"pr(/b)?qr(x)&qr(y)&&qe(parameter)&qe(name)&qe(0),      /b?x&y&",
+			"pr(/b)?qr(x)&qr(y)&qr(?)&qe(parameter)&qe(name)&qe(0), /b?x&y&?",
+			"pr(/b)?qr(x)&qr(y)&&&qe(parameter)&qe(name)&qe(0),     /b?x&y&&",
+			"pr(/b)?qr(x)&qr(y)&=&qe(parameter)&qe(name)&qe(0),     /b?x&y&=",
+			"pr(/b)?qr(x)&qr(y)&qr(z)&qe(parameter)&qe(name)&qe(0), /b?x&y&z",
+			"pr(/b)?qr(x)&qr(y)=&qe(parameter)&qe(name)&qe(0),      /b?x&y=",
+			"pr(/b)?qr(x)&qr(y)=qr(?)&qe(parameter)&qe(name)&qe(0), /b?x&y=?",
+			"pr(/b)?qr(x)&qr(y)=&&qe(parameter)&qe(name)&qe(0),     /b?x&y=&",
+			"pr(/b)?qr(x)&qr(y)=qr(=)&qe(parameter)&qe(name)&qe(0), /b?x&y==",
+			"pr(/b)?qr(x)&qr(y)=qr(z)&qe(parameter)&qe(name)&qe(0), /b?x&y=z",
+			"pr(/b)?qr(x)=&qe(parameter)&qe(name)&qe(0),            /b?x=",
+			"pr(/b)?qr(x)=qr(?)&qe(parameter)&qe(name)&qe(0),       /b?x=?",
+			"pr(/b)?qr(x)=&&qe(parameter)&qe(name)&qe(0),           /b?x=&",
+			"pr(/b)?qr(x)=qr(=)&qe(parameter)&qe(name)&qe(0),       /b?x==",
+			"pr(/b)?qr(x)=qr(y)&qe(parameter)&qe(name)&qe(0),       /b?x=y",
+			"pr(/b)?qr(x)=qr(y?)&qe(parameter)&qe(name)&qe(0),      /b?x=y?",
+			"pr(/b)?qr(x)=qr(y)&&qe(parameter)&qe(name)&qe(0),      /b?x=y&",
+			"pr(/b)?qr(x)=qr(y)&qr(?)&qe(parameter)&qe(name)&qe(0), /b?x=y&?",
+			"pr(/b)?qr(x)=qr(y)&&&qe(parameter)&qe(name)&qe(0),     /b?x=y&&",
+			"pr(/b)?qr(x)=qr(y)&=&qe(parameter)&qe(name)&qe(0),     /b?x=y&=",
+			"pr(/b)?qr(x)=qr(y)&qr(z)&qe(parameter)&qe(name)&qe(0), /b?x=y&z",
+			"pr(/b)?qr(x)=qr(y=)&qe(parameter)&qe(name)&qe(0),      /b?x=y=",
+			"pr(/b)?qr(x)=qr(y=?)&qe(parameter)&qe(name)&qe(0),     /b?x=y=?",
+			"pr(/b)?qr(x)=qr(y=)&&qe(parameter)&qe(name)&qe(0),     /b?x=y=&",
+			"pr(/b)?qr(x)=qr(y==)&qe(parameter)&qe(name)&qe(0),     /b?x=y==",
+			"pr(/b)?qr(x)=qr(y=z)&qe(parameter)&qe(name)&qe(0),     /b?x=y=z",
+			"pr(/b&)?qe(parameter)&qe(name)&qe(0),                  /b&",
+			"pr(/b=)?qe(parameter)&qe(name)&qe(0),                  /b=" })
+	void proxyAddsThreeQueriesWithoutValueAndCompletesQueries(String expected, String uri) {
 		p = newProxy();
-		p.withQuery("y", 1);
-		assertEquals(expected, p.withQueries(uri));
+		p.withQuery("parameter");
+		p.withQuery("name");
+		p.withQuery("0");
+		assertEquals(expected, p.completeQueries(uri));
 	}
 
 	@ParameterizedTest
 	@CsvSource({
-			"/?y=1&z,      /",
-			"/?x&y=1&z,    /?x",
-			"/?x=s&y=1&z,  /?x=s",
-			"/a?y=1&z,     /a",
-			"/a?x&y=1&z,   /a?x",
-			"/a?x=s&y=1&z, /a?x=s" })
-	void proxyAddsOneQueryWithValueAndOneQuery(String expected, String uri) {
+			"pr(/b)?qe(parameter)&qe(name)=qe(0),                   /b",
+			"pr(/b)?qe(parameter)&qe(name)=qe(0),                   /b?",
+			"pr(/b)?qr(?)&qe(parameter)&qe(name)=qe(0),             /b??",
+			"pr(/b)?&&qe(parameter)&qe(name)=qe(0),                 /b?&",
+			"pr(/b)?=&qe(parameter)&qe(name)=qe(0),                 /b?=",
+			"pr(/b)?qr(x)&qe(parameter)&qe(name)=qe(0),             /b?x",
+			"pr(/b)?qr(x?)&qe(parameter)&qe(name)=qe(0),            /b?x?",
+			"pr(/b)?qr(x)&&qe(parameter)&qe(name)=qe(0),            /b?x&",
+			"pr(/b)?qr(x)&qr(?)&qe(parameter)&qe(name)=qe(0),       /b?x&?",
+			"pr(/b)?qr(x)&&&qe(parameter)&qe(name)=qe(0),           /b?x&&",
+			"pr(/b)?qr(x)&=&qe(parameter)&qe(name)=qe(0),           /b?x&=",
+			"pr(/b)?qr(x)&qr(y)&qe(parameter)&qe(name)=qe(0),       /b?x&y",
+			"pr(/b)?qr(x)&qr(y?)&qe(parameter)&qe(name)=qe(0),      /b?x&y?",
+			"pr(/b)?qr(x)&qr(y)&&qe(parameter)&qe(name)=qe(0),      /b?x&y&",
+			"pr(/b)?qr(x)&qr(y)&qr(?)&qe(parameter)&qe(name)=qe(0), /b?x&y&?",
+			"pr(/b)?qr(x)&qr(y)&&&qe(parameter)&qe(name)=qe(0),     /b?x&y&&",
+			"pr(/b)?qr(x)&qr(y)&=&qe(parameter)&qe(name)=qe(0),     /b?x&y&=",
+			"pr(/b)?qr(x)&qr(y)&qr(z)&qe(parameter)&qe(name)=qe(0), /b?x&y&z",
+			"pr(/b)?qr(x)&qr(y)=&qe(parameter)&qe(name)=qe(0),      /b?x&y=",
+			"pr(/b)?qr(x)&qr(y)=qr(?)&qe(parameter)&qe(name)=qe(0), /b?x&y=?",
+			"pr(/b)?qr(x)&qr(y)=&&qe(parameter)&qe(name)=qe(0),     /b?x&y=&",
+			"pr(/b)?qr(x)&qr(y)=qr(=)&qe(parameter)&qe(name)=qe(0), /b?x&y==",
+			"pr(/b)?qr(x)&qr(y)=qr(z)&qe(parameter)&qe(name)=qe(0), /b?x&y=z",
+			"pr(/b)?qr(x)=&qe(parameter)&qe(name)=qe(0),            /b?x=",
+			"pr(/b)?qr(x)=qr(?)&qe(parameter)&qe(name)=qe(0),       /b?x=?",
+			"pr(/b)?qr(x)=&&qe(parameter)&qe(name)=qe(0),           /b?x=&",
+			"pr(/b)?qr(x)=qr(=)&qe(parameter)&qe(name)=qe(0),       /b?x==",
+			"pr(/b)?qr(x)=qr(y)&qe(parameter)&qe(name)=qe(0),       /b?x=y",
+			"pr(/b)?qr(x)=qr(y?)&qe(parameter)&qe(name)=qe(0),      /b?x=y?",
+			"pr(/b)?qr(x)=qr(y)&&qe(parameter)&qe(name)=qe(0),      /b?x=y&",
+			"pr(/b)?qr(x)=qr(y)&qr(?)&qe(parameter)&qe(name)=qe(0), /b?x=y&?",
+			"pr(/b)?qr(x)=qr(y)&&&qe(parameter)&qe(name)=qe(0),     /b?x=y&&",
+			"pr(/b)?qr(x)=qr(y)&=&qe(parameter)&qe(name)=qe(0),     /b?x=y&=",
+			"pr(/b)?qr(x)=qr(y)&qr(z)&qe(parameter)&qe(name)=qe(0), /b?x=y&z",
+			"pr(/b)?qr(x)=qr(y=)&qe(parameter)&qe(name)=qe(0),      /b?x=y=",
+			"pr(/b)?qr(x)=qr(y=?)&qe(parameter)&qe(name)=qe(0),     /b?x=y=?",
+			"pr(/b)?qr(x)=qr(y=)&&qe(parameter)&qe(name)=qe(0),     /b?x=y=&",
+			"pr(/b)?qr(x)=qr(y==)&qe(parameter)&qe(name)=qe(0),     /b?x=y==",
+			"pr(/b)?qr(x)=qr(y=z)&qe(parameter)&qe(name)=qe(0),     /b?x=y=z",
+			"pr(/b&)?qe(parameter)&qe(name)=qe(0),                  /b&",
+			"pr(/b=)?qe(parameter)&qe(name)=qe(0),                  /b=" })
+	void proxyAddsOneQueryWithoutValueAndOneQueryAndCompletesQueries(String expected, String uri) {
 		p = newProxy();
-		p.withQuery("y", 1);
-		p.withQuery("z");
-		assertEquals(expected, p.withQueries(uri));
+		p.withQuery("parameter");
+		p.withQuery("name", 0);
+		assertEquals(expected, p.completeQueries(uri));
 	}
 
 	@ParameterizedTest
 	@CsvSource({
-			"/?y=1&z=2.3,      /",
-			"/?x&y=1&z=2.3,    /?x",
-			"/?x=s&y=1&z=2.3,  /?x=s",
-			"/a?y=1&z=2.3,     /a",
-			"/a?x&y=1&z=2.3,   /a?x",
-			"/a?x=s&y=1&z=2.3, /a?x=s" })
-	void proxyAddsTwoQueriesWithValue(String expected, String uri) {
+			"pr(/b)?qe(parameter)=qe(name)&qe(0),                   /b",
+			"pr(/b)?qe(parameter)=qe(name)&qe(0),                   /b?",
+			"pr(/b)?qr(?)&qe(parameter)=qe(name)&qe(0),             /b??",
+			"pr(/b)?&&qe(parameter)=qe(name)&qe(0),                 /b?&",
+			"pr(/b)?=&qe(parameter)=qe(name)&qe(0),                 /b?=",
+			"pr(/b)?qr(x)&qe(parameter)=qe(name)&qe(0),             /b?x",
+			"pr(/b)?qr(x?)&qe(parameter)=qe(name)&qe(0),            /b?x?",
+			"pr(/b)?qr(x)&&qe(parameter)=qe(name)&qe(0),            /b?x&",
+			"pr(/b)?qr(x)&qr(?)&qe(parameter)=qe(name)&qe(0),       /b?x&?",
+			"pr(/b)?qr(x)&&&qe(parameter)=qe(name)&qe(0),           /b?x&&",
+			"pr(/b)?qr(x)&=&qe(parameter)=qe(name)&qe(0),           /b?x&=",
+			"pr(/b)?qr(x)&qr(y)&qe(parameter)=qe(name)&qe(0),       /b?x&y",
+			"pr(/b)?qr(x)&qr(y?)&qe(parameter)=qe(name)&qe(0),      /b?x&y?",
+			"pr(/b)?qr(x)&qr(y)&&qe(parameter)=qe(name)&qe(0),      /b?x&y&",
+			"pr(/b)?qr(x)&qr(y)&qr(?)&qe(parameter)=qe(name)&qe(0), /b?x&y&?",
+			"pr(/b)?qr(x)&qr(y)&&&qe(parameter)=qe(name)&qe(0),     /b?x&y&&",
+			"pr(/b)?qr(x)&qr(y)&=&qe(parameter)=qe(name)&qe(0),     /b?x&y&=",
+			"pr(/b)?qr(x)&qr(y)&qr(z)&qe(parameter)=qe(name)&qe(0), /b?x&y&z",
+			"pr(/b)?qr(x)&qr(y)=&qe(parameter)=qe(name)&qe(0),      /b?x&y=",
+			"pr(/b)?qr(x)&qr(y)=qr(?)&qe(parameter)=qe(name)&qe(0), /b?x&y=?",
+			"pr(/b)?qr(x)&qr(y)=&&qe(parameter)=qe(name)&qe(0),     /b?x&y=&",
+			"pr(/b)?qr(x)&qr(y)=qr(=)&qe(parameter)=qe(name)&qe(0), /b?x&y==",
+			"pr(/b)?qr(x)&qr(y)=qr(z)&qe(parameter)=qe(name)&qe(0), /b?x&y=z",
+			"pr(/b)?qr(x)=&qe(parameter)=qe(name)&qe(0),            /b?x=",
+			"pr(/b)?qr(x)=qr(?)&qe(parameter)=qe(name)&qe(0),       /b?x=?",
+			"pr(/b)?qr(x)=&&qe(parameter)=qe(name)&qe(0),           /b?x=&",
+			"pr(/b)?qr(x)=qr(=)&qe(parameter)=qe(name)&qe(0),       /b?x==",
+			"pr(/b)?qr(x)=qr(y)&qe(parameter)=qe(name)&qe(0),       /b?x=y",
+			"pr(/b)?qr(x)=qr(y?)&qe(parameter)=qe(name)&qe(0),      /b?x=y?",
+			"pr(/b)?qr(x)=qr(y)&&qe(parameter)=qe(name)&qe(0),      /b?x=y&",
+			"pr(/b)?qr(x)=qr(y)&qr(?)&qe(parameter)=qe(name)&qe(0), /b?x=y&?",
+			"pr(/b)?qr(x)=qr(y)&&&qe(parameter)=qe(name)&qe(0),     /b?x=y&&",
+			"pr(/b)?qr(x)=qr(y)&=&qe(parameter)=qe(name)&qe(0),     /b?x=y&=",
+			"pr(/b)?qr(x)=qr(y)&qr(z)&qe(parameter)=qe(name)&qe(0), /b?x=y&z",
+			"pr(/b)?qr(x)=qr(y=)&qe(parameter)=qe(name)&qe(0),      /b?x=y=",
+			"pr(/b)?qr(x)=qr(y=?)&qe(parameter)=qe(name)&qe(0),     /b?x=y=?",
+			"pr(/b)?qr(x)=qr(y=)&&qe(parameter)=qe(name)&qe(0),     /b?x=y=&",
+			"pr(/b)?qr(x)=qr(y==)&qe(parameter)=qe(name)&qe(0),     /b?x=y==",
+			"pr(/b)?qr(x)=qr(y=z)&qe(parameter)=qe(name)&qe(0),     /b?x=y=z",
+			"pr(/b&)?qe(parameter)=qe(name)&qe(0),                  /b&",
+			"pr(/b=)?qe(parameter)=qe(name)&qe(0),                  /b=" })
+	void proxyAddsOneQueryAndOneQueryWithoutValueAndCompletesQueries(String expected, String uri) {
 		p = newProxy();
-		p.withQuery("y", 1);
-		p.withQuery("z", 2.3);
-		assertEquals(expected, p.withQueries(uri));
+		p.withQuery("parameter", "name");
+		p.withQuery("0");
+		assertEquals(expected, p.completeQueries(uri));
 	}
 
 	@Test
 	void proxyAddsHeaders() {
 		p = newProxy();
-		p.withHeader("x", "s");
-		p.withHeader("y", 1);
-		p.withHeader("z", 2.3);
+		p.withHeader("x", false);
+		p.withHeader("y", 0);
+		p.withHeader("z", 2.2);
 		HttpFields.Mutable fields = mock(HttpFields.Mutable.class);
-		doAnswer((invocation) -> {
+		when(request.headers(any())).thenAnswer((invocation) -> {
 			Consumer<HttpFields> consumer = invocation.getArgument(0);
 			consumer.accept(fields);
 			return null;
-		}).when(request).headers(any());
+		});
 		p.addHeaders(request);
-		verify(fields).add("x", "s");
-		verify(fields).add("y", "1");
-		verify(fields).add("z", "2.3");
+		verify(fields).add("x", "false");
+		verify(fields).add("y", "0");
+		verify(fields).add("z", "2.2");
 		verifyNoMoreInteractions(fields);
 	}
 
 	@Test
-	void proxyConsumesNothingAndGetsNothing() {
-		try (MockedConstruction<MultiPartRequestContent> construction = mockConstruction(MultiPartRequestContent.class)) {
-			p = spyNewProxy();
-			mockContents();
-			List<Task> tasks = p.consumeBodyAndGetTasks(request);
-			assertNull(p.getBody());
-			assertTrue(p.getParts().isEmpty());
-			assertTrue(construction.constructed().isEmpty());
-			verify(request, times(0)).body(any());
-			assertTrue(tasks.isEmpty());
-		}
+	void proxyConsumesNothingAndBuildsNothing() {
+		p = newProxy();
+		List<Task> tasks = p.consumeBodyAndBuildTasks(request);
+		assertTrue(tasks.isEmpty());
 	}
 
 	@Test
-	void proxyConsumesBodyAndGetsOneTask() {
-		try (MockedConstruction<MultiPartRequestContent> construction = mockConstruction(MultiPartRequestContent.class)) {
-			p = spyNewProxy();
-			p.withBody(new Object());
-			List<Content> contents = mockContents();
-			List<Task> tasks = p.consumeBodyAndGetTasks(request);
-			assertNull(p.getBody());
-			assertTrue(p.getParts().isEmpty());
-			assertTrue(construction.constructed().isEmpty());
-			verify(request).body(contents.get(0));
-			assertEquals(1, tasks.size());
-		}
+	void proxyConsumesBodyAndBuildsOneTask() {
+		p = spyNewProxy();
+		p.withBody(mock(RestBody.class));
+		List<OutputStreamRequestContent> contents = mockContents();
+		List<Task> tasks = p.consumeBodyAndBuildTasks(request);
+		verify(request).body(contents.get(0));
+		assertNull(p.getBody());
+		assertEquals(1, tasks.size());
 	}
 
 	@Test
-	void proxyConsumesOnePartAndGetsOneTask() {
-		try (
-				MockedConstruction<MultiPartRequestContent> construction = mockConstruction(MultiPartRequestContent.class);
-				MockedStatic<HttpFields> fieldsStatic = mockStatic(HttpFields.class)) {
+	void proxyConsumesOnePartAndBuildsOneTask() {
+		p = spyNewProxy();
+		RestPart part = mockPart("name");
+		List<Entry> headers = new ArrayList<>();
+		headers.add(new Entry("x", "false"));
+		headers.add(new Entry("y", "0"));
+		headers.add(new Entry("z", "2.2"));
+		when(part.getHeaders()).thenReturn(headers);
+		List<OutputStreamRequestContent> contents = mockContents();
+		List<Task> tasks;
+		try (MockedConstruction<MultiPartRequestContent> construction = mockConstruction(MultiPartRequestContent.class)) {
 			HttpFields.Mutable fields = mock(HttpFields.Mutable.class);
-			fieldsStatic.when(() -> HttpFields.build()).thenReturn(fields);
-			p = spyNewProxy();
-			p.withPart("name", RestPart.of(new Object())
-					.withHeader("x", "s")
-					.withHeader("y", 1)
-					.withHeader("z", 2.3));
-			List<Content> contents = mockContents();
-			List<Task> tasks = p.consumeBodyAndGetTasks(request);
-			assertNull(p.getBody());
-			assertTrue(p.getParts().isEmpty());
-			verify(fields).add("x", "s");
-			verify(fields).add("y", "1");
-			verify(fields).add("z", "2.3");
+			try (MockedStatic<HttpFields> fieldsStatic = mockStatic(HttpFields.class)) {
+				fieldsStatic.when(() -> HttpFields.build()).thenReturn(fields);
+				tasks = p.consumeBodyAndBuildTasks(request);
+			}
+			verify(fields).add("x", "false");
+			verify(fields).add("y", "0");
+			verify(fields).add("z", "2.2");
 			verifyNoMoreInteractions(fields);
 			MultiPartRequestContent content = construction.constructed().get(0);
 			verify(content).addFieldPart("name", contents.get(0), fields);
 			verify(content).close();
 			verifyNoMoreInteractions(content);
 			verify(request).body(content);
-			assertEquals(1, tasks.size());
 		}
+		assertTrue(p.getParts().isEmpty());
+		assertEquals(1, tasks.size());
 	}
 
 	@Test
-	void proxyConsumesTwoPartsAndGetsTwoTasks() {
-		try (
-				MockedConstruction<MultiPartRequestContent> construction = mockConstruction(MultiPartRequestContent.class);
-				MockedStatic<HttpFields> fieldsStatic = mockStatic(HttpFields.class)) {
-			List<HttpFields.Mutable> fields = List.of(mock(HttpFields.Mutable.class), mock(HttpFields.Mutable.class));
-			Iterator<HttpFields.Mutable> iterator = fields.iterator();
-			fieldsStatic.when(() -> HttpFields.build()).thenAnswer((invocation) -> iterator.next());
-			p = spyNewProxy();
-			p.p("name0", new Object());
-			p.p("name1", new Object());
-			List<Content> contents = mockContents();
-			List<Task> tasks = p.consumeBodyAndGetTasks(request);
-			assertNull(p.getBody());
-			assertTrue(p.getParts().isEmpty());
+	void proxyConsumesTwoPartsAndBuildsTwoTasks() {
+		p = spyNewProxy();
+		mockPart("name0");
+		mockPart("name1");
+		List<OutputStreamRequestContent> contents = mockContents();
+		List<Task> tasks;
+		try (MockedConstruction<MultiPartRequestContent> construction = mockConstruction(MultiPartRequestContent.class)) {
+			HttpFields.Mutable fields0 = mock(HttpFields.Mutable.class);
+			HttpFields.Mutable fields1 = mock(HttpFields.Mutable.class);
+			Iterator<HttpFields.Mutable> iterator = List.of(fields0, fields1).iterator();
+			try (MockedStatic<HttpFields> fieldsStatic = mockStatic(HttpFields.class)) {
+				fieldsStatic.when(() -> HttpFields.build()).thenAnswer((invocation) -> iterator.next());
+				tasks = p.consumeBodyAndBuildTasks(request);
+			}
 			MultiPartRequestContent content = construction.constructed().get(0);
-			verify(content).addFieldPart("name0", contents.get(0), fields.get(0));
-			verify(content).addFieldPart("name1", contents.get(1), fields.get(1));
+			verify(content).addFieldPart("name0", contents.get(0), fields0);
+			verify(content).addFieldPart("name1", contents.get(1), fields1);
 			verify(content).close();
 			verifyNoMoreInteractions(content);
 			verify(request).body(content);
-			assertEquals(2, tasks.size());
 		}
+		assertTrue(p.getParts().isEmpty());
+		assertEquals(2, tasks.size());
 	}
 
-	private List<Content> mockContents() {
-		List<Content> contents = new ArrayList<>();
+	private RestPart mockPart(String name) {
+		RestPart part = mock(RestPart.class);
+		p.withPart(name, part);
+		when(part.getName()).thenReturn(name);
+		return part;
+	}
+
+	private List<OutputStreamRequestContent> mockContents() {
+		List<OutputStreamRequestContent> contents = new ArrayList<>();
 		doAnswer((invocation) -> {
 			List<Task> tasks = invocation.getArgument(0);
 			tasks.add(mock(Task.class));
-			Content content = mock(Content.class);
+			OutputStreamRequestContent content = mock(OutputStreamRequestContent.class);
 			contents.add(content);
 			return content;
-		}).when(p).addTaskAndGetContent(any(), any());
+		}).when(p).addTaskAndBuildContent(any(), any(RestBody.class));
 		return contents;
 	}
 
 	@Test
-	void proxyAddsTaskAndGetsContent() {
-		try (MockedConstruction<OutputStreamRequestContent> construction = mockContentConstruction()) {
-			RestBody body = RestBody.of(SPECIAL_CONTENT).in(StandardCharsets.ISO_8859_1);
-			OutputStreamRequestContent content = (OutputStreamRequestContent) mockContent(body);
-			assertEquals("type/subtype;charset=ISO-8859-1", content.getContentType());
-			byte[] bytes = ((ByteArrayOutputStream) content.getOutputStream()).toByteArray();
-			assertEquals(SPECIAL_CONTENT, new String(bytes, StandardCharsets.ISO_8859_1));
-		}
-	}
-
-	@Test
-	void proxyAddsTaskAndGetsContentInBase64() {
-		try (MockedConstruction<OutputStreamRequestContent> construction = mockContentConstruction()) {
-			RestBody body = RestBody.of(SPECIAL_CONTENT).in(StandardCharsets.UTF_8).inBase64();
-			OutputStreamRequestContent content = (OutputStreamRequestContent) mockContent(body);
-			assertEquals("type/subtype;charset=UTF-8;base64", content.getContentType());
-			byte[] bytes = ((ByteArrayOutputStream) content.getOutputStream()).toByteArray();
-			assertEquals(SPECIAL_CONTENT, new String(Base64.getDecoder().decode(bytes), StandardCharsets.UTF_8));
-		}
-	}
-
-	@Test
-	void proxyAddsTaskAndGetsContentWithException() {
-		Throwable cause = new IOException();
-		try (MockedConstruction<OutputStreamRequestContent> construction = mockContentConstructionWithException(cause)) {
-			RestBody body = RestBody.of(SPECIAL_CONTENT).in(StandardCharsets.ISO_8859_1);
-			Exception exception = assertThrows(UncheckedIOException.class, () -> {
-				mockContent(body);
-			});
-			assertSame(cause, exception.getCause());
-		}
-	}
-
-	private Content mockContent(RestBody body) {
+	void proxyAddsTaskAndBuildsContent() {
 		p = newProxy();
-		List<Task> tasks = new ArrayList<>();
+		assertAddsTaskAndBuildsContent("type/subtype;charset=UTF-8", false);
+		verify(mediaCoder, times(0)).encode(any());
+	}
+
+	@Test
+	void proxyAddsTaskAndBuildsContentInBase64() {
+		p = newProxy();
+		OutputStream stream = assertAddsTaskAndBuildsContent("type/subtype;charset=UTF-8;base64", true);
+		verify(mediaCoder).encode(stream);
+	}
+
+	private OutputStream assertAddsTaskAndBuildsContent(String expected, boolean base64) {
+		ByteArrayOutputStream stream = new ByteArrayOutputStream();
+		OutputStreamRequestContent content = addTaskAndBuildContent(base64, stream);
+		assertEquals(expected, content.getContentType());
+		assertEquals(REGULAR_CONTENT, stream.toString(StandardCharsets.UTF_8));
+		return stream;
+	}
+
+	@Test
+	void proxyDoesNotAddTaskAndBuildContent() {
+		p = newProxy();
+		assertDoesNotAddTaskAndBuildContent(false);
+	}
+
+	@Test
+	void proxyDoesNotAddTaskAndBuildContentInBase64() {
+		p = newProxy();
+		assertDoesNotAddTaskAndBuildContent(true);
+	}
+
+	void assertDoesNotAddTaskAndBuildContent(boolean base64) {
+		p = newProxy();
+		OutputStream stream = spy(OutputStream.nullOutputStream());
+		Throwable cause = new IOException();
+		assertDoesNotThrow(() -> {
+			doThrow(cause).when(stream).close();
+		});
+		Exception exception = assertThrows(UncheckedIOException.class, () -> {
+			addTaskAndBuildContent(base64, stream);
+		});
+		assertSame(cause, exception.getCause());
+	}
+
+	private OutputStreamRequestContent addTaskAndBuildContent(boolean base64, OutputStream stream) {
+		RestBody body = mockBody(base64);
+		when(body.getCharset()).thenReturn(StandardCharsets.UTF_8);
 		Object actual = body.getActual();
 		Serializer serializer = mock(Serializer.class);
+		when(manager.isBinary(Object.class)).thenReturn(false);
+		when(manager.getSerializerType(CONTENT_TYPE, actual, Object.class)).thenReturn(CONTENT_TYPE);
+		when(manager.getSerializer(CONTENT_TYPE)).thenReturn(serializer);
 		doAnswer((invocation) -> {
-			String str = invocation.getArgument(0);
 			Writer writer = invocation.getArgument(2);
-			writer.write(str);
+			writer.write(REGULAR_CONTENT);
 			return null;
-		}).when(serializer).write(eq(actual), eq(String.class), any());
-		when(manager.isBinary(String.class)).thenReturn(false);
-		when(manager.getSerializerType(null, actual, String.class)).thenReturn("type/subtype");
-		when(manager.getSerializer("type/subtype")).thenReturn(serializer);
-		Content content = p.addTaskAndGetContent(tasks, body);
-		assertEquals(1, tasks.size());
-		Task task = tasks.get(0);
-		task.consumer().accept(task.stream());
-		return content;
+		}).when(serializer).write(eq(actual), eq(Object.class), any(Writer.class));
+		return mockContent(body, stream);
 	}
 
 	@Test
-	void proxyAddsTaskAndGetsBinaryContent() {
-		try (MockedConstruction<OutputStreamRequestContent> construction = mockContentConstruction()) {
-			RestBody body = RestBody.of(mockActual());
-			OutputStreamRequestContent content = (OutputStreamRequestContent) mockBinaryContent(body);
-			assertEquals("type/subtype", content.getContentType());
-			byte[] bytes = ((ByteArrayOutputStream) content.getOutputStream()).toByteArray();
-			assertEquals(REGULAR_CONTENT, new String(bytes, StandardCharsets.US_ASCII));
-		}
-	}
-
-	@Test
-	void proxyAddsTaskAndGetsBinaryContentInBase64() {
-		try (MockedConstruction<OutputStreamRequestContent> construction = mockContentConstruction()) {
-			RestBody body = RestBody.of(mockActual()).inBase64();
-			OutputStreamRequestContent content = (OutputStreamRequestContent) mockBinaryContent(body);
-			assertEquals("type/subtype;base64", content.getContentType());
-			byte[] bytes = ((ByteArrayOutputStream) content.getOutputStream()).toByteArray();
-			assertEquals(REGULAR_CONTENT, new String(Base64.getDecoder().decode(bytes), StandardCharsets.US_ASCII));
-		}
-	}
-
-	@Test
-	void proxyAddsTaskAndGetsBinaryContentWithException() {
-		Throwable cause = new IOException();
-		try (MockedConstruction<OutputStreamRequestContent> construction = mockContentConstructionWithException(cause)) {
-			RestBody body = RestBody.of(mockActual());
-			Exception exception = assertThrows(UncheckedIOException.class, () -> {
-				mockBinaryContent(body);
-			});
-			assertSame(cause, exception.getCause());
-		}
-	}
-
-	private byte[] mockActual() {
-		return REGULAR_CONTENT.getBytes(StandardCharsets.US_ASCII);
-	}
-
-	private Content mockBinaryContent(RestBody body) {
+	void proxyAddsTaskAndBuildsBinaryContent() {
 		p = newProxy();
-		List<Task> tasks = new ArrayList<>();
+		assertAddsTaskAndBuildsBinaryContent("type/subtype", false);
+		verify(mediaCoder, times(0)).encode(any());
+	}
+
+	@Test
+	void proxyAddsTaskAndBuildsBinaryContentInBase64() {
+		p = newProxy();
+		OutputStream stream = assertAddsTaskAndBuildsBinaryContent("type/subtype;base64", true);
+		verify(mediaCoder).encode(stream);
+	}
+
+	private OutputStream assertAddsTaskAndBuildsBinaryContent(String expected, boolean base64) {
+		ByteArrayOutputStream stream = new ByteArrayOutputStream();
+		OutputStreamRequestContent content = addTaskAndBuildBinaryContent(base64, stream);
+		assertEquals(expected, content.getContentType());
+		assertEquals(REGULAR_CONTENT, stream.toString(StandardCharsets.UTF_8));
+		return stream;
+	}
+
+	@Test
+	void proxyDoesNotAddTaskAndBuildBinaryContent() {
+		p = newProxy();
+		assertDoesNotAddTaskAndBuildBinaryContent(false);
+	}
+
+	@Test
+	void proxyDoesNotAddTaskAndBuildBinaryContentInBase64() {
+		p = newProxy();
+		assertDoesNotAddTaskAndBuildBinaryContent(true);
+	}
+
+	void assertDoesNotAddTaskAndBuildBinaryContent(boolean base64) {
+		OutputStream stream = spy(OutputStream.nullOutputStream());
+		Throwable cause = new IOException();
+		assertDoesNotThrow(() -> {
+			doThrow(cause).when(stream).close();
+		});
+		Exception exception = assertThrows(UncheckedIOException.class, () -> {
+			addTaskAndBuildBinaryContent(base64, stream);
+		});
+		assertSame(cause, exception.getCause());
+	}
+
+	private OutputStreamRequestContent addTaskAndBuildBinaryContent(boolean base64, OutputStream stream) {
+		RestBody body = mockBody(base64);
 		Object actual = body.getActual();
 		Assembler assembler = mock(Assembler.class);
+		when(manager.isBinary(Object.class)).thenReturn(true);
+		when(manager.getAssemblerType(CONTENT_TYPE, actual, Object.class)).thenReturn(CONTENT_TYPE);
+		when(manager.getAssembler(CONTENT_TYPE)).thenReturn(assembler);
 		doAnswer((invocation) -> {
-			byte[] b = invocation.getArgument(0);
-			OutputStream stream = invocation.getArgument(2);
-			stream.write(b);
+			OutputStream output = invocation.getArgument(2);
+			output.write(REGULAR_CONTENT.getBytes(StandardCharsets.UTF_8));
 			return null;
-		}).when(assembler).write(eq(actual), eq(byte[].class), any());
-		when(manager.isBinary(byte[].class)).thenReturn(true);
-		when(manager.getAssemblerType(null, actual, byte[].class)).thenReturn("type/subtype");
-		when(manager.getAssembler("type/subtype")).thenReturn(assembler);
-		Content content = p.addTaskAndGetContent(tasks, body);
+		}).when(assembler).write(eq(actual), eq(Object.class), any(OutputStream.class));
+		return mockContent(body, stream);
+	}
+
+	private RestBody mockBody(boolean base64) {
+		Object actual = new Object();
+		RestBody body = mock(RestBody.class);
+		when(body.getActual()).thenReturn(actual);
+		when(body.getType()).thenReturn(Object.class);
+		when(body.getContentType()).thenReturn(CONTENT_TYPE);
+		when(body.isBase64()).thenReturn(base64);
+		return body;
+	}
+
+	private OutputStreamRequestContent mockContent(RestBody body, OutputStream stream) {
+		MockInitializer<OutputStreamRequestContent> initializer = (mock, context) -> {
+			String contentType = (String) context.arguments().get(0);
+			when(mock.getContentType()).thenReturn(contentType);
+			when(mock.getOutputStream()).thenReturn(stream);
+		};
+		OutputStreamRequestContent content;
+		List<Task> tasks = new ArrayList<>();
+		try (MockedConstruction<OutputStreamRequestContent> construction = mockConstruction(OutputStreamRequestContent.class, initializer)) {
+			p.addTaskAndBuildContent(tasks, body);
+			content = construction.constructed().get(0);
+		}
 		assertEquals(1, tasks.size());
 		Task task = tasks.get(0);
 		task.consumer().accept(task.stream());
 		return content;
-	}
-
-	private MockedConstruction<OutputStreamRequestContent> mockContentConstruction() {
-		return mockConstruction(OutputStreamRequestContent.class, (mock, context) -> {
-			when(mock.getContentType()).thenReturn((String) context.arguments().get(0));
-			when(mock.getOutputStream()).thenReturn(new ByteArrayOutputStream());
-		});
-	}
-
-	private MockedConstruction<OutputStreamRequestContent> mockContentConstructionWithException(Throwable cause) {
-		return mockConstruction(OutputStreamRequestContent.class, (mock, context) -> {
-			OutputStream stream = spy(OutputStream.nullOutputStream());
-			doThrow(cause).when(stream).close();
-			when(mock.getContentType()).thenReturn((String) context.arguments().get(0));
-			when(mock.getOutputStream()).thenReturn(stream);
-		});
 	}
 
 	@Test
 	void proxySends() {
-		try (
-				MockedConstruction<InputStreamResponseListener> listenerConstruction = mockListenerConstruction();
-				MockedConstruction<Headers> headersConstruction = mockConstruction(Headers.class)) {
-			p = newProxy();
-			Consumer<OutputStream> consumer = (stream) -> {
-				try {
-					stream.write(REGULAR_CONTENT.getBytes(StandardCharsets.US_ASCII));
-					stream.close();
-				} catch (IOException exception) {
-					throw new AssertionError(exception);
-				}
-			};
-			ByteArrayOutputStream stream = new ByteArrayOutputStream();
-			List<Task> tasks = List.of(new Task(consumer, stream));
-			HttpFields fields = mock(HttpFields.class);
-			when(fields.get("Content-Type")).thenReturn("type/subtype");
-			when(response.getStatus()).thenReturn(600);
-			when(response.getHeaders()).thenReturn(fields);
-			RestResponse restResponse = p.send(request, tasks);
-			InputStreamResponseListener listener = listenerConstruction.constructed().get(0);
-			Headers headers = headersConstruction.constructed().get(0);
-			verify(request).send(listener);
-			assertEquals(REGULAR_CONTENT, new String(stream.toByteArray(), StandardCharsets.US_ASCII));
-			assertSame(p.getEnclosing().getManager(), restResponse.getManager());
-			assertEquals(600, restResponse.getStatus());
-			assertEquals(headers, restResponse.getHeaders());
-			assertEquals("type/subtype", restResponse.getContentType());
-			assertEquals(listener.getInputStream(), restResponse.getStream());
-		}
-	}
-
-	private MockedConstruction<InputStreamResponseListener> mockListenerConstruction() {
-		return mockConstruction(InputStreamResponseListener.class, (mock, context) -> {
+		mockStart();
+		p = newProxy();
+		int status = 600;
+		HttpFields fields = mock(HttpFields.class);
+		when(fields.get("Content-Type")).thenReturn(CONTENT_TYPE);
+		when(response.getStatus()).thenReturn(status);
+		when(response.getHeaders()).thenReturn(fields);
+		InputStream input = InputStream.nullInputStream();
+		MockInitializer<InputStreamResponseListener> initializer = (mock, context) -> {
 			when(mock.get(RestClient.TIMEOUT, TimeUnit.SECONDS)).thenReturn(response);
-			when(mock.getInputStream()).thenReturn(InputStream.nullInputStream());
-		});
+			when(mock.getInputStream()).thenReturn(input);
+		};
+		Consumer<OutputStream> consumer = (output) -> {
+			assertDoesNotThrow(() -> {
+				output.write(REGULAR_CONTENT.getBytes(StandardCharsets.UTF_8));
+				output.close();
+			});
+		};
+		ByteArrayOutputStream stream = new ByteArrayOutputStream();
+		List<Task> tasks = List.of(new Task(consumer, stream));
+		try (MockedConstruction<InputStreamResponseListener> construction = mockConstruction(InputStreamResponseListener.class, initializer)) {
+			try (MockedStatic<Headers> headersStatic = mockStatic(Headers.class)) {
+				Headers headers = mock(Headers.class);
+				headersStatic.when(() -> Headers.newInstance(fields)).thenReturn(headers);
+				try (MockedStatic<RestResponse> responseStatic = mockStatic(RestResponse.class)) {
+					RestResponse restResponse = mock(RestResponse.class);
+					responseStatic.when(() -> RestResponse.newInstance(manager, status, headers, CONTENT_TYPE, input)).thenReturn(restResponse);
+					assertSame(restResponse, p.send(request, tasks));
+				}
+			}
+			verify(request).send(construction.constructed().get(0));
+		}
+		verify(c).start();
+		assertEquals(REGULAR_CONTENT, stream.toString(StandardCharsets.UTF_8));
 	}
 
 	@Test
 	void proxyDoesNotSendIfListenerThrowsExecutionException() {
+		mockStart();
+		p = newProxy();
+		List<Task> tasks = List.of();
 		Throwable cause = new Throwable();
-		Exception exception = new ExecutionException(cause);
-		try (MockedConstruction<InputStreamResponseListener> construction = mockListenerConstruction(exception)) {
-			p = newProxy();
-			List<Task> tasks = List.of();
-			exception = assertThrows(ClientException.class, () -> {
+		ExecutionException executionException = new ExecutionException(cause);
+		Throwable throwable = assertThrows(ClientException.class, () -> {
+			try (MockedConstruction<InputStreamResponseListener> construction = mockListenerConstruction(executionException)) {
 				p.send(request, tasks);
-			});
-			assertSame(cause, exception.getCause());
-		}
+			}
+		});
+		assertSame(cause, throwable.getCause());
 	}
 
 	@Test
 	void proxyDoesNotSendIfListenerThrowsTimeoutException() {
-		TimeoutException cause = new TimeoutException();
-		try (MockedConstruction<InputStreamResponseListener> construction = mockListenerConstruction(cause)) {
-			p = newProxy();
-			List<Task> tasks = List.of();
-			Exception exception = assertThrows(ClientException.class, () -> {
+		mockStart();
+		p = newProxy();
+		List<Task> tasks = List.of();
+		TimeoutException timeoutException = new TimeoutException();
+		Throwable throwable = assertThrows(ClientException.class, () -> {
+			try (MockedConstruction<InputStreamResponseListener> construction = mockListenerConstruction(timeoutException)) {
 				p.send(request, tasks);
-			});
-			assertSame(cause, exception.getCause());
-		}
+			}
+		});
+		assertSame(timeoutException, throwable.getCause());
 	}
 
 	@Test
 	void proxyDoesNotSendIfListenerThrowsInterruptedException() {
-		InterruptedException cause = new InterruptedException();
-		try (MockedConstruction<InputStreamResponseListener> construction = mockListenerConstruction(cause)) {
-			p = newProxy();
-			List<Task> tasks = List.of();
-			Error error = assertThrows(AssertionError.class, () -> {
+		mockStart();
+		p = newProxy();
+		List<Task> tasks = List.of();
+		InterruptedException interruptedException = new InterruptedException();
+		Throwable throwable = assertThrows(AssertionError.class, () -> {
+			try (MockedConstruction<InputStreamResponseListener> construction = mockListenerConstruction(interruptedException)) {
 				p.send(request, tasks);
-			});
-			assertSame(cause, error.getCause());
-		}
+			}
+		});
+		assertSame(interruptedException, throwable.getCause());
 	}
 
 	private MockedConstruction<InputStreamResponseListener> mockListenerConstruction(Exception exception) {
-		return mockConstruction(InputStreamResponseListener.class, (mock, context) -> {
+		MockInitializer<InputStreamResponseListener> initializer = (mock, context) -> {
 			when(mock.get(RestClient.TIMEOUT, TimeUnit.SECONDS)).thenThrow(exception);
-		});
+		};
+		return mockConstruction(InputStreamResponseListener.class, initializer);
+	}
+
+	private void mockStart() {
+		c = spy(c);
+		doNothing().when(c).start();
 	}
 
 	private Proxy spyNewProxy() {

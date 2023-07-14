@@ -67,6 +67,6 @@ class DefaultDisassemblerTest {
 	}
 
 	private byte[] newByteArray() {
-		return "body".getBytes(StandardCharsets.US_ASCII);
+		return "body".getBytes(StandardCharsets.UTF_8);
 	}
 }

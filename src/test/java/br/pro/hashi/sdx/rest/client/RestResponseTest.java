@@ -4,6 +4,9 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -39,6 +42,20 @@ class RestResponseTest {
 		mocks = MockitoAnnotations.openMocks(this);
 
 		stream = InputStream.nullInputStream();
+
+		when(coder.strip(any(String.class))).thenAnswer((invocation) -> {
+			String contentType = invocation.getArgument(0);
+			if (contentType.isEmpty()) {
+				return null;
+			}
+			int index = contentType.indexOf(';');
+			return contentType.substring(0, index);
+		});
+		when(coder.decode(eq(stream), any())).thenAnswer((invocation) -> {
+			String contentType = invocation.getArgument(1);
+			assertTrue(contentType == null || contentType.indexOf(';') != -1);
+			return stream;
+		});
 	}
 
 	@AfterEach
@@ -69,6 +86,16 @@ class RestResponseTest {
 	}
 
 	@Test
+	void getsBodyWithHint() {
+		r = newRestResponse();
+		Object body = mockBody(CONTENT_TYPE);
+		assertSame(body, r.getBody(new Hint<Object>() {}));
+		assertThrows(IllegalStateException.class, () -> {
+			r.getBody(new Hint<Object>() {});
+		});
+	}
+
+	@Test
 	void getsBodyWithoutContentType() {
 		r = newRestResponse();
 		Object body = mockBody(null);
@@ -79,24 +106,26 @@ class RestResponseTest {
 	}
 
 	@Test
-	void getsBodyWithHint() {
+	void getsBodyWithHintWithoutContentType() {
 		r = newRestResponse();
-		Object body = mockBody(CONTENT_TYPE);
-		assertSame(body, r.getBody(new Hint<Object>() {}));
+		Object body = mockBody(null);
+		assertSame(body, r.getBody(new Hint<Object>() {}, null));
 		assertThrows(IllegalStateException.class, () -> {
-			r.getBody(new Hint<Object>() {});
+			r.getBody(new Hint<Object>() {}, null);
 		});
 	}
 
-	private Object mockBody(String contentType) {
+	private Object mockBody(String strippedContentType) {
 		Object body = new Object();
 		Reader reader = Reader.nullReader();
 		Deserializer deserializer = mock(Deserializer.class);
-		when(coder.decode(stream, contentType)).thenReturn(stream);
-		when(coder.reader(stream, contentType)).thenReturn(reader);
-		when(coder.strip(CONTENT_TYPE)).thenReturn(CONTENT_TYPE);
+		when(coder.reader(eq(stream), any())).thenAnswer((invocation) -> {
+			String contentType = invocation.getArgument(1);
+			assertTrue(contentType == null || contentType.indexOf(';') != -1);
+			return reader;
+		});
 		when(manager.isBinary(Object.class)).thenReturn(false);
-		when(manager.getDeserializerType(contentType, Object.class)).thenReturn(CONTENT_TYPE);
+		when(manager.getDeserializerType(strippedContentType, Object.class)).thenReturn(CONTENT_TYPE);
 		when(manager.getDeserializer(CONTENT_TYPE)).thenReturn(deserializer);
 		when(deserializer.read(reader, Object.class)).thenReturn(body);
 		return body;
@@ -113,6 +142,16 @@ class RestResponseTest {
 	}
 
 	@Test
+	void getsBinaryBodyWithHint() {
+		r = newRestResponse();
+		Object body = mockBinaryBody(CONTENT_TYPE);
+		assertSame(body, r.getBody(new Hint<Object>() {}));
+		assertThrows(IllegalStateException.class, () -> {
+			r.getBody(new Hint<Object>() {});
+		});
+	}
+
+	@Test
 	void getsBinaryBodyWithoutContentType() {
 		r = newRestResponse();
 		Object body = mockBinaryBody(null);
@@ -123,22 +162,20 @@ class RestResponseTest {
 	}
 
 	@Test
-	void getsBinaryBodyWithHint() {
+	void getsBinaryBodyWithHintWithoutContentType() {
 		r = newRestResponse();
-		Object body = mockBinaryBody(CONTENT_TYPE);
-		assertSame(body, r.getBody(new Hint<Object>() {}));
+		Object body = mockBinaryBody(null);
+		assertSame(body, r.getBody(new Hint<Object>() {}, null));
 		assertThrows(IllegalStateException.class, () -> {
-			r.getBody(new Hint<Object>() {});
+			r.getBody(new Hint<Object>() {}, null);
 		});
 	}
 
-	private Object mockBinaryBody(String contentType) {
+	private Object mockBinaryBody(String strippedContentType) {
 		Object body = new Object();
 		Disassembler disassembler = mock(Disassembler.class);
-		when(coder.decode(stream, contentType)).thenReturn(stream);
-		when(coder.strip(CONTENT_TYPE)).thenReturn(CONTENT_TYPE);
 		when(manager.isBinary(Object.class)).thenReturn(true);
-		when(manager.getDisassemblerType(contentType, Object.class)).thenReturn(CONTENT_TYPE);
+		when(manager.getDisassemblerType(strippedContentType, Object.class)).thenReturn(CONTENT_TYPE);
 		when(manager.getDisassembler(CONTENT_TYPE)).thenReturn(disassembler);
 		when(disassembler.read(stream, Object.class)).thenReturn(body);
 		return body;
@@ -161,6 +198,6 @@ class RestResponseTest {
 	}
 
 	private RestResponse newRestResponse() {
-		return new RestResponse(coder, manager, STATUS, headers, CONTENT_TYPE, stream);
+		return new RestResponse(coder, manager, STATUS, headers, "%s;parameter".formatted(CONTENT_TYPE), stream);
 	}
 }

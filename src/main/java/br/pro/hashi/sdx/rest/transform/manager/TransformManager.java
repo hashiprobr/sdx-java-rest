@@ -212,12 +212,12 @@ public class TransformManager {
 		if (contentType == null) {
 			throw new NullPointerException("Extension type cannot be null");
 		}
-		contentType = coder.strip(contentType);
-		if (contentType == null) {
+		contentType = contentType.strip();
+		if (contentType.isEmpty()) {
 			throw new IllegalArgumentException("Extension type cannot be blank");
 		}
 		if (!(assemblers.containsKey(contentType) || serializers.containsKey(contentType))) {
-			throw new IllegalArgumentException("Extension is not associated to an assembler or a serializer");
+			throw new IllegalArgumentException("No assembler or serializer associated to %s".formatted(contentType));
 		}
 		extensions.put(extension, contentType);
 	}

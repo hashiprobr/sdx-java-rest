@@ -87,7 +87,7 @@ public class RestPart extends RestBody {
 	 * 
 	 * @param name  the header name
 	 * @param value the header value
-	 * @return this proxy, for chaining
+	 * @return this part, for chaining
 	 * @throws NullPointerException     if the header name is null or the header
 	 *                                  value is null
 	 * @throws IllegalArgumentException if the header name is invalid or the header
@@ -103,8 +103,8 @@ public class RestPart extends RestBody {
 	 * Adds a header to this part.
 	 * </p>
 	 * <p>
-	 * The value is converted to {@code String} via {@code toString()} and encoded
-	 * in the {@link StandardCharsets#US_ASCII} charset.
+	 * The value is converted to {@code String} via {@code toString()}. The name and
+	 * the value string are encoded in {@link StandardCharsets#US_ASCII}.
 	 * </p>
 	 * <p>
 	 * The alias {@link #h(String, Object)} is available for short chaining.
@@ -112,7 +112,7 @@ public class RestPart extends RestBody {
 	 * 
 	 * @param name  the header name
 	 * @param value the header value
-	 * @return this proxy, for chaining
+	 * @return this part, for chaining
 	 * @throws NullPointerException     if the header name is null or the header
 	 *                                  value is null
 	 * @throws IllegalArgumentException if the header name is invalid or the header

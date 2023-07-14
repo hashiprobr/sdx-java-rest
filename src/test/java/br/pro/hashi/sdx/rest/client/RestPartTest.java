@@ -12,7 +12,7 @@ import br.pro.hashi.sdx.rest.Hint;
 import br.pro.hashi.sdx.rest.client.RestClient.Proxy.Entry;
 
 class RestPartTest extends RestBodyTest {
-	private static final String SPECIAL = "spéçìal";
+	private static final String SPECIAL_CONTENT = "spéçìal";
 
 	private RestPart p;
 
@@ -69,27 +69,24 @@ class RestPartTest extends RestBodyTest {
 	@Test
 	void doesNotAddHeaderWithNullName() {
 		p = newInstance();
-		Object value = new Object();
 		assertThrows(NullPointerException.class, () -> {
-			p.h(null, value);
+			p.h(null, 0);
 		});
 	}
 
 	@Test
 	void doesNotAddHeaderWithBlankName() {
 		p = newInstance();
-		Object value = new Object();
 		assertThrows(IllegalArgumentException.class, () -> {
-			p.h(" \t\n", value);
+			p.h(" \t\n", 0);
 		});
 	}
 
 	@Test
 	void doesNotAddHeaderWithSpecialName() {
 		p = newInstance();
-		Object value = new Object();
 		assertThrows(IllegalArgumentException.class, () -> {
-			p.h(SPECIAL, value);
+			p.h(SPECIAL_CONTENT, 0);
 		});
 	}
 
@@ -119,7 +116,7 @@ class RestPartTest extends RestBodyTest {
 	void doesNotAddHeaderWithSpecialValue() {
 		p = newInstance();
 		assertThrows(IllegalArgumentException.class, () -> {
-			p.h("name", SPECIAL);
+			p.h("name", SPECIAL_CONTENT);
 		});
 	}
 
