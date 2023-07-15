@@ -2,11 +2,13 @@ package br.pro.hashi.sdx.rest.reflection;
 
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.mockito.Mockito.mockStatic;
 
 import java.util.HashMap;
 import java.util.Map;
 
 import org.junit.jupiter.api.Test;
+import org.mockito.MockedStatic;
 
 import br.pro.hashi.sdx.rest.Fields;
 import br.pro.hashi.sdx.rest.FieldsTest;
@@ -31,7 +33,10 @@ class QueriesTest extends FieldsTest {
 	@Test
 	void getsInstance() {
 		map = new HashMap<>();
-		assertInstanceOf(Queries.class, Queries.newInstance(map));
+		try (MockedStatic<ParserFactory> factoryStatic = mockStatic(ParserFactory.class)) {
+			factoryStatic.when(() -> ParserFactory.getInstance()).thenReturn(factory);
+			assertInstanceOf(Queries.class, Queries.newInstance(map));
+		}
 	}
 
 	@Test

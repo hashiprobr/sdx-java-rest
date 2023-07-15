@@ -5,11 +5,14 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mockStatic;
 
 import org.junit.jupiter.api.Test;
+import org.mockito.MockedStatic;
 
 import br.pro.hashi.sdx.rest.Hint;
 import br.pro.hashi.sdx.rest.client.RestClient.Proxy.Entry;
+import br.pro.hashi.sdx.rest.coding.MediaCoder;
 
 class RestPartTest extends RestBodyTest {
 	private static final String SPECIAL_CONTENT = "spéçìal";
@@ -18,7 +21,10 @@ class RestPartTest extends RestBodyTest {
 
 	@Test
 	void gets() {
-		p = RestPart.of(actual);
+		try (MockedStatic<MediaCoder> coderStatic = mockStatic(MediaCoder.class)) {
+			coderStatic.when(() -> MediaCoder.getInstance()).thenReturn(coder);
+			p = RestPart.of(actual);
+		}
 		assertSame(actual, p.getActual());
 		assertEquals(Object.class, p.getType());
 	}
@@ -32,7 +38,10 @@ class RestPartTest extends RestBodyTest {
 
 	@Test
 	void getsFromHint() {
-		p = RestPart.of(actual, new Hint<Object>() {});
+		try (MockedStatic<MediaCoder> coderStatic = mockStatic(MediaCoder.class)) {
+			coderStatic.when(() -> MediaCoder.getInstance()).thenReturn(coder);
+			p = RestPart.of(actual, new Hint<Object>() {});
+		}
 		assertSame(actual, p.getActual());
 		assertEquals(new Hint<Object>() {}.getType(), p.getType());
 	}

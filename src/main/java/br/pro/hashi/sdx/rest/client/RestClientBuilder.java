@@ -17,7 +17,6 @@ import org.eclipse.jetty.util.HttpCookieStore;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 
 import br.pro.hashi.sdx.rest.Builder;
-import br.pro.hashi.sdx.rest.coding.PathCoder;
 import br.pro.hashi.sdx.rest.transform.manager.TransformManager;
 
 /**
@@ -33,16 +32,12 @@ public non-sealed class RestClientBuilder extends Builder<RestClientBuilder> {
 		this.factory = null;
 	}
 
-	TransformManager getManager() {
-		return manager;
-	}
-
 	SslContextFactory.Client getFactory() {
 		return factory;
 	}
 
 	/**
-	 * Sets the keytool TrustStore that should be used to enable HTTPS support.
+	 * Sets the keytool TrustStore that should be used for HTTPS support.
 	 * 
 	 * @param path     the TrustStore path
 	 * @param password the TrustStore password
@@ -92,8 +87,7 @@ public non-sealed class RestClientBuilder extends Builder<RestClientBuilder> {
 		ClientConnectionFactoryOverHTTP2.HTTP2 http2 = new ClientConnectionFactoryOverHTTP2.HTTP2(client2);
 		ClientConnectionFactory.Info http1 = HttpClientConnectionFactory.HTTP11;
 		HttpClientTransport transport = new HttpClientTransportDynamic(connector, http2, http1);
-		HttpClient client = new HttpClient(transport);
-		return build(client, urlPrefix);
+		return build(transport, urlPrefix);
 	}
 
 	/**
@@ -107,15 +101,14 @@ public non-sealed class RestClientBuilder extends Builder<RestClientBuilder> {
 	 * @throws NullPointerException     if the URL prefix is null
 	 * @throws IllegalArgumentException if the URL prefix is invalid
 	 */
-	public final RestClient build1(String urlPrefix) {
+	public final RestClient buildWithHttp1(String urlPrefix) {
 		urlPrefix = encode(urlPrefix);
 		ClientConnector connector = new ClientConnector();
 		if (factory != null) {
 			connector.setSslContextFactory(factory);
 		}
 		HttpClientTransport transport = new HttpClientTransportOverHTTP(connector);
-		HttpClient client = new HttpClient(transport);
-		return build(client, urlPrefix);
+		return build(transport, urlPrefix);
 	}
 
 	/**
@@ -129,7 +122,7 @@ public non-sealed class RestClientBuilder extends Builder<RestClientBuilder> {
 	 * @throws NullPointerException     if the URL prefix is null
 	 * @throws IllegalArgumentException if the URL prefix is invalid
 	 */
-	public final RestClient build2(String urlPrefix) {
+	public final RestClient buildWithHttp2(String urlPrefix) {
 		urlPrefix = encode(urlPrefix);
 		ClientConnector connector = new ClientConnector();
 		if (factory != null) {
@@ -137,8 +130,7 @@ public non-sealed class RestClientBuilder extends Builder<RestClientBuilder> {
 		}
 		HTTP2Client client2 = new HTTP2Client(connector);
 		HttpClientTransport transport = new HttpClientTransportOverHTTP2(client2);
-		HttpClient client = new HttpClient(transport);
-		return build(client, urlPrefix);
+		return build(transport, urlPrefix);
 	}
 
 	/**
@@ -152,7 +144,7 @@ public non-sealed class RestClientBuilder extends Builder<RestClientBuilder> {
 	 * @throws NullPointerException     if the URL prefix is null
 	 * @throws IllegalArgumentException if the URL prefix is invalid
 	 */
-	public final RestClient build3(String urlPrefix) {
+	public final RestClient buildWithHttp3(String urlPrefix) {
 		urlPrefix = encode(urlPrefix);
 		HTTP3Client client3 = new HTTP3Client();
 		if (factory != null) {
@@ -160,8 +152,7 @@ public non-sealed class RestClientBuilder extends Builder<RestClientBuilder> {
 			connector.setSslContextFactory(factory);
 		}
 		HttpClientTransport transport = new HttpClientTransportOverHTTP3(client3);
-		HttpClient client = new HttpClient(transport);
-		return build(client, urlPrefix);
+		return build(transport, urlPrefix);
 	}
 
 	private String encode(String urlPrefix) {
@@ -180,7 +171,7 @@ public non-sealed class RestClientBuilder extends Builder<RestClientBuilder> {
 		if (path.isEmpty()) {
 			throw new IllegalArgumentException("URL prefix path cannot be blank");
 		}
-		path = PathCoder.getInstance().stripEndingSlashes(path);
+		path = pathCoder.stripEndingSlashes(path);
 		int index = path.indexOf('/');
 		if (index != -1) {
 			if (index == 0) {
@@ -188,18 +179,20 @@ public non-sealed class RestClientBuilder extends Builder<RestClientBuilder> {
 			}
 			String authority = path.substring(0, index);
 			String urlSuffix = path.substring(index + 1);
-			path = "%s/%s".formatted(authority, PathCoder.getInstance().recode(urlSuffix, urlCharset));
+			path = "%s/%s".formatted(authority, pathCoder.recode(urlSuffix, urlCharset));
 		}
 		return "%s%s".formatted(schema, path);
 	}
 
-	private RestClient build(HttpClient client, String urlPrefix) {
+	private RestClient build(HttpClientTransport transport, String urlPrefix) {
+		TransformManager managerCopy = TransformManager.newInstance(managerBase);
+		HttpClient client = new HttpClient(transport);
 		client.setCookieStore(new HttpCookieStore.Empty());
+		client.setFollowRedirects(redirection);
 		if (compression) {
 			client.getContentDecoderFactories().add(new GZIPContentDecoder.Factory());
 		}
-		client.setFollowRedirects(redirection);
-		return RestClient.newInstance(manager, client, locale, urlCharset, urlPrefix);
+		return RestClient.newInstance(managerCopy, client, locale, urlCharset, urlPrefix);
 	}
 
 	/**

@@ -29,6 +29,10 @@ public class TransformManager {
 		return new TransformManager(coder);
 	}
 
+	public static TransformManager newInstance(TransformManager manager) {
+		return new TransformManager(manager);
+	}
+
 	private final MediaCoder coder;
 	private final Map<String, Assembler> assemblers;
 	private final Map<String, Disassembler> disassemblers;
@@ -40,7 +44,7 @@ public class TransformManager {
 	private String binaryFallbackType;
 	private String fallbackType;
 
-	public TransformManager(MediaCoder coder) {
+	TransformManager(MediaCoder coder) {
 		this.coder = coder;
 
 		this.assemblers = new HashMap<>();
@@ -67,6 +71,59 @@ public class TransformManager {
 
 		this.binaryFallbackType = null;
 		this.fallbackType = null;
+	}
+
+	TransformManager(TransformManager manager) {
+		this.coder = manager.coder;
+		this.assemblers = new HashMap<>(manager.assemblers);
+		this.disassemblers = new HashMap<>(manager.disassemblers);
+		this.serializers = new HashMap<>(manager.serializers);
+		this.deserializers = new HashMap<>(manager.deserializers);
+		this.extensions = new HashMap<>(manager.extensions);
+		this.binaryRawTypes = new HashSet<>(manager.binaryRawTypes);
+		this.binaryGenericTypes = new HashSet<>(manager.binaryGenericTypes);
+		this.binaryFallbackType = manager.binaryFallbackType;
+		this.fallbackType = manager.fallbackType;
+	}
+
+	public MediaCoder getCoder() {
+		return coder;
+	}
+
+	public Map<String, Assembler> getAssemblers() {
+		return assemblers;
+	}
+
+	public Map<String, Disassembler> getDisassemblers() {
+		return disassemblers;
+	}
+
+	public Map<String, Serializer> getSerializers() {
+		return serializers;
+	}
+
+	public Map<String, Deserializer> getDeserializers() {
+		return deserializers;
+	}
+
+	public Map<String, String> getExtensions() {
+		return extensions;
+	}
+
+	public Set<Class<?>> getBinaryRawTypes() {
+		return binaryRawTypes;
+	}
+
+	public Set<Type> getBinaryGenericTypes() {
+		return binaryGenericTypes;
+	}
+
+	public String getBinaryFallbackType() {
+		return binaryFallbackType;
+	}
+
+	public String getFallbackType() {
+		return fallbackType;
 	}
 
 	public Assembler getAssembler(String contentType) {
@@ -212,8 +269,8 @@ public class TransformManager {
 		if (contentType == null) {
 			throw new NullPointerException("Extension type cannot be null");
 		}
-		contentType = contentType.strip();
-		if (contentType.isEmpty()) {
+		contentType = coder.strip(contentType);
+		if (contentType == null) {
 			throw new IllegalArgumentException("Extension type cannot be blank");
 		}
 		if (!(assemblers.containsKey(contentType) || serializers.containsKey(contentType))) {

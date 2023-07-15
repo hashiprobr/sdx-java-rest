@@ -1084,8 +1084,8 @@ public final class RestClient {
 			HttpFields fields = response.getHeaders();
 			Headers headers = Headers.newInstance(fields);
 			String contentType = fields.get("Content-Type");
-			InputStream stream = listener.getInputStream();
-			return RestResponse.newInstance(manager, status, headers, contentType, stream);
+			InputStream input = listener.getInputStream();
+			return RestResponse.newInstance(manager, status, headers, contentType, input);
 		}
 
 		record Entry(String name, String valueString) {

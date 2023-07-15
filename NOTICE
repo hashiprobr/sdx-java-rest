@@ -34,5 +34,4 @@ The following dependencies are ASL2.
 
 The following dependencies are MIT.
 
- * org.slf4j
  * com.github.alexdlaird.ngrok

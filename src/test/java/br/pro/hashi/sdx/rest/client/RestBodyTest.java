@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 
 import java.nio.charset.StandardCharsets;
@@ -16,6 +17,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
 import org.mockito.MockitoAnnotations;
 
 import br.pro.hashi.sdx.rest.Hint;
@@ -54,7 +56,10 @@ class RestBodyTest {
 
 	@Test
 	void gets() {
-		b = RestBody.of(actual);
+		try (MockedStatic<MediaCoder> coderStatic = mockStatic(MediaCoder.class)) {
+			coderStatic.when(() -> MediaCoder.getInstance()).thenReturn(coder);
+			b = RestBody.of(actual);
+		}
 		assertSame(actual, b.getActual());
 		assertEquals(Object.class, b.getType());
 	}
@@ -68,7 +73,10 @@ class RestBodyTest {
 
 	@Test
 	void getsFromHint() {
-		b = RestBody.of(actual, new Hint<Object>() {});
+		try (MockedStatic<MediaCoder> coderStatic = mockStatic(MediaCoder.class)) {
+			coderStatic.when(() -> MediaCoder.getInstance()).thenReturn(coder);
+			b = RestBody.of(actual, new Hint<Object>() {});
+		}
 		assertSame(actual, b.getActual());
 		assertEquals(new Hint<Object>() {}.getType(), b.getType());
 	}

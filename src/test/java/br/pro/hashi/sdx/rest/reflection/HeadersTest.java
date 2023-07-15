@@ -4,11 +4,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.mockStatic;
 
 import java.util.List;
 
 import org.eclipse.jetty.http.HttpFields;
 import org.junit.jupiter.api.Test;
+import org.mockito.MockedStatic;
 
 import br.pro.hashi.sdx.rest.Fields;
 import br.pro.hashi.sdx.rest.FieldsTest;
@@ -36,7 +38,10 @@ class HeadersTest extends FieldsTest {
 	@Test
 	void getsInstance() {
 		fields = HttpFields.build();
-		assertInstanceOf(Headers.class, Headers.newInstance(fields));
+		try (MockedStatic<ParserFactory> factoryStatic = mockStatic(ParserFactory.class)) {
+			factoryStatic.when(() -> ParserFactory.getInstance()).thenReturn(factory);
+			assertInstanceOf(Headers.class, Headers.newInstance(fields));
+		}
 	}
 
 	@Test

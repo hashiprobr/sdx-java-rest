@@ -23,8 +23,9 @@ public abstract class FieldsTest {
 	private static final double DELTA = 0.000001;
 
 	private AutoCloseable mocks;
-	private @Mock ParserFactory factory;
 	private Fields f;
+
+	protected @Mock ParserFactory factory;
 
 	@BeforeEach
 	void setUp() {

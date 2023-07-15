@@ -125,7 +125,14 @@ class RestClientTest {
 
 	@Test
 	void getsInstance() {
-		RestClient client = RestClient.newInstance(manager, jettyClient, Locale.ROOT, StandardCharsets.UTF_8, URL_PREFIX);
+		RestClient client;
+		try (MockedStatic<PathCoder> pathCoderStatic = mockStatic(PathCoder.class)) {
+			pathCoderStatic.when(() -> PathCoder.getInstance()).thenReturn(pathCoder);
+			try (MockedStatic<MediaCoder> mediaCoderStatic = mockStatic(MediaCoder.class)) {
+				mediaCoderStatic.when(() -> MediaCoder.getInstance()).thenReturn(mediaCoder);
+				client = RestClient.newInstance(manager, jettyClient, Locale.ROOT, StandardCharsets.UTF_8, URL_PREFIX);
+			}
+		}
 		assertSame(manager, client.getManager());
 		assertEquals(Locale.ROOT, client.getLocale());
 		assertEquals(StandardCharsets.UTF_8, client.getUrlCharset());
@@ -138,11 +145,9 @@ class RestClientTest {
 		MockInitializer<RestClientBuilder> initializer = (mock, context) -> {
 			when(mock.build(URL_PREFIX)).thenReturn(c);
 		};
-		RestClient client;
 		try (MockedConstruction<RestClientBuilder> construction = mockConstruction(RestClientBuilder.class, initializer)) {
-			client = RestClient.to(URL_PREFIX);
+			assertSame(c, RestClient.to(URL_PREFIX));
 		}
-		assertSame(c, client);
 	}
 
 	@Test
@@ -1165,24 +1170,25 @@ class RestClientTest {
 		headers.add(new Entry("y", "0"));
 		headers.add(new Entry("z", "2.2"));
 		when(part.getHeaders()).thenReturn(headers);
+		HttpFields.Mutable fields = mock(HttpFields.Mutable.class);
 		List<OutputStreamRequestContent> contents = mockContents();
 		List<Task> tasks;
+		MultiPartRequestContent content;
 		try (MockedConstruction<MultiPartRequestContent> construction = mockConstruction(MultiPartRequestContent.class)) {
-			HttpFields.Mutable fields = mock(HttpFields.Mutable.class);
 			try (MockedStatic<HttpFields> fieldsStatic = mockStatic(HttpFields.class)) {
 				fieldsStatic.when(() -> HttpFields.build()).thenReturn(fields);
 				tasks = p.consumeBodyAndBuildTasks(request);
 			}
-			verify(fields).add("x", "false");
-			verify(fields).add("y", "0");
-			verify(fields).add("z", "2.2");
-			verifyNoMoreInteractions(fields);
-			MultiPartRequestContent content = construction.constructed().get(0);
-			verify(content).addFieldPart("name", contents.get(0), fields);
-			verify(content).close();
-			verifyNoMoreInteractions(content);
-			verify(request).body(content);
+			content = construction.constructed().get(0);
 		}
+		verify(fields).add("x", "false");
+		verify(fields).add("y", "0");
+		verify(fields).add("z", "2.2");
+		verifyNoMoreInteractions(fields);
+		verify(content).addFieldPart("name", contents.get(0), fields);
+		verify(content).close();
+		verifyNoMoreInteractions(content);
+		verify(request).body(content);
 		assertTrue(p.getParts().isEmpty());
 		assertEquals(1, tasks.size());
 	}
@@ -1192,23 +1198,24 @@ class RestClientTest {
 		p = spyNewProxy();
 		mockPart("name0");
 		mockPart("name1");
+		HttpFields.Mutable fields0 = mock(HttpFields.Mutable.class);
+		HttpFields.Mutable fields1 = mock(HttpFields.Mutable.class);
+		Iterator<HttpFields.Mutable> iterator = List.of(fields0, fields1).iterator();
 		List<OutputStreamRequestContent> contents = mockContents();
 		List<Task> tasks;
+		MultiPartRequestContent content;
 		try (MockedConstruction<MultiPartRequestContent> construction = mockConstruction(MultiPartRequestContent.class)) {
-			HttpFields.Mutable fields0 = mock(HttpFields.Mutable.class);
-			HttpFields.Mutable fields1 = mock(HttpFields.Mutable.class);
-			Iterator<HttpFields.Mutable> iterator = List.of(fields0, fields1).iterator();
 			try (MockedStatic<HttpFields> fieldsStatic = mockStatic(HttpFields.class)) {
 				fieldsStatic.when(() -> HttpFields.build()).thenAnswer((invocation) -> iterator.next());
 				tasks = p.consumeBodyAndBuildTasks(request);
 			}
-			MultiPartRequestContent content = construction.constructed().get(0);
-			verify(content).addFieldPart("name0", contents.get(0), fields0);
-			verify(content).addFieldPart("name1", contents.get(1), fields1);
-			verify(content).close();
-			verifyNoMoreInteractions(content);
-			verify(request).body(content);
+			content = construction.constructed().get(0);
 		}
+		verify(content).addFieldPart("name0", contents.get(0), fields0);
+		verify(content).addFieldPart("name1", contents.get(1), fields1);
+		verify(content).close();
+		verifyNoMoreInteractions(content);
+		verify(request).body(content);
 		assertTrue(p.getParts().isEmpty());
 		assertEquals(2, tasks.size());
 	}
@@ -1380,7 +1387,9 @@ class RestClientTest {
 		}
 		assertEquals(1, tasks.size());
 		Task task = tasks.get(0);
-		task.consumer().accept(task.stream());
+		Consumer<OutputStream> consumer = task.consumer();
+		OutputStream output = task.stream();
+		consumer.accept(output);
 		return content;
 	}
 
@@ -1388,38 +1397,43 @@ class RestClientTest {
 	void proxySends() {
 		mockStart();
 		p = newProxy();
+
 		int status = 600;
 		HttpFields fields = mock(HttpFields.class);
-		when(fields.get("Content-Type")).thenReturn(CONTENT_TYPE);
+		Headers headers = mock(Headers.class);
+		InputStream input = InputStream.nullInputStream();
+		RestResponse restResponse = mock(RestResponse.class);
 		when(response.getStatus()).thenReturn(status);
 		when(response.getHeaders()).thenReturn(fields);
-		InputStream input = InputStream.nullInputStream();
+		when(fields.get("Content-Type")).thenReturn(CONTENT_TYPE);
 		MockInitializer<InputStreamResponseListener> initializer = (mock, context) -> {
 			when(mock.get(RestClient.TIMEOUT, TimeUnit.SECONDS)).thenReturn(response);
 			when(mock.getInputStream()).thenReturn(input);
 		};
+
 		Consumer<OutputStream> consumer = (output) -> {
 			assertDoesNotThrow(() -> {
 				output.write(REGULAR_CONTENT.getBytes(StandardCharsets.UTF_8));
 				output.close();
 			});
 		};
-		ByteArrayOutputStream stream = new ByteArrayOutputStream();
-		List<Task> tasks = List.of(new Task(consumer, stream));
+		ByteArrayOutputStream output = new ByteArrayOutputStream();
+		List<Task> tasks = List.of(new Task(consumer, output));
+
+		InputStreamResponseListener listener;
 		try (MockedConstruction<InputStreamResponseListener> construction = mockConstruction(InputStreamResponseListener.class, initializer)) {
 			try (MockedStatic<Headers> headersStatic = mockStatic(Headers.class)) {
-				Headers headers = mock(Headers.class);
 				headersStatic.when(() -> Headers.newInstance(fields)).thenReturn(headers);
 				try (MockedStatic<RestResponse> responseStatic = mockStatic(RestResponse.class)) {
-					RestResponse restResponse = mock(RestResponse.class);
 					responseStatic.when(() -> RestResponse.newInstance(manager, status, headers, CONTENT_TYPE, input)).thenReturn(restResponse);
 					assertSame(restResponse, p.send(request, tasks));
 				}
 			}
-			verify(request).send(construction.constructed().get(0));
+			listener = construction.constructed().get(0);
 		}
 		verify(c).start();
-		assertEquals(REGULAR_CONTENT, stream.toString(StandardCharsets.UTF_8));
+		verify(request).send(listener);
+		assertEquals(REGULAR_CONTENT, output.toString(StandardCharsets.UTF_8));
 	}
 
 	@Test

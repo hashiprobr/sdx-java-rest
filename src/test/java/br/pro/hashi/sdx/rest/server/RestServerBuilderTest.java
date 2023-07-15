@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockConstruction;
 import static org.mockito.Mockito.mockStatic;
@@ -44,6 +45,7 @@ import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
 import org.eclipse.jetty.util.thread.ThreadPool;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
 import org.mockito.MockedConstruction;
 import org.mockito.MockedStatic;
 import org.reflections.Reflections;
@@ -65,15 +67,9 @@ class RestServerBuilderTest extends BuilderTest {
 	private static final String VALID_PACKAGE = "br.pro.hashi.sdx.rest.server.mock.valid";
 	private static final String INVALID_PACKAGE = "br.pro.hashi.sdx.rest.server.mock.invalid";
 
-	private MediaCoder coder;
+	private @Mock MediaCoder mediaCoder;
+	private MockedStatic<MediaCoder> mediaCoderStatic;
 	private RestServerBuilder b;
-
-	@Override
-	protected Builder<?> newInstance() {
-		coder = mock(MediaCoder.class);
-		b = new RestServerBuilder();
-		return b;
-	}
 
 	@Test
 	void initializesWithoutGateway() {
@@ -167,7 +163,7 @@ class RestServerBuilderTest extends BuilderTest {
 	@Test
 	void addsExtension() {
 		assertSame(b, b.withExtension("ext", "type/subtype"));
-		verify(b.getManager()).putExtensionType("ext", "type/subtype");
+		verify(managerBase).putExtensionType("ext", "type/subtype");
 	}
 
 	@Test
@@ -211,7 +207,7 @@ class RestServerBuilderTest extends BuilderTest {
 				return null;
 			}
 		};
-		when(b.getManager().isBinary(Object.class)).thenReturn(true);
+		when(managerBase.isBinary(Object.class)).thenReturn(true);
 		assertThrows(IllegalArgumentException.class, () -> {
 			b.withErrorFormatter(formatter);
 		});
@@ -220,13 +216,8 @@ class RestServerBuilderTest extends BuilderTest {
 
 	@Test
 	void setsErrorContentType() {
-		try (MockedStatic<MediaCoder> media = mockStatic(MediaCoder.class)) {
-			String contentType = "type/subtype";
-			when(coder.strip(contentType)).thenReturn(contentType);
-			media.when(() -> MediaCoder.getInstance()).thenReturn(coder);
-			assertSame(b, b.withErrorContentType(contentType));
-			assertEquals(contentType, b.getContentType());
-		}
+		assertSame(b, b.withErrorContentType("type/subtype;parameter"));
+		assertEquals("type/subtype", b.getContentType());
 	}
 
 	@Test
@@ -239,15 +230,10 @@ class RestServerBuilderTest extends BuilderTest {
 
 	@Test
 	void doesNotSetErrorContentTypeIfStripReturnsNull() {
-		try (MockedStatic<MediaCoder> media = mockStatic(MediaCoder.class)) {
-			String contentType = "type/subtype";
-			when(coder.strip(contentType)).thenReturn(null);
-			media.when(() -> MediaCoder.getInstance()).thenReturn(coder);
-			assertThrows(IllegalArgumentException.class, () -> {
-				b.withErrorContentType(contentType);
-			});
-			assertNull(b.getContentType());
-		}
+		assertThrows(IllegalArgumentException.class, () -> {
+			b.withErrorContentType("");
+		});
+		assertNull(b.getContentType());
 	}
 
 	@Test
@@ -446,7 +432,7 @@ class RestServerBuilderTest extends BuilderTest {
 		ThreadLimitHandler limitHandler = (ThreadLimitHandler) jettyServer.getHandler();
 		GzipHandler gzipHandler = (GzipHandler) limitHandler.getHandler();
 		Handler handler = (Handler) gzipHandler.getHandler();
-		assertSame(b.getManager(), handler.getManager());
+		assertSame(managerBase, handler.getManager());
 		assertEquals(StandardCharsets.UTF_8, handler.getUrlCharset());
 		assertSame(b.getGatewayTypes(), handler.getGatewayTypes());
 		assertSame(b.getFormatter(), handler.getFormatter());
@@ -455,13 +441,11 @@ class RestServerBuilderTest extends BuilderTest {
 		Tree tree = handler.getTree();
 		assertEquals(200000, tree.getMaxBodySize());
 		List<String> itemList = new ArrayList<>();
-		assertNotNull(tree.getLeafAndAddItems(new String[] { "one" }, itemList));
-		assertNotNull(tree.getLeafAndAddItems(new String[] { "one-two" }, itemList));
-		assertNotNull(tree.getLeafAndAddItems(new String[] { "one-two-three" }, itemList));
-		assertNotNull(tree.getLeafAndAddItems(new String[] { "b" }, itemList));
-		assertNotNull(tree.getLeafAndAddItems(new String[] { "c" }, itemList));
-		assertNotNull(tree.getLeafAndAddItems(new String[] { "b", "c" }, itemList));
-		assertNotNull(tree.getLeafAndAddItems(new String[] { "c", "d" }, itemList));
+		assertNotNull(tree.getLeafAndAddItems(new String[] { "pd(one)" }, itemList));
+		assertNotNull(tree.getLeafAndAddItems(new String[] { "pd(one-two)" }, itemList));
+		assertNotNull(tree.getLeafAndAddItems(new String[] { "pd(one-two-three)" }, itemList));
+		assertNotNull(tree.getLeafAndAddItems(new String[] { "pd(b)" }, itemList));
+		assertNotNull(tree.getLeafAndAddItems(new String[] { "pd(b)", "pd(c)" }, itemList));
 	}
 
 	@Test
@@ -484,7 +468,7 @@ class RestServerBuilderTest extends BuilderTest {
 
 	@Test
 	void buildsWithErrorContentType() {
-		b.withErrorContentType("type/subtype");
+		b.withErrorContentType("type/subtype;parameter");
 		RestServer server = b.build(VALID_PACKAGE);
 		ConcreteHandler errorHandler = (ConcreteHandler) server.getJettyServer().getErrorHandler();
 		assertEquals("type/subtype", errorHandler.getContentType());
@@ -975,5 +959,26 @@ class RestServerBuilderTest extends BuilderTest {
 		return mockConstruction(Reflections.class, (mock, context) -> {
 			when(mock.getSubTypesOf(RestResource.class)).thenReturn(Set.of(type));
 		});
+	}
+
+	@Override
+	protected Builder<?> newInstance() {
+		when(mediaCoder.strip(any(String.class))).thenAnswer((invocation) -> {
+			String contentType = invocation.getArgument(0);
+			if (contentType.isEmpty()) {
+				return null;
+			}
+			int index = contentType.indexOf(';');
+			return contentType.substring(0, index);
+		});
+		mediaCoderStatic = mockStatic(MediaCoder.class);
+		mediaCoderStatic.when(() -> MediaCoder.getInstance()).thenReturn(mediaCoder);
+		b = new RestServerBuilder();
+		return b;
+	}
+
+	@Override
+	protected void close() {
+		mediaCoderStatic.close();
 	}
 }

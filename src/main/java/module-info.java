@@ -10,7 +10,6 @@ module br.pro.hashi.sdx.rest {
 	requires org.eclipse.jetty.alpn.server;
 	requires org.eclipse.jetty.http2.server;
 	requires org.eclipse.jetty.http3.server;
-	requires org.slf4j;
 	requires org.reflections;
 	requires com.github.alexdlaird.ngrok;
 

@@ -160,10 +160,12 @@ class ReflectorTest {
 			assertEquals("package", context.arguments().get(0));
 			when(mock.getSubTypesOf(Parent.class)).thenReturn(Set.of(Child.class, AbstractChild.class));
 		};
-		List<Class<? extends Parent>> types = new ArrayList<>();
+		Iterable<Class<? extends Parent>> iterable;
 		try (MockedConstruction<Reflections> construction = mockConstruction(Reflections.class, initializer)) {
-			r.getConcreteSubTypes("package", Parent.class).forEach(types::add);
+			iterable = r.getConcreteSubTypes("package", Parent.class);
 		}
+		List<Class<? extends Parent>> types = new ArrayList<>();
+		iterable.forEach(types::add);
 		assertEquals(1, types.size());
 		assertEquals(Child.class, types.get(0));
 	}

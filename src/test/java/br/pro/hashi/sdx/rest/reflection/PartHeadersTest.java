@@ -4,12 +4,14 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
 
 import br.pro.hashi.sdx.rest.Fields;
 import br.pro.hashi.sdx.rest.FieldsTest;
@@ -40,7 +42,10 @@ class PartHeadersTest extends FieldsTest {
 
 	@Test
 	void getsInstance() {
-		assertInstanceOf(PartHeaders.class, PartHeaders.newInstance(part));
+		try (MockedStatic<ParserFactory> factoryStatic = mockStatic(ParserFactory.class)) {
+			factoryStatic.when(() -> ParserFactory.getInstance()).thenReturn(factory);
+			assertInstanceOf(PartHeaders.class, PartHeaders.newInstance(part));
+		}
 	}
 
 	@Test

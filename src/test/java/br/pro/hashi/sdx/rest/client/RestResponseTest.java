@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 
 import java.io.InputStream;
@@ -17,6 +18,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
 import org.mockito.MockitoAnnotations;
 
 import br.pro.hashi.sdx.rest.Hint;
@@ -67,7 +69,10 @@ class RestResponseTest {
 
 	@Test
 	void getsInstance() {
-		r = RestResponse.newInstance(manager, STATUS, headers, CONTENT_TYPE, stream);
+		try (MockedStatic<MediaCoder> coderStatic = mockStatic(MediaCoder.class)) {
+			coderStatic.when(() -> MediaCoder.getInstance()).thenReturn(coder);
+			r = RestResponse.newInstance(manager, STATUS, headers, CONTENT_TYPE, stream);
+		}
 		assertSame(manager, r.getManager());
 		assertSame(stream, r.getStream());
 		assertEquals(STATUS, r.getStatus());

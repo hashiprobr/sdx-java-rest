@@ -36,11 +36,6 @@
   </properties>
   <dependencies>
     <dependency>
-      <groupId>org.eclipse.jetty</groupId>
-      <artifactId>jetty-client</artifactId>
-      <version>${jetty.version}</version>
-    </dependency>
-    <dependency>
       <groupId>org.eclipse.jetty.http2</groupId>
       <artifactId>http2-http-client-transport</artifactId>
       <version>${jetty.version}</version>
@@ -48,11 +43,6 @@
     <dependency>
       <groupId>org.eclipse.jetty.http3</groupId>
       <artifactId>http3-http-client-transport</artifactId>
-      <version>${jetty.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.eclipse.jetty</groupId>
-      <artifactId>jetty-server</artifactId>
       <version>${jetty.version}</version>
     </dependency>
     <dependency>
@@ -71,11 +61,6 @@
       <version>${jetty.version}</version>
     </dependency>
     <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-api</artifactId>
-      <version>[2.0.7, 2.99)</version>
-    </dependency>
-    <dependency>
       <groupId>org.reflections</groupId>
       <artifactId>reflections</artifactId>
       <version>[0.10.2, 0.999)</version>
@@ -88,7 +73,7 @@
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-params</artifactId>
-      <version>[5.9.3, 5.99)</version>
+      <version>[5.10.0-RC1, 5.99)</version>
       <scope>test</scope>
     </dependency>
     <dependency>

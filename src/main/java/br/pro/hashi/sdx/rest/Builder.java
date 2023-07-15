@@ -6,6 +6,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 
 import br.pro.hashi.sdx.rest.client.RestClientBuilder;
+import br.pro.hashi.sdx.rest.coding.PathCoder;
 import br.pro.hashi.sdx.rest.constant.Defaults;
 import br.pro.hashi.sdx.rest.server.RestServerBuilder;
 import br.pro.hashi.sdx.rest.transform.Assembler;
@@ -25,7 +26,14 @@ public sealed abstract class Builder<T extends Builder<T>> permits RestClientBui
 	 * 
 	 * @hidden
 	 */
-	protected final TransformManager manager;
+	protected final PathCoder pathCoder;
+
+	/**
+	 * Internal member.
+	 * 
+	 * @hidden
+	 */
+	protected final TransformManager managerBase;
 
 	/**
 	 * Internal member.
@@ -61,7 +69,8 @@ public sealed abstract class Builder<T extends Builder<T>> permits RestClientBui
 	 * @hidden
 	 */
 	protected Builder() {
-		this.manager = TransformManager.newInstance();
+		this.pathCoder = PathCoder.getInstance();
+		this.managerBase = TransformManager.newInstance();
 		this.locale = Defaults.LOCALE;
 		this.urlCharset = StandardCharsets.UTF_8;
 		this.redirection = true;
@@ -78,7 +87,7 @@ public sealed abstract class Builder<T extends Builder<T>> permits RestClientBui
 	 * @throws IllegalArgumentException if the content type is blank
 	 */
 	public final T withDefaultAssembler(String contentType) {
-		manager.putDefaultAssembler(contentType);
+		managerBase.putDefaultAssembler(contentType);
 		return self();
 	}
 
@@ -100,7 +109,7 @@ public sealed abstract class Builder<T extends Builder<T>> permits RestClientBui
 	 * @throws IllegalArgumentException if the content type is blank
 	 */
 	public final T withAssembler(String contentType, Assembler assembler) {
-		manager.putAssembler(contentType, assembler);
+		managerBase.putAssembler(contentType, assembler);
 		return self();
 	}
 
@@ -114,7 +123,7 @@ public sealed abstract class Builder<T extends Builder<T>> permits RestClientBui
 	 * @throws IllegalArgumentException if the content type is blank
 	 */
 	public final T withDefaultDisassembler(String contentType) {
-		manager.putDefaultDisassembler(contentType);
+		managerBase.putDefaultDisassembler(contentType);
 		return self();
 	}
 
@@ -136,7 +145,7 @@ public sealed abstract class Builder<T extends Builder<T>> permits RestClientBui
 	 * @throws IllegalArgumentException if the content type is blank
 	 */
 	public final T withDisassembler(String contentType, Disassembler disassembler) {
-		manager.putDisassembler(contentType, disassembler);
+		managerBase.putDisassembler(contentType, disassembler);
 		return self();
 	}
 
@@ -150,7 +159,7 @@ public sealed abstract class Builder<T extends Builder<T>> permits RestClientBui
 	 * @throws IllegalArgumentException if the content type is blank
 	 */
 	public final T withDefaultSerializer(String contentType) {
-		manager.putDefaultSerializer(contentType);
+		managerBase.putDefaultSerializer(contentType);
 		return self();
 	}
 
@@ -172,7 +181,7 @@ public sealed abstract class Builder<T extends Builder<T>> permits RestClientBui
 	 * @throws IllegalArgumentException if the content type is blank
 	 */
 	public final T withSerializer(String contentType, Serializer serializer) {
-		manager.putSerializer(contentType, serializer);
+		managerBase.putSerializer(contentType, serializer);
 		return self();
 	}
 
@@ -186,7 +195,7 @@ public sealed abstract class Builder<T extends Builder<T>> permits RestClientBui
 	 * @throws IllegalArgumentException if the content type is blank
 	 */
 	public final T withDefaultDeserializer(String contentType) {
-		manager.putDefaultDeserializer(contentType);
+		managerBase.putDefaultDeserializer(contentType);
 		return self();
 	}
 
@@ -208,7 +217,7 @@ public sealed abstract class Builder<T extends Builder<T>> permits RestClientBui
 	 * @throws IllegalArgumentException if the content type is blank
 	 */
 	public final T withDeserializer(String contentType, Deserializer deserializer) {
-		manager.putDeserializer(contentType, deserializer);
+		managerBase.putDeserializer(contentType, deserializer);
 		return self();
 	}
 
@@ -239,7 +248,7 @@ public sealed abstract class Builder<T extends Builder<T>> permits RestClientBui
 		if (type == null) {
 			throw new NullPointerException("Type cannot be null");
 		}
-		manager.addBinary(type);
+		managerBase.addBinary(type);
 		return self();
 	}
 
@@ -268,14 +277,14 @@ public sealed abstract class Builder<T extends Builder<T>> permits RestClientBui
 		if (hint == null) {
 			throw new NullPointerException("Hint cannot be null");
 		}
-		manager.addBinary(hint.getType());
+		managerBase.addBinary(hint.getType());
 		return self();
 	}
 
 	/**
 	 * <p>
 	 * Establishes that the specified content type should be used as a fallback for
-	 * types that are considered binary.
+	 * types that are considered binary. Parameters are ignored.
 	 * </p>
 	 * 
 	 * @param contentType the content type
@@ -284,14 +293,14 @@ public sealed abstract class Builder<T extends Builder<T>> permits RestClientBui
 	 * @throws IllegalArgumentException if the content type is blank
 	 */
 	public final T withBinaryFallbackType(String contentType) {
-		manager.setBinaryFallbackType(contentType);
+		managerBase.setBinaryFallbackType(contentType);
 		return self();
 	}
 
 	/**
 	 * <p>
 	 * Establishes that the specified content type should be used as a fallback for
-	 * types that are not considered binary.
+	 * types that are not considered binary. Parameters are ignored.
 	 * </p>
 	 * 
 	 * @param contentType the content type
@@ -300,7 +309,7 @@ public sealed abstract class Builder<T extends Builder<T>> permits RestClientBui
 	 * @throws IllegalArgumentException if the content type is blank
 	 */
 	public final T withFallbackType(String contentType) {
-		manager.setFallbackType(contentType);
+		managerBase.setFallbackType(contentType);
 		return self();
 	}
 

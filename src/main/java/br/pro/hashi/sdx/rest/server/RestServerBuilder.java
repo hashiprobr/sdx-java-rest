@@ -36,12 +36,10 @@ import org.slf4j.LoggerFactory;
 
 import br.pro.hashi.sdx.rest.Builder;
 import br.pro.hashi.sdx.rest.coding.MediaCoder;
-import br.pro.hashi.sdx.rest.coding.PathCoder;
 import br.pro.hashi.sdx.rest.constant.Defaults;
 import br.pro.hashi.sdx.rest.reflection.Reflector;
 import br.pro.hashi.sdx.rest.server.exception.ResourceException;
 import br.pro.hashi.sdx.rest.server.tree.Tree;
-import br.pro.hashi.sdx.rest.transform.manager.TransformManager;
 import jakarta.servlet.MultipartConfigElement;
 
 /**
@@ -50,8 +48,9 @@ import jakarta.servlet.MultipartConfigElement;
 public non-sealed class RestServerBuilder extends Builder<RestServerBuilder> {
 	private static final Pattern BASE_PATTERN = Pattern.compile("\\p{javaLowerCase}\\p{javaUpperCase}");
 
-	private final Reflector reflector;
 	private final Logger logger;
+	private final Reflector reflector;
+	private final MediaCoder mediaCoder;
 	private final Set<Class<? extends RuntimeException>> gatewayTypes;
 	private ErrorFormatter formatter;
 	private String contentType;
@@ -74,8 +73,9 @@ public non-sealed class RestServerBuilder extends Builder<RestServerBuilder> {
 	 * Constructs a new builder.
 	 */
 	public RestServerBuilder() {
-		this.reflector = Reflector.getInstance();
 		this.logger = LoggerFactory.getLogger(RestServerBuilder.class);
+		this.reflector = Reflector.getInstance();
+		this.mediaCoder = MediaCoder.getInstance();
 		this.gatewayTypes = new HashSet<>();
 		this.formatter = new ConcreteFormatter();
 		this.contentType = null;
@@ -93,10 +93,6 @@ public non-sealed class RestServerBuilder extends Builder<RestServerBuilder> {
 		this.http2 = true;
 		this.http1 = true;
 		this.cors = true;
-	}
-
-	TransformManager getManager() {
-		return manager;
 	}
 
 	Set<Class<? extends RuntimeException>> getGatewayTypes() {
@@ -184,7 +180,7 @@ public non-sealed class RestServerBuilder extends Builder<RestServerBuilder> {
 	 *                                  type is invalid
 	 */
 	public final RestServerBuilder withExtension(String extension, String contentType) {
-		manager.putExtensionType(extension, contentType);
+		managerBase.putExtensionType(extension, contentType);
 		return self();
 	}
 
@@ -215,7 +211,7 @@ public non-sealed class RestServerBuilder extends Builder<RestServerBuilder> {
 		if (formatter == null) {
 			throw new NullPointerException("Error formatter cannot be null");
 		}
-		if (manager.isBinary(formatter.getReturnType())) {
+		if (managerBase.isBinary(formatter.getReturnType())) {
 			throw new IllegalArgumentException("Error formatter cannot be binary");
 		}
 		this.formatter = formatter;
@@ -234,7 +230,7 @@ public non-sealed class RestServerBuilder extends Builder<RestServerBuilder> {
 		if (contentType == null) {
 			throw new NullPointerException("Content type cannot be null");
 		}
-		contentType = MediaCoder.getInstance().strip(contentType);
+		contentType = mediaCoder.strip(contentType);
 		if (contentType == null) {
 			throw new IllegalArgumentException("Content type cannot be blank");
 		}
@@ -268,7 +264,7 @@ public non-sealed class RestServerBuilder extends Builder<RestServerBuilder> {
 	}
 
 	/**
-	 * Sets the keytool KeyStore that should be used to enable HTTPS support.
+	 * Sets the keytool KeyStore that should be used for HTTPS support.
 	 * 
 	 * @param path     the KeyStore path
 	 * @param password the KeyStore password
@@ -469,10 +465,10 @@ public non-sealed class RestServerBuilder extends Builder<RestServerBuilder> {
 			server = new Server(requestPool);
 		}
 
-		ConcreteHandler errorHandler = new ConcreteHandler(manager, formatter, contentType, charset, base64);
+		ConcreteHandler errorHandler = new ConcreteHandler(managerBase, formatter, contentType, charset, base64);
 		server.setErrorHandler(errorHandler);
 
-		AbstractHandler handler = new Handler(manager, tree, formatter, handles, element, gatewayTypes, urlCharset, cors);
+		AbstractHandler handler = new Handler(managerBase, tree, formatter, handles, element, gatewayTypes, urlCharset, cors);
 		if (compression) {
 			GzipHandler gzipHandler = new GzipHandler();
 			gzipHandler.setHandler(handler);
@@ -590,10 +586,10 @@ public non-sealed class RestServerBuilder extends Builder<RestServerBuilder> {
 				throw new ResourceException(typeName, "Base must start with /");
 			}
 		}
-		base = PathCoder.getInstance().stripEndingSlashes(base);
+		base = pathCoder.stripEndingSlashes(base);
 		String urlSuffix;
 		try {
-			urlSuffix = PathCoder.getInstance().recode(base, urlCharset);
+			urlSuffix = pathCoder.recode(base, urlCharset);
 		} catch (IllegalArgumentException error) {
 			String message = "Base could not be decoded";
 			logger.error(message, error);
@@ -604,7 +600,7 @@ public non-sealed class RestServerBuilder extends Builder<RestServerBuilder> {
 		if (message != null) {
 			throw new ResourceException(typeName, message);
 		}
-		return PathCoder.getInstance().splitAndDecode(base, urlCharset);
+		return pathCoder.splitAndDecode(base, urlCharset);
 	}
 
 	/**

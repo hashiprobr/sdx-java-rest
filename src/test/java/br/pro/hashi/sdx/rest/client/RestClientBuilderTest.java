@@ -7,10 +7,16 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockConstruction;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.Locale;
 import java.util.Set;
 
 import org.eclipse.jetty.client.ContentDecoder;
@@ -24,11 +30,17 @@ import org.eclipse.jetty.util.HttpCookieStore;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedConstruction;
+import org.mockito.MockedStatic;
 
 import br.pro.hashi.sdx.rest.Builder;
 import br.pro.hashi.sdx.rest.BuilderTest;
+import br.pro.hashi.sdx.rest.constant.Defaults;
+import br.pro.hashi.sdx.rest.transform.manager.TransformManager;
 
 class RestClientBuilderTest extends BuilderTest {
+	private static final String URL_PREFIX = " \t\nhttp://a/b \t\n";
+
+	private MockedStatic<RestClient> clientStatic;
 	private RestClientBuilder b;
 
 	@Test
@@ -40,13 +52,14 @@ class RestClientBuilderTest extends BuilderTest {
 	void setsTrustStore() {
 		String path = "path";
 		String password = "password";
+		SslContextFactory.Client factory;
 		try (MockedConstruction<SslContextFactory.Client> construction = mockConstruction(SslContextFactory.Client.class)) {
-			b.withTrustStore(path, password);
-			SslContextFactory.Client factory = construction.constructed().get(0);
-			verify(factory).setTrustStorePath(path);
-			verify(factory).setTrustStorePassword(password);
-			assertEquals(factory, b.getFactory());
+			assertSame(b, b.withTrustStore(path, password));
+			factory = construction.constructed().get(0);
 		}
+		verify(factory).setTrustStorePath(path);
+		verify(factory).setTrustStorePassword(password);
+		assertEquals(factory, b.getFactory());
 	}
 
 	@Test
@@ -79,151 +92,263 @@ class RestClientBuilderTest extends BuilderTest {
 
 	@Test
 	void builds() {
-		RestClient client = b.build("http://a");
-		assertSame(b.getManager(), client.getManager());
-		assertEquals(StandardCharsets.UTF_8, client.getUrlCharset());
-		assertEquals("http://a", client.getUrlPrefix());
-		HttpClient jettyClient = client.getJettyClient();
-		assertInstanceOf(HttpCookieStore.Empty.class, jettyClient.getCookieStore());
-		assertTrue(jettyClient.isFollowRedirects());
-		Set<ContentDecoder.Factory> factories = jettyClient.getContentDecoderFactories();
-		assertEquals(1, factories.size());
-		assertInstanceOf(GZIPContentDecoder.Factory.class, factories.iterator().next());
-		assertNull(jettyClient.getSslContextFactory());
-		assertInstanceOf(HttpClientTransportDynamic.class, jettyClient.getTransport());
+		RestClient client = b.build(URL_PREFIX);
+		assertWithDefaultLocale(client);
+		assertWithDefaultUrlCharset(client);
+		assertWithDefaultUrlPrefix(client);
+		HttpClient jettyClient = getJettyClient(client);
+		assertWithRedirection(jettyClient);
+		assertWithCompression(jettyClient);
+		assertWithoutFactory(jettyClient);
+		assertWithoutStatic(jettyClient);
+	}
+
+	@Test
+	void buildsWithLocale() {
+		b.withLocale(Locale.ROOT);
+		RestClient client = b.build(URL_PREFIX);
+		assertEquals(Locale.ROOT, client.getLocale());
+		assertWithDefaultUrlCharset(client);
+		assertWithDefaultUrlPrefix(client);
+		HttpClient jettyClient = getJettyClient(client);
+		assertWithRedirection(jettyClient);
+		assertWithCompression(jettyClient);
+		assertWithoutFactory(jettyClient);
+		assertWithoutStatic(jettyClient);
 	}
 
 	@Test
 	void buildsWithUrlCharset() {
 		b.withUrlCharset(StandardCharsets.ISO_8859_1);
-		RestClient client = b.build("http://a");
+		RestClient client = b.build(URL_PREFIX);
+		assertWithDefaultLocale(client);
 		assertEquals(StandardCharsets.ISO_8859_1, client.getUrlCharset());
+		assertWithDefaultUrlPrefix(client);
+		HttpClient jettyClient = getJettyClient(client);
+		assertWithRedirection(jettyClient);
+		assertWithCompression(jettyClient);
+		assertWithoutFactory(jettyClient);
+		assertWithoutStatic(jettyClient);
 	}
 
 	@Test
 	void buildsWithoutRedirection() {
 		b.withoutRedirection();
-		RestClient client = b.build("http://a");
-		assertFalse(client.getJettyClient().isFollowRedirects());
+		RestClient client = b.build(URL_PREFIX);
+		assertWithDefaultLocale(client);
+		assertWithDefaultUrlCharset(client);
+		assertWithDefaultUrlPrefix(client);
+		HttpClient jettyClient = getJettyClient(client);
+		assertFalse(jettyClient.isFollowRedirects());
+		assertWithCompression(jettyClient);
+		assertWithoutFactory(jettyClient);
+		assertWithoutStatic(jettyClient);
 	}
 
 	@Test
 	void buildsWithoutCompression() {
 		b.withoutCompression();
-		RestClient client = b.build("http://a");
-		assertTrue(client.getJettyClient().getContentDecoderFactories().isEmpty());
+		RestClient client = b.build(URL_PREFIX);
+		assertWithDefaultLocale(client);
+		assertWithDefaultUrlCharset(client);
+		assertWithDefaultUrlPrefix(client);
+		HttpClient jettyClient = getJettyClient(client);
+		assertWithRedirection(jettyClient);
+		assertTrue(jettyClient.getContentDecoderFactories().isEmpty());
+		assertWithoutFactory(jettyClient);
+		assertWithoutStatic(jettyClient);
 	}
 
 	@Test
 	void buildsWithTrustStore() {
 		b.withTrustStore("path", "password");
-		RestClient client = b.build("http://a");
-		assertSame(b.getFactory(), client.getJettyClient().getSslContextFactory());
+		RestClient client = b.build(URL_PREFIX);
+		assertWithDefaultLocale(client);
+		assertWithDefaultUrlCharset(client);
+		assertWithDefaultUrlPrefix(client);
+		HttpClient jettyClient = getJettyClient(client);
+		assertWithRedirection(jettyClient);
+		assertWithCompression(jettyClient);
+		assertWithFactory(jettyClient);
+		assertWithoutStatic(jettyClient);
 	}
 
 	@Test
-	void buildsWithHttps() {
-		RestClient client = b.build("https://a");
-		assertEquals("https://a", client.getUrlPrefix());
+	void buildsWithHttpsProtocol() {
+		RestClient client = b.build(" \t\nhttps://a/b \t\n");
+		assertWithDefaultLocale(client);
+		assertWithDefaultUrlCharset(client);
+		assertEquals("https://a/pr(b)", client.getUrlPrefix());
+		HttpClient jettyClient = getJettyClient(client);
+		assertWithRedirection(jettyClient);
+		assertWithCompression(jettyClient);
+		assertWithoutFactory(jettyClient);
+		assertWithoutStatic(jettyClient);
 	}
 
 	@Test
-	void buildsWithReserved() {
-		RestClient client = b.build("http://a%20 %2B+%25%%2F/");
-		assertEquals("http://a%20 %2B+%25%%2F", client.getUrlPrefix());
-	}
-
-	@Test
-	void buildsWithWhitespaces() {
+	void buildsWithoutSuffix() {
 		RestClient client = b.build(" \t\nhttp://a \t\n");
+		assertWithDefaultLocale(client);
+		assertWithDefaultUrlCharset(client);
 		assertEquals("http://a", client.getUrlPrefix());
-	}
-
-	@Test
-	void buildsWithItems() {
-		RestClient client = b.build("http://a/0/1/2");
-		assertEquals("http://a/0/1/2", client.getUrlPrefix());
-	}
-
-	@Test
-	void buildsWithSlashes() {
-		RestClient client = b.build("http://a///");
-		assertEquals("http://a", client.getUrlPrefix());
-	}
-
-	@Test
-	void buildsWithHttpsAndReservedAndWhitespacesAndItemsAndSlashes() {
-		RestClient client = b.build(" \t\nhttps://a%20 %2B+%25%%2F/0/%20 %2B+/1/%25%2F/2/// \t\n");
-		assertEquals("https://a%20 %2B+%25%%2F/0/%20%20%2B%2B/1/%25%2F/2", client.getUrlPrefix());
+		HttpClient jettyClient = getJettyClient(client);
+		assertWithRedirection(jettyClient);
+		assertWithCompression(jettyClient);
+		assertWithoutFactory(jettyClient);
+		assertWithoutStatic(jettyClient);
 	}
 
 	@Test
 	void buildsWithHttp1() {
-		RestClient client = b.build1("http://a");
-		HttpClient jettyClient = client.getJettyClient();
-		assertNull(jettyClient.getSslContextFactory());
-		assertInstanceOf(HttpClientTransportOverHTTP.class, jettyClient.getTransport());
+		RestClient client = b.buildWithHttp1(URL_PREFIX);
+		assertWithDefaultLocale(client);
+		assertWithDefaultUrlCharset(client);
+		assertWithDefaultUrlPrefix(client);
+		HttpClient jettyClient = getJettyClient(client);
+		assertWithRedirection(jettyClient);
+		assertWithCompression(jettyClient);
+		assertWithoutFactory(jettyClient);
+		assertWithStaticHttp1(jettyClient);
 	}
 
 	@Test
-	void buildsWithHttps1() {
+	void buildsWithTrustStoreAndHttp1() {
 		b.withTrustStore("path", "password");
-		RestClient client = b.build1("https://a");
-		HttpClient jettyClient = client.getJettyClient();
-		assertSame(b.getFactory(), jettyClient.getSslContextFactory());
-		assertInstanceOf(HttpClientTransportOverHTTP.class, jettyClient.getTransport());
+		RestClient client = b.buildWithHttp1(URL_PREFIX);
+		assertWithDefaultLocale(client);
+		assertWithDefaultUrlCharset(client);
+		assertWithDefaultUrlPrefix(client);
+		HttpClient jettyClient = getJettyClient(client);
+		assertWithRedirection(jettyClient);
+		assertWithCompression(jettyClient);
+		assertWithFactory(jettyClient);
+		assertWithStaticHttp1(jettyClient);
 	}
 
 	@Test
 	void buildsWithHttp2() {
-		RestClient client = b.build2("http://a");
-		HttpClient jettyClient = client.getJettyClient();
-		assertNull(jettyClient.getSslContextFactory());
-		assertInstanceOf(HttpClientTransportOverHTTP2.class, jettyClient.getTransport());
+		RestClient client = b.buildWithHttp2(URL_PREFIX);
+		assertWithDefaultLocale(client);
+		assertWithDefaultUrlCharset(client);
+		assertWithDefaultUrlPrefix(client);
+		HttpClient jettyClient = getJettyClient(client);
+		assertWithRedirection(jettyClient);
+		assertWithCompression(jettyClient);
+		assertWithoutFactory(jettyClient);
+		assertWithStaticHttp2(jettyClient);
 	}
 
 	@Test
-	void buildsWithHttps2() {
+	void buildsWithTrustStoreAndHttp2() {
 		b.withTrustStore("path", "password");
-		RestClient client = b.build2("https://a");
-		HttpClient jettyClient = client.getJettyClient();
-		assertSame(b.getFactory(), jettyClient.getSslContextFactory());
-		assertInstanceOf(HttpClientTransportOverHTTP2.class, jettyClient.getTransport());
+		RestClient client = b.buildWithHttp2(URL_PREFIX);
+		assertWithDefaultLocale(client);
+		assertWithDefaultUrlCharset(client);
+		assertWithDefaultUrlPrefix(client);
+		HttpClient jettyClient = getJettyClient(client);
+		assertWithRedirection(jettyClient);
+		assertWithCompression(jettyClient);
+		assertWithFactory(jettyClient);
+		assertWithStaticHttp2(jettyClient);
 	}
 
 	@Test
 	void buildsWithHttp3() {
-		RestClient client = b.build3("http://a");
-		HttpClient jettyClient = client.getJettyClient();
-		assertNull(jettyClient.getSslContextFactory());
-		assertInstanceOf(HttpClientTransportOverHTTP3.class, jettyClient.getTransport());
+		RestClient client = b.buildWithHttp3(URL_PREFIX);
+		assertWithDefaultLocale(client);
+		assertWithDefaultUrlCharset(client);
+		assertWithDefaultUrlPrefix(client);
+		HttpClient jettyClient = getJettyClient(client);
+		assertWithRedirection(jettyClient);
+		assertWithCompression(jettyClient);
+		assertWithoutFactory(jettyClient);
+		assertWithStaticHttp3(jettyClient);
 	}
 
 	@Test
-	void buildsWithHttps3() {
+	void buildsWithTrustStoreAndHttp3() {
 		b.withTrustStore("path", "password");
-		RestClient client = b.build3("https://a");
+		RestClient client = b.buildWithHttp3(URL_PREFIX);
+		assertWithDefaultLocale(client);
+		assertWithDefaultUrlCharset(client);
+		assertWithDefaultUrlPrefix(client);
+		HttpClient jettyClient = getJettyClient(client);
+		assertWithRedirection(jettyClient);
+		assertWithCompression(jettyClient);
+		assertWithFactory(jettyClient);
+		assertWithStaticHttp3(jettyClient);
+	}
+
+	private void assertWithDefaultLocale(RestClient client) {
+		assertEquals(Defaults.LOCALE, client.getLocale());
+	}
+
+	private void assertWithDefaultUrlCharset(RestClient client) {
+		assertEquals(StandardCharsets.UTF_8, client.getUrlCharset());
+	}
+
+	private void assertWithDefaultUrlPrefix(RestClient client) {
+		assertEquals("http://a/pr(b)", client.getUrlPrefix());
+	}
+
+	private HttpClient getJettyClient(RestClient client) {
+		assertSame(managerCopy, client.getManager());
 		HttpClient jettyClient = client.getJettyClient();
+		assertInstanceOf(HttpCookieStore.Empty.class, jettyClient.getCookieStore());
+		return jettyClient;
+	}
+
+	private void assertWithRedirection(HttpClient jettyClient) {
+		assertTrue(jettyClient.isFollowRedirects());
+	}
+
+	private void assertWithCompression(HttpClient jettyClient) {
+		Set<ContentDecoder.Factory> factories = jettyClient.getContentDecoderFactories();
+		assertEquals(1, factories.size());
+		assertInstanceOf(GZIPContentDecoder.Factory.class, factories.iterator().next());
+	}
+
+	private void assertWithoutFactory(HttpClient jettyClient) {
+		assertNull(jettyClient.getSslContextFactory());
+	}
+
+	private void assertWithFactory(HttpClient jettyClient) {
 		assertSame(b.getFactory(), jettyClient.getSslContextFactory());
+	}
+
+	private void assertWithoutStatic(HttpClient jettyClient) {
+		assertInstanceOf(HttpClientTransportDynamic.class, jettyClient.getTransport());
+	}
+
+	private void assertWithStaticHttp1(HttpClient jettyClient) {
+		assertInstanceOf(HttpClientTransportOverHTTP.class, jettyClient.getTransport());
+	}
+
+	private void assertWithStaticHttp2(HttpClient jettyClient) {
+		assertInstanceOf(HttpClientTransportOverHTTP2.class, jettyClient.getTransport());
+	}
+
+	private void assertWithStaticHttp3(HttpClient jettyClient) {
 		assertInstanceOf(HttpClientTransportOverHTTP3.class, jettyClient.getTransport());
 	}
 
 	@Test
-	void doesNotBuildIfUrlPrefixIsNull() {
+	void doesNotBuildWithIfUrlPrefixIsNull() {
 		assertThrows(NullPointerException.class, () -> {
 			b.build(null);
 		});
 	}
 
 	@Test
-	void doesNotBuildIfUrlPrefixDoesNotStartCorrectly() {
+	void doesNotBuildIfUrlPrefixDoesNotStartWithHttpProtocol() {
 		assertThrows(IllegalArgumentException.class, () -> {
-			b.build("file://a");
+			b.build("file://a/b");
 		});
 	}
 
 	@Test
-	void doesNotBuildIfUrlPrefixIsBlank() {
+	void doesNotBuildIfUrlPrefixPathIsBlank() {
 		assertThrows(IllegalArgumentException.class, () -> {
 			b.build("http:// \t\n");
 		});
@@ -232,13 +357,33 @@ class RestClientBuilderTest extends BuilderTest {
 	@Test
 	void doesNotBuildIfUrlPrefixAuthorityIsEmpty() {
 		assertThrows(IllegalArgumentException.class, () -> {
-			b.build("http:///a");
+			b.build("http:///a/b");
 		});
 	}
 
 	@Override
 	protected Builder<?> newInstance() {
+		clientStatic = mockStatic(RestClient.class);
+		clientStatic.when(() -> RestClient.newInstance(any(TransformManager.class), any(HttpClient.class), any(Locale.class), any(Charset.class), any(String.class))).thenAnswer((invocation) -> {
+			TransformManager manager = invocation.getArgument(0);
+			HttpClient jettyClient = invocation.getArgument(1);
+			Locale locale = invocation.getArgument(2);
+			Charset urlCharset = invocation.getArgument(3);
+			String urlPrefix = invocation.getArgument(4);
+			RestClient client = mock(RestClient.class);
+			when(client.getManager()).thenReturn(manager);
+			when(client.getLocale()).thenReturn(locale);
+			when(client.getUrlCharset()).thenReturn(urlCharset);
+			when(client.getUrlPrefix()).thenReturn(urlPrefix);
+			when(client.getJettyClient()).thenReturn(jettyClient);
+			return client;
+		});
 		b = new RestClientBuilder();
 		return b;
+	}
+
+	@Override
+	protected void close() {
+		clientStatic.close();
 	}
 }

@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -48,7 +49,7 @@ class TransformManagerTest {
 	private MockedStatic<DefaultDisassembler> disassemblerStatic;
 	private MockedStatic<DefaultSerializer> serializerStatic;
 	private MockedStatic<DefaultDeserializer> deserializerStatic;
-	private TransformManager f;
+	private TransformManager m;
 
 	@BeforeEach
 	void setUp() {
@@ -75,7 +76,7 @@ class TransformManagerTest {
 		deserializerStatic = mockStatic(DefaultDeserializer.class);
 		deserializerStatic.when(() -> DefaultDeserializer.getInstance()).thenReturn(defaultDeserializer);
 
-		f = new TransformManager(coder);
+		m = new TransformManager(coder);
 	}
 
 	@AfterEach
@@ -90,496 +91,520 @@ class TransformManagerTest {
 	}
 
 	@Test
-	void getsInstance() {
+	void getsBase() {
 		assertInstanceOf(TransformManager.class, TransformManager.newInstance());
 	}
 
 	@Test
+	void getsCopy() {
+		TransformManager manager = TransformManager.newInstance(m);
+		assertSame(m.getCoder(), manager.getCoder());
+		assertNotSame(m.getAssemblers(), manager.getAssemblers());
+		assertEquals(m.getAssemblers(), manager.getAssemblers());
+		assertNotSame(m.getDisassemblers(), manager.getDisassemblers());
+		assertEquals(m.getDisassemblers(), manager.getDisassemblers());
+		assertNotSame(m.getSerializers(), manager.getSerializers());
+		assertEquals(m.getSerializers(), manager.getSerializers());
+		assertNotSame(m.getDeserializers(), manager.getDeserializers());
+		assertEquals(m.getDeserializers(), manager.getDeserializers());
+		assertNotSame(m.getExtensions(), manager.getExtensions());
+		assertEquals(m.getExtensions(), manager.getExtensions());
+		assertNotSame(m.getBinaryRawTypes(), manager.getBinaryRawTypes());
+		assertEquals(m.getBinaryRawTypes(), manager.getBinaryRawTypes());
+		assertNotSame(m.getBinaryGenericTypes(), manager.getBinaryGenericTypes());
+		assertEquals(m.getBinaryGenericTypes(), manager.getBinaryGenericTypes());
+		assertEquals(m.getBinaryFallbackType(), manager.getBinaryFallbackType());
+		assertEquals(m.getFallbackType(), manager.getFallbackType());
+	}
+
+	@Test
 	void getsAssembler() {
-		assertSame(defaultAssembler, f.getAssembler("application/octet-stream"));
+		assertSame(defaultAssembler, m.getAssembler("application/octet-stream"));
 	}
 
 	@Test
 	void doesNotGetMissingAssembler() {
 		assertThrows(TypeException.class, () -> {
-			f.getAssembler("image/png");
+			m.getAssembler("image/png");
 		});
 	}
 
 	@Test
 	void putsDefaultAssembler() {
-		f.putDefaultAssembler("image/png;parameter");
-		assertSame(defaultAssembler, f.getAssembler("image/png"));
+		m.putDefaultAssembler("image/png;parameter");
+		assertSame(defaultAssembler, m.getAssembler("image/png"));
 	}
 
 	@Test
 	void putsAssembler() {
 		Assembler assembler = mock(Assembler.class);
-		f.putAssembler("image/png;parameter", assembler);
-		assertSame(assembler, f.getAssembler("image/png"));
+		m.putAssembler("image/png;parameter", assembler);
+		assertSame(assembler, m.getAssembler("image/png"));
 	}
 
 	@Test
 	void doesNotPutNullAssembler() {
 		assertThrows(NullPointerException.class, () -> {
-			f.putAssembler("image/png;parameter", null);
+			m.putAssembler("image/png;parameter", null);
 		});
 	}
 
 	@Test
 	void doesNotPutAssemblerWithNullType() {
 		assertThrows(NullPointerException.class, () -> {
-			f.putDefaultAssembler(null);
+			m.putDefaultAssembler(null);
 		});
 	}
 
 	@Test
 	void doesNotPutAssemblerWithBlankType() {
 		assertThrows(IllegalArgumentException.class, () -> {
-			f.putDefaultAssembler("");
+			m.putDefaultAssembler("");
 		});
 	}
 
 	@Test
 	void getsDisassembler() {
-		assertSame(defaultDisassembler, f.getDisassembler("application/octet-stream"));
+		assertSame(defaultDisassembler, m.getDisassembler("application/octet-stream"));
 	}
 
 	@Test
 	void doesNotGetMissingDisassembler() {
 		assertThrows(TypeException.class, () -> {
-			f.getDisassembler("image/png");
+			m.getDisassembler("image/png");
 		});
 	}
 
 	@Test
 	void putsDefaultDisassembler() {
-		f.putDefaultDisassembler("image/png;parameter");
-		assertSame(defaultDisassembler, f.getDisassembler("image/png"));
+		m.putDefaultDisassembler("image/png;parameter");
+		assertSame(defaultDisassembler, m.getDisassembler("image/png"));
 	}
 
 	@Test
 	void putsDisassembler() {
 		Disassembler disassembler = mock(Disassembler.class);
-		f.putDisassembler("image/png;parameter", disassembler);
-		assertSame(disassembler, f.getDisassembler("image/png"));
+		m.putDisassembler("image/png;parameter", disassembler);
+		assertSame(disassembler, m.getDisassembler("image/png"));
 	}
 
 	@Test
 	void doesNotPutNullDisassembler() {
 		assertThrows(NullPointerException.class, () -> {
-			f.putDisassembler("image/png;parameter", null);
+			m.putDisassembler("image/png;parameter", null);
 		});
 	}
 
 	@Test
 	void doesNotPutDisassemblerWithNullType() {
 		assertThrows(NullPointerException.class, () -> {
-			f.putDefaultDisassembler(null);
+			m.putDefaultDisassembler(null);
 		});
 	}
 
 	@Test
 	void doesNotPutDisassemblerWithBlankType() {
 		assertThrows(IllegalArgumentException.class, () -> {
-			f.putDefaultDisassembler("");
+			m.putDefaultDisassembler("");
 		});
 	}
 
 	@Test
 	void getsSerializer() {
-		assertSame(defaultSerializer, f.getSerializer("text/plain"));
+		assertSame(defaultSerializer, m.getSerializer("text/plain"));
 	}
 
 	@Test
 	void doesNotGetMissingSerializer() {
 		assertThrows(TypeException.class, () -> {
-			f.getSerializer("application/xml");
+			m.getSerializer("application/xml");
 		});
 	}
 
 	@Test
 	void putsDefaultSerializer() {
-		f.putDefaultSerializer("application/xml;parameter");
-		assertSame(defaultSerializer, f.getSerializer("application/xml"));
+		m.putDefaultSerializer("application/xml;parameter");
+		assertSame(defaultSerializer, m.getSerializer("application/xml"));
 	}
 
 	@Test
 	void putsSerializer() {
 		Serializer serializer = mock(Serializer.class);
-		f.putSerializer("application/xml;parameter", serializer);
-		assertSame(serializer, f.getSerializer("application/xml"));
+		m.putSerializer("application/xml;parameter", serializer);
+		assertSame(serializer, m.getSerializer("application/xml"));
 	}
 
 	@Test
 	void doesNotPutNullSerializer() {
 		assertThrows(NullPointerException.class, () -> {
-			f.putSerializer("application/xml;parameter", null);
+			m.putSerializer("application/xml;parameter", null);
 		});
 	}
 
 	@Test
 	void doesNotPutSerializerWithNullType() {
 		assertThrows(NullPointerException.class, () -> {
-			f.putDefaultSerializer(null);
+			m.putDefaultSerializer(null);
 		});
 	}
 
 	@Test
 	void doesNotPutSerializerWithBlankType() {
 		assertThrows(IllegalArgumentException.class, () -> {
-			f.putDefaultSerializer("");
+			m.putDefaultSerializer("");
 		});
 	}
 
 	@Test
 	void getsDeserializer() {
-		assertSame(defaultDeserializer, f.getDeserializer("text/plain"));
+		assertSame(defaultDeserializer, m.getDeserializer("text/plain"));
 	}
 
 	@Test
 	void doesNotGetMissingDeserializer() {
 		assertThrows(TypeException.class, () -> {
-			f.getDeserializer("application/xml");
+			m.getDeserializer("application/xml");
 		});
 	}
 
 	@Test
 	void putsDefaultDeserializer() {
-		f.putDefaultDeserializer("application/xml;parameter");
-		assertSame(defaultDeserializer, f.getDeserializer("application/xml"));
+		m.putDefaultDeserializer("application/xml;parameter");
+		assertSame(defaultDeserializer, m.getDeserializer("application/xml"));
 	}
 
 	@Test
 	void putsDeserializer() {
 		Deserializer deserializer = mock(Deserializer.class);
-		f.putDeserializer("application/xml;parameter", deserializer);
-		assertSame(deserializer, f.getDeserializer("application/xml"));
+		m.putDeserializer("application/xml;parameter", deserializer);
+		assertSame(deserializer, m.getDeserializer("application/xml"));
 	}
 
 	@Test
 	void doesNotPutNullDeserializer() {
 		assertThrows(NullPointerException.class, () -> {
-			f.putDeserializer("application/xml;parameter", null);
+			m.putDeserializer("application/xml;parameter", null);
 		});
 	}
 
 	@Test
 	void doesNotPutDeserializerWithNullType() {
 		assertThrows(NullPointerException.class, () -> {
-			f.putDefaultDeserializer(null);
+			m.putDefaultDeserializer(null);
 		});
 	}
 
 	@Test
 	void doesNotPutDeserializerWithBlankType() {
 		assertThrows(IllegalArgumentException.class, () -> {
-			f.putDefaultDeserializer("");
+			m.putDefaultDeserializer("");
 		});
 	}
 
 	@Test
 	void getsExtensionType() {
-		assertEquals("text/plain", f.getExtensionType("txt"));
+		assertEquals("text/plain", m.getExtensionType("txt"));
 	}
 
 	@Test
-	void doesNotGetMissingByteExtensionType() {
-		assertNull(f.getExtensionType("png"));
+	void doesNotGetMissingBinaryExtensionType() {
+		assertNull(m.getExtensionType("png"));
 	}
 
 	@Test
-	void doesNotGetMissingTextExtensionType() {
-		assertNull(f.getExtensionType("xml"));
+	void doesNotGetMissingExtensionType() {
+		assertNull(m.getExtensionType("xml"));
 	}
 
 	@Test
-	void putsByteExtensionType() {
-		f.putDefaultAssembler("image/png;parameter");
-		f.putExtensionType(" \t\npng \t\n", "image/png");
-		assertEquals("image/png", f.getExtensionType("png"));
+	void putsBinaryExtensionType() {
+		String contentType = "image/png;parameter";
+		m.putDefaultAssembler(contentType);
+		m.putExtensionType(" \t\npng \t\n", contentType);
+		assertEquals("image/png", m.getExtensionType("png"));
 	}
 
 	@Test
-	void putsTextExtensionType() {
-		f.putDefaultSerializer("application/xml;parameter");
-		f.putExtensionType(" \t\nxml \t\n", "application/xml");
-		assertEquals("application/xml", f.getExtensionType("xml"));
+	void putsExtensionType() {
+		String contentType = "application/xml;parameter";
+		m.putDefaultSerializer(contentType);
+		m.putExtensionType(" \t\nxml \t\n", contentType);
+		assertEquals("application/xml", m.getExtensionType("xml"));
 	}
 
 	@Test
-	void doesNotPutByteExtensionTypeWithNullExtension() {
+	void doesNotPutBinaryExtensionTypeWithNullExtension() {
 		assertThrows(NullPointerException.class, () -> {
-			f.putExtensionType(null, "image/png");
+			m.putExtensionType(null, "image/png;parameter");
 		});
 	}
 
 	@Test
-	void doesNotPutTextExtensionTypeWithNullExtension() {
+	void doesNotPutExtensionTypeWithNullExtension() {
 		assertThrows(NullPointerException.class, () -> {
-			f.putExtensionType(null, "application/xml");
+			m.putExtensionType(null, "application/xml;parameter");
 		});
 	}
 
 	@Test
-	void doesNotPutByteExtensionTypeWithBlankExtension() {
+	void doesNotPutBinaryExtensionTypeWithBlankExtension() {
 		assertThrows(IllegalArgumentException.class, () -> {
-			f.putExtensionType(" \t\n", "image/png");
+			m.putExtensionType(" \t\n", "image/png;parameter");
 		});
 	}
 
 	@Test
-	void doesNotPutTextExtensionTypeWithBlankExtension() {
+	void doesNotPutExtensionTypeWithBlankExtension() {
 		assertThrows(IllegalArgumentException.class, () -> {
-			f.putExtensionType(" \t\n", "application/xml");
+			m.putExtensionType(" \t\n", "application/xml;parameter");
 		});
 	}
 
 	@Test
-	void doesNotPutNullByteExtensionType() {
+	void doesNotPutNullBinaryExtensionType() {
 		assertThrows(NullPointerException.class, () -> {
-			f.putExtensionType("png", null);
+			m.putExtensionType("png", null);
 		});
 	}
 
 	@Test
-	void doesNotPutNullTextExtensionType() {
+	void doesNotPutNullExtensionType() {
 		assertThrows(NullPointerException.class, () -> {
-			f.putExtensionType("xml", null);
+			m.putExtensionType("xml", null);
 		});
 	}
 
 	@Test
-	void doesNotPutBlankByteExtensionType() {
+	void doesNotPutBlankBinaryExtensionType() {
 		assertThrows(IllegalArgumentException.class, () -> {
-			f.putExtensionType("png", "");
+			m.putExtensionType("png", "");
 		});
 	}
 
 	@Test
-	void doesNotPutBlankTextExtensionType() {
+	void doesNotPutBlankExtensionType() {
 		assertThrows(IllegalArgumentException.class, () -> {
-			f.putExtensionType("xml", "");
+			m.putExtensionType("xml", "");
 		});
 	}
 
 	@Test
-	void doesNotPutMissingByteExtensionType() {
+	void doesNotPutMissingBinaryExtensionType() {
 		assertThrows(IllegalArgumentException.class, () -> {
-			f.putExtensionType("png", "image/png");
+			m.putExtensionType("png", "image/png;parameter");
 		});
 	}
 
 	@Test
-	void doesNotPutMissingTextExtensionType() {
+	void doesNotPutMissingExtensionType() {
 		assertThrows(IllegalArgumentException.class, () -> {
-			f.putExtensionType("xml", "application/xml");
+			m.putExtensionType("xml", "application/xml;parameter");
 		});
 	}
 
 	@Test
 	void initializesByteArrayAsBinary() {
-		assertTrue(f.isBinary(byte[].class));
+		assertTrue(m.isBinary(byte[].class));
 	}
 
 	@Test
 	void initializesInputStreamAsBinary() {
-		assertTrue(f.isBinary(InputStream.class));
+		assertTrue(m.isBinary(InputStream.class));
 	}
 
 	@Test
 	void initializesByteArrayInputStreamAsBinary() {
-		assertTrue(f.isBinary(ByteArrayInputStream.class));
+		assertTrue(m.isBinary(ByteArrayInputStream.class));
 	}
 
 	@Test
 	void initializesOutputStreamConsumerAsBinary() {
-		assertTrue(f.isBinary(new Hint<Consumer<OutputStream>>() {}.getType()));
+		assertTrue(m.isBinary(new Hint<Consumer<OutputStream>>() {}.getType()));
 	}
 
 	@Test
 	void doesNotInitializeReadableByteChannelAsBinary() {
-		assertFalse(f.isBinary(ReadableByteChannel.class));
+		assertFalse(m.isBinary(ReadableByteChannel.class));
 	}
 
 	@Test
 	void doesNotInitializeWritableByteChannelConsumerAsBinary() {
-		assertFalse(f.isBinary(new Hint<Consumer<WritableByteChannel>>() {}.getType()));
+		assertFalse(m.isBinary(new Hint<Consumer<WritableByteChannel>>() {}.getType()));
 	}
 
 	@Test
 	void addsReadableByteChannelAsBinary() {
-		f.addBinary(ReadableByteChannel.class);
-		assertTrue(f.isBinary(ReadableByteChannel.class));
+		m.addBinary(ReadableByteChannel.class);
+		assertTrue(m.isBinary(ReadableByteChannel.class));
 	}
 
 	@Test
 	void addsWritableByteChannelConsumerAsBinary() {
-		f.addBinary(new Hint<Consumer<WritableByteChannel>>() {}.getType());
-		assertTrue(f.isBinary(new Hint<Consumer<WritableByteChannel>>() {}.getType()));
+		m.addBinary(new Hint<Consumer<WritableByteChannel>>() {}.getType());
+		assertTrue(m.isBinary(new Hint<Consumer<WritableByteChannel>>() {}.getType()));
 	}
 
 	@Test
 	void doesNotSetNullBinaryFallbackType() {
 		assertThrows(NullPointerException.class, () -> {
-			f.setBinaryFallbackType(null);
+			m.setBinaryFallbackType(null);
 		});
 	}
 
 	@Test
 	void doesNotSetBlankBinaryFallbackType() {
 		assertThrows(IllegalArgumentException.class, () -> {
-			f.setBinaryFallbackType("");
+			m.setBinaryFallbackType("");
 		});
 	}
 
 	@Test
 	void doesNotSetNullFallbackType() {
 		assertThrows(NullPointerException.class, () -> {
-			f.setFallbackType(null);
+			m.setFallbackType(null);
 		});
 	}
 
 	@Test
 	void doesNotSetBlankFallbackType() {
 		assertThrows(IllegalArgumentException.class, () -> {
-			f.setFallbackType("");
+			m.setFallbackType("");
 		});
 	}
 
 	@Test
 	void setsAndGetsFallbackAssemblerType() {
 		Object body = new Object();
-		f.setBinaryFallbackType("image/png;parameter");
-		assertEquals("image/png", f.getAssemblerType(null, body, Object.class));
+		m.setBinaryFallbackType("image/png;parameter");
+		assertEquals("image/png", m.getAssemblerType(null, body, Object.class));
 	}
 
 	@Test
 	void setsAndGetsFallbackDisassemblerType() {
-		f.setBinaryFallbackType("image/png;parameter");
-		assertEquals("image/png", f.getDisassemblerType(null, Object.class));
+		m.setBinaryFallbackType("image/png;parameter");
+		assertEquals("image/png", m.getDisassemblerType(null, Object.class));
 	}
 
 	@Test
 	void setsAndGetsFallbackSerializerType() {
 		Object body = new Object();
-		f.setFallbackType("application/xml;parameter");
-		assertEquals("application/xml", f.getSerializerType(null, body, Object.class));
+		m.setFallbackType("application/xml;parameter");
+		assertEquals("application/xml", m.getSerializerType(null, body, Object.class));
 	}
 
 	@Test
 	void setsAndGetsFallbackDeserializerType() {
-		f.setFallbackType("application/xml;parameter");
-		assertEquals("application/xml", f.getDeserializerType(null, Object.class));
+		m.setFallbackType("application/xml;parameter");
+		assertEquals("application/xml", m.getDeserializerType(null, Object.class));
 	}
 
 	@Test
 	void getsAssemblerType() {
 		String contentType = "application/octet-stream";
-		assertEquals(contentType, f.getAssemblerType(contentType, new Object(), Object.class));
+		assertEquals(contentType, m.getAssemblerType(contentType, new Object(), Object.class));
 	}
 
 	@Test
 	void getsByteArrayAssemblerType() {
 		byte[] body = new byte[] {};
-		assertEquals("application/octet-stream", f.getAssemblerType(null, body, byte[].class));
+		assertEquals("application/octet-stream", m.getAssemblerType(null, body, byte[].class));
 	}
 
 	@Test
 	void getsInputStreamAssemblerType() {
 		InputStream body = InputStream.nullInputStream();
-		assertEquals("application/octet-stream", f.getAssemblerType(null, body, InputStream.class));
+		assertEquals("application/octet-stream", m.getAssemblerType(null, body, InputStream.class));
 	}
 
 	@Test
 	void getsOutputStreamConsumerAssemblerType() {
 		Consumer<OutputStream> body = (stream) -> {};
-		assertEquals("application/octet-stream", f.getAssemblerType(null, body, new Hint<Consumer<OutputStream>>() {}.getType()));
+		assertEquals("application/octet-stream", m.getAssemblerType(null, body, new Hint<Consumer<OutputStream>>() {}.getType()));
 	}
 
 	@Test
 	void doesNotGetMissingAssemblerType() {
 		Object body = new Object();
 		assertThrows(IllegalStateException.class, () -> {
-			f.getAssemblerType(null, body, Object.class);
+			m.getAssemblerType(null, body, Object.class);
 		});
 	}
 
 	@Test
 	void getsDisassemblerType() {
 		String contentType = "application/octet-stream";
-		assertEquals(contentType, f.getDisassemblerType(contentType, Object.class));
+		assertEquals(contentType, m.getDisassemblerType(contentType, Object.class));
 	}
 
 	@Test
 	void getsByteArrayDisssemblerType() {
-		assertEquals("application/octet-stream", f.getDisassemblerType(null, byte[].class));
+		assertEquals("application/octet-stream", m.getDisassemblerType(null, byte[].class));
 	}
 
 	@Test
 	void getsInputStreamDisssemblerType() {
-		assertEquals("application/octet-stream", f.getDisassemblerType(null, InputStream.class));
+		assertEquals("application/octet-stream", m.getDisassemblerType(null, InputStream.class));
 	}
 
 	@Test
 	void doesNotGetMissingDisassemblerType() {
 		assertThrows(IllegalStateException.class, () -> {
-			f.getDisassemblerType(null, Object.class);
+			m.getDisassemblerType(null, Object.class);
 		});
 	}
 
 	@Test
 	void getsSerializerType() {
 		String contentType = "text/plain";
-		assertEquals(contentType, f.getSerializerType(contentType, new Object(), Object.class));
+		assertEquals(contentType, m.getSerializerType(contentType, new Object(), Object.class));
 	}
 
 	@Test
 	void getsStringSerializerType() {
 		String body = "";
-		assertEquals("text/plain", f.getSerializerType(null, body, String.class));
+		assertEquals("text/plain", m.getSerializerType(null, body, String.class));
 	}
 
 	@Test
 	void getsReaderSerializerType() {
 		Reader body = Reader.nullReader();
-		assertEquals("text/plain", f.getSerializerType(null, body, Reader.class));
+		assertEquals("text/plain", m.getSerializerType(null, body, Reader.class));
 	}
 
 	@Test
 	void getsWriterConsumerSerializerType() {
 		Consumer<Writer> body = (writer) -> {};
-		assertEquals("text/plain", f.getSerializerType(null, body, new Hint<Consumer<Writer>>() {}.getType()));
+		assertEquals("text/plain", m.getSerializerType(null, body, new Hint<Consumer<Writer>>() {}.getType()));
 	}
 
 	@Test
 	void doesNotGetMissingSerializerType() {
 		Object body = new Object();
 		assertThrows(IllegalStateException.class, () -> {
-			f.getSerializerType(null, body, Object.class);
+			m.getSerializerType(null, body, Object.class);
 		});
 	}
 
 	@Test
 	void getsDeserializerType() {
 		String contentType = "text/plain";
-		assertEquals(contentType, f.getDeserializerType(contentType, Object.class));
+		assertEquals(contentType, m.getDeserializerType(contentType, Object.class));
 	}
 
 	@Test
 	void getsStringDeserializerType() {
-		assertEquals("text/plain", f.getDeserializerType(null, String.class));
+		assertEquals("text/plain", m.getDeserializerType(null, String.class));
 	}
 
 	@Test
 	void getsReaderDeserializerType() {
-		assertEquals("text/plain", f.getDeserializerType(null, Reader.class));
+		assertEquals("text/plain", m.getDeserializerType(null, Reader.class));
 	}
 
 	@Test
 	void doesNotGetMissingDeserializerType() {
 		assertThrows(IllegalStateException.class, () -> {
-			f.getDeserializerType(null, Object.class);
+			m.getDeserializerType(null, Object.class);
 		});
 	}
 }

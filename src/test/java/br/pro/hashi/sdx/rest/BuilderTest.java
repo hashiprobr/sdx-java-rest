@@ -6,10 +6,13 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 
@@ -20,6 +23,7 @@ import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.MockitoAnnotations;
 
+import br.pro.hashi.sdx.rest.coding.PathCoder;
 import br.pro.hashi.sdx.rest.constant.Defaults;
 import br.pro.hashi.sdx.rest.transform.Assembler;
 import br.pro.hashi.sdx.rest.transform.Deserializer;
@@ -29,23 +33,52 @@ import br.pro.hashi.sdx.rest.transform.manager.TransformManager;
 
 public abstract class BuilderTest {
 	private AutoCloseable mocks;
-	private @Mock TransformManager manager;
+	private @Mock PathCoder pathCoder;
+	private MockedStatic<PathCoder> pathCoderStatic;
 	private MockedStatic<TransformManager> managerStatic;
 	private Builder<?> b;
+
+	protected @Mock TransformManager managerBase;
+	protected @Mock TransformManager managerCopy;
 
 	@BeforeEach
 	void setUp() {
 		mocks = MockitoAnnotations.openMocks(this);
 
+		when(pathCoder.stripEndingSlashes(any(String.class))).thenAnswer((invocation) -> {
+			return invocation.getArgument(0);
+		});
+		when(pathCoder.splitAndDecode(any(String.class), any(Charset.class))).thenAnswer((invocation) -> {
+			String path = invocation.getArgument(0);
+			String[] items = path.substring(1).split("/", -1);
+			for (int i = 0; i < items.length; i++) {
+				items[i] = "pd(%s)".formatted(items[i]);
+			}
+			return items;
+		});
+		when(pathCoder.recode(any(String.class), any(Charset.class))).thenAnswer((invocation) -> {
+			String path = invocation.getArgument(0);
+			if (path.indexOf('%') != -1) {
+				throw new IllegalArgumentException();
+			}
+			return "pr(%s)".formatted(path);
+		});
+
+		pathCoderStatic = mockStatic(PathCoder.class);
+		pathCoderStatic.when(() -> PathCoder.getInstance()).thenReturn(pathCoder);
+
 		managerStatic = mockStatic(TransformManager.class);
-		managerStatic.when(() -> TransformManager.newInstance()).thenReturn(manager);
+		managerStatic.when(() -> TransformManager.newInstance()).thenReturn(managerBase);
+		managerStatic.when(() -> TransformManager.newInstance(managerBase)).thenReturn(managerCopy);
 
 		b = newInstance();
 	}
 
 	@AfterEach
 	void tearDown() {
+		close();
 		managerStatic.close();
+		pathCoderStatic.close();
 		assertDoesNotThrow(() -> {
 			mocks.close();
 		});
@@ -57,7 +90,7 @@ public abstract class BuilderTest {
 	}
 
 	@Test
-	void initializesWithDefaultCharset() {
+	void initializesWithDefaultUrlCharset() {
 		assertEquals(StandardCharsets.UTF_8, b.urlCharset);
 	}
 
@@ -75,7 +108,7 @@ public abstract class BuilderTest {
 	void putsDefaultAssembler() {
 		String contentType = "image/png";
 		assertSame(b, b.withDefaultAssembler(contentType));
-		verify(manager).putDefaultAssembler(contentType);
+		verify(managerBase).putDefaultAssembler(contentType);
 	}
 
 	@Test
@@ -83,14 +116,14 @@ public abstract class BuilderTest {
 		String contentType = "image/png";
 		Assembler assembler = mock(Assembler.class);
 		assertSame(b, b.withAssembler(contentType, assembler));
-		verify(manager).putAssembler(contentType, assembler);
+		verify(managerBase).putAssembler(contentType, assembler);
 	}
 
 	@Test
 	void putsDefaultDisassembler() {
 		String contentType = "image/png";
 		assertSame(b, b.withDefaultDisassembler(contentType));
-		verify(manager).putDefaultDisassembler(contentType);
+		verify(managerBase).putDefaultDisassembler(contentType);
 	}
 
 	@Test
@@ -98,14 +131,14 @@ public abstract class BuilderTest {
 		String contentType = "image/png";
 		Disassembler disassembler = mock(Disassembler.class);
 		assertSame(b, b.withDisassembler(contentType, disassembler));
-		verify(manager).putDisassembler(contentType, disassembler);
+		verify(managerBase).putDisassembler(contentType, disassembler);
 	}
 
 	@Test
 	void putsDefaultSerializer() {
 		String contentType = "application/xml";
 		assertSame(b, b.withDefaultSerializer(contentType));
-		verify(manager).putDefaultSerializer(contentType);
+		verify(managerBase).putDefaultSerializer(contentType);
 	}
 
 	@Test
@@ -113,14 +146,14 @@ public abstract class BuilderTest {
 		String contentType = "application/xml";
 		Serializer serializer = mock(Serializer.class);
 		assertSame(b, b.withSerializer(contentType, serializer));
-		verify(manager).putSerializer(contentType, serializer);
+		verify(managerBase).putSerializer(contentType, serializer);
 	}
 
 	@Test
 	void putsDefaultDeserializer() {
 		String contentType = "application/xml";
 		assertSame(b, b.withDefaultDeserializer(contentType));
-		verify(manager).putDefaultDeserializer(contentType);
+		verify(managerBase).putDefaultDeserializer(contentType);
 	}
 
 	@Test
@@ -128,20 +161,20 @@ public abstract class BuilderTest {
 		String contentType = "application/xml";
 		Deserializer deserializer = mock(Deserializer.class);
 		assertSame(b, b.withDeserializer(contentType, deserializer));
-		verify(manager).putDeserializer(contentType, deserializer);
+		verify(managerBase).putDeserializer(contentType, deserializer);
 	}
 
 	@Test
 	void addsBinary() {
 		assertSame(b, b.withBinary(Object.class));
-		verify(manager).addBinary(Object.class);
+		verify(managerBase).addBinary(Object.class);
 	}
 
 	@Test
 	void addsBinaryWithHint() {
 		Hint<Object> hint = new Hint<Object>() {};
 		assertSame(b, b.withBinary(hint));
-		verify(manager).addBinary(hint.getType());
+		verify(managerBase).addBinary(hint.getType());
 	}
 
 	@Test
@@ -162,14 +195,14 @@ public abstract class BuilderTest {
 	void setsBinaryFallbackType() {
 		String contentType = "image/png";
 		assertSame(b, b.withBinaryFallbackType(contentType));
-		verify(manager).setBinaryFallbackType(contentType);
+		verify(managerBase).setBinaryFallbackType(contentType);
 	}
 
 	@Test
 	void setsFallbackType() {
 		String contentType = "application/xml";
 		assertSame(b, b.withFallbackType(contentType));
-		verify(manager).setFallbackType(contentType);
+		verify(managerBase).setFallbackType(contentType);
 	}
 
 	@Test
@@ -211,4 +244,6 @@ public abstract class BuilderTest {
 	}
 
 	protected abstract Builder<?> newInstance();
+
+	protected abstract void close();
 }
