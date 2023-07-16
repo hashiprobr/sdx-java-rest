@@ -30,6 +30,7 @@ import br.pro.hashi.sdx.rest.reflection.mock.concrete.Child;
 import br.pro.hashi.sdx.rest.reflection.mock.concrete.Parent;
 import br.pro.hashi.sdx.rest.reflection.mock.handle.ArgumentConstructor;
 import br.pro.hashi.sdx.rest.reflection.mock.handle.DefaultConstructor;
+import br.pro.hashi.sdx.rest.reflection.mock.handle.GenericConstructor;
 import br.pro.hashi.sdx.rest.reflection.mock.handle.Methods;
 import br.pro.hashi.sdx.rest.reflection.mock.handle.PackageConstructor;
 import br.pro.hashi.sdx.rest.reflection.mock.handle.PrivateConstructor;
@@ -92,6 +93,13 @@ class ReflectorTest {
 	<T> void getsAndInvokesCreator(Class<T> type) {
 		MethodHandle creator = r.getCreator(type, type.getName());
 		assertInstanceOf(type, r.invokeCreator(creator));
+	}
+
+	@Test
+	void doesNotGetGenericCreator() {
+		assertThrows(ReflectionException.class, () -> {
+			getCreator(GenericConstructor.class);
+		});
 	}
 
 	@Test

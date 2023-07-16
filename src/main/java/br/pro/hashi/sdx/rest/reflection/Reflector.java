@@ -35,6 +35,9 @@ public class Reflector {
 	}
 
 	<T> MethodHandle getCreator(Class<T> type, String typeName, Lookup lookup) {
+		if (type.getTypeParameters().length > 0) {
+			throw new ReflectionException("Class %s cannot be generic".formatted(typeName));
+		}
 		Constructor<T> constructor;
 		try {
 			constructor = type.getDeclaredConstructor();
