@@ -38,7 +38,7 @@ class DefaultSerializerTest {
 	void writesString() {
 		String body = newString();
 		StringWriter writer = new StringWriter();
-		s.write(body, writer);
+		s.write(body, String.class, writer);
 		assertEqualsBody(writer);
 	}
 
@@ -46,7 +46,7 @@ class DefaultSerializerTest {
 	void writesReader() {
 		Reader body = new StringReader(newString());
 		StringWriter writer = new StringWriter();
-		s.write(body, writer);
+		s.write(body, Reader.class, writer);
 		assertEqualsBody(writer);
 	}
 
@@ -69,19 +69,11 @@ class DefaultSerializerTest {
 	}
 
 	@Test
-	void doesNotWriteNull() {
-		Writer writer = new StringWriter();
-		assertThrows(NullPointerException.class, () -> {
-			s.write(null, writer);
-		});
-	}
-
-	@Test
 	void doesNotWriteUnsupportedType() {
 		Object body = new Object();
 		Writer writer = new StringWriter();
 		assertThrows(TypeException.class, () -> {
-			s.write(body, writer);
+			s.write(body, Object.class, writer);
 		});
 	}
 
@@ -93,7 +85,7 @@ class DefaultSerializerTest {
 			writer.close();
 		});
 		Exception exception = assertThrows(UncheckedIOException.class, () -> {
-			s.write(body, writer);
+			s.write(body, String.class, writer);
 		});
 		assertInstanceOf(IOException.class, exception.getCause());
 	}

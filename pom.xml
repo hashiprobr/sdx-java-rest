@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>io.github.hashiprobr</groupId>
   <artifactId>sdx-rest</artifactId>
-  <version>0.9.2</version>
+  <version>0.9.3</version>
   <name>${project.groupId}:${project.artifactId}</name>
   <description>Simple embedded REST framework based on Jetty.</description>
   <url>https://github.com/hashiprobr/sdx-java-rest</url>

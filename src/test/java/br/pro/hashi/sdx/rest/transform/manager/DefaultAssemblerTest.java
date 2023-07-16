@@ -39,7 +39,7 @@ class DefaultAssemblerTest {
 	void writesByteArray() {
 		byte[] body = newByteArray();
 		ByteArrayOutputStream stream = new ByteArrayOutputStream();
-		a.write(body, stream);
+		a.write(body, byte[].class, stream);
 		assertEqualsBody(stream);
 	}
 
@@ -47,7 +47,7 @@ class DefaultAssemblerTest {
 	void writesInputStream() {
 		InputStream body = new ByteArrayInputStream(newByteArray());
 		ByteArrayOutputStream stream = new ByteArrayOutputStream();
-		a.write(body, stream);
+		a.write(body, InputStream.class, stream);
 		assertEqualsBody(stream);
 	}
 
@@ -70,19 +70,11 @@ class DefaultAssemblerTest {
 	}
 
 	@Test
-	void doesNotWriteNull() {
-		ByteArrayOutputStream stream = new ByteArrayOutputStream();
-		assertThrows(NullPointerException.class, () -> {
-			a.write(null, stream);
-		});
-	}
-
-	@Test
 	void doesNotWriteUnsupportedType() {
 		Object body = new Object();
 		ByteArrayOutputStream stream = new ByteArrayOutputStream();
 		assertThrows(TypeException.class, () -> {
-			a.write(body, stream);
+			a.write(body, Object.class, stream);
 		});
 	}
 
@@ -94,7 +86,7 @@ class DefaultAssemblerTest {
 			stream.close();
 		});
 		Exception exception = assertThrows(UncheckedIOException.class, () -> {
-			a.write(body, stream);
+			a.write(body, byte[].class, stream);
 		});
 		assertInstanceOf(IOException.class, exception.getCause());
 	}
