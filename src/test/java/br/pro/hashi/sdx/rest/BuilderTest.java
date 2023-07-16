@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -120,6 +121,13 @@ public abstract class BuilderTest {
 	}
 
 	@Test
+	void removesAssembler() {
+		String contentType = "image/png";
+		assertSame(b, b.withoutAssembler(contentType));
+		verify(managerBase).removeAssembler(contentType);
+	}
+
+	@Test
 	void putsDefaultDisassembler() {
 		String contentType = "image/png";
 		assertSame(b, b.withDefaultDisassembler(contentType));
@@ -132,6 +140,13 @@ public abstract class BuilderTest {
 		Disassembler disassembler = mock(Disassembler.class);
 		assertSame(b, b.withDisassembler(contentType, disassembler));
 		verify(managerBase).putDisassembler(contentType, disassembler);
+	}
+
+	@Test
+	void removesDisassembler() {
+		String contentType = "image/png";
+		assertSame(b, b.withoutDisassembler(contentType));
+		verify(managerBase).removeDisassembler(contentType);
 	}
 
 	@Test
@@ -150,6 +165,13 @@ public abstract class BuilderTest {
 	}
 
 	@Test
+	void removesSerializer() {
+		String contentType = "application/xml";
+		assertSame(b, b.withoutSerializer(contentType));
+		verify(managerBase).removeSerializer(contentType);
+	}
+
+	@Test
 	void putsDefaultDeserializer() {
 		String contentType = "application/xml";
 		assertSame(b, b.withDefaultDeserializer(contentType));
@@ -165,6 +187,13 @@ public abstract class BuilderTest {
 	}
 
 	@Test
+	void removesDeserializer() {
+		String contentType = "application/xml";
+		assertSame(b, b.withoutDeserializer(contentType));
+		verify(managerBase).removeDeserializer(contentType);
+	}
+
+	@Test
 	void addsBinary() {
 		assertSame(b, b.withBinary(Object.class));
 		verify(managerBase).addBinary(Object.class);
@@ -172,9 +201,8 @@ public abstract class BuilderTest {
 
 	@Test
 	void addsBinaryWithHint() {
-		Hint<Object> hint = new Hint<Object>() {};
-		assertSame(b, b.withBinary(hint));
-		verify(managerBase).addBinary(hint.getType());
+		assertSame(b, b.withBinary(new Hint<Object>() {}));
+		verify(managerBase).addBinary(Object.class);
 	}
 
 	@Test
@@ -192,10 +220,40 @@ public abstract class BuilderTest {
 	}
 
 	@Test
+	void removesBinary() {
+		assertSame(b, b.withoutBinary(Object.class));
+		verify(managerBase).removeBinary(Object.class);
+	}
+
+	@Test
+	void removesBinaryWithHint() {
+		assertSame(b, b.withoutBinary(new Hint<Object>() {}));
+		verify(managerBase).removeBinary(Object.class);
+	}
+
+	@Test
+	void removesBinaryWithNullType() {
+		assertSame(b, b.withoutBinary((Class<?>) null));
+		verify(managerBase, times(0)).removeBinary(any());
+	}
+
+	@Test
+	void removesBinaryWithNullHint() {
+		assertSame(b, b.withoutBinary((Hint<?>) null));
+		verify(managerBase, times(0)).removeBinary(any());
+	}
+
+	@Test
 	void setsBinaryFallbackType() {
 		String contentType = "image/png";
 		assertSame(b, b.withBinaryFallbackType(contentType));
 		verify(managerBase).setBinaryFallbackType(contentType);
+	}
+
+	@Test
+	void unsetsBinaryFallbackType() {
+		assertSame(b, b.withoutBinaryFallbackType());
+		verify(managerBase).unsetBinaryFallbackType();
 	}
 
 	@Test
@@ -206,9 +264,17 @@ public abstract class BuilderTest {
 	}
 
 	@Test
+	void unsetsFallbackType() {
+		assertSame(b, b.withoutFallbackType());
+		verify(managerBase).unsetFallbackType();
+	}
+
+	@Test
 	void setsLocale() {
 		assertSame(b, b.withLocale(Locale.ROOT));
 		assertEquals(Locale.ROOT, b.locale);
+		assertSame(b, b.withoutLocale());
+		assertEquals(Defaults.LOCALE, b.locale);
 	}
 
 	@Test
@@ -222,6 +288,8 @@ public abstract class BuilderTest {
 	void setsUrlCharset() {
 		assertSame(b, b.withUrlCharset(StandardCharsets.ISO_8859_1));
 		assertEquals(StandardCharsets.ISO_8859_1, b.urlCharset);
+		assertSame(b, b.withoutUrlCharset());
+		assertEquals(StandardCharsets.UTF_8, b.urlCharset);
 	}
 
 	@Test
@@ -235,12 +303,16 @@ public abstract class BuilderTest {
 	void setsRedirection() {
 		assertSame(b, b.withoutRedirection());
 		assertFalse(b.redirection);
+		assertSame(b, b.withRedirection());
+		assertTrue(b.redirection);
 	}
 
 	@Test
 	void setsCompression() {
 		assertSame(b, b.withoutCompression());
 		assertFalse(b.compression);
+		assertSame(b, b.withCompression());
+		assertTrue(b.compression);
 	}
 
 	protected abstract Builder<?> newInstance();

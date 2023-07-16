@@ -60,6 +60,8 @@ class RestClientBuilderTest extends BuilderTest {
 		verify(factory).setTrustStorePath(path);
 		verify(factory).setTrustStorePassword(password);
 		assertEquals(factory, b.getFactory());
+		assertSame(b, b.withoutTrustStore());
+		assertNull(b.getFactory());
 	}
 
 	@Test

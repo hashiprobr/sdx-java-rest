@@ -161,9 +161,15 @@ class RestServerBuilderTest extends BuilderTest {
 	}
 
 	@Test
-	void addsExtension() {
-		assertSame(b, b.withExtension("ext", "type/subtype"));
+	void addsExtensionType() {
+		assertSame(b, b.withExtensionType("ext", "type/subtype"));
 		verify(managerBase).putExtensionType("ext", "type/subtype");
+	}
+
+	@Test
+	void removesExtensionType() {
+		assertSame(b, b.withoutExtensionType("ext"));
+		verify(managerBase).removeExtensionType("ext");
 	}
 
 	@Test
@@ -271,6 +277,8 @@ class RestServerBuilderTest extends BuilderTest {
 			verify(factory).setKeyStorePath(path);
 			verify(factory).setKeyStorePassword(password);
 			assertEquals(factory, b.getFactory());
+			b.withoutKeyStore();
+			assertNull(b.getFactory());
 		}
 	}
 

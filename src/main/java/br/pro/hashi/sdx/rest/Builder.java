@@ -114,6 +114,24 @@ public sealed abstract class Builder<T extends Builder<T>> permits RestClientBui
 	}
 
 	/**
+	 * <p>
+	 * Associates the specified content type to no assembler. Parameters are
+	 * ignored.
+	 * </p>
+	 * <p>
+	 * The only content type associated to an assembler by default is
+	 * {@code application/octet-stream}.
+	 * </p>
+	 * 
+	 * @param contentType the content type
+	 * @return this builder, for chaining
+	 */
+	public final T withoutAssembler(String contentType) {
+		managerBase.removeAssembler(contentType);
+		return self();
+	}
+
+	/**
 	 * Associates the specified content type to the same disassembler associated to
 	 * {@code application/octet-stream}. Parameters are ignored.
 	 * 
@@ -146,6 +164,24 @@ public sealed abstract class Builder<T extends Builder<T>> permits RestClientBui
 	 */
 	public final T withDisassembler(String contentType, Disassembler disassembler) {
 		managerBase.putDisassembler(contentType, disassembler);
+		return self();
+	}
+
+	/**
+	 * <p>
+	 * Associates the specified content type to no disassembler. Parameters are
+	 * ignored.
+	 * </p>
+	 * <p>
+	 * The only content type associated to a disassembler by default is
+	 * {@code application/octet-stream}.
+	 * </p>
+	 * 
+	 * @param contentType the content type
+	 * @return this builder, for chaining
+	 */
+	public final T withoutDisassembler(String contentType) {
+		managerBase.removeDisassembler(contentType);
 		return self();
 	}
 
@@ -186,6 +222,24 @@ public sealed abstract class Builder<T extends Builder<T>> permits RestClientBui
 	}
 
 	/**
+	 * <p>
+	 * Associates the specified content type to no serializer. Parameters are
+	 * ignored.
+	 * </p>
+	 * <p>
+	 * The only content type associated to a serializer by default is
+	 * {@code text/plain}.
+	 * </p>
+	 * 
+	 * @param contentType the content type
+	 * @return this builder, for chaining
+	 */
+	public final T withoutSerializer(String contentType) {
+		managerBase.removeSerializer(contentType);
+		return self();
+	}
+
+	/**
 	 * Associates the specified content type to the same deserializer associated to
 	 * {@code text/plain}. Parameters are ignored.
 	 * 
@@ -218,6 +272,24 @@ public sealed abstract class Builder<T extends Builder<T>> permits RestClientBui
 	 */
 	public final T withDeserializer(String contentType, Deserializer deserializer) {
 		managerBase.putDeserializer(contentType, deserializer);
+		return self();
+	}
+
+	/**
+	 * <p>
+	 * Associates the specified content type to no deserializer. Parameters are
+	 * ignored.
+	 * </p>
+	 * <p>
+	 * The only content type associated to a deserializer by default is
+	 * {@code text/plain}.
+	 * </p>
+	 * 
+	 * @param contentType the content type
+	 * @return this builder, for chaining
+	 */
+	public final T withoutDeserializer(String contentType) {
+		managerBase.removeDeserializer(contentType);
 		return self();
 	}
 
@@ -283,6 +355,62 @@ public sealed abstract class Builder<T extends Builder<T>> permits RestClientBui
 
 	/**
 	 * <p>
+	 * Establishes that the specified type should not be considered binary.
+	 * </p>
+	 * <p>
+	 * Since {@link Class} objects do not have generic information due to type
+	 * erasure, do not call this method if the type is generic. Call
+	 * {@link #withBinary(Hint)} instead.
+	 * </p>
+	 * <p>
+	 * Objects of types considered binary are transformed by an {@link Assembler} or
+	 * a {@link Disassembler}, while other objects are transformed by a
+	 * {@link Serializer}s or a {@link Deserializer}.
+	 * </p>
+	 * <p>
+	 * The only non-generic types considered binary by default are {@code byte[]}
+	 * and {@link InputStream}.
+	 * </p>
+	 * 
+	 * @param type the type
+	 * @return this builder, for chaining
+	 */
+	public final T withoutBinary(Class<?> type) {
+		if (type != null) {
+			managerBase.removeBinary(type);
+		}
+		return self();
+	}
+
+	/**
+	 * <p>
+	 * Establishes that the specified hinted type should not be considered binary.
+	 * </p>
+	 * <p>
+	 * Call this method if the type is generic.
+	 * </p>
+	 * <p>
+	 * Objects of types considered binary are transformed by an {@link Assembler} or
+	 * a {@link Disassembler}, while other objects are transformed by a
+	 * {@link Serializer}s or a {@link Deserializer}.
+	 * </p>
+	 * <p>
+	 * The only generic type considered binary by default is
+	 * {@code Consumer<OutputStream>}.
+	 * </p>
+	 * 
+	 * @param hint the hint
+	 * @return this builder, for chaining
+	 */
+	public final T withoutBinary(Hint<?> hint) {
+		if (hint != null) {
+			managerBase.removeBinary(hint.getType());
+		}
+		return self();
+	}
+
+	/**
+	 * <p>
 	 * Establishes that the specified content type should be used as a fallback for
 	 * types that are considered binary. Parameters are ignored.
 	 * </p>
@@ -294,6 +422,19 @@ public sealed abstract class Builder<T extends Builder<T>> permits RestClientBui
 	 */
 	public final T withBinaryFallbackType(String contentType) {
 		managerBase.setBinaryFallbackType(contentType);
+		return self();
+	}
+
+	/**
+	 * <p>
+	 * Establishes that no specified content type should be used as a fallback for
+	 * types that are considered binary.
+	 * </p>
+	 * 
+	 * @return this builder, for chaining
+	 */
+	public final T withoutBinaryFallbackType() {
+		managerBase.unsetBinaryFallbackType();
 		return self();
 	}
 
@@ -314,7 +455,21 @@ public sealed abstract class Builder<T extends Builder<T>> permits RestClientBui
 	}
 
 	/**
-	 * Sets the locale that should be used when processing a request.
+	 * <p>
+	 * Establishes that no content type should be used as a fallback for types that
+	 * are not considered binary.
+	 * </p>
+	 * 
+	 * @return this builder, for chaining
+	 */
+	public final T withoutFallbackType() {
+		managerBase.unsetFallbackType();
+		return self();
+	}
+
+	/**
+	 * Sets the locale that should be used when processing a request. Default is the
+	 * system locale.
 	 * 
 	 * @param locale the locale
 	 * @return this builder, for chaining
@@ -325,6 +480,16 @@ public sealed abstract class Builder<T extends Builder<T>> permits RestClientBui
 			throw new NullPointerException("Locale cannot be null");
 		}
 		this.locale = locale;
+		return self();
+	}
+
+	/**
+	 * Resets the locale to the system locale.
+	 * 
+	 * @return this builder, for chaining
+	 */
+	public final T withoutLocale() {
+		this.locale = Defaults.LOCALE;
 		return self();
 	}
 
@@ -345,7 +510,17 @@ public sealed abstract class Builder<T extends Builder<T>> permits RestClientBui
 	}
 
 	/**
-	 * Disables HTTPS redirection.
+	 * Resets the URL charset to {@link StandardCharsets#UTF_8}.
+	 * 
+	 * @return this builder, for chaining
+	 */
+	public final T withoutUrlCharset() {
+		this.urlCharset = StandardCharsets.UTF_8;
+		return self();
+	}
+
+	/**
+	 * Disables HTTPS redirection, which is enabled by default.
 	 * 
 	 * @return this builder, for chaining
 	 */
@@ -355,12 +530,32 @@ public sealed abstract class Builder<T extends Builder<T>> permits RestClientBui
 	}
 
 	/**
-	 * Disables GZIP compression.
+	 * Resets HTTPS redirection to enabled.
+	 * 
+	 * @return this builder, for chaining
+	 */
+	public final T withRedirection() {
+		this.redirection = true;
+		return self();
+	}
+
+	/**
+	 * Disables GZIP compression, which is enabled by default.
 	 * 
 	 * @return this builder, for chaining
 	 */
 	public final T withoutCompression() {
 		this.compression = false;
+		return self();
+	}
+
+	/**
+	 * Resets GZIP compression to enabled.
+	 * 
+	 * @return this builder, for chaining
+	 */
+	public final T withCompression() {
+		this.compression = true;
 		return self();
 	}
 

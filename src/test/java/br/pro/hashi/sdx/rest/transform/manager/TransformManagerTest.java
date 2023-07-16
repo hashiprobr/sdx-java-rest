@@ -578,13 +578,6 @@ class TransformManagerTest {
 	}
 
 	@Test
-	void removesNullAsBinary() {
-		assertDoesNotThrow(() -> {
-			m.removeBinary(null);
-		});
-	}
-
-	@Test
 	void doesNotSetNullBinaryFallbackType() {
 		assertThrows(NullPointerException.class, () -> {
 			m.setBinaryFallbackType(null);

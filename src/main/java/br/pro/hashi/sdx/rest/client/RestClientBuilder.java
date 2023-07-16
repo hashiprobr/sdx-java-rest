@@ -37,7 +37,8 @@ public non-sealed class RestClientBuilder extends Builder<RestClientBuilder> {
 	}
 
 	/**
-	 * Sets the keytool TrustStore that should be used for HTTPS support.
+	 * Sets the keytool TrustStore that should be used for HTTPS support. None by
+	 * default.
 	 * 
 	 * @param path     the TrustStore path
 	 * @param password the TrustStore password
@@ -63,6 +64,16 @@ public non-sealed class RestClientBuilder extends Builder<RestClientBuilder> {
 		factory.setTrustStorePath(path);
 		factory.setTrustStorePassword(password);
 		this.factory = factory;
+		return self();
+	}
+
+	/**
+	 * Resets the keytool TrustStore to none.
+	 * 
+	 * @return this builder, for chaining
+	 */
+	public final RestClientBuilder withoutTrustStore() {
+		this.factory = null;
 		return self();
 	}
 

@@ -165,7 +165,8 @@ public non-sealed class RestServerBuilder extends Builder<RestServerBuilder> {
 
 	/**
 	 * <p>
-	 * Associates an extension to a content type.
+	 * Associates the specified extension to the specified content type. Parameters
+	 * are ignored.
 	 * </p>
 	 * <p>
 	 * The only extension associated to a content type by default is {@code txt}.
@@ -179,8 +180,24 @@ public non-sealed class RestServerBuilder extends Builder<RestServerBuilder> {
 	 * @throws IllegalArgumentException if the extension is blank or the content
 	 *                                  type is invalid
 	 */
-	public final RestServerBuilder withExtension(String extension, String contentType) {
+	public final RestServerBuilder withExtensionType(String extension, String contentType) {
 		managerBase.putExtensionType(extension, contentType);
+		return self();
+	}
+
+	/**
+	 * <p>
+	 * Associates the specified extension to no content type.
+	 * </p>
+	 * <p>
+	 * The only extension associated to a content type by default is {@code txt}.
+	 * </p>
+	 * 
+	 * @param extension the extension
+	 * @return this builder, for chaining
+	 */
+	public final RestServerBuilder withoutExtensionType(String extension) {
+		managerBase.removeExtensionType(extension);
 		return self();
 	}
 
@@ -264,7 +281,8 @@ public non-sealed class RestServerBuilder extends Builder<RestServerBuilder> {
 	}
 
 	/**
-	 * Sets the keytool KeyStore that should be used for HTTPS support.
+	 * Sets the keytool KeyStore that should be used for HTTPS support. None by
+	 * default.
 	 * 
 	 * @param path     the KeyStore path
 	 * @param password the KeyStore password
@@ -290,6 +308,16 @@ public non-sealed class RestServerBuilder extends Builder<RestServerBuilder> {
 		factory.setKeyStorePath(path);
 		factory.setKeyStorePassword(password);
 		this.factory = factory;
+		return self();
+	}
+
+	/**
+	 * Resets the keytool KeyStore to none.
+	 * 
+	 * @return this builder, for chaining
+	 */
+	public final RestServerBuilder withoutKeyStore() {
+		this.factory = null;
 		return self();
 	}
 

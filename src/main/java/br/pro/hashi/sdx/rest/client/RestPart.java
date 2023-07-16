@@ -25,6 +25,7 @@ public class RestPart extends RestBody {
 	 * </p>
 	 * 
 	 * @param actual the actual part
+	 * @return the wrapped body
 	 * @throws NullPointerException if the part is null
 	 */
 	public static RestPart of(Object actual) {
@@ -45,6 +46,7 @@ public class RestPart extends RestBody {
 	 * @param <T>    the part type
 	 * @param actual the actual part
 	 * @param hint   a {@link Hint} representing {@code T}
+	 * @return the wrapped body
 	 * @throws NullPointerException if the hint is null
 	 */
 	public static <T> RestPart of(T actual, Hint<T> hint) {

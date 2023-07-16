@@ -22,6 +22,7 @@ public class RestBody {
 	 * </p>
 	 * 
 	 * @param actual the actual body
+	 * @return the wrapped body
 	 * @throws NullPointerException if the body is null
 	 */
 	public static RestBody of(Object actual) {
@@ -42,6 +43,7 @@ public class RestBody {
 	 * @param <T>    the body type
 	 * @param actual the actual body
 	 * @param hint   a {@link Hint} representing {@code T}
+	 * @return the wrapped body
 	 * @throws NullPointerException if the hint is null
 	 */
 	public static <T> RestBody of(T actual, Hint<T> hint) {
