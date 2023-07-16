@@ -164,6 +164,28 @@ class TransformManagerTest {
 	}
 
 	@Test
+	void removesAssembler() {
+		m.removeAssembler("application/octet-stream;parameter");
+		assertThrows(TypeException.class, () -> {
+			m.getAssembler("application/octet-stream");
+		});
+	}
+
+	@Test
+	void removesAssemblerWithNullType() {
+		assertDoesNotThrow(() -> {
+			m.removeAssembler(null);
+		});
+	}
+
+	@Test
+	void removesAssemblerWithBlankType() {
+		assertDoesNotThrow(() -> {
+			m.removeAssembler("");
+		});
+	}
+
+	@Test
 	void getsDisassembler() {
 		assertSame(defaultDisassembler, m.getDisassembler("application/octet-stream"));
 	}
@@ -206,6 +228,28 @@ class TransformManagerTest {
 	void doesNotPutDisassemblerWithBlankType() {
 		assertThrows(IllegalArgumentException.class, () -> {
 			m.putDefaultDisassembler("");
+		});
+	}
+
+	@Test
+	void removesDisassembler() {
+		m.removeDisassembler("application/octet-stream;parameter");
+		assertThrows(TypeException.class, () -> {
+			m.getDisassembler("application/octet-stream");
+		});
+	}
+
+	@Test
+	void removesDisassemblerWithNullType() {
+		assertDoesNotThrow(() -> {
+			m.removeDisassembler(null);
+		});
+	}
+
+	@Test
+	void removesDisassemblerWithBlankType() {
+		assertDoesNotThrow(() -> {
+			m.removeDisassembler("");
 		});
 	}
 
@@ -256,6 +300,28 @@ class TransformManagerTest {
 	}
 
 	@Test
+	void removesSerializer() {
+		m.removeSerializer("text/plain;parameter");
+		assertThrows(TypeException.class, () -> {
+			m.getSerializer("text/plain");
+		});
+	}
+
+	@Test
+	void removesSerializerWithNullType() {
+		assertDoesNotThrow(() -> {
+			m.removeSerializer(null);
+		});
+	}
+
+	@Test
+	void removesSerializerWithBlankType() {
+		assertDoesNotThrow(() -> {
+			m.removeSerializer("");
+		});
+	}
+
+	@Test
 	void getsDeserializer() {
 		assertSame(defaultDeserializer, m.getDeserializer("text/plain"));
 	}
@@ -298,6 +364,28 @@ class TransformManagerTest {
 	void doesNotPutDeserializerWithBlankType() {
 		assertThrows(IllegalArgumentException.class, () -> {
 			m.putDefaultDeserializer("");
+		});
+	}
+
+	@Test
+	void removesDeserializer() {
+		m.removeDeserializer("text/plain;parameter");
+		assertThrows(TypeException.class, () -> {
+			m.getDeserializer("text/plain");
+		});
+	}
+
+	@Test
+	void removesDeserializerWithNullType() {
+		assertDoesNotThrow(() -> {
+			m.removeDeserializer(null);
+		});
+	}
+
+	@Test
+	void removesDeserializerWithBlankType() {
+		assertDoesNotThrow(() -> {
+			m.removeDeserializer("");
 		});
 	}
 
@@ -403,6 +491,26 @@ class TransformManagerTest {
 	}
 
 	@Test
+	void removesExtensionType() {
+		m.removeExtensionType(" \t\ntxt \t\n");
+		assertNull(m.getExtensionType("txt"));
+	}
+
+	@Test
+	void removesExtensionTypeWithNullExtension() {
+		assertDoesNotThrow(() -> {
+			m.removeExtensionType(null);
+		});
+	}
+
+	@Test
+	void removesExtensionTypeWithBlankExtension() {
+		assertDoesNotThrow(() -> {
+			m.removeExtensionType(" \t\n");
+		});
+	}
+
+	@Test
 	void initializesByteArrayAsBinary() {
 		assertTrue(m.isBinary(byte[].class));
 	}
@@ -413,13 +521,13 @@ class TransformManagerTest {
 	}
 
 	@Test
-	void initializesByteArrayInputStreamAsBinary() {
-		assertTrue(m.isBinary(ByteArrayInputStream.class));
+	void initializesOutputStreamConsumerAsBinary() {
+		assertTrue(m.isBinary(new Hint<Consumer<OutputStream>>() {}.getType()));
 	}
 
 	@Test
-	void initializesOutputStreamConsumerAsBinary() {
-		assertTrue(m.isBinary(new Hint<Consumer<OutputStream>>() {}.getType()));
+	void initializesByteArrayInputStreamAsBinary() {
+		assertTrue(m.isBinary(ByteArrayInputStream.class));
 	}
 
 	@Test
@@ -442,6 +550,38 @@ class TransformManagerTest {
 	void addsWritableByteChannelConsumerAsBinary() {
 		m.addBinary(new Hint<Consumer<WritableByteChannel>>() {}.getType());
 		assertTrue(m.isBinary(new Hint<Consumer<WritableByteChannel>>() {}.getType()));
+	}
+
+	@Test
+	void removesByteArrayAsBinary() {
+		m.removeBinary(byte[].class);
+		assertFalse(m.isBinary(byte[].class));
+	}
+
+	@Test
+	void removesInputStreamAsBinary() {
+		m.removeBinary(InputStream.class);
+		assertFalse(m.isBinary(InputStream.class));
+	}
+
+	@Test
+	void removesOutputStreamConsumerAsBinary() {
+		m.removeBinary(new Hint<Consumer<OutputStream>>() {}.getType());
+		assertFalse(m.isBinary(new Hint<Consumer<OutputStream>>() {}.getType()));
+	}
+
+	@Test
+	void removesByteArrayInputStreamAsBinary() {
+		assertDoesNotThrow(() -> {
+			m.removeBinary(ByteArrayInputStream.class);
+		});
+	}
+
+	@Test
+	void removesNullAsBinary() {
+		assertDoesNotThrow(() -> {
+			m.removeBinary(null);
+		});
 	}
 
 	@Test
@@ -477,12 +617,20 @@ class TransformManagerTest {
 		Object body = new Object();
 		m.setBinaryFallbackType("image/png;parameter");
 		assertEquals("image/png", m.getAssemblerType(null, body, Object.class));
+		m.unsetBinaryFallbackType();
+		assertThrows(IllegalStateException.class, () -> {
+			assertEquals("application/octet-stream", m.getAssemblerType(null, body, Object.class));
+		});
 	}
 
 	@Test
 	void setsAndGetsFallbackDisassemblerType() {
 		m.setBinaryFallbackType("image/png;parameter");
 		assertEquals("image/png", m.getDisassemblerType(null, Object.class));
+		m.unsetBinaryFallbackType();
+		assertThrows(IllegalStateException.class, () -> {
+			assertEquals("application/octet-stream", m.getDisassemblerType(null, Object.class));
+		});
 	}
 
 	@Test
@@ -490,17 +638,25 @@ class TransformManagerTest {
 		Object body = new Object();
 		m.setFallbackType("application/xml;parameter");
 		assertEquals("application/xml", m.getSerializerType(null, body, Object.class));
+		m.unsetFallbackType();
+		assertThrows(IllegalStateException.class, () -> {
+			assertEquals("text/plain", m.getSerializerType(null, body, Object.class));
+		});
 	}
 
 	@Test
 	void setsAndGetsFallbackDeserializerType() {
 		m.setFallbackType("application/xml;parameter");
 		assertEquals("application/xml", m.getDeserializerType(null, Object.class));
+		m.unsetFallbackType();
+		assertThrows(IllegalStateException.class, () -> {
+			assertEquals("text/plain", m.getDeserializerType(null, Object.class));
+		});
 	}
 
 	@Test
 	void getsAssemblerType() {
-		String contentType = "application/octet-stream";
+		String contentType = "image/png";
 		assertEquals(contentType, m.getAssemblerType(contentType, new Object(), Object.class));
 	}
 
@@ -532,7 +688,7 @@ class TransformManagerTest {
 
 	@Test
 	void getsDisassemblerType() {
-		String contentType = "application/octet-stream";
+		String contentType = "image/png";
 		assertEquals(contentType, m.getDisassemblerType(contentType, Object.class));
 	}
 
@@ -555,7 +711,7 @@ class TransformManagerTest {
 
 	@Test
 	void getsSerializerType() {
-		String contentType = "text/plain";
+		String contentType = "application/xml";
 		assertEquals(contentType, m.getSerializerType(contentType, new Object(), Object.class));
 	}
 
@@ -587,7 +743,7 @@ class TransformManagerTest {
 
 	@Test
 	void getsDeserializerType() {
-		String contentType = "text/plain";
+		String contentType = "application/xml";
 		assertEquals(contentType, m.getDeserializerType(contentType, Object.class));
 	}
 

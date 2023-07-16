@@ -86,43 +86,43 @@ public class TransformManager {
 		this.fallbackType = manager.fallbackType;
 	}
 
-	public MediaCoder getCoder() {
+	MediaCoder getCoder() {
 		return coder;
 	}
 
-	public Map<String, Assembler> getAssemblers() {
+	Map<String, Assembler> getAssemblers() {
 		return assemblers;
 	}
 
-	public Map<String, Disassembler> getDisassemblers() {
+	Map<String, Disassembler> getDisassemblers() {
 		return disassemblers;
 	}
 
-	public Map<String, Serializer> getSerializers() {
+	Map<String, Serializer> getSerializers() {
 		return serializers;
 	}
 
-	public Map<String, Deserializer> getDeserializers() {
+	Map<String, Deserializer> getDeserializers() {
 		return deserializers;
 	}
 
-	public Map<String, String> getExtensions() {
+	Map<String, String> getExtensions() {
 		return extensions;
 	}
 
-	public Set<Class<?>> getBinaryRawTypes() {
+	Set<Class<?>> getBinaryRawTypes() {
 		return binaryRawTypes;
 	}
 
-	public Set<Type> getBinaryGenericTypes() {
+	Set<Type> getBinaryGenericTypes() {
 		return binaryGenericTypes;
 	}
 
-	public String getBinaryFallbackType() {
+	String getBinaryFallbackType() {
 		return binaryFallbackType;
 	}
 
-	public String getFallbackType() {
+	String getFallbackType() {
 		return fallbackType;
 	}
 
@@ -158,6 +158,13 @@ public class TransformManager {
 		return contentType;
 	}
 
+	public void removeAssembler(String contentType) {
+		if (contentType != null) {
+			contentType = coder.strip(contentType);
+		}
+		assemblers.remove(contentType);
+	}
+
 	public Disassembler getDisassembler(String contentType) {
 		Disassembler disassembler = disassemblers.get(contentType);
 		if (disassembler == null) {
@@ -188,6 +195,13 @@ public class TransformManager {
 			throw new IllegalArgumentException("Disassembler type cannot be blank");
 		}
 		return contentType;
+	}
+
+	public void removeDisassembler(String contentType) {
+		if (contentType != null) {
+			contentType = coder.strip(contentType);
+		}
+		disassemblers.remove(contentType);
 	}
 
 	public Serializer getSerializer(String contentType) {
@@ -222,6 +236,13 @@ public class TransformManager {
 		return contentType;
 	}
 
+	public void removeSerializer(String contentType) {
+		if (contentType != null) {
+			contentType = coder.strip(contentType);
+		}
+		serializers.remove(contentType);
+	}
+
 	public Deserializer getDeserializer(String contentType) {
 		Deserializer deserializer = deserializers.get(contentType);
 		if (deserializer == null) {
@@ -254,6 +275,13 @@ public class TransformManager {
 		return contentType;
 	}
 
+	public void removeDeserializer(String contentType) {
+		if (contentType != null) {
+			contentType = coder.strip(contentType);
+		}
+		deserializers.remove(contentType);
+	}
+
 	public String getExtensionType(String extension) {
 		return extensions.get(extension);
 	}
@@ -279,6 +307,13 @@ public class TransformManager {
 		extensions.put(extension, contentType);
 	}
 
+	public void removeExtensionType(String extension) {
+		if (extension != null) {
+			extension = extension.strip();
+		}
+		extensions.remove(extension);
+	}
+
 	public boolean isBinary(Type type) {
 		if (type instanceof ParameterizedType) {
 			return binaryGenericTypes.contains(type);
@@ -299,6 +334,14 @@ public class TransformManager {
 		}
 	}
 
+	public void removeBinary(Type type) {
+		if (type instanceof ParameterizedType) {
+			binaryGenericTypes.remove(type);
+		} else {
+			binaryRawTypes.remove(type);
+		}
+	}
+
 	public void setBinaryFallbackType(String binaryFallbackType) {
 		if (binaryFallbackType == null) {
 			throw new NullPointerException("Binary fallback type cannot be null");
@@ -310,6 +353,10 @@ public class TransformManager {
 		this.binaryFallbackType = binaryFallbackType;
 	}
 
+	public void unsetBinaryFallbackType() {
+		binaryFallbackType = null;
+	}
+
 	public void setFallbackType(String fallbackType) {
 		if (fallbackType == null) {
 			throw new NullPointerException("Fallback type cannot be null");
@@ -319,6 +366,10 @@ public class TransformManager {
 			throw new IllegalArgumentException("Fallback type cannot be blank");
 		}
 		this.fallbackType = fallbackType;
+	}
+
+	public void unsetFallbackType() {
+		fallbackType = null;
 	}
 
 	public String getAssemblerType(String contentType, Object body, Type type) {
