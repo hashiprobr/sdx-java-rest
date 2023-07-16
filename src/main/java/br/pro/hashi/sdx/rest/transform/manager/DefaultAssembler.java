@@ -29,7 +29,9 @@ class DefaultAssembler implements Assembler {
 				return;
 			}
 			if (body instanceof InputStream) {
-				((InputStream) body).transferTo(stream);
+				InputStream input = (InputStream) body;
+				input.transferTo(stream);
+				input.close();
 				return;
 			}
 		} catch (IOException exception) {

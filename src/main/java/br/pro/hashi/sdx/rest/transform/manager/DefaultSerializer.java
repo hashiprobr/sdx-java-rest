@@ -29,7 +29,9 @@ class DefaultSerializer implements Serializer {
 				return;
 			}
 			if (body instanceof Reader) {
-				((Reader) body).transferTo(writer);
+				Reader reader = (Reader) body;
+				reader.transferTo(writer);
+				reader.close();
 				return;
 			}
 		} catch (IOException exception) {
