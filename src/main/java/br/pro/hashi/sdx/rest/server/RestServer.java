@@ -22,6 +22,7 @@ public final class RestServer {
 	 * 
 	 * @param packageName the package name
 	 * @return the server
+	 * @throws NullPointerException if the package name is null
 	 */
 	public static RestServer from(String packageName) {
 		RestServerBuilder builder = new RestServerBuilder();
