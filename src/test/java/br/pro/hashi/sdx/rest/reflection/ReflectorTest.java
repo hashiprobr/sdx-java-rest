@@ -179,6 +179,13 @@ class ReflectorTest {
 	}
 
 	@Test
+	void doesNotGetConcreteSubTypesFromNullPackageName() {
+		assertThrows(NullPointerException.class, () -> {
+			r.getConcreteSubTypes(null, Parent.class);
+		});
+	}
+
+	@Test
 	void getsBothSpecificTypesFromFinalChildWithBoth() {
 		FinalChildWithBoth object = new FinalChildWithBoth();
 		assertBothSpecificTypesExist(object, GenericParent.class);

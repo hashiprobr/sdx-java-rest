@@ -81,6 +81,9 @@ public class Reflector {
 	}
 
 	public <T> Iterable<Class<? extends T>> getConcreteSubTypes(String packageName, Class<T> type) {
+		if (packageName == null) {
+			throw new NullPointerException("Package name cannot be null");
+		}
 		Reflections reflections = new Reflections(packageName);
 		return () -> reflections.getSubTypesOf(type)
 				.stream()
