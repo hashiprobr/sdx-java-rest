@@ -19,20 +19,26 @@ public class RestPart extends RestBody {
 	 * Gets a wrapped part.
 	 * </p>
 	 * <p>
-	 * This method calls {@code actual.getClass()} to obtain the part type. Since
-	 * {@code actual.getClass()} loses generic information due to type erasure, do
-	 * not call it if the type is generic. Call {@code of(T, Hint<T>)} instead.
+	 * This method calls {@code actual.getClass()} to obtain the part type, so do
+	 * not call it if the part is null. Also, since {@code actual.getClass()} loses
+	 * generic information due to type erasure, do not call it if the type is
+	 * generic. In both cases, call {@code of(T, Hint<T>)} instead.
 	 * </p>
 	 * 
 	 * @param actual the actual part
-	 * @return the wrapped body
-	 * @throws NullPointerException if the part is null
+	 * @return the wrapped part
+	 * @throws NullPointerException     if the part is null
+	 * @throws IllegalArgumentException if the part type is generic
 	 */
 	public static RestPart of(Object actual) {
 		if (actual == null) {
 			throw new NullPointerException("Part cannot be null");
 		}
-		return of(actual, actual.getClass());
+		Class<?> type = actual.getClass();
+		if (type.getTypeParameters().length > 0) {
+			throw new IllegalArgumentException("Part type cannot be generic");
+		}
+		return of(actual, type);
 	}
 
 	/**
@@ -40,13 +46,13 @@ public class RestPart extends RestBody {
 	 * Gets a wrapped part with hinted type.
 	 * </p>
 	 * <p>
-	 * Call this method if the part type is generic.
+	 * Call this method if the part is null or the type is generic.
 	 * </p>
 	 * 
 	 * @param <T>    the part type
 	 * @param actual the actual part
 	 * @param hint   a {@link Hint} representing {@code T}
-	 * @return the wrapped body
+	 * @return the wrapped part
 	 * @throws NullPointerException if the hint is null
 	 */
 	public static <T> RestPart of(T actual, Hint<T> hint) {

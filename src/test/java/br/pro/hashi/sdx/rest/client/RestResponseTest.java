@@ -29,7 +29,7 @@ import br.pro.hashi.sdx.rest.transform.Disassembler;
 import br.pro.hashi.sdx.rest.transform.manager.TransformManager;
 
 class RestResponseTest {
-	private static final int STATUS = 600;
+	private static final int STATUS = 50;
 	private static final String CONTENT_TYPE = "type/subtype";
 
 	private AutoCloseable mocks;

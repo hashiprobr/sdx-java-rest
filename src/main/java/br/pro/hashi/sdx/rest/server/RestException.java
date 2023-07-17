@@ -10,6 +10,17 @@ import br.pro.hashi.sdx.rest.Hint;
 public class RestException extends RuntimeException {
 	private static final long serialVersionUID = 8263284704228720673L;
 
+	private static Type getType(Object body) {
+		if (body == null) {
+			throw new NullPointerException("Body cannot be null");
+		}
+		Class<?> type = body.getClass();
+		if (type.getTypeParameters().length > 0) {
+			throw new IllegalArgumentException("Body type cannot be generic");
+		}
+		return type;
+	}
+
 	private static Type getType(Hint<?> hint) {
 		if (hint == null) {
 			throw new NullPointerException("Hint cannot be null");
@@ -43,18 +54,20 @@ public class RestException extends RuntimeException {
 	 * Constructs a {@code RestException} with a status and a body.
 	 * </p>
 	 * <p>
-	 * This constructor calls {@code body.getClass()} to obtain the body type. Since
-	 * {@code body.getClass()} loses generic information due to type erasure, do not
-	 * call it if the type is generic. Call {@code RestException(int, T, Hint<T>)}
-	 * instead.
+	 * This constructor calls {@code body.getClass()} to obtain the body type, so do
+	 * not call it if the body is null. Also, since {@code body.getClass()} loses
+	 * generic information due to type erasure, do not call it if the type is
+	 * generic. In both cases, call {@code RestException(int, T, Hint<T>)} instead.
 	 * </p>
 	 * 
 	 * @param status the status
 	 * @param body   the body
-	 * @throws IllegalArgumentException if the status is invalid
+	 * @throws NullPointerException     if the body is null
+	 * @throws IllegalArgumentException if the status is invalid or if the body type
+	 *                                  is generic
 	 */
 	public RestException(int status, Object body) {
-		this(status, body, body == null ? Object.class : body.getClass());
+		this(status, body, getType(body));
 	}
 
 	/**
@@ -62,14 +75,14 @@ public class RestException extends RuntimeException {
 	 * Constructs a {@code RestException} with a status and a body with hinted type.
 	 * </p>
 	 * <p>
-	 * Call this constructor if the body type is generic.
+	 * Call this constructor if the body is null or the type is generic.
 	 * </p>
 	 * 
-	 * @param <T>    the type of the body
+	 * @param <T>    the body type
 	 * @param status the status
 	 * @param body   the body
-	 * @param hint   the type hint
-	 * @throws NullPointerException     if the type hint is null
+	 * @param hint   a {@link Hint} representing {@code T}
+	 * @throws NullPointerException     if the hint is null
 	 * @throws IllegalArgumentException if the status is invalid
 	 */
 	public <T> RestException(int status, T body, Hint<T> hint) {

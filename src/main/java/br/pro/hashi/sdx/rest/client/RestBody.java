@@ -16,20 +16,26 @@ public class RestBody {
 	 * Gets a wrapped body.
 	 * </p>
 	 * <p>
-	 * This method calls {@code actual.getClass()} to obtain the body type. Since
-	 * {@code actual.getClass()} loses generic information due to type erasure, do
-	 * not call it if the type is generic. Call {@code of(T, Hint<T>)} instead.
+	 * This method calls {@code actual.getClass()} to obtain the body type, so do
+	 * not call it if the body is null. Also, since {@code actual.getClass()} loses
+	 * generic information due to type erasure, do not call it if the type is
+	 * generic. In both cases, call {@code of(T, Hint<T>)} instead.
 	 * </p>
 	 * 
 	 * @param actual the actual body
 	 * @return the wrapped body
-	 * @throws NullPointerException if the body is null
+	 * @throws NullPointerException     if the body is null
+	 * @throws IllegalArgumentException if the body type is generic
 	 */
 	public static RestBody of(Object actual) {
 		if (actual == null) {
 			throw new NullPointerException("Body cannot be null");
 		}
-		return of(actual, actual.getClass());
+		Class<?> type = actual.getClass();
+		if (type.getTypeParameters().length > 0) {
+			throw new IllegalArgumentException("Body type cannot be generic");
+		}
+		return of(actual, type);
 	}
 
 	/**
@@ -37,7 +43,7 @@ public class RestBody {
 	 * Gets a wrapped body with hinted type.
 	 * </p>
 	 * <p>
-	 * Call this method if the part type is generic.
+	 * Call this method if the body is null or the type is generic.
 	 * </p>
 	 * 
 	 * @param <T>    the body type

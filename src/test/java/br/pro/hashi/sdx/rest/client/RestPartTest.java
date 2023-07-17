@@ -7,6 +7,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mockStatic;
 
+import java.util.List;
+
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 
@@ -33,6 +35,13 @@ class RestPartTest extends RestBodyTest {
 	void doesNotGetFromNull() {
 		assertThrows(NullPointerException.class, () -> {
 			RestPart.of(null);
+		});
+	}
+
+	@Test
+	void doesNotGetFromGeneric() {
+		assertThrows(IllegalArgumentException.class, () -> {
+			RestPart.of(List.of());
 		});
 	}
 

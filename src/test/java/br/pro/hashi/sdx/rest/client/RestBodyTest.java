@@ -12,6 +12,7 @@ import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -68,6 +69,13 @@ class RestBodyTest {
 	void doesNotGetFromNull() {
 		assertThrows(NullPointerException.class, () -> {
 			RestBody.of(null);
+		});
+	}
+
+	@Test
+	void doesNotGetFromGeneric() {
+		assertThrows(IllegalArgumentException.class, () -> {
+			RestBody.of(List.of());
 		});
 	}
 

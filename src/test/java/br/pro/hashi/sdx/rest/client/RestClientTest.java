@@ -1398,7 +1398,7 @@ class RestClientTest {
 		mockStart();
 		p = newProxy();
 
-		int status = 600;
+		int status = 50;
 		HttpFields fields = mock(HttpFields.class);
 		Headers headers = mock(Headers.class);
 		InputStream input = InputStream.nullInputStream();

@@ -5,6 +5,8 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import java.util.List;
+
 import org.junit.jupiter.api.Test;
 
 import br.pro.hashi.sdx.rest.Hint;
@@ -43,8 +45,8 @@ class RestExceptionTest {
 	}
 
 	@Test
-	void constructsWithClientStatusAndNull() {
-		e = new RestException(450, null);
+	void constructsWithClientStatusAndNullAndHint() {
+		e = new RestException(450, null, new Hint<Object>() {});
 		assertNull(e.getMessage());
 		assertNull(e.getCause());
 		assertEquals(450, e.getStatus());
@@ -53,13 +55,17 @@ class RestExceptionTest {
 	}
 
 	@Test
-	void constructsWithClientStatusAndNullAndHint() {
-		e = new RestException(450, null, new Hint<Object>() {});
-		assertNull(e.getMessage());
-		assertNull(e.getCause());
-		assertEquals(450, e.getStatus());
-		assertNull(e.getBody());
-		assertEquals(Object.class, e.getType());
+	void doesNotConstructWithClientStatusAndNull() {
+		assertThrows(NullPointerException.class, () -> {
+			new RestException(450, null);
+		});
+	}
+
+	@Test
+	void doesNotConstructWithClientStatusAndGeneric() {
+		assertThrows(IllegalArgumentException.class, () -> {
+			new RestException(450, List.of());
+		});
 	}
 
 	@Test
@@ -100,8 +106,8 @@ class RestExceptionTest {
 	}
 
 	@Test
-	void constructsWithServerStatusAndNull() {
-		e = new RestException(550, null);
+	void constructsWithServerStatusAndNullAndHint() {
+		e = new RestException(550, null, new Hint<Object>() {});
 		assertNull(e.getMessage());
 		assertNull(e.getCause());
 		assertEquals(550, e.getStatus());
@@ -110,13 +116,17 @@ class RestExceptionTest {
 	}
 
 	@Test
-	void constructsWithServerStatusAndNullAndHint() {
-		e = new RestException(550, null, new Hint<Object>() {});
-		assertNull(e.getMessage());
-		assertNull(e.getCause());
-		assertEquals(550, e.getStatus());
-		assertNull(e.getBody());
-		assertEquals(Object.class, e.getType());
+	void doesNotConstructWithServerStatusAndNull() {
+		assertThrows(NullPointerException.class, () -> {
+			new RestException(550, null);
+		});
+	}
+
+	@Test
+	void doesNotConstructWithServerStatusAndGeneric() {
+		assertThrows(IllegalArgumentException.class, () -> {
+			new RestException(550, List.of());
+		});
 	}
 
 	@Test
