@@ -1442,9 +1442,9 @@ class RestClientTest {
 		p = newProxy();
 		List<Task> tasks = List.of();
 		Throwable cause = new Throwable();
-		ExecutionException executionException = new ExecutionException(cause);
+		ExecutionException exception = new ExecutionException(cause);
 		Throwable throwable = assertThrows(ClientException.class, () -> {
-			try (MockedConstruction<InputStreamResponseListener> construction = mockListenerConstruction(executionException)) {
+			try (MockedConstruction<InputStreamResponseListener> construction = mockListenerConstruction(exception)) {
 				p.send(request, tasks);
 			}
 		});
@@ -1456,13 +1456,13 @@ class RestClientTest {
 		mockStart();
 		p = newProxy();
 		List<Task> tasks = List.of();
-		TimeoutException timeoutException = new TimeoutException();
+		TimeoutException exception = new TimeoutException();
 		Throwable throwable = assertThrows(ClientException.class, () -> {
-			try (MockedConstruction<InputStreamResponseListener> construction = mockListenerConstruction(timeoutException)) {
+			try (MockedConstruction<InputStreamResponseListener> construction = mockListenerConstruction(exception)) {
 				p.send(request, tasks);
 			}
 		});
-		assertSame(timeoutException, throwable.getCause());
+		assertSame(exception, throwable.getCause());
 	}
 
 	@Test
@@ -1470,13 +1470,13 @@ class RestClientTest {
 		mockStart();
 		p = newProxy();
 		List<Task> tasks = List.of();
-		InterruptedException interruptedException = new InterruptedException();
+		InterruptedException exception = new InterruptedException();
 		Throwable throwable = assertThrows(AssertionError.class, () -> {
-			try (MockedConstruction<InputStreamResponseListener> construction = mockListenerConstruction(interruptedException)) {
+			try (MockedConstruction<InputStreamResponseListener> construction = mockListenerConstruction(exception)) {
 				p.send(request, tasks);
 			}
 		});
-		assertSame(interruptedException, throwable.getCause());
+		assertSame(exception, throwable.getCause());
 	}
 
 	private MockedConstruction<InputStreamResponseListener> mockListenerConstruction(Exception exception) {
