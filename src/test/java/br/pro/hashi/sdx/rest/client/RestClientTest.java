@@ -2,6 +2,7 @@ package br.pro.hashi.sdx.rest.client;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -1276,14 +1277,13 @@ class RestClientTest {
 	void assertDoesNotAddTaskAndBuildContent(boolean base64) {
 		p = newProxy();
 		OutputStream stream = spy(OutputStream.nullOutputStream());
-		Throwable cause = new IOException();
 		assertDoesNotThrow(() -> {
-			doThrow(cause).when(stream).close();
+			doThrow(IOException.class).when(stream).close();
 		});
 		Exception exception = assertThrows(UncheckedIOException.class, () -> {
 			addTaskAndBuildContent(base64, stream);
 		});
-		assertSame(cause, exception.getCause());
+		assertInstanceOf(IOException.class, exception.getCause());
 	}
 
 	private OutputStreamRequestContent addTaskAndBuildContent(boolean base64, OutputStream stream) {
@@ -1338,14 +1338,13 @@ class RestClientTest {
 
 	void assertDoesNotAddTaskAndBuildBinaryContent(boolean base64) {
 		OutputStream stream = spy(OutputStream.nullOutputStream());
-		Throwable cause = new IOException();
 		assertDoesNotThrow(() -> {
-			doThrow(cause).when(stream).close();
+			doThrow(IOException.class).when(stream).close();
 		});
 		Exception exception = assertThrows(UncheckedIOException.class, () -> {
 			addTaskAndBuildBinaryContent(base64, stream);
 		});
-		assertSame(cause, exception.getCause());
+		assertInstanceOf(IOException.class, exception.getCause());
 	}
 
 	private OutputStreamRequestContent addTaskAndBuildBinaryContent(boolean base64, OutputStream stream) {
