@@ -20,8 +20,6 @@ import org.mockito.MockitoAnnotations;
 import br.pro.hashi.sdx.rest.reflection.ParserFactory;
 
 public abstract class FieldsTest {
-	private static final double DELTA = 0.000001;
-
 	private AutoCloseable mocks;
 	private Fields f;
 
@@ -60,14 +58,8 @@ public abstract class FieldsTest {
 
 	@Test
 	void splitsDoubleList() {
-		List<Double> values;
-		values = f.split("z", ",", double.class);
-		assertEquals(1, values.size());
-		assertEquals(2.2, values.get(0), DELTA);
-		values = f.split("zs", ",", double.class);
-		assertEquals(2, values.size());
-		assertEquals(2.2, values.get(0), DELTA);
-		assertEquals(3.3, values.get(1), DELTA);
+		assertEquals(List.of(2.2), f.split("z", ",", double.class));
+		assertEquals(List.of(2.2, 3.3), f.split("zs", ",", double.class));
 	}
 
 	@Test
@@ -127,7 +119,7 @@ public abstract class FieldsTest {
 
 	@Test
 	void requiresDouble() {
-		assertEquals(2.2, f.require("z", double.class), DELTA);
+		assertEquals(2.2, f.require("z", double.class));
 	}
 
 	@Test
@@ -173,10 +165,7 @@ public abstract class FieldsTest {
 
 	@Test
 	void getsDoubleList() {
-		List<Double> values = f.getList("z", double.class);
-		assertEquals(2, values.size());
-		assertEquals(2.2, values.get(0), DELTA);
-		assertEquals(3.3, values.get(1), DELTA);
+		assertEquals(List.of(2.2, 3.3), f.getList("z", double.class));
 	}
 
 	@Test
@@ -220,7 +209,7 @@ public abstract class FieldsTest {
 
 	@Test
 	void getsDouble() {
-		assertEquals(2.2, f.get("z", double.class), DELTA);
+		assertEquals(2.2, f.get("z", double.class));
 	}
 
 	@Test
@@ -245,7 +234,7 @@ public abstract class FieldsTest {
 
 	@Test
 	void getsDefaultDouble() {
-		assertEquals(3.3, f.get("w", double.class, 3.3), DELTA);
+		assertEquals(3.3, f.get("w", double.class, 3.3));
 	}
 
 	@Test

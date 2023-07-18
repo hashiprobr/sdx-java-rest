@@ -34,7 +34,6 @@ import br.pro.hashi.sdx.rest.reflection.mock.parser.UncheckedMethod;
 
 class ParserFactoryTest {
 	private static final Lookup LOOKUP = MethodHandles.lookup();
-	private final static double DELTA = 0.000001;
 
 	private AutoCloseable mocks;
 	private @Mock Reflector reflector;
@@ -105,12 +104,12 @@ class ParserFactoryTest {
 
 	@Test
 	void getsAndAppliesFloatParser() {
-		assertEquals(5.5, f.get(float.class).apply("5.5"), DELTA);
+		assertEquals(5.5F, f.get(float.class).apply("5.5"));
 	}
 
 	@Test
 	void getsAndAppliesDoubleParser() {
-		assertEquals(6.6, f.get(double.class).apply("6.6"), DELTA);
+		assertEquals(6.6, f.get(double.class).apply("6.6"));
 	}
 
 	@Test

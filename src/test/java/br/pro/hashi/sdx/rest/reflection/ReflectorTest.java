@@ -174,8 +174,7 @@ class ReflectorTest {
 		}
 		List<Class<? extends Parent>> types = new ArrayList<>();
 		iterable.forEach(types::add);
-		assertEquals(1, types.size());
-		assertEquals(Child.class, types.get(0));
+		assertEquals(List.of(Child.class), types);
 	}
 
 	@Test
