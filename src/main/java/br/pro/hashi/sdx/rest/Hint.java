@@ -27,7 +27,7 @@ public abstract class Hint<T> {
 
 	/**
 	 * Obtains the type.
-	 * 
+	 *
 	 * @return a {@link Type} representing {@code T}
 	 */
 	public final Type getType() {

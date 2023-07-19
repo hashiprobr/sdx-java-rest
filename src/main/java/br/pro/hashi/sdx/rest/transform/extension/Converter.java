@@ -13,7 +13,7 @@ import br.pro.hashi.sdx.rest.reflection.Reflector;
  * The idea is that the source type is not supported by a third-party library
  * but the target type is (possibly via other converters).
  * </p>
- * 
+ *
  * @param <S> the source type
  * @param <T> the target type
  */
@@ -25,7 +25,7 @@ public interface Converter<S, T> {
 	 * <p>
 	 * Classes are encouraged to provide an alternative implementation.
 	 * </p>
-	 * 
+	 *
 	 * @return a {@link Type} representing {@code S}
 	 */
 	default Type getSourceType() {
@@ -39,7 +39,7 @@ public interface Converter<S, T> {
 	 * <p>
 	 * Classes are encouraged to provide an alternative implementation.
 	 * </p>
-	 * 
+	 *
 	 * @return a {@link Type} representing {@code T}
 	 */
 	default Type getTargetType() {
@@ -48,7 +48,7 @@ public interface Converter<S, T> {
 
 	/**
 	 * Converts an object of the source type to an object of the target type.
-	 * 
+	 *
 	 * @param source an object of type {@code S}
 	 * @return an object of type {@code T}
 	 */
@@ -56,7 +56,7 @@ public interface Converter<S, T> {
 
 	/**
 	 * Converts an object of the source type from an object of the target type.
-	 * 
+	 *
 	 * @param target an object of type {@code T}
 	 * @return an object of type {@code S}
 	 */

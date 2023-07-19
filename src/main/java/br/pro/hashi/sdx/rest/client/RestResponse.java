@@ -48,7 +48,7 @@ public final class RestResponse {
 
 	/**
 	 * Obtains the status code of this response.
-	 * 
+	 *
 	 * @return the code
 	 */
 	public int getStatus() {
@@ -57,7 +57,7 @@ public final class RestResponse {
 
 	/**
 	 * Obtains the headers of this response.
-	 * 
+	 *
 	 * @return the headers
 	 */
 	public Fields getHeaders() {
@@ -67,7 +67,7 @@ public final class RestResponse {
 	/**
 	 * Obtains the content type of this response, with parameters if they are
 	 * present.
-	 * 
+	 *
 	 * @return the content type
 	 */
 	public String getContentType() {
@@ -84,7 +84,7 @@ public final class RestResponse {
 	 * not call this method if the type is generic. Call {@code getBody(Hint<T>)}
 	 * instead.
 	 * </p>
-	 * 
+	 *
 	 * @param <T>  the body type
 	 * @param type a {@link Class} representing {@code T}
 	 * @return the body
@@ -103,7 +103,7 @@ public final class RestResponse {
 	 * <p>
 	 * Call this method if the type is generic.
 	 * </p>
-	 * 
+	 *
 	 * @param <T>  the body type
 	 * @param hint a {@link Hint} representing {@code T}
 	 * @return the body
@@ -125,7 +125,7 @@ public final class RestResponse {
 	 * not call this method if the type is generic. Call
 	 * {@code getBody(Hint<T>, String)} instead.
 	 * </p>
-	 * 
+	 *
 	 * @param <T>         the body type
 	 * @param type        a {@link Class} representing {@code T}
 	 * @param contentType the content type
@@ -149,7 +149,7 @@ public final class RestResponse {
 	 * <p>
 	 * Call this method if the type is generic.
 	 * </p>
-	 * 
+	 *
 	 * @param <T>         the body type
 	 * @param hint        a {@link Hint} representing {@code T}
 	 * @param contentType the content type

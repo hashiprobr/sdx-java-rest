@@ -13,10 +13,10 @@ public interface Disassembler {
 	/**
 	 * Reads a byte representation from the specified {@link InputStream} and
 	 * transforms it back into an object of the specified type if possible.
-	 * 
+	 *
 	 * @implNote The implementation can assume that the type is correct and must
 	 *           close the stream unless it also returns a stream.
-	 * 
+	 *
 	 * @param <T>    the type
 	 * @param stream the stream
 	 * @param type   a {@link Type} representing {@code T}

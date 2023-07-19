@@ -33,10 +33,10 @@ public abstract class ErrorFormatter {
 
 	/**
 	 * Wraps a status and a message into an object.
-	 * 
+	 *
 	 * @implNote The implementation should override the return type to ensure
 	 *           serialization accuracy.
-	 * 
+	 *
 	 * @param status  the status
 	 * @param message the message
 	 * @return the object

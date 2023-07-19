@@ -16,7 +16,7 @@ import java.lang.annotation.Target;
 public @interface Part {
 	/**
 	 * The name of the part.
-	 * 
+	 *
 	 * @return a string representing the name
 	 */
 	String value() default "";

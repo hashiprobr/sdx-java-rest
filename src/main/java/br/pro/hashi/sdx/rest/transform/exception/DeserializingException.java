@@ -16,7 +16,7 @@ public class DeserializingException extends RuntimeException {
 	/**
 	 * Constructs a {@code DeserializingException} with the specified detail
 	 * message.
-	 * 
+	 *
 	 * @param message the detail message
 	 */
 	public DeserializingException(String message) {
@@ -31,7 +31,7 @@ public class DeserializingException extends RuntimeException {
 	 * Note that the detail message associated with cause is not automatically
 	 * incorporated in this exception's detail message.
 	 * </p>
-	 * 
+	 *
 	 * @param message the detail message
 	 * @param cause   the cause
 	 */
@@ -42,7 +42,7 @@ public class DeserializingException extends RuntimeException {
 	/**
 	 * Constructs a new exception with the specified cause and a detail message of
 	 * {@code (cause == null ? null : cause.toString())}.
-	 * 
+	 *
 	 * @param cause the cause
 	 */
 	public DeserializingException(Throwable cause) {

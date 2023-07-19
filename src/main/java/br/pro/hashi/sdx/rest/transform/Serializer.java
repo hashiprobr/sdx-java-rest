@@ -13,10 +13,10 @@ public interface Serializer {
 	/**
 	 * Transforms the specified typed object into a text representation and writes
 	 * it to the specified {@link Writer} if possible.
-	 * 
+	 *
 	 * @implNote The implementation can assume that the type is correct and cannot
 	 *           close the writer.
-	 * 
+	 *
 	 * @param <T>    the type
 	 * @param body   the object
 	 * @param type   a {@link Type} representing {@code T}

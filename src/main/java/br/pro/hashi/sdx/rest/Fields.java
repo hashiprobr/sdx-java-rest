@@ -17,7 +17,7 @@ public sealed abstract class Fields permits PartHeaders, Headers, Queries {
 
 	/**
 	 * Internal member.
-	 * 
+	 *
 	 * @param factory the factory
 	 * @hidden
 	 */
@@ -33,7 +33,7 @@ public sealed abstract class Fields permits PartHeaders, Headers, Queries {
 	 * <p>
 	 * If multiple values correspond to the name, the first one is considered.
 	 * </p>
-	 * 
+	 *
 	 * @param name  the name
 	 * @param regex the separator
 	 * @return the items
@@ -57,7 +57,7 @@ public sealed abstract class Fields permits PartHeaders, Headers, Queries {
 	 * <p>
 	 * The items are converted via {@code valueOf(String)}.
 	 * </p>
-	 * 
+	 *
 	 * @param <T>   the type
 	 * @param name  the name
 	 * @param regex the separator
@@ -92,7 +92,7 @@ public sealed abstract class Fields permits PartHeaders, Headers, Queries {
 	 * <p>
 	 * If multiple values correspond to the name, the first one is considered.
 	 * </p>
-	 * 
+	 *
 	 * @param name the name
 	 * @return the value
 	 * @throws NullPointerException     if the name is null
@@ -114,7 +114,7 @@ public sealed abstract class Fields permits PartHeaders, Headers, Queries {
 	 * <p>
 	 * The value is converted via {@code valueOf(String)}.
 	 * </p>
-	 * 
+	 *
 	 * @param <T>  the type
 	 * @param name the name
 	 * @param type a {@link Class} representing {@code T}
@@ -143,7 +143,7 @@ public sealed abstract class Fields permits PartHeaders, Headers, Queries {
 	 * <p>
 	 * If the name does not exist, returns an empty list.
 	 * </p>
-	 * 
+	 *
 	 * @param name the name
 	 * @return the values
 	 * @throws NullPointerException     if the name is null
@@ -165,7 +165,7 @@ public sealed abstract class Fields permits PartHeaders, Headers, Queries {
 	 * <p>
 	 * The values are converted via {@code valueOf(String)}.
 	 * </p>
-	 * 
+	 *
 	 * @param <T>  the type
 	 * @param name the name
 	 * @param type a {@link Class} representing {@code T}
@@ -191,7 +191,7 @@ public sealed abstract class Fields permits PartHeaders, Headers, Queries {
 	 * <p>
 	 * If multiple values correspond to the name, the first one is considered.
 	 * </p>
-	 * 
+	 *
 	 * @param name the name
 	 * @return the value
 	 * @throws NullPointerException     if the name is null
@@ -213,7 +213,7 @@ public sealed abstract class Fields permits PartHeaders, Headers, Queries {
 	 * <p>
 	 * The value is converted via {@code valueOf(String)}.
 	 * </p>
-	 * 
+	 *
 	 * @param <T>  the type
 	 * @param name the name
 	 * @param type a {@link Class} representing {@code T}
@@ -235,7 +235,7 @@ public sealed abstract class Fields permits PartHeaders, Headers, Queries {
 	 * <p>
 	 * If multiple values correspond to the name, the first one is considered.
 	 * </p>
-	 * 
+	 *
 	 * @param name         the name
 	 * @param defaultValue the default
 	 * @return the value
@@ -258,7 +258,7 @@ public sealed abstract class Fields permits PartHeaders, Headers, Queries {
 	 * <p>
 	 * The value is converted via {@code valueOf(String)}.
 	 * </p>
-	 * 
+	 *
 	 * @param <T>          the type
 	 * @param name         the name
 	 * @param type         a {@link Class} representing {@code T}
@@ -299,14 +299,14 @@ public sealed abstract class Fields permits PartHeaders, Headers, Queries {
 
 	/**
 	 * Obtains the names.
-	 * 
+	 *
 	 * @return the names
 	 */
 	public abstract Set<String> names();
 
 	/**
 	 * Internal member.
-	 * 
+	 *
 	 * @param name the name
 	 * @return the stream
 	 * @hidden
@@ -315,7 +315,7 @@ public sealed abstract class Fields permits PartHeaders, Headers, Queries {
 
 	/**
 	 * Internal member.
-	 * 
+	 *
 	 * @param name the name
 	 * @return the string
 	 * @hidden

@@ -39,7 +39,7 @@ public non-sealed class RestClientBuilder extends Builder<RestClientBuilder> {
 	/**
 	 * Sets the keytool TrustStore that should be used for HTTPS support. None by
 	 * default.
-	 * 
+	 *
 	 * @param path     the TrustStore path
 	 * @param password the TrustStore password
 	 * @return this builder, for chaining
@@ -69,7 +69,7 @@ public non-sealed class RestClientBuilder extends Builder<RestClientBuilder> {
 
 	/**
 	 * Resets the keytool TrustStore to none.
-	 * 
+	 *
 	 * @return this builder, for chaining
 	 */
 	public final RestClientBuilder withoutTrustStore() {
@@ -82,7 +82,7 @@ public non-sealed class RestClientBuilder extends Builder<RestClientBuilder> {
 	 * Builds a dynamic HTTP/2 and HTTP/1.1 client with the current configuration to
 	 * the specified URL prefix.
 	 * </p>
-	 * 
+	 *
 	 * @param urlPrefix the URL prefix
 	 * @return the client
 	 * @throws NullPointerException     if the URL prefix is null
@@ -106,7 +106,7 @@ public non-sealed class RestClientBuilder extends Builder<RestClientBuilder> {
 	 * Builds a static HTTP/1.1 client with the current configuration to the
 	 * specified URL prefix.
 	 * </p>
-	 * 
+	 *
 	 * @param urlPrefix the URL prefix
 	 * @return the client
 	 * @throws NullPointerException     if the URL prefix is null
@@ -127,7 +127,7 @@ public non-sealed class RestClientBuilder extends Builder<RestClientBuilder> {
 	 * Builds a static HTTP/2 client with the current configuration to the specified
 	 * URL prefix.
 	 * </p>
-	 * 
+	 *
 	 * @param urlPrefix the URL prefix
 	 * @return the client
 	 * @throws NullPointerException     if the URL prefix is null
@@ -149,7 +149,7 @@ public non-sealed class RestClientBuilder extends Builder<RestClientBuilder> {
 	 * Builds a static HTTP/3 client with the current configuration to the specified
 	 * URL prefix.
 	 * </p>
-	 * 
+	 *
 	 * @param urlPrefix the URL prefix
 	 * @return the client
 	 * @throws NullPointerException     if the URL prefix is null
@@ -208,7 +208,7 @@ public non-sealed class RestClientBuilder extends Builder<RestClientBuilder> {
 
 	/**
 	 * Internal member.
-	 * 
+	 *
 	 * @return this builder, for chaining
 	 * @hidden
 	 */

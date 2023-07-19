@@ -26,7 +26,7 @@ public final class HeadersMap {
 	 * If there are multiple headers associated to the name, the first one is
 	 * considered.
 	 * </p>
-	 * 
+	 *
 	 * @param name the name
 	 * @return the headers
 	 * @throws NullPointerException     if the name is null
@@ -47,7 +47,7 @@ public final class HeadersMap {
 	 * <p>
 	 * If there are no headers associated to the name, an empty list is returned.
 	 * </p>
-	 * 
+	 *
 	 * @param name the name
 	 * @return a list with the headers
 	 * @throws NullPointerException if the name is null
@@ -67,7 +67,7 @@ public final class HeadersMap {
 	 * <p>
 	 * If there are no names available, an empty set is returned.
 	 * </p>
-	 * 
+	 *
 	 * @return a set with the names
 	 */
 	public Set<String> names() {

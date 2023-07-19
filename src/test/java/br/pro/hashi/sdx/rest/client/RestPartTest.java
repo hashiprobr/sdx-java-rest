@@ -22,6 +22,7 @@ class RestPartTest extends RestBodyTest {
 	private RestPart p;
 
 	@Test
+	@Override
 	void gets() {
 		try (MockedStatic<MediaCoder> coderStatic = mockStatic(MediaCoder.class)) {
 			coderStatic.when(() -> MediaCoder.getInstance()).thenReturn(coder);
@@ -32,6 +33,7 @@ class RestPartTest extends RestBodyTest {
 	}
 
 	@Test
+	@Override
 	void doesNotGetFromNull() {
 		assertThrows(NullPointerException.class, () -> {
 			RestPart.of(null);
@@ -39,6 +41,7 @@ class RestPartTest extends RestBodyTest {
 	}
 
 	@Test
+	@Override
 	void doesNotGetFromGeneric() {
 		assertThrows(IllegalArgumentException.class, () -> {
 			RestPart.of(List.of());
@@ -46,6 +49,7 @@ class RestPartTest extends RestBodyTest {
 	}
 
 	@Test
+	@Override
 	void getsFromHint() {
 		try (MockedStatic<MediaCoder> coderStatic = mockStatic(MediaCoder.class)) {
 			coderStatic.when(() -> MediaCoder.getInstance()).thenReturn(coder);
@@ -56,6 +60,7 @@ class RestPartTest extends RestBodyTest {
 	}
 
 	@Test
+	@Override
 	void doesNotGetFromNullHint() {
 		assertThrows(NullPointerException.class, () -> {
 			RestPart.of(actual, null);

@@ -52,7 +52,7 @@ public abstract class RestResource {
 
 	/**
 	 * Constructs a new resource with a specified base.
-	 * 
+	 *
 	 * @param base the base
 	 */
 	protected RestResource(String base) {
@@ -114,10 +114,10 @@ public abstract class RestResource {
 	 * The value {@code ""} can be included to indicate that the URI must have an
 	 * extension.
 	 * </p>
-	 * 
+	 *
 	 * @implNote The implementation should return {@code null} or a static field to
 	 *           maximize efficiency.
-	 * 
+	 *
 	 * @return a set with the not accepted extensions
 	 */
 	protected Set<String> notAcceptableExtensions() {
@@ -127,7 +127,7 @@ public abstract class RestResource {
 	/**
 	 * Wrap the response body with this method to indicate that it should be sent
 	 * even if it is null.
-	 * 
+	 *
 	 * @param <T>  the type of the response body
 	 * @param body the response body
 	 * @return the parameter, for wrapping
@@ -139,7 +139,7 @@ public abstract class RestResource {
 
 	/**
 	 * Alias for {@link #asContentType(String)}.
-	 * 
+	 *
 	 * @param contentType the content type
 	 * @throws NullPointerException     if the content type is null
 	 * @throws IllegalArgumentException if the content type is blank
@@ -156,7 +156,7 @@ public abstract class RestResource {
 	 * <p>
 	 * The alias {@link #as(String)} is available.
 	 * </p>
-	 * 
+	 *
 	 * @param contentType the content type
 	 * @throws NullPointerException     if the content type is null
 	 * @throws IllegalArgumentException if the content type is blank
@@ -175,7 +175,7 @@ public abstract class RestResource {
 
 	/**
 	 * Alias for {@link #inCharset(Charset)}.
-	 * 
+	 *
 	 * @param charset the charset
 	 * @throws NullPointerException if the charset is null
 	 * @hidden
@@ -192,7 +192,7 @@ public abstract class RestResource {
 	 * <p>
 	 * The alias {@link #in(Charset)} is available.
 	 * </p>
-	 * 
+	 *
 	 * @param charset the charset
 	 * @throws NullPointerException if the charset is null
 	 */
@@ -214,7 +214,7 @@ public abstract class RestResource {
 
 	/**
 	 * Alias for {@link #withHeader(String, Object)}.
-	 * 
+	 *
 	 * @param name  the header name
 	 * @param value the header value
 	 * @throws NullPointerException     if the header name is null or the header
@@ -238,7 +238,7 @@ public abstract class RestResource {
 	 * <p>
 	 * The alias {@link #h(String, Object)} is available.
 	 * </p>
-	 * 
+	 *
 	 * @param name  the header name
 	 * @param value the header value
 	 * @throws NullPointerException     if the header name is null or the header
@@ -280,7 +280,7 @@ public abstract class RestResource {
 	 * This ensures that the response and its details are syntactically related and
 	 * improves autocomplete accuracy.
 	 * </p>
-	 * 
+	 *
 	 * @param <T>    the type of the response body
 	 * @param status the response status
 	 * @param body   the response body
@@ -301,7 +301,7 @@ public abstract class RestResource {
 	 * This ensures that the response and its details are syntactically related and
 	 * improves autocomplete accuracy.
 	 * </p>
-	 * 
+	 *
 	 * @param <T>    the type of the response body
 	 * @param status the response status
 	 * @param body   the response body
@@ -323,7 +323,7 @@ public abstract class RestResource {
 	 * This ensures that the response and its details are syntactically related and
 	 * improves autocomplete accuracy.
 	 * </p>
-	 * 
+	 *
 	 * @param status the response status
 	 * @param args   convenience parameters to call the other methods
 	 * @throws IllegalArgumentException if the status is invalid
@@ -340,7 +340,7 @@ public abstract class RestResource {
 	 * {@code args} can be used to call the other methods. This ensures that the
 	 * response and its details are syntactically related and improves autocomplete
 	 * accuracy.
-	 * 
+	 *
 	 * @param <T>    the type of the actual body
 	 * @param actual the actual body
 	 * @param args   convenience parameters to call the other methods

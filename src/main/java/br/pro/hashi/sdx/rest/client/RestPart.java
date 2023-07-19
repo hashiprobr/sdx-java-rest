@@ -24,7 +24,7 @@ public class RestPart extends RestBody {
 	 * generic information due to type erasure, do not call it if the type is
 	 * generic. In both cases, call {@code of(T, Hint<T>)} instead.
 	 * </p>
-	 * 
+	 *
 	 * @param actual the actual part
 	 * @return the wrapped part
 	 * @throws NullPointerException     if the part is null
@@ -48,7 +48,7 @@ public class RestPart extends RestBody {
 	 * <p>
 	 * Call this method if the part is null or the type is generic.
 	 * </p>
-	 * 
+	 *
 	 * @param <T>    the part type
 	 * @param actual the actual part
 	 * @param hint   a {@link Hint} representing {@code T}
@@ -92,7 +92,7 @@ public class RestPart extends RestBody {
 
 	/**
 	 * Alias for {@link #withHeader(String, Object)}.
-	 * 
+	 *
 	 * @param name  the header name
 	 * @param value the header value
 	 * @return this part, for chaining
@@ -117,7 +117,7 @@ public class RestPart extends RestBody {
 	 * <p>
 	 * The alias {@link #h(String, Object)} is available for short chaining.
 	 * </p>
-	 * 
+	 *
 	 * @param name  the header name
 	 * @param value the header value
 	 * @return this part, for chaining

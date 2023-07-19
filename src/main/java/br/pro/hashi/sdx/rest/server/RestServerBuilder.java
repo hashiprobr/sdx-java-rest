@@ -171,7 +171,7 @@ public non-sealed class RestServerBuilder extends Builder<RestServerBuilder> {
 	 * <p>
 	 * The only extension associated to a content type by default is {@code txt}.
 	 * </p>
-	 * 
+	 *
 	 * @param extension   the extension
 	 * @param contentType the content type
 	 * @return this builder, for chaining
@@ -192,7 +192,7 @@ public non-sealed class RestServerBuilder extends Builder<RestServerBuilder> {
 	 * <p>
 	 * The only extension associated to a content type by default is {@code txt}.
 	 * </p>
-	 * 
+	 *
 	 * @param extension the extension
 	 * @return this builder, for chaining
 	 */
@@ -203,7 +203,7 @@ public non-sealed class RestServerBuilder extends Builder<RestServerBuilder> {
 
 	/**
 	 * Adds an exception type that should be considered gateway.
-	 * 
+	 *
 	 * @param type the exception type
 	 * @return this builder, for chaining
 	 * @throws NullPointerException if the type is null
@@ -218,7 +218,7 @@ public non-sealed class RestServerBuilder extends Builder<RestServerBuilder> {
 
 	/**
 	 * Sets a formatter that should be used for error messages.
-	 * 
+	 *
 	 * @param formatter the error formatter
 	 * @return this builder, for chaining
 	 * @throws NullPointerException     if the formatter is null
@@ -237,7 +237,7 @@ public non-sealed class RestServerBuilder extends Builder<RestServerBuilder> {
 
 	/**
 	 * Sets the content type for error bodies. Parameters are ignored.
-	 * 
+	 *
 	 * @param contentType the content type
 	 * @return this builder, for chaining
 	 * @throws NullPointerException     if the content type is null
@@ -257,7 +257,7 @@ public non-sealed class RestServerBuilder extends Builder<RestServerBuilder> {
 
 	/**
 	 * Sets the charset for error bodies.
-	 * 
+	 *
 	 * @param charset the charset
 	 * @return this builder, for chaining
 	 * @throws NullPointerException if the charset is null
@@ -272,7 +272,7 @@ public non-sealed class RestServerBuilder extends Builder<RestServerBuilder> {
 
 	/**
 	 * Encodes the error bodies in Base64 by default.
-	 * 
+	 *
 	 * @return this builder, for chaining
 	 */
 	public final RestServerBuilder withErrorInBase64() {
@@ -283,7 +283,7 @@ public non-sealed class RestServerBuilder extends Builder<RestServerBuilder> {
 	/**
 	 * Sets the keytool KeyStore that should be used for HTTPS support. None by
 	 * default.
-	 * 
+	 *
 	 * @param path     the KeyStore path
 	 * @param password the KeyStore password
 	 * @return this builder, for chaining
@@ -313,7 +313,7 @@ public non-sealed class RestServerBuilder extends Builder<RestServerBuilder> {
 
 	/**
 	 * Resets the keytool KeyStore to none.
-	 * 
+	 *
 	 * @return this builder, for chaining
 	 */
 	public final RestServerBuilder withoutKeyStore() {
@@ -323,7 +323,7 @@ public non-sealed class RestServerBuilder extends Builder<RestServerBuilder> {
 
 	/**
 	 * Sets a primary thread pool that should be used for requests.
-	 * 
+	 *
 	 * @param requestPool the thread pool
 	 * @return this builder, for chaining
 	 * @throws NullPointerException if the pool is null
@@ -338,7 +338,7 @@ public non-sealed class RestServerBuilder extends Builder<RestServerBuilder> {
 
 	/**
 	 * Sets a configuration that should be used for multipart requests.
-	 * 
+	 *
 	 * @param location          the directory location where files will be stored
 	 * @param maxFileSize       the maximum size allowed for uploaded files
 	 * @param maxRequestSize    the maximum size allowed for
@@ -354,7 +354,7 @@ public non-sealed class RestServerBuilder extends Builder<RestServerBuilder> {
 
 	/**
 	 * Sets the URI compliance for endpoint bases.
-	 * 
+	 *
 	 * @param compliance the URI compliance
 	 * @return this builder, for chaining
 	 * @throws NullPointerException if the compliance is null
@@ -370,7 +370,7 @@ public non-sealed class RestServerBuilder extends Builder<RestServerBuilder> {
 	/**
 	 * Sets the maximum body size allowed in non-multipart requests. Default is
 	 * {@code 200000}.
-	 * 
+	 *
 	 * @param maxBodySize the limit
 	 * @return this builder, for chaining
 	 */
@@ -381,7 +381,7 @@ public non-sealed class RestServerBuilder extends Builder<RestServerBuilder> {
 
 	/**
 	 * Sets the port for clear-text HTTP/1.1 and HTTP/2.
-	 * 
+	 *
 	 * @param clearPort the port
 	 * @return this builder, for chaining
 	 */
@@ -392,7 +392,7 @@ public non-sealed class RestServerBuilder extends Builder<RestServerBuilder> {
 
 	/**
 	 * Sets the port for encrypted HTTP/1.1 and HTTP/2.
-	 * 
+	 *
 	 * @param securePort the port
 	 * @return this builder, for chaining
 	 */
@@ -403,7 +403,7 @@ public non-sealed class RestServerBuilder extends Builder<RestServerBuilder> {
 
 	/**
 	 * Sets the port for encrypted HTTP/3.
-	 * 
+	 *
 	 * @param port3 the port
 	 * @return this builder, for chaining
 	 */
@@ -414,7 +414,7 @@ public non-sealed class RestServerBuilder extends Builder<RestServerBuilder> {
 
 	/**
 	 * Enables HTTP/3 support.
-	 * 
+	 *
 	 * @return this builder, for chaining
 	 */
 	public final RestServerBuilder withHttp3() {
@@ -424,7 +424,7 @@ public non-sealed class RestServerBuilder extends Builder<RestServerBuilder> {
 
 	/**
 	 * Disables HTTP/2 support.
-	 * 
+	 *
 	 * @return this builder, for chaining
 	 * @throws IllegalArgumentException if HTTP/1.1 is also disabled
 	 */
@@ -438,7 +438,7 @@ public non-sealed class RestServerBuilder extends Builder<RestServerBuilder> {
 
 	/**
 	 * Disables HTTP/1.1 support.
-	 * 
+	 *
 	 * @return this builder, for chaining
 	 * @throws IllegalArgumentException if HTTP/2 is also disabled
 	 */
@@ -452,7 +452,7 @@ public non-sealed class RestServerBuilder extends Builder<RestServerBuilder> {
 
 	/**
 	 * Disables CORS.
-	 * 
+	 *
 	 * @return this builder, for chaining
 	 */
 	public final RestServerBuilder withoutCors() {
@@ -463,7 +463,7 @@ public non-sealed class RestServerBuilder extends Builder<RestServerBuilder> {
 	/**
 	 * Builds a server with the current configuration from the resources in the
 	 * specified package.
-	 * 
+	 *
 	 * @param packageName the package name
 	 * @return the server
 	 * @throws NullPointerException if the package name is null
@@ -634,7 +634,7 @@ public non-sealed class RestServerBuilder extends Builder<RestServerBuilder> {
 
 	/**
 	 * Internal member.
-	 * 
+	 *
 	 * @return this builder, for chaining
 	 * @hidden
 	 */

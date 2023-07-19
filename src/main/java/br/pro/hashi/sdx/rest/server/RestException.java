@@ -30,21 +30,21 @@ public class RestException extends RuntimeException {
 
 	/**
 	 * Internal member.
-	 * 
+	 *
 	 * @hidden
 	 */
 	private final int status;
 
 	/**
 	 * Internal member.
-	 * 
+	 *
 	 * @hidden
 	 */
 	private final Object body;
 
 	/**
 	 * Internal member.
-	 * 
+	 *
 	 * @hidden
 	 */
 	private final Type type;
@@ -59,7 +59,7 @@ public class RestException extends RuntimeException {
 	 * generic information due to type erasure, do not call it if the type is
 	 * generic. In both cases, call {@code RestException(int, T, Hint<T>)} instead.
 	 * </p>
-	 * 
+	 *
 	 * @param status the status
 	 * @param body   the body
 	 * @throws NullPointerException     if the body is null
@@ -77,7 +77,7 @@ public class RestException extends RuntimeException {
 	 * <p>
 	 * Call this constructor if the body is null or the type is generic.
 	 * </p>
-	 * 
+	 *
 	 * @param <T>    the body type
 	 * @param status the status
 	 * @param body   the body
@@ -100,7 +100,7 @@ public class RestException extends RuntimeException {
 
 	/**
 	 * Obtains the status code of this exception.
-	 * 
+	 *
 	 * @return the status
 	 */
 	public final int getStatus() {
@@ -109,7 +109,7 @@ public class RestException extends RuntimeException {
 
 	/**
 	 * Obtains the response body of this exception.
-	 * 
+	 *
 	 * @return the body
 	 */
 	public final Object getBody() {
@@ -118,7 +118,7 @@ public class RestException extends RuntimeException {
 
 	/**
 	 * Obtains the type of the response body.
-	 * 
+	 *
 	 * @return the type
 	 */
 	public final Type getType() {

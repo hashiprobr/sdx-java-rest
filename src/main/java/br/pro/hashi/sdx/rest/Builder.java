@@ -17,55 +17,55 @@ import br.pro.hashi.sdx.rest.transform.manager.TransformManager;
 
 /**
  * Base class for REST client and server builders.
- * 
+ *
  * @param <T> the subclass
  */
 public sealed abstract class Builder<T extends Builder<T>> permits RestClientBuilder, RestServerBuilder {
 	/**
 	 * Internal member.
-	 * 
+	 *
 	 * @hidden
 	 */
 	protected final PathCoder pathCoder;
 
 	/**
 	 * Internal member.
-	 * 
+	 *
 	 * @hidden
 	 */
 	protected final TransformManager managerBase;
 
 	/**
 	 * Internal member.
-	 * 
+	 *
 	 * @hidden
 	 */
 	protected Locale locale;
 
 	/**
 	 * Internal member.
-	 * 
+	 *
 	 * @hidden
 	 */
 	protected Charset urlCharset;
 
 	/**
 	 * Internal member.
-	 * 
+	 *
 	 * @hidden
 	 */
 	protected boolean redirection;
 
 	/**
 	 * Internal member.
-	 * 
+	 *
 	 * @hidden
 	 */
 	protected boolean compression;
 
 	/**
 	 * Internal member.
-	 * 
+	 *
 	 * @hidden
 	 */
 	protected Builder() {
@@ -80,7 +80,7 @@ public sealed abstract class Builder<T extends Builder<T>> permits RestClientBui
 	/**
 	 * Associates the specified content type to the same assembler associated to
 	 * {@code application/octet-stream}. Parameters are ignored.
-	 * 
+	 *
 	 * @param contentType the content type
 	 * @return this builder, for chaining
 	 * @throws NullPointerException     if the content type is null
@@ -100,7 +100,7 @@ public sealed abstract class Builder<T extends Builder<T>> permits RestClientBui
 	 * The only content type associated to an assembler by default is
 	 * {@code application/octet-stream}.
 	 * </p>
-	 * 
+	 *
 	 * @param contentType the content type
 	 * @param assembler   the assembler
 	 * @return this builder, for chaining
@@ -122,7 +122,7 @@ public sealed abstract class Builder<T extends Builder<T>> permits RestClientBui
 	 * The only content type associated to an assembler by default is
 	 * {@code application/octet-stream}.
 	 * </p>
-	 * 
+	 *
 	 * @param contentType the content type
 	 * @return this builder, for chaining
 	 */
@@ -134,7 +134,7 @@ public sealed abstract class Builder<T extends Builder<T>> permits RestClientBui
 	/**
 	 * Associates the specified content type to the same disassembler associated to
 	 * {@code application/octet-stream}. Parameters are ignored.
-	 * 
+	 *
 	 * @param contentType the content type
 	 * @return this builder, for chaining
 	 * @throws NullPointerException     if the content type is null
@@ -154,7 +154,7 @@ public sealed abstract class Builder<T extends Builder<T>> permits RestClientBui
 	 * The only content type associated to a disassembler by default is
 	 * {@code application/octet-stream}.
 	 * </p>
-	 * 
+	 *
 	 * @param contentType  the content type
 	 * @param disassembler the disassembler
 	 * @return this builder, for chaining
@@ -176,7 +176,7 @@ public sealed abstract class Builder<T extends Builder<T>> permits RestClientBui
 	 * The only content type associated to a disassembler by default is
 	 * {@code application/octet-stream}.
 	 * </p>
-	 * 
+	 *
 	 * @param contentType the content type
 	 * @return this builder, for chaining
 	 */
@@ -188,7 +188,7 @@ public sealed abstract class Builder<T extends Builder<T>> permits RestClientBui
 	/**
 	 * Associates the specified content type to the same serializer associated to
 	 * {@code text/plain}. Parameters are ignored.
-	 * 
+	 *
 	 * @param contentType the content type
 	 * @return this builder, for chaining
 	 * @throws NullPointerException     if the content type is null
@@ -208,7 +208,7 @@ public sealed abstract class Builder<T extends Builder<T>> permits RestClientBui
 	 * The only content type associated to a serializer by default is
 	 * {@code text/plain}.
 	 * </p>
-	 * 
+	 *
 	 * @param contentType the content type
 	 * @param serializer  the serializer
 	 * @return this builder, for chaining
@@ -230,7 +230,7 @@ public sealed abstract class Builder<T extends Builder<T>> permits RestClientBui
 	 * The only content type associated to a serializer by default is
 	 * {@code text/plain}.
 	 * </p>
-	 * 
+	 *
 	 * @param contentType the content type
 	 * @return this builder, for chaining
 	 */
@@ -242,7 +242,7 @@ public sealed abstract class Builder<T extends Builder<T>> permits RestClientBui
 	/**
 	 * Associates the specified content type to the same deserializer associated to
 	 * {@code text/plain}. Parameters are ignored.
-	 * 
+	 *
 	 * @param contentType the content type
 	 * @return this builder, for chaining
 	 * @throws NullPointerException     if the content type is null
@@ -262,7 +262,7 @@ public sealed abstract class Builder<T extends Builder<T>> permits RestClientBui
 	 * The only content type associated to a deserializer by default is
 	 * {@code text/plain}.
 	 * </p>
-	 * 
+	 *
 	 * @param contentType  the content type
 	 * @param deserializer the deserializer
 	 * @return this builder, for chaining
@@ -284,7 +284,7 @@ public sealed abstract class Builder<T extends Builder<T>> permits RestClientBui
 	 * The only content type associated to a deserializer by default is
 	 * {@code text/plain}.
 	 * </p>
-	 * 
+	 *
 	 * @param contentType the content type
 	 * @return this builder, for chaining
 	 */
@@ -311,7 +311,7 @@ public sealed abstract class Builder<T extends Builder<T>> permits RestClientBui
 	 * The only non-generic types considered binary by default are {@code byte[]}
 	 * and {@link InputStream}.
 	 * </p>
-	 * 
+	 *
 	 * @param type the type
 	 * @return this builder, for chaining
 	 * @throws NullPointerException if the type is null
@@ -340,7 +340,7 @@ public sealed abstract class Builder<T extends Builder<T>> permits RestClientBui
 	 * The only generic type considered binary by default is
 	 * {@code Consumer<OutputStream>}.
 	 * </p>
-	 * 
+	 *
 	 * @param hint the hint
 	 * @return this builder, for chaining
 	 * @throws NullPointerException if the hint is null
@@ -371,7 +371,7 @@ public sealed abstract class Builder<T extends Builder<T>> permits RestClientBui
 	 * The only non-generic types considered binary by default are {@code byte[]}
 	 * and {@link InputStream}.
 	 * </p>
-	 * 
+	 *
 	 * @param type the type
 	 * @return this builder, for chaining
 	 */
@@ -398,7 +398,7 @@ public sealed abstract class Builder<T extends Builder<T>> permits RestClientBui
 	 * The only generic type considered binary by default is
 	 * {@code Consumer<OutputStream>}.
 	 * </p>
-	 * 
+	 *
 	 * @param hint the hint
 	 * @return this builder, for chaining
 	 */
@@ -414,7 +414,7 @@ public sealed abstract class Builder<T extends Builder<T>> permits RestClientBui
 	 * Establishes that the specified content type should be used as a fallback for
 	 * types that are considered binary. Parameters are ignored.
 	 * </p>
-	 * 
+	 *
 	 * @param contentType the content type
 	 * @return this builder, for chaining
 	 * @throws NullPointerException     if the content type is null
@@ -430,7 +430,7 @@ public sealed abstract class Builder<T extends Builder<T>> permits RestClientBui
 	 * Establishes that no specified content type should be used as a fallback for
 	 * types that are considered binary.
 	 * </p>
-	 * 
+	 *
 	 * @return this builder, for chaining
 	 */
 	public final T withoutBinaryFallbackType() {
@@ -443,7 +443,7 @@ public sealed abstract class Builder<T extends Builder<T>> permits RestClientBui
 	 * Establishes that the specified content type should be used as a fallback for
 	 * types that are not considered binary. Parameters are ignored.
 	 * </p>
-	 * 
+	 *
 	 * @param contentType the content type
 	 * @return this builder, for chaining
 	 * @throws NullPointerException     if the content type is null
@@ -459,7 +459,7 @@ public sealed abstract class Builder<T extends Builder<T>> permits RestClientBui
 	 * Establishes that no content type should be used as a fallback for types that
 	 * are not considered binary.
 	 * </p>
-	 * 
+	 *
 	 * @return this builder, for chaining
 	 */
 	public final T withoutFallbackType() {
@@ -470,7 +470,7 @@ public sealed abstract class Builder<T extends Builder<T>> permits RestClientBui
 	/**
 	 * Sets the locale that should be used when processing a request. Default is the
 	 * system locale.
-	 * 
+	 *
 	 * @param locale the locale
 	 * @return this builder, for chaining
 	 * @throws NullPointerException if the locale is null
@@ -485,7 +485,7 @@ public sealed abstract class Builder<T extends Builder<T>> permits RestClientBui
 
 	/**
 	 * Resets the locale to the system locale.
-	 * 
+	 *
 	 * @return this builder, for chaining
 	 */
 	public final T withoutLocale() {
@@ -496,7 +496,7 @@ public sealed abstract class Builder<T extends Builder<T>> permits RestClientBui
 	/**
 	 * Sets the charset that should be used when percent-encoding or
 	 * percent-decoding an URL. Default is {@link StandardCharsets#UTF_8}.
-	 * 
+	 *
 	 * @param urlCharset the URL charset
 	 * @return this builder, for chaining
 	 * @throws NullPointerException if the charset is null
@@ -511,7 +511,7 @@ public sealed abstract class Builder<T extends Builder<T>> permits RestClientBui
 
 	/**
 	 * Resets the URL charset to {@link StandardCharsets#UTF_8}.
-	 * 
+	 *
 	 * @return this builder, for chaining
 	 */
 	public final T withoutUrlCharset() {
@@ -521,7 +521,7 @@ public sealed abstract class Builder<T extends Builder<T>> permits RestClientBui
 
 	/**
 	 * Disables HTTPS redirection, which is enabled by default.
-	 * 
+	 *
 	 * @return this builder, for chaining
 	 */
 	public final T withoutRedirection() {
@@ -531,7 +531,7 @@ public sealed abstract class Builder<T extends Builder<T>> permits RestClientBui
 
 	/**
 	 * Resets HTTPS redirection to enabled.
-	 * 
+	 *
 	 * @return this builder, for chaining
 	 */
 	public final T withRedirection() {
@@ -541,7 +541,7 @@ public sealed abstract class Builder<T extends Builder<T>> permits RestClientBui
 
 	/**
 	 * Disables GZIP compression, which is enabled by default.
-	 * 
+	 *
 	 * @return this builder, for chaining
 	 */
 	public final T withoutCompression() {
@@ -551,7 +551,7 @@ public sealed abstract class Builder<T extends Builder<T>> permits RestClientBui
 
 	/**
 	 * Resets GZIP compression to enabled.
-	 * 
+	 *
 	 * @return this builder, for chaining
 	 */
 	public final T withCompression() {
@@ -561,7 +561,7 @@ public sealed abstract class Builder<T extends Builder<T>> permits RestClientBui
 
 	/**
 	 * Internal member.
-	 * 
+	 *
 	 * @return this builder, for chaining
 	 * @hidden
 	 */

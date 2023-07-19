@@ -13,10 +13,10 @@ public interface Assembler {
 	/**
 	 * Transforms the specified typed object into a byte representation and writes
 	 * it to the specified {@link OutputStream} if possible.
-	 * 
+	 *
 	 * @implNote The implementation can assume that the type is correct and cannot
 	 *           close the stream.
-	 * 
+	 *
 	 * @param <T>    the type
 	 * @param body   the object
 	 * @param type   a {@link Type} representing {@code T}

@@ -55,7 +55,7 @@ public final class RestClient {
 	 * Builds a dynamic HTTP/2 and HTTP/1.1 client with a default configuration to
 	 * the specified URL prefix.
 	 * </p>
-	 * 
+	 *
 	 * @param urlPrefix the URL prefix
 	 * @return the client
 	 * @throws NullPointerException     if the URL prefix is null
@@ -111,7 +111,7 @@ public final class RestClient {
 	 * <p>
 	 * Call this method if you want to override the builder configuration.
 	 * </p>
-	 * 
+	 *
 	 * @return the internal client
 	 */
 	public HttpClient getJettyClient() {
@@ -120,7 +120,7 @@ public final class RestClient {
 
 	/**
 	 * Starts this client.
-	 * 
+	 *
 	 * @throws ClientException if the internal client cannot be started
 	 */
 	public void start() {
@@ -138,7 +138,7 @@ public final class RestClient {
 
 	/**
 	 * Stops this client.
-	 * 
+	 *
 	 * @throws ClientException if the internal client cannot be stopped
 	 */
 	public void stop() {
@@ -156,7 +156,7 @@ public final class RestClient {
 
 	/**
 	 * Alias for {@link #withQuery(String)}.
-	 * 
+	 *
 	 * @param name the query name
 	 * @return the proxy, for chaining
 	 * @throws NullPointerException if the query name is null
@@ -168,7 +168,7 @@ public final class RestClient {
 
 	/**
 	 * Alias for {@link #withQuery(String, Object)}.
-	 * 
+	 *
 	 * @param name  the query name
 	 * @param value the query value
 	 * @return the proxy, for chaining
@@ -188,7 +188,7 @@ public final class RestClient {
 	 * <p>
 	 * The alias {@link #q(String)} is available for short chaining.
 	 * </p>
-	 * 
+	 *
 	 * @param name the query name
 	 * @return the proxy, for chaining
 	 * @throws NullPointerException if the query name is null
@@ -205,7 +205,7 @@ public final class RestClient {
 	 * <p>
 	 * The alias {@link #q(String, Object)} is available for short chaining.
 	 * </p>
-	 * 
+	 *
 	 * @param name  the query name
 	 * @param value the query value
 	 * @return the proxy, for chaining
@@ -218,7 +218,7 @@ public final class RestClient {
 
 	/**
 	 * Alias for {@link #withHeader(String, Object)}.
-	 * 
+	 *
 	 * @param name  the header name
 	 * @param value the header value
 	 * @return the proxy, for chaining
@@ -240,7 +240,7 @@ public final class RestClient {
 	 * <p>
 	 * The alias {@link #h(String, Object)} is available for short chaining.
 	 * </p>
-	 * 
+	 *
 	 * @param name  the header name
 	 * @param value the header value
 	 * @return the proxy, for chaining
@@ -255,7 +255,7 @@ public final class RestClient {
 
 	/**
 	 * Alias for {@link #withBody(Object)}.
-	 * 
+	 *
 	 * @param body the body
 	 * @return the proxy, for chaining
 	 * @throws IllegalArgumentException if already added a part or the body is an
@@ -274,7 +274,7 @@ public final class RestClient {
 	 * <p>
 	 * The alias {@link #b(Object)} is available for short chaining.
 	 * </p>
-	 * 
+	 *
 	 * @param body the body
 	 * @return the proxy, for chaining
 	 * @throws IllegalArgumentException if already added a part or the body is an
@@ -286,7 +286,7 @@ public final class RestClient {
 
 	/**
 	 * Alias for {@link #withPart(String, Object)}.
-	 * 
+	 *
 	 * @param name the name
 	 * @param part the part
 	 * @return the proxy, for chaining
@@ -307,7 +307,7 @@ public final class RestClient {
 	 * <p>
 	 * The alias {@link #p(String, Object)} is available for short chaining.
 	 * </p>
-	 * 
+	 *
 	 * @param name the name
 	 * @param part the part
 	 * @return the proxy, for chaining
@@ -321,7 +321,7 @@ public final class RestClient {
 
 	/**
 	 * Alias for {@link #withTimeout(int)}.
-	 * 
+	 *
 	 * @param timeout the timeout, in seconds
 	 * @return the proxy, for chaining
 	 * @hidden
@@ -338,7 +338,7 @@ public final class RestClient {
 	 * <p>
 	 * The alias {@link #t(int)} is available for short chaining.
 	 * </p>
-	 * 
+	 *
 	 * @param timeout the timeout, in seconds
 	 * @return the proxy, for chaining
 	 */
@@ -349,7 +349,7 @@ public final class RestClient {
 	/**
 	 * Convenience method that instantiates a {@link RestClient.Proxy} and calls
 	 * {@link RestClient.Proxy#get(String)}.
-	 * 
+	 *
 	 * @param uri the URI
 	 * @return the response
 	 * @throws NullPointerException     if the URI is null
@@ -362,7 +362,7 @@ public final class RestClient {
 	/**
 	 * Convenience method that instantiates a {@link RestClient.Proxy} and calls
 	 * {@link RestClient.Proxy#post(String)}.
-	 * 
+	 *
 	 * @param uri the URI
 	 * @return the response
 	 * @throws NullPointerException     if the URI is null
@@ -376,7 +376,7 @@ public final class RestClient {
 	/**
 	 * Convenience method that instantiates a {@link RestClient.Proxy} and calls
 	 * {@link RestClient.Proxy#post(String, Object)}.
-	 * 
+	 *
 	 * @param uri  the URI
 	 * @param body the body
 	 * @return the response
@@ -390,7 +390,7 @@ public final class RestClient {
 	/**
 	 * Convenience method that instantiates a {@link RestClient.Proxy} and calls
 	 * {@link RestClient.Proxy#put(String)}.
-	 * 
+	 *
 	 * @param uri the URI
 	 * @return the response
 	 * @throws NullPointerException     if the URI is null
@@ -404,7 +404,7 @@ public final class RestClient {
 	/**
 	 * Convenience method that instantiates a {@link RestClient.Proxy} and calls
 	 * {@link RestClient.Proxy#put(String, Object)}.
-	 * 
+	 *
 	 * @param uri  the URI
 	 * @param body the body
 	 * @return the response
@@ -418,7 +418,7 @@ public final class RestClient {
 	/**
 	 * Convenience method that instantiates a {@link RestClient.Proxy} and calls
 	 * {@link RestClient.Proxy#patch(String)}.
-	 * 
+	 *
 	 * @param uri the URI
 	 * @return the response
 	 * @throws NullPointerException     if the URI is null
@@ -432,7 +432,7 @@ public final class RestClient {
 	/**
 	 * Convenience method that instantiates a {@link RestClient.Proxy} and calls
 	 * {@link RestClient.Proxy#patch(String, Object)}.
-	 * 
+	 *
 	 * @param uri  the URI
 	 * @param body the body
 	 * @return the response
@@ -446,7 +446,7 @@ public final class RestClient {
 	/**
 	 * Convenience method that instantiates a {@link RestClient.Proxy} and calls
 	 * {@link RestClient.Proxy#delete(String)}.
-	 * 
+	 *
 	 * @param uri the URI
 	 * @return the response
 	 * @throws NullPointerException     if the URI is null
@@ -459,7 +459,7 @@ public final class RestClient {
 	/**
 	 * Convenience method that instantiates a {@link RestClient.Proxy} and calls
 	 * {@link RestClient.Proxy#request(String, String)}.
-	 * 
+	 *
 	 * @param method the method
 	 * @param uri    the URI
 	 * @return the response
@@ -517,7 +517,7 @@ public final class RestClient {
 
 		/**
 		 * Alias for {@link #withQuery(String)}.
-		 * 
+		 *
 		 * @param name the query name
 		 * @return this proxy, for chaining
 		 * @throws NullPointerException if the query name is null
@@ -529,7 +529,7 @@ public final class RestClient {
 
 		/**
 		 * Alias for {@link #withQuery(String, Object)}.
-		 * 
+		 *
 		 * @param name  the query name
 		 * @param value the query value
 		 * @return this proxy, for chaining
@@ -551,7 +551,7 @@ public final class RestClient {
 		 * <p>
 		 * The alias {@link #q(String)} is available for short chaining.
 		 * </p>
-		 * 
+		 *
 		 * @param name the query name
 		 * @return this proxy, for chaining
 		 * @throws NullPointerException if the query name is null
@@ -575,7 +575,7 @@ public final class RestClient {
 		 * <p>
 		 * The alias {@link #q(String, Object)} is available for short chaining.
 		 * </p>
-		 * 
+		 *
 		 * @param name  the query name
 		 * @param value the query value
 		 * @return this proxy, for chaining
@@ -603,7 +603,7 @@ public final class RestClient {
 
 		/**
 		 * Alias for {@link #withHeader(String, Object)}.
-		 * 
+		 *
 		 * @param name  the header name
 		 * @param value the header value
 		 * @return this proxy, for chaining
@@ -628,7 +628,7 @@ public final class RestClient {
 		 * <p>
 		 * The alias {@link #h(String, Object)} is available for short chaining.
 		 * </p>
-		 * 
+		 *
 		 * @param name  the header name
 		 * @param value the header value
 		 * @return this proxy, for chaining
@@ -664,7 +664,7 @@ public final class RestClient {
 
 		/**
 		 * Alias for {@link #withBody(Object)}.
-		 * 
+		 *
 		 * @param body the body
 		 * @return this proxy, for chaining
 		 * @throws IllegalArgumentException if already added a part or the body is an
@@ -682,7 +682,7 @@ public final class RestClient {
 		 * <p>
 		 * The alias {@link #b(Object)} is available for short chaining.
 		 * </p>
-		 * 
+		 *
 		 * @param body the body
 		 * @return this proxy, for chaining
 		 * @throws IllegalArgumentException if already added a part or the body is an
@@ -708,7 +708,7 @@ public final class RestClient {
 
 		/**
 		 * Alias for {@link #withPart(String, Object)}.
-		 * 
+		 *
 		 * @param name the name
 		 * @param part the part
 		 * @return this proxy, for chaining
@@ -728,7 +728,7 @@ public final class RestClient {
 		 * <p>
 		 * The alias {@link #p(String, Object)} is available for short chaining.
 		 * </p>
-		 * 
+		 *
 		 * @param name the name
 		 * @param part the part
 		 * @return this proxy, for chaining
@@ -760,7 +760,7 @@ public final class RestClient {
 
 		/**
 		 * Alias for {@link #withTimeout(int)}.
-		 * 
+		 *
 		 * @param timeout the timeout, in seconds
 		 * @return this proxy, for chaining
 		 * @hidden
@@ -776,7 +776,7 @@ public final class RestClient {
 		 * <p>
 		 * The alias {@link #t(int)} is available for short chaining.
 		 * </p>
-		 * 
+		 *
 		 * @param timeout the timeout, in seconds
 		 * @return this proxy, for chaining
 		 */
@@ -787,7 +787,7 @@ public final class RestClient {
 
 		/**
 		 * Sends a GET request to the specified URI.
-		 * 
+		 *
 		 * @param uri the URI
 		 * @return the response
 		 * @throws NullPointerException     if the URI is null
@@ -799,7 +799,7 @@ public final class RestClient {
 
 		/**
 		 * Sends a POST request without body to the specified URI.
-		 * 
+		 *
 		 * @param uri the URI
 		 * @return the response
 		 * @throws NullPointerException     if the URI is null
@@ -812,7 +812,7 @@ public final class RestClient {
 
 		/**
 		 * Sends a POST request to the specified URI.
-		 * 
+		 *
 		 * @param uri  the URI
 		 * @param body the body
 		 * @return the response
@@ -825,7 +825,7 @@ public final class RestClient {
 
 		/**
 		 * Sends a PUT request without body to the specified URI.
-		 * 
+		 *
 		 * @param uri the URI
 		 * @return the response
 		 * @throws NullPointerException     if the URI is null
@@ -838,7 +838,7 @@ public final class RestClient {
 
 		/**
 		 * Sends a PUT request to the specified URI.
-		 * 
+		 *
 		 * @param uri  the URI
 		 * @param body the body
 		 * @return the response
@@ -851,7 +851,7 @@ public final class RestClient {
 
 		/**
 		 * Sends a PATCH request without body to the specified URI.
-		 * 
+		 *
 		 * @param uri the URI
 		 * @return the response
 		 * @throws NullPointerException     if the URI is null
@@ -864,7 +864,7 @@ public final class RestClient {
 
 		/**
 		 * Sends a PATCH request to the specified URI.
-		 * 
+		 *
 		 * @param uri  the URI
 		 * @param body the body
 		 * @return the response
@@ -877,7 +877,7 @@ public final class RestClient {
 
 		/**
 		 * Sends a DELETE request to the specified URI.
-		 * 
+		 *
 		 * @param uri the URI
 		 * @return the response
 		 * @throws NullPointerException     if the URI is null
@@ -889,7 +889,7 @@ public final class RestClient {
 
 		/**
 		 * Sends the specified method to the specified URI.
-		 * 
+		 *
 		 * @param method the method
 		 * @param uri    the URI
 		 * @return the response

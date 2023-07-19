@@ -19,7 +19,7 @@ import br.pro.hashi.sdx.rest.server.RestResource;
 public @interface Nested {
 	/**
 	 * The enclosing resource.
-	 * 
+	 *
 	 * @return a type representing the resource
 	 */
 	Class<? extends RestResource> in();
@@ -33,7 +33,7 @@ public @interface Nested {
 	 * base of the nested resource is {@code /posts} and this number is 2, then the
 	 * nested resource can be found at {@code /users/{arg0}/{arg1}/posts}.
 	 * </p>
-	 * 
+	 *
 	 * @return an integer representing the number
 	 */
 	int at() default 1;

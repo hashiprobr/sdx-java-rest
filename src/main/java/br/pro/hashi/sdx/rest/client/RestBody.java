@@ -21,7 +21,7 @@ public class RestBody {
 	 * generic information due to type erasure, do not call it if the type is
 	 * generic. In both cases, call {@code of(T, Hint<T>)} instead.
 	 * </p>
-	 * 
+	 *
 	 * @param actual the actual body
 	 * @return the wrapped body
 	 * @throws NullPointerException     if the body is null
@@ -45,7 +45,7 @@ public class RestBody {
 	 * <p>
 	 * Call this method if the body is null or the type is generic.
 	 * </p>
-	 * 
+	 *
 	 * @param <T>    the body type
 	 * @param actual the actual body
 	 * @param hint   a {@link Hint} representing {@code T}
@@ -102,7 +102,7 @@ public class RestBody {
 
 	/**
 	 * Alias for {@link #asContentType(String)}.
-	 * 
+	 *
 	 * @param contentType the content type
 	 * @return this body, for chaining
 	 * @throws NullPointerException     if the content type is null
@@ -120,7 +120,7 @@ public class RestBody {
 	 * <p>
 	 * The alias {@link #as(String)} is available for short chaining.
 	 * </p>
-	 * 
+	 *
 	 * @param contentType the content type
 	 * @return this body, for chaining
 	 * @throws NullPointerException     if the content type is null
@@ -140,7 +140,7 @@ public class RestBody {
 
 	/**
 	 * Alias for {@link #inCharset(Charset)}.
-	 * 
+	 *
 	 * @param charset the charset
 	 * @return this body, for chaining
 	 * @throws NullPointerException if the charset is null
@@ -158,7 +158,7 @@ public class RestBody {
 	 * <p>
 	 * The alias {@link #in(Charset)} is available for short chaining.
 	 * </p>
-	 * 
+	 *
 	 * @param charset the charset
 	 * @return this body, for chaining
 	 * @throws NullPointerException if the charset is null
@@ -173,7 +173,7 @@ public class RestBody {
 
 	/**
 	 * Encodes this body in Base64.
-	 * 
+	 *
 	 * @return this body, for chaining
 	 */
 	public final RestBody inBase64() {

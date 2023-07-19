@@ -38,7 +38,7 @@ public abstract class Injector {
 	 * The idea is that this method can be used to register the converters in a
 	 * third-party library.
 	 * </p>
-	 * 
+	 *
 	 * @param <T>           the converter type
 	 * @param packageName   the package name
 	 * @param converterType a {@link Class} representing {@code T}

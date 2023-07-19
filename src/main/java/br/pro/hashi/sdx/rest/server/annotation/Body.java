@@ -18,7 +18,7 @@ public @interface Body {
 	/**
 	 * The maximum size allowed. Default is {@code 0}, which means the value of
 	 * {@link RestServerBuilder#withMaxBodySize(int)}.
-	 * 
+	 *
 	 * @return a long representing the limit
 	 */
 	long value() default 0;
