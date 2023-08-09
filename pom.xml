@@ -32,7 +32,7 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.release>17</maven.compiler.release>
-    <jetty.version>[11.0.15, 11.99)</jetty.version>
+    <jetty.version>[11.0.15, 11.99]</jetty.version>
   </properties>
   <dependencies>
     <dependency>
@@ -63,23 +63,23 @@
     <dependency>
       <groupId>org.reflections</groupId>
       <artifactId>reflections</artifactId>
-      <version>[0.10.2, 0.999)</version>
+      <version>[0.10.2, 0.999]</version>
     </dependency>
     <dependency>
       <groupId>com.github.alexdlaird</groupId>
       <artifactId>java-ngrok</artifactId>
-      <version>[2.1.0, 2.99)</version>
+      <version>[2.1.0, 2.99]</version>
     </dependency>
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-params</artifactId>
-      <version>[5.10.0-RC1, 5.99)</version>
+      <version>[5.10.0, 5.999]</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.mockito</groupId>
       <artifactId>mockito-core</artifactId>
-      <version>[5.4.0, 5.99)</version>
+      <version>[5.4.0, 5.99]</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
