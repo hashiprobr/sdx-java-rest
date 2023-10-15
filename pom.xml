@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>io.github.hashiprobr</groupId>
   <artifactId>sdx-rest</artifactId>
-  <version>0.9.10</version>
+  <version>0.9.11</version>
   <name>${project.groupId}:${project.artifactId}</name>
   <description>Simple embedded REST framework based on Jetty.</description>
   <url>https://github.com/hashiprobr/sdx-java-rest</url>
@@ -32,7 +32,7 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.release>17</maven.compiler.release>
-    <jetty.version>[11.0.16, 11.99]</jetty.version>
+    <jetty.version>[11.0.17, 11.99]</jetty.version>
   </properties>
   <dependencies>
     <dependency>
@@ -85,7 +85,7 @@
     <dependency>
       <groupId>org.mockito</groupId>
       <artifactId>mockito-core</artifactId>
-      <version>[5.5.0, 5.99]</version>
+      <version>[5.6.0, 5.99]</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
