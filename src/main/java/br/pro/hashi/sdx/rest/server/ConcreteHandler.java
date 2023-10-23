@@ -4,6 +4,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.io.UncheckedIOException;
 import java.lang.reflect.Type;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
@@ -80,7 +81,15 @@ class ConcreteHandler extends ErrorHandler {
 			}
 			OutputStreamWriter writer = new OutputStreamWriter(stream, charset);
 
-			serializer.write(actual, type, writer);
+			try {
+				serializer.write(actual, type, writer);
+			} finally {
+				try {
+					writer.close();
+				} catch (IOException exception) {
+					throw new UncheckedIOException(exception);
+				}
+			}
 			buffer = ByteBuffer.wrap(output.toByteArray());
 		} catch (RuntimeException warning) {
 			logger.warn("Could not write bad message error", warning);
@@ -113,8 +122,11 @@ class ConcreteHandler extends ErrorHandler {
 		}
 		OutputStreamWriter writer = new OutputStreamWriter(stream, charset);
 
-		serializer.write(actual, type, writer);
-		writer.close();
+		try {
+			serializer.write(actual, type, writer);
+		} finally {
+			writer.close();
+		}
 	}
 
 	@Override

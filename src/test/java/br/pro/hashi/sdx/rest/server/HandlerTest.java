@@ -1600,16 +1600,14 @@ class HandlerTest {
 	}
 
 	@Test
-	void writesWithCloseException() throws IOException {
+	void writesWithCloseException() {
 		mockCharset();
 		mockWithoutBase64();
 		mockWithoutCommitted();
-		Throwable cause = mockCloseException();
-		Exception exception = assertThrows(UncheckedIOException.class, () -> {
-			write();
-		});
-		assertSame(cause, exception.getCause());
+		mockCloseException();
+		assertTrue(write());
 		verify(response).setContentType("type/subtype;charset=UTF-8");
+		assertEqualsBytes();
 		verifyNoFlush();
 	}
 
@@ -1618,7 +1616,7 @@ class HandlerTest {
 		mockCharset();
 		mockWithoutBase64();
 		mockWithCommitted();
-		assertFalse(serializeWithException());
+		assertTrue(serializeWithException());
 		verify(response).setContentType("type/subtype;charset=UTF-8");
 		verifyNoWrite();
 		verifyNoFlush();
@@ -1696,12 +1694,10 @@ class HandlerTest {
 		mockCharset();
 		mockWithoutBase64();
 		mockWithoutCommitted();
-		Throwable cause = mockCloseException();
-		Exception exception = assertThrows(UncheckedIOException.class, () -> {
-			writeLarge();
-		});
-		assertSame(cause, exception.getCause());
+		mockCloseException();
+		assertFalse(writeLarge());
 		verify(response).setContentType("type/subtype;charset=UTF-8");
+		assertEqualsBytes();
 		verifyFlush();
 	}
 
@@ -1829,18 +1825,21 @@ class HandlerTest {
 			String str = invocation.getArgument(0);
 			Writer writer = invocation.getArgument(2);
 			writer.write(str);
+			when(response.isCommitted()).thenReturn(true);
 			return null;
 		}).when(serializer).write(eq(actual), eq(String.class), any());
 		doAnswer((invocation) -> {
 			StringReader reader = invocation.getArgument(0);
 			Writer writer = invocation.getArgument(2);
 			reader.transferTo(writer);
+			when(response.isCommitted()).thenReturn(true);
 			return null;
 		}).when(serializer).write(eq(actual), eq(Reader.class), any());
 		doAnswer((invocation) -> {
 			Consumer<Writer> consumer = invocation.getArgument(0);
 			Writer writer = invocation.getArgument(2);
 			consumer.accept(writer);
+			when(response.isCommitted()).thenReturn(true);
 			return null;
 		}).when(serializer).write(eq(actual), eq(new Hint<Consumer<Writer>>() {}.getType()), any());
 	}
@@ -1908,12 +1907,10 @@ class HandlerTest {
 		mockCharset();
 		mockWithoutBase64();
 		mockWithoutCommitted();
-		Throwable cause = mockCloseException();
-		Exception exception = assertThrows(UncheckedIOException.class, () -> {
-			writeBinary();
-		});
-		assertSame(cause, exception.getCause());
+		mockCloseException();
+		assertTrue(writeBinary());
 		verify(response).setContentType("type/subtype");
+		assertBinaryEqualsBytes();
 		verifyNoFlush();
 	}
 
@@ -1922,7 +1919,7 @@ class HandlerTest {
 		mockCharset();
 		mockWithoutBase64();
 		mockWithCommitted();
-		assertFalse(assembleWithException());
+		assertTrue(assembleWithException());
 		verify(response).setContentType("type/subtype");
 		verifyNoWrite();
 		verifyNoFlush();
@@ -1968,12 +1965,10 @@ class HandlerTest {
 		mockCharset();
 		mockWithoutBase64();
 		mockWithoutCommitted();
-		Throwable cause = mockCloseException();
-		Exception exception = assertThrows(UncheckedIOException.class, () -> {
-			writeLargeBinary();
-		});
-		assertSame(cause, exception.getCause());
+		mockCloseException();
+		assertFalse(writeLargeBinary());
 		verify(response).setContentType("type/subtype");
+		assertBinaryEqualsBytes();
 		verifyFlush();
 	}
 
@@ -2094,18 +2089,21 @@ class HandlerTest {
 			String str = invocation.getArgument(0);
 			OutputStream output = invocation.getArgument(2);
 			output.write(str.getBytes(StandardCharsets.US_ASCII));
+			when(response.isCommitted()).thenReturn(true);
 			return null;
 		}).when(assembler).write(eq(actual), eq(String.class), any());
 		doAnswer((invocation) -> {
 			InputStream input = invocation.getArgument(0);
 			OutputStream output = invocation.getArgument(2);
 			input.transferTo(output);
+			when(response.isCommitted()).thenReturn(true);
 			return null;
 		}).when(assembler).write(eq(actual), eq(InputStream.class), any());
 		doAnswer((invocation) -> {
 			Consumer<OutputStream> consumer = invocation.getArgument(0);
 			OutputStream output = invocation.getArgument(2);
 			consumer.accept(output);
+			when(response.isCommitted()).thenReturn(true);
 			return null;
 		}).when(assembler).write(eq(actual), eq(new Hint<Consumer<OutputStream>>() {}.getType()), any());
 	}
@@ -2149,14 +2147,13 @@ class HandlerTest {
 		when(response.isCommitted()).thenReturn(true);
 	}
 
-	private Throwable mockCloseException() {
+	private void mockCloseException() {
 		Throwable cause = new IOException();
 		try {
 			doThrow(cause).when(stream).close();
 		} catch (IOException exception) {
 			throw new AssertionError();
 		}
-		return cause;
 	}
 
 	private Throwable mockFlushException() {
@@ -2228,7 +2225,6 @@ class HandlerTest {
 
 	private void verifyNoWrite() {
 		try {
-			verify(stream, times(0)).close();
 			verify(stream, times(0)).write(any(int.class));
 			verify(stream, times(0)).write(any(byte[].class));
 			verify(stream, times(0)).write(any(byte[].class), any(int.class), any(int.class));

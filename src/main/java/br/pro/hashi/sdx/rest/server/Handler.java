@@ -332,55 +332,73 @@ class Handler extends AbstractHandler {
 	}
 
 	boolean write(HttpServletResponse response, RestResource resource, Object actual, Type type, String extensionType, OutputStream stream) {
+		String contentType;
+		if (extensionType == null) {
+			contentType = resource.getContentType();
+		} else {
+			contentType = extensionType;
+		}
+		boolean base64 = resource.isBase64();
+
 		boolean withoutLength;
-		try {
-			String contentType;
-			if (extensionType == null) {
-				contentType = resource.getContentType();
-			} else {
-				contentType = extensionType;
-			}
-			boolean base64 = resource.isBase64();
-
-			Consumer<OutputStream> consumer;
-			if (manager.isBinary(type)) {
-				contentType = manager.getAssemblerType(contentType, actual, type);
-				Assembler assembler = manager.getAssembler(contentType);
-				consumer = (output) -> {
+		Consumer<OutputStream> consumer;
+		if (manager.isBinary(type)) {
+			contentType = manager.getAssemblerType(contentType, actual, type);
+			Assembler assembler = manager.getAssembler(contentType);
+			consumer = (output) -> {
+				try {
 					assembler.write(actual, type, output);
-					try {
-						output.close();
-					} catch (IOException exception) {
-						throw new UncheckedIOException(exception);
+				} finally {
+					if (response.isCommitted()) {
+						try {
+							output.close();
+						} catch (IOException exception) {
+							throw new UncheckedIOException(exception);
+						}
 					}
-				};
-				withoutLength = actual instanceof InputStream || Types.instanceOfStreamConsumer(actual, type);
-			} else {
-				contentType = manager.getSerializerType(contentType, actual, type);
-				Serializer serializer = manager.getSerializer(contentType);
-				Charset charset = resource.getCharset();
-				consumer = (output) -> {
-					OutputStreamWriter writer = new OutputStreamWriter(output, charset);
+				}
+			};
+			withoutLength = actual instanceof InputStream || Types.instanceOfStreamConsumer(actual, type);
+		} else {
+			contentType = manager.getSerializerType(contentType, actual, type);
+			Serializer serializer = manager.getSerializer(contentType);
+			Charset charset = resource.getCharset();
+			consumer = (output) -> {
+				OutputStreamWriter writer = new OutputStreamWriter(output, charset);
+				try {
 					serializer.write(actual, type, writer);
-					try {
-						writer.close();
-					} catch (IOException exception) {
-						throw new UncheckedIOException(exception);
+				} finally {
+					if (response.isCommitted()) {
+						try {
+							writer.close();
+						} catch (IOException exception) {
+							throw new UncheckedIOException(exception);
+						}
 					}
-				};
-				withoutLength = actual instanceof Reader || Types.instanceOfWriterConsumer(actual, type);
-				contentType = "%s;charset=%s".formatted(contentType, charset.name());
-			}
-			if (base64) {
-				contentType = "%s;base64".formatted(contentType);
-			}
+				}
+			};
+			withoutLength = actual instanceof Reader || Types.instanceOfWriterConsumer(actual, type);
+			contentType = "%s;charset=%s".formatted(contentType, charset.name());
+		}
+		if (base64) {
+			contentType = "%s;base64".formatted(contentType);
+		}
 
+		try {
 			response.setContentType(contentType);
 			if (withoutLength && stream instanceof ServletOutputStream) {
 				try {
 					response.flushBuffer();
 				} catch (IOException exception) {
 					throw new UncheckedIOException(exception);
+				} finally {
+					if (response.isCommitted()) {
+						try {
+							stream.close();
+						} catch (IOException exception) {
+							throw new UncheckedIOException(exception);
+						}
+					}
 				}
 			}
 			if (base64) {
@@ -399,7 +417,7 @@ class Handler extends AbstractHandler {
 			if (!response.isCommitted()) {
 				throw exception;
 			}
-			withoutLength = true;
+			logger.warn("Could not write response body", exception);
 		}
 		return !withoutLength;
 	}
