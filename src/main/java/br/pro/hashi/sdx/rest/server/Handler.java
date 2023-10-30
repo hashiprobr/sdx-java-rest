@@ -346,16 +346,11 @@ class Handler extends AbstractHandler {
 			contentType = manager.getAssemblerType(contentType, actual, type);
 			Assembler assembler = manager.getAssembler(contentType);
 			consumer = (output) -> {
+				assembler.write(actual, type, output);
 				try {
-					assembler.write(actual, type, output);
-				} finally {
-					if (response.isCommitted()) {
-						try {
-							output.close();
-						} catch (IOException exception) {
-							throw new UncheckedIOException(exception);
-						}
-					}
+					output.close();
+				} catch (IOException exception) {
+					throw new UncheckedIOException(exception);
 				}
 			};
 			withoutLength = actual instanceof InputStream || Types.instanceOfStreamConsumer(actual, type);
@@ -365,16 +360,11 @@ class Handler extends AbstractHandler {
 			Charset charset = resource.getCharset();
 			consumer = (output) -> {
 				OutputStreamWriter writer = new OutputStreamWriter(output, charset);
+				serializer.write(actual, type, writer);
 				try {
-					serializer.write(actual, type, writer);
-				} finally {
-					if (response.isCommitted()) {
-						try {
-							writer.close();
-						} catch (IOException exception) {
-							throw new UncheckedIOException(exception);
-						}
-					}
+					writer.close();
+				} catch (IOException exception) {
+					throw new UncheckedIOException(exception);
 				}
 			};
 			withoutLength = actual instanceof Reader || Types.instanceOfWriterConsumer(actual, type);
@@ -391,14 +381,6 @@ class Handler extends AbstractHandler {
 					response.flushBuffer();
 				} catch (IOException exception) {
 					throw new UncheckedIOException(exception);
-				} finally {
-					if (response.isCommitted()) {
-						try {
-							stream.close();
-						} catch (IOException exception) {
-							throw new UncheckedIOException(exception);
-						}
-					}
 				}
 			}
 			if (base64) {
