@@ -1,18 +1,6 @@
 Notices for sdx-rest
 ====================
-
-
-Copyright
----------
-
-All contributions are the property of the respective authors or of entities to
-which copyright has been assigned by the authors (eg. employer).
-
-
-Declared Project Licenses
--------------------------
-
-This artifacts of this project are made available under the terms of:
+The artifacts of this project are made available under the terms of:
 
   * the Eclipse Public License v2.0
     https://www.eclipse.org/legal/epl-2.0
@@ -24,14 +12,11 @@ This artifacts of this project are made available under the terms of:
     https://www.apache.org/licenses/LICENSE-2.0
     SPDX-License-Identifier: Apache-2.0
 
-The following dependencies are EPL2 and ASL2.
-
+The following dependencies are EPL2 and ASL2:
  * org.eclipse.jetty
 
-The following dependencies are ASL2.
-
+The following dependencies are ASL2:
  * org.reflections
 
-The following dependencies are MIT.
-
+The following dependencies are MIT:
  * com.github.alexdlaird.ngrok
